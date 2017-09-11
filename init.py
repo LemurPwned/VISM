@@ -13,7 +13,6 @@ uniform mat4 projection;
 
 attribute vec3 position;
 attribute vec2 texcoord;
-attribute vec3 normal;
 attribute vec4 color;
 
 varying vec4 v_color;
@@ -39,8 +38,12 @@ class Canvas(app.Canvas):
                             keys='interactive')
 
         # Build cube data
-        cube = Cube()
-        V, I, _ = cube.create(0.1)
+        cube = Cube(1)
+        cube.translate(np.array([1, 1, 0], dtype=np.float32))
+        V = cube.vertices
+        I = cube.filled
+
+        #V, I, _ = cube.create(1)
         #V, I, _ = create_cube()
         vertices = VertexBuffer(V)
         self.indices = IndexBuffer(I)
@@ -77,8 +80,8 @@ class Canvas(app.Canvas):
         self.program['projection'] = projection
 
     def on_timer(self, event):
-        self.theta += .5
-        self.phi += .5
+        #self.theta += .5
+        #self.phi += .5
         self.program['model'] = np.dot(rotate(self.theta, (0, 0, 1)),
                                        rotate(self.phi, (0, 1, 0)))
         self.update()

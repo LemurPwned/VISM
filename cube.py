@@ -2,10 +2,19 @@ from shapes import Shape
 import numpy as np
 
 class Cube(Shape):
+    def __init__(self, size):
+        self.create(size)
+
     def rotate(self, *angles):
         pass
-    def translate(self, *angles):
-        pass
+
+    def translate(self, vector):
+        translation_matrix = np.array([[*vector] for i
+                                        in range(len(self.vertices))],
+                                        dtype=np.float32)
+        self.vertices['position'] = self.vertices['position'] + translation_matrix
+        self.vertices['normal'] = self.vertices['normal'] + translation_matrix
+
     def move(self, *position):
         pass
 
@@ -17,7 +26,7 @@ class Cube(Shape):
                  ('color',    np.float32, 4)]
             itype = np.uint32
             p = np.array([[1, 1, 1], [-1, 1, 1], [-1, -1, 1], [1, -1, 1],
-            [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, -1]])*0.5*size
+                        [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, -1]])*0.5*size
 
             # Face Normals
             n = np.array([[0, 0, 1], [1, 0, 0], [0, 1, 0],
@@ -56,20 +65,21 @@ class Cube(Shape):
                        0, 1, 2, 3,
                        0, 1, 2, 3]
 
-            vertices = np.zeros(24, vtype)
-            vertices['position'] = p[faces_p]
-            vertices['normal'] = n[faces_n]
-            vertices['color'] = c[faces_c]
-            vertices['texcoord'] = t[faces_t]
+            self.vertices = np.zeros(24, vtype)
+            self.vertices['position'] = p[faces_p]
+            self.vertices['normal'] = n[faces_n]
+            self.vertices['color'] = c[faces_c]
+            self.vertices['texcoord'] = t[faces_t]
 
-            filled = np.resize(
+            self.filled = np.resize(
                 np.array([0, 1, 2, 0, 2, 3], dtype=itype), 6 * (2 * 3))
 
-            filled += np.repeat(4 * np.arange(6, dtype=itype), 6)
-            filled = filled.reshape((len(filled) // 3, 3))
+            self.filled += np.repeat(4 * np.arange(6, dtype=itype), 6)
+            self.filled = self.filled.reshape((len(self.filled) // 3, 3))
 
-            outline = np.resize(
+            self.outline = np.resize(
                 np.array([0, 1, 1, 2, 2, 3, 3, 0], dtype=itype), 6 * (2 * 4))
 
-            outline += np.repeat(4 * np.arange(6, dtype=itype), 8)
-            return vertices, filled, outline
+            self.outline += np.repeat(4 * np.arange(6, dtype=itype), 8)
+
+            #return self.vertices, self.filled, self.outline
