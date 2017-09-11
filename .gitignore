@@ -104,5 +104,5 @@ ENV/
 #Pycharm
 .idea/
 
-#Pablo
+#common virtualenv
 spintronics/
