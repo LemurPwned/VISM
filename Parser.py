@@ -8,6 +8,34 @@ class Parser:
     def readFolder(directory):
         pass
 
+    @staticmethod
+    def getOmfHeader(filename):
+        '''
+        .omf format reader
+        @param filename is .omf file path
+        @return dictionary with headers and their corresponding values
+                    and number of these headers
+        '''
+        omf_header = {}
+
+        with open(filename, 'r') as f:
+            g = f.readline()
+            while g.startswith('#'):
+                g = f.readline()
+                if ':' in g:
+                    x = g.index(':')
+                    if g[2:x] in omf_header:
+                        omf_header[g[2:x]] += g[x + 1:-1]
+                    else:
+                        omf_header[g[2:x]] = g[x + 1:-1]
+                    try:
+                        omf_header[g[2:x]] = float(omf_header[g[2:x]])
+                    except:
+                        pass
+        f.close()
+        return omf_header
+
+    @staticmethod
     def getOdtData(filename):
         """
         Reads .odt file
