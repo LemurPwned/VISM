@@ -1,7 +1,8 @@
+import numpy as np
+import pandas as pd
 
-import numpy
 class Parser:
-    def __init__(folder):
+    def __init__():
         self.working_folder = folder
 
     @staticmethod
