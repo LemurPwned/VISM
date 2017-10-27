@@ -9,6 +9,11 @@ class Parser:
         pass
 
     def getOdtData(filename):
+        """
+        Reads .odt file
+        @param filename is .odt file path
+        @return dataFrame and stages number
+        """
         if not filename.endswith(".odt"):
             print("Wrong file type passed, only .odt")
             return
