@@ -1,13 +1,76 @@
 import numpy as np
 import pandas as pd
+import os
+import sys
+import time
 
 class Parser:
     def __init__():
         self.working_folder = folder
 
     @staticmethod
-    def readFolder(directory):
-        pass
+    def update_progress_bar(current_i, max_i):
+        k = int(current_i*100/max_i)
+        sys.stdout.write('\r')
+        sys.stdout.write('[%-100s] %d%%'%('='*(k+2),k+1))
+        sys.stdout.flush()
+        time.sleep(0.02)
+
+    @staticmethod
+    def readFolder(directory, multipleOmfHeaders=False):
+        """
+        dumps process-ready format from directory
+        Returns raw numpy array of vectors, omf_header_files and odt data for
+        2d plotting
+
+        @param directory
+        @return rawVectorData, omf_headers, getOdtData
+        """
+        omf_headers = []
+        rawVectorData = []
+        odt_data = None
+        files_in_directory = os.listdir(directory)
+        num_files = len(files_in_directory)
+        for j, filename in enumerate(files_in_directory):
+            current_path = os.path.join(directory, filename)
+            Parser.update_progress_bar(j, num_files)
+            if (filename.endswith(".omf")):
+                if multipleOmfHeaders:
+                    omf_headers.append(Parser.getOmfHeader(current_path))
+                else:
+                    if (j == 0):
+                        omf_headers = Parser.getOmfHeader(current_path)
+                rawVectorData.append(Parser.getRawVectors(current_path))
+            elif (filename.endswith(".odt")):
+                odt_data = Parser.getOdtData(current_path)
+
+        #catch errors, replace with custom exceptions
+        if not omf_headers:
+            print("\nNo .omf files found")
+            raise TypeError
+        if not odt_data:
+            print("\nNo .odt file found")
+            raise TypeError
+        if not rawVectorData:
+            print("\nNo vectors created")
+            raise TypeError
+
+        return rawVectorData, omf_headers, odt_data
+
+    @staticmethod
+    def getRawVectors(filename):
+        '''
+        @param .omf text file
+        @return returns raw_vectors from fortran lists
+        '''
+        raw_vectors = []
+        with open(filename, 'r') as f:
+            lines = f.readlines()
+        f.close()
+        raw_vectors = [g.strip().split(' ') for g in lines if '#' not in g]
+        raw_vectors = [[float(row[0]), float(row[1]), float(row[2])]
+                            for row in raw_vectors]
+        return np.array(raw_vectors)
 
     @staticmethod
     def getOmfHeader(filename):
@@ -44,7 +107,7 @@ class Parser:
         @return dataFrame and stages number
         """
         if not filename.endswith(".odt"):
-            print("Wrong file type passed, only .odt")
+            print("\nWrong file type passed, only .odt")
             return
         else:
             header_lines = 4
@@ -66,7 +129,6 @@ class Parser:
             cols = [x.strip() for x in cols]
             dataset = []
             lines = [x.strip() for x in lines]
-            print("{} lines have been read ".format(len(lines)))
             lines = [x.split(' ') for x in lines]
             for line in lines:
                 temp_line = []
