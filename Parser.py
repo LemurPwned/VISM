@@ -4,6 +4,7 @@ import os
 import sys
 import time
 import glob
+import struct
 
 from binaryornot.check import is_binary
 from multiprocessing import Pool
@@ -55,13 +56,34 @@ class Parser:
                 return
             omf_header = Parser.getOmfHeader(omf_file_for_header[0])
         else:
-            rawVectorData, omf_header, \
-                                odt_data = Parser.readTextBinary(files_in_directory)
+            omf_headers, rawVectorData = Parser.readBinary(files_in_directory)
+            omf_header = omf_headers[0]
+            if not omf_header:
+                print("no .omf file has been found")
+                return
         return rawVectorData, omf_header, odt_data
 
     @staticmethod
-    def readBinary(directory):
-        pass
+    def readBinary(files_in_directory):
+        text_pool = Pool()
+        rawVectorData = []
+        omf_headers = []
+        text_file_results = [text_pool.apply_async(Parser.getRawVectorsBinary,
+                            (filename, )) for filename in files_in_directory]
+        max_len = len(text_file_results)
+        for i, result in enumerate(text_file_results):
+            Parser.update_progress_bar(i, max_len)
+            omf_header_data, vector_data = result.get(timeout=12)
+            rawVectorData.append(vector_data)
+            omf_headers.append(omf_header_data)
+        #catch errors, replace with custom exceptions
+        if not rawVectorData:
+            print("\nNo vectors created")
+            raise TypeError
+        if not omf_headers:
+            print("\nNo vectors created")
+            raise TypeError
+        return omf_headers, np.array(rawVectorData)
 
 
     @staticmethod
@@ -83,12 +105,6 @@ class Parser:
 
         return np.array(rawVectorData)
 
-    @staticmethod
-    def omfTextFileProcessor(filename):
-        return Parser.getRawVectors(filename)
-
-    def omfBinaryFileProcessor(filename):
-        pass
 
     @staticmethod
     def getRawVectors(filename):
@@ -107,17 +123,53 @@ class Parser:
 
     def getRawVectorsBinary(filename):
         '''
-        @param .omf text file
+        @param .omf binary file
         @return returns raw_vectors from fortran lists
+        use this as it is the fastest way of reading binary files, however,
+        this has little error handling
         '''
-        raw_vectors = []
-        with open(filename, 'r') as f:
-            lines = f.readlines()
+        vectors = []
+        base_data = {}
+        validation = 123456789012345.0  # this is IEEE validation value
+        guard = 0
+        constant = 900
+        with open(filename, 'rb') as f:
+            last = f.read(constant)
+            while last != validation:
+                guard += 1
+                f.seek(constant+guard)
+                last = struct.unpack('d', f.read(8))[0]
+                f.seek(0)
+                if guard > 250:
+                    raise struct.error
+            headers = str(f.read(constant+guard))
+            omf_header = Parser.process_header(headers)
+            k = omf_header['xnodes']*omf_header['ynodes']*omf_header['znodes']
+            f.read(8)
+            rawVectorDatavectors = np.array([(struct.unpack('d', f.read(8))[0],
+                    struct.unpack('d', f.read(8))[0],
+                    struct.unpack('d', f.read(8))[0]) for i in range(int(k))])
         f.close()
-        raw_vectors = [g.strip().split(' ') for g in lines if '#' not in g]
-        raw_vectors = [[float(row[0]), float(row[1]), float(row[2])]
-                            for row in raw_vectors]
-        return np.array(raw_vectors)
+        return omf_header, rawVectorDatavectors
+
+    @staticmethod
+    def process_header(headers):
+        '''
+        processes the header of each .omf file and return base_data dict
+        '''
+        omf_header = {}
+        headers = headers.replace('\'', "")
+        headers = headers.replace(' ', "")
+        headers = headers.replace('\\n', "")
+        headers = headers.split('#')
+        for header in headers:
+            if ':' in header:
+                components = header.split(':')
+                try:
+                    omf_header[components[0]] = float(components[1])
+                except:
+                    omf_header[components[0]] = components[1]
+        return omf_header
 
     @staticmethod
     def getOmfHeader(filename):

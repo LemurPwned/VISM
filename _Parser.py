@@ -1,6 +1,7 @@
 from Parser import Parser
 import pandas
 import numpy
+import time
 
 def _getOdtData():
     test_filename = "test_folder/voltage-spin-diode.odt"
@@ -13,12 +14,29 @@ def _getOmfHeader():
     omf_header = Parser.getOmfHeader(test_filename)
     assert isinstance(omf_header, dict)
 
-def _readFolder():
+def _readFolderText():
+    print("\nTEXT FILE TEST ...")
     test_folder = "data/firstData"
+    start = time.time()
     rawVectorData, omf_header, odtData = Parser.readFolder(test_folder)
+    stop = time.time()
     assert isinstance(omf_header, dict)
     assert isinstance(odtData, pandas.DataFrame)
     assert isinstance(rawVectorData, numpy.ndarray)
+    print("\nSUCCESS")
+    print("TOOK: {} s".format(stop-start))
+
+def _readFolderBinary():
+    print("\nBINARY FILE TEST ... ")
+    test_folder = "data/0520nm"
+    start = time.time()
+    rawVectorData, omf_header, odtData = Parser.readFolder(test_folder)
+    stop = time.time()
+    assert isinstance(omf_header, dict)
+    assert isinstance(odtData, pandas.DataFrame)
+    assert isinstance(rawVectorData, numpy.ndarray)
+    print("\nSUCCESS")
+    print("TOOK: {} s".format(stop-start))
 
 def _getRawVectors():
     test_filename = "test_folder/voltage-spin-diode-Oxs_TimeDriver-Magnetization-00-0000000.omf"
@@ -27,13 +45,15 @@ def _getRawVectors():
     assert raw_vectors.shape[0] != 0
 
 def test_suite():
-    _readFolder()
     #test for odt file
     _getOdtData()
     #test for omf file
     _getOmfHeader()
     #test vectors
     _getRawVectors()
+    #integrate
+    _readFolderText()
+    _readFolderBinary()
 
     print("\nTests completed successfully")
 
