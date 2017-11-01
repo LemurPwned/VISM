@@ -3,6 +3,10 @@ import pandas as pd
 import os
 import sys
 import time
+import glob
+
+from binaryornot.check import is_binary
+from multiprocessing import Pool
 
 class Parser:
     def __init__():
@@ -30,35 +34,78 @@ class Parser:
         rawVectorData = []
         odt_data = None
         files_in_directory = os.listdir(directory)
-        num_files = len(files_in_directory)
-        for j, filename in enumerate(files_in_directory):
-            current_path = os.path.join(directory, filename)
-            Parser.update_progress_bar(j, num_files)
-            if (filename.endswith(".omf")):
-                if multipleOmfHeaders:
-                    omf_headers.append(Parser.getOmfHeader(current_path))
-                else:
-                    if (j == 0):
-                        omf_headers = Parser.getOmfHeader(current_path)
-                rawVectorData.append(Parser.getRawVectors(current_path))
-            elif (filename.endswith(".odt")):
-                odt_data = Parser.getOdtData(current_path)
+        files_in_directory = [os.path.join(directory, filename)
+                for filename in files_in_directory if filename.endswith('.omf')]
 
+        odt_file = glob.glob(os.path.join(directory, '*.odt')) # look for .odt in current directory
+        if len(odt_file) > 1:
+            print(".odt file extension conflict (too many)")
+            return
+        elif not odt_file:
+            print("None .odt")
+            return
+        print(odt_file)
+        odt_data, stages = Parser.getOdtData(odt_file[0])
+
+        if not is_binary(files_in_directory[0]):
+            rawVectorData = Parser.readText(files_in_directory)
+            omf_file_for_header = glob.glob(os.path.join(directory, '*.omf')) # virtually any will do
+            if not omf_file_for_header:
+                print("no .omf file has been found")
+                return
+            omf_header = Parser.getOmfHeader(omf_file_for_header[0])
+        else:
+            rawVectorData, omf_header, \
+                                odt_data = Parser.readTextBinary(files_in_directory)
+        return rawVectorData, omf_header, odt_data
+
+    @staticmethod
+    def readBinary(directory):
+        pass
+
+
+    @staticmethod
+    def readText(files_in_directory):
+        #use multiprocessing
+        text_pool = Pool()
+        rawVectorData = []
+        text_file_results = [text_pool.apply_async(Parser.getRawVectors,
+                            (filename, )) for filename in files_in_directory]
+        max_len = len(text_file_results)
+        for i, result in enumerate(text_file_results):
+            Parser.update_progress_bar(i, max_len)
+            data = result.get(timeout=12)
+            rawVectorData.append(data)
         #catch errors, replace with custom exceptions
-        if not omf_headers:
-            print("\nNo .omf files found")
-            raise TypeError
-        if not odt_data:
-            print("\nNo .odt file found")
-            raise TypeError
         if not rawVectorData:
             print("\nNo vectors created")
             raise TypeError
 
-        return rawVectorData, omf_headers, odt_data
+        return np.array(rawVectorData)
+
+    @staticmethod
+    def omfTextFileProcessor(filename):
+        return Parser.getRawVectors(filename)
+
+    def omfBinaryFileProcessor(filename):
+        pass
 
     @staticmethod
     def getRawVectors(filename):
+        '''
+        @param .omf text file
+        @return returns raw_vectors from fortran lists
+        '''
+        raw_vectors = []
+        with open(filename, 'r') as f:
+            lines = f.readlines()
+        f.close()
+        raw_vectors = [g.strip().split(' ') for g in lines if '#' not in g]
+        raw_vectors = [[float(row[0]), float(row[1]), float(row[2])]
+                            for row in raw_vectors]
+        return np.array(raw_vectors)
+
+    def getRawVectorsBinary(filename):
         '''
         @param .omf text file
         @return returns raw_vectors from fortran lists
