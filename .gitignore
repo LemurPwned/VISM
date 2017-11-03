@@ -1,5 +1,8 @@
 #ignore data
 data/
+spins/
+test_folder/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -17,7 +17,7 @@ class Parser:
     def update_progress_bar(current_i, max_i):
         k = int(current_i*100/max_i)
         sys.stdout.write('\r')
-        sys.stdout.write('[%-100s] %d%%'%('='*(k+2),k+1))
+        sys.stdout.write('[%-100s] %d%%'%('='*(k+1),k+1))
         sys.stdout.flush()
         time.sleep(0.02)
 
