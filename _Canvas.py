@@ -16,6 +16,7 @@ def _shareData():
                 }
     new_canvas = Canvas()
     new_canvas.shareData(**data_dict)
+    _runCanvas()
 
 def _runCanvas():
     new_canvas = Canvas()
