@@ -1,5 +1,6 @@
 from Canvas import Canvas
 from Parser import Parser
+from threading import Thread
 
 def _shareData():
     test_odt = "test_folder/voltage-spin-diode.odt"
@@ -19,15 +20,17 @@ def _shareData():
     new_canvas = Canvas()
     new_canvas.shareData(**data_dict)
     new_canvas.check_instance()
-    _runCanvas(new_canvas, odt_data[1])
+    new_canvas.createPlotCanvas()
 
-def _runCanvas(canvas, iterations):
-    canvas.createPlotCanvas()
+    return new_canvas
+
+def _runCanvas(canvas):
     print("DONE CREATING CANVAS... PREPARING OT RUN...")
-    #canvas.runCanvas()
-    _iterateCanvas(canvas, iterations)
+    canvas.runCanvas()
 
-def _iterateCanvas(canvas, iterations):
+
+def _iterateCanvas(canvas):
+    iterations = canvas.iterations
     while(iterations):
         canvas.replot()
         print(canvas.i)
@@ -35,4 +38,6 @@ def _iterateCanvas(canvas, iterations):
         iterations -= 1
 
 if __name__ == "__main__":
-    _shareData()
+    canvas = _shareData()
+    _runCanvas(canvas)
+    _iterateCanvas(canvas)
