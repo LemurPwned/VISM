@@ -3,6 +3,9 @@ pipeline {
   stages {
     stage('Parsing test') {
       steps {
+        sh '''
+source ./spins/bin/activate.fish
+'''
         sh '''python3 _Parser.py
 '''
       }
