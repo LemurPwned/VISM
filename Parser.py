@@ -15,6 +15,11 @@ class Parser:
 
     @staticmethod
     def update_progress_bar(current_i, max_i):
+        """
+        updates a progress bar
+        @param current_i current level loading cap of whole progress bar
+        @param max_i maximum level loading cap of the progress bar
+        """
         k = int(current_i*100/max_i)
         sys.stdout.write('\r')
         sys.stdout.write('[%-100s] %d%%'%('='*(k+1),k+1))
@@ -65,6 +70,10 @@ class Parser:
 
     @staticmethod
     def readBinary(files_in_directory):
+        """
+        @param files_in_directory is a list of binary filenames in a directory
+        @return numpy array of vectors form .omf files
+        """
         text_pool = Pool()
         rawVectorData = []
         omf_headers = []
@@ -88,6 +97,10 @@ class Parser:
 
     @staticmethod
     def readText(files_in_directory):
+        """
+        @param files_in_directory is a list of text filenames in a directory
+        @return numpy array of vectors form .omf files
+        """
         #use multiprocessing
         text_pool = Pool()
         rawVectorData = []
@@ -108,10 +121,12 @@ class Parser:
 
     @staticmethod
     def getLayerOutline(omf_header):
-        '''
+        """
+        constructs the vector outline of each layer, this is a shell that
+        colors function operate on (masking)
         @param omf_header is a dictionary form .omf file
         @return returns a proper list of vectors creating layer outlines
-        '''
+        """
         xc = int(omf_header['xnodes'])
         yc = int(omf_header['ynodes'])
         zc = int(omf_header['znodes'])
@@ -124,10 +139,12 @@ class Parser:
 
     @staticmethod
     def getLayerOutlineFromFile(filename):
-        '''
+        """
         constructs the vector outline of each layer, this is a shell that
         colors function operate on (masking)
-        '''
+        @param omf_header is a dictionary form .omf file
+        @return returns a proper list of vectors creating layer outlines
+        """
         omf_header = Parser.getOmfHeader(filename)
         xc = int(omf_header['xnodes'])
         yc = int(omf_header['ynodes'])
@@ -141,10 +158,11 @@ class Parser:
 
     @staticmethod
     def getRawVectors(filename):
-        '''
+        """
+        processes a .omf filename into a numpy array of vecotrs
         @param .omf text file
         @return returns raw_vectors from fortran lists
-        '''
+        """
         raw_vectors = []
         with open(filename, 'r') as f:
             lines = f.readlines()
@@ -156,12 +174,12 @@ class Parser:
 
     @staticmethod
     def getRawVectorsBinary(filename):
-        '''
+        """
         @param .omf binary file
         @return returns raw_vectors from fortran lists
         use this as it is the fastest way of reading binary files, however,
         this has little error handling
-        '''
+        """
         vectors = []
         base_data = {}
         validation = 123456789012345.0  # this is IEEE validation value
@@ -188,9 +206,9 @@ class Parser:
 
     @staticmethod
     def process_header(headers):
-        '''
+        """
         processes the header of each .omf file and return base_data dict
-        '''
+        """
         omf_header = {}
         headers = headers.replace('\'', "")
         headers = headers.replace(' ', "")
@@ -207,12 +225,12 @@ class Parser:
 
     @staticmethod
     def getOmfHeader(filename):
-        '''
+        """
         .omf format reader
         @param filename is .omf file path
         @return dictionary with headers and their corresponding values
                     and number of these headers
-        '''
+        """
         omf_header = {}
 
         with open(filename, 'r') as f:
