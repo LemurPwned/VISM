@@ -2,12 +2,22 @@ pipeline {
   agent any
   stages {
     stage('Parsing test') {
-      steps {
-        sh '''
+      parallel {
+        stage('Parsing test') {
+          steps {
+            sh '''
+
 source ./spins/bin/activate.fish
 '''
-        sh '''python3 _Parser.py
+            sh '''python3 _Parser.py
 '''
+          }
+        }
+        stage('') {
+          steps {
+            sh 'pwd'
+          }
+        }
       }
     }
     stage('Build succeeded') {
