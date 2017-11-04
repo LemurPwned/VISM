@@ -5,7 +5,7 @@ import numpy as np
 class Canvas:
     def __init__(self):
         pass
-    
+
     def createPlotCanvas(self):
         self.canvas_type = 'panel'
         self.fig = plt.figure()
