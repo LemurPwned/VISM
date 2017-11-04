@@ -107,6 +107,39 @@ class Parser:
 
 
     @staticmethod
+    def getLayerOutline(omf_header):
+        '''
+        @param omf_header is a dictionary form .omf file
+        @return returns a proper list of vectors creating layer outlines
+        '''
+        xc = int(omf_header['xnodes'])
+        yc = int(omf_header['ynodes'])
+        zc = int(omf_header['znodes'])
+        xb = float(omf_header['xbase']) * 1e9
+        yb = float(omf_header['ybase']) * 1e9
+        zb = float(omf_header['zbase']) * 1e9
+        layers_outline = [[xb * (x%xc), yb * (y%yc), zb * (z%zc)]
+                for z in range(zc) for y in range(yc) for x in range(xc)]
+        return layers_outline
+
+    @staticmethod
+    def getLayerOutlineFromFile(filename):
+        '''
+        constructs the vector outline of each layer, this is a shell that
+        colors function operate on (masking)
+        '''
+        omf_header = Parser.getOmfHeader(filename)
+        xc = int(omf_header['xnodes'])
+        yc = int(omf_header['ynodes'])
+        zc = int(omf_header['znodes'])
+        xb = float(omf_header['xbase']) * 1e9
+        yb = float(omf_header['ybase']) * 1e9
+        zb = float(omf_header['zbase']) * 1e9
+        layers_outline = [[xb * (x%xc), yb * (y%yc), zb * (z%zc)]
+                for z in range(zc) for y in range(yc) for x in range(xc)]
+        return layers_outline
+
+    @staticmethod
     def getRawVectors(filename):
         '''
         @param .omf text file
@@ -121,6 +154,7 @@ class Parser:
                             for row in raw_vectors]
         return np.array(raw_vectors)
 
+    @staticmethod
     def getRawVectorsBinary(filename):
         '''
         @param .omf binary file
