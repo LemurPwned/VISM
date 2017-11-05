@@ -120,7 +120,7 @@ class Parser:
 
 
     @staticmethod
-    def getLayerOutline(omf_header):
+    def getLayerOutline(omf_header, unit_scaler=1e9):
         """
         constructs the vector outline of each layer, this is a shell that
         colors function operate on (masking)
@@ -130,28 +130,28 @@ class Parser:
         xc = int(omf_header['xnodes'])
         yc = int(omf_header['ynodes'])
         zc = int(omf_header['znodes'])
-        xb = float(omf_header['xbase']) * 1e9
-        yb = float(omf_header['ybase']) * 1e9
-        zb = float(omf_header['zbase']) * 1e9
+        xb = float(omf_header['xbase']) * unit_scaler
+        yb = float(omf_header['ybase']) * unit_scaler
+        zb = float(omf_header['zbase']) * unit_scaler
         layers_outline = [[xb * (x%xc), yb * (y%yc), zb * (z%zc)]
                 for z in range(zc) for y in range(yc) for x in range(xc)]
         return layers_outline
 
     @staticmethod
-    def getLayerOutlineFromFile(filename):
+    def getLayerOutlineFromFile(filename, unit_scaler=1e9):
         """
         constructs the vector outline of each layer, this is a shell that
         colors function operate on (masking)
-        @param omf_header is a dictionary form .omf file
+        @param filename (path) of a .omf file
         @return returns a proper list of vectors creating layer outlines
         """
         omf_header = Parser.getOmfHeader(filename)
         xc = int(omf_header['xnodes'])
         yc = int(omf_header['ynodes'])
         zc = int(omf_header['znodes'])
-        xb = float(omf_header['xbase']) * 1e9
-        yb = float(omf_header['ybase']) * 1e9
-        zb = float(omf_header['zbase']) * 1e9
+        xb = float(omf_header['xbase']) * unit_scaler
+        yb = float(omf_header['ybase']) * unit_scaler
+        zb = float(omf_header['zbase']) * unit_scaler
         layers_outline = [[xb * (x%xc), yb * (y%yc), zb * (z%zc)]
                 for z in range(zc) for y in range(yc) for x in range(xc)]
         return layers_outline
