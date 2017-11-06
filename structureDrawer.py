@@ -10,6 +10,9 @@ from PyQt5.QtWidgets import QWidget, QLabel
 from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QOpenGLWidget, QSlider,
                              QWidget)
 class DrawData(QOpenGLWidget):
+    xRotationChanged = pyqtSignal(int)
+    yRotationChanged = pyqtSignal(int)
+    zRotationChanged = pyqtSignal(int)
     def __init__(self, parent=None):
         super(DrawData, self).__init__(parent)
 
@@ -19,6 +22,7 @@ class DrawData(QOpenGLWidget):
         self.position = [0,-1,-10]
         self.initialRun = True
         self.spacer = 0.2
+
 
     def draw_cube(self, vec, color=[1,0,1], a=[1,1,0], b= [-1,-1,0]):
         #glBegin(GL_QUADS)
@@ -110,12 +114,12 @@ class DrawData(QOpenGLWidget):
 
     def mousePressEvent(self, event):
         self.lastPos = event.pos()
-        print(event.pos())
+        print("EVENT POST ", event.pos())
 
     def mouseMoveEvent(self, event):
         dx = event.x() - self.lastPos.x()
         dy = event.y() - self.lastPos.y()
-        print(dx, dy)
+        print("CHANGE IN MOV", dx, dy)
 
         self.lastPos = event.pos()
 
