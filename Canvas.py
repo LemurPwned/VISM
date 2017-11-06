@@ -2,15 +2,30 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 
-class Canvas:
-    def __init__(self):
-        pass
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+
+from PyQt5.QtWidgets import QSizePolicy, QPushButton
+from matplotlib.figure import Figure
+
+class Canvas(FigureCanvas):
+    def __init__(self, parent=None, width=800, height=600, dpi=100):
+        self.fig = Figure(figsize=(width, height), dpi=dpi)
+        FigureCanvas.__init__(self, self.fig)
+        self.setParent(parent)
+        FigureCanvas.setSizePolicy(self,
+                QSizePolicy.Expanding,
+                QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+        #self.title = "default"
+        #self.i = 0
 
     def createPlotCanvas(self):
+        #self.fig = plt.figure()
         self.canvas_type = 'panel'
-        self.fig = plt.figure()
         self.fig.suptitle(self.title)
-        self.ax_pl = plt.subplot(111)
+
+        self.ax_pl = self.fig.add_subplot(111)
+        print("test")
         self.i = self.i
         self.null_data = [x for x in range(self.iterations)]
         a_handler = self.ax_pl.plot(self.null_data,

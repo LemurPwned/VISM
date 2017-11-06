@@ -11,26 +11,29 @@ from structureDrawer import DrawData
 from Canvas import Canvas
 from Parser import Parser
 from animationSettings import AnimationSettings
+from spin_gl import GLWidget
 
 class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setMouseTracking(True)
-        self.glWidget = DrawData()
+        #self.openGLWidget = GLWidget()
+        self.openGLWidget = GLWidget()
         self.setupUi(self)
+        #self.verticalLayout.addWidget(self.glWidget)
         self.setWindowTitle("ESE - Early Spins Enviroment")
         self.setGeometry(10,10,1280, 768)
-        self.setupGL()
+        #self.setupGL()
         self.gridSize = 1
 
         self.make1WindowGrid()
         #self.resizeEvent()
 
-        self.addButtons() #temp function
+        #self.addButtons() #temp function
         self.events()
 
-    def setupGL(self):
-        self.openGLWidget.initializeGL()
+    """def setupGL(self):
+        #self.openGLWidget.initializeGL()
 
         self.canvas = DrawData()
         self.canvas.initialSettings()
@@ -38,7 +41,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
 
         timer = QTimer(self)
         timer.timeout.connect(self.openGLWidget.update)
-        timer.start(0)
+        timer.start(0)"""
 
     def events(self):
         #FILE SUBMENU
@@ -78,18 +81,12 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
             return 0
         #Parser.set_event_handler()
 
-        
+
         #Parser.show_progress_window()
 
         rawVectorData, omf_header, odt_data =  Parser.readFolder(directory)
         print(odt_data)
 
-
-
-
-    @pyqtSlot(int)
-    def progressHandler(self, index):
-        print(index)
 
     def showAnimationSettings(self):
         self.animationSettingsWindow = AnimationSettings()
@@ -163,16 +160,6 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
             self.canvasPlot3 = PlotCanvas(self.gridSize, self, width=5, height=4)
         self.canvasPlot3.setGeometry(middleWidthPos + 5, middleHeightPos + 5, (self.width()/2-5), (self.height()/2)-50)
         self.canvasPlot3.show()
-
-    def addButtons(self):
-        '''temp function unless mouse operation disabled'''
-        camLeft = QPushButton("Camera Left", self)
-        camRight = QPushButton("Camera Right", self)
-        camLeft.move(1000, 200)
-        camRight.move(1000, 250)
-        camLeft.clicked.connect(self.canvas.cameraLeft)
-        camRight.clicked.connect(self.canvas.cameraRight)
-        #self.openGLWidget.update()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

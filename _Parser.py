@@ -3,6 +3,7 @@ import pandas
 import numpy
 import time
 
+
 def _getOdtData():
     test_filename = "test_folder/voltage-spin-diode.odt"
     test_odt_data, stages = Parser.getOdtData(test_filename)
