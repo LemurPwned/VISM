@@ -10,7 +10,7 @@ from spin_gl import GLWidget
 from MainWindowTemplate import Ui_MainWindow
 from Canvas import Canvas
 
-class Window(QMainWindow, Ui_MainWindow, QWidget):
+class Window(QWidget):
 
     def __init__(self):
         super(Window, self).__init__()

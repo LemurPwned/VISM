@@ -89,9 +89,9 @@ class GLWidget(QOpenGLWidget):
         #self.gl.initializeOpenGLFunctions()
         gl.glClearColor(1.0, 1.0, 1.0, 1.0);
         self.object = self.first_draw()
-        gl.glShadeModel(gl.GL_FLAT)
-        gl.glEnable(gl.GL_DEPTH_TEST)
-        gl.glEnable(gl.GL_CULL_FACE)
+        # gl.glShadeModel(gl.GL_FLAT)
+        #gl.glEnable(gl.GL_DEPTH_TEST)
+        #gl.glEnable(gl.GL_CULL_FACE)
         print(self.getOpenglInfo())
 
     def draw_cordinate_system(self, size=5):
