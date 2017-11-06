@@ -1,14 +1,15 @@
 import sys
 
-from PyQt5.QtCore import QTimer, QPoint
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
+from PyQt5.QtCore import QTimer, QPoint, pyqtSlot
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog
 from PyQt5.QtWidgets import (QHBoxLayout, QOpenGLWidget, QSlider,
                              QWidget)
 from MainWindowTemplate import Ui_MainWindow
 
 #from mainWindow import GLWidget, Helper
 from structureDrawer import DrawData
-from plotCanvas import PlotCanvas
+from Canvas import Canvas
+from Parser import Parser
 from animationSettings import AnimationSettings
 
 class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
@@ -42,7 +43,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
     def events(self):
         #FILE SUBMENU
         #self.actionLoad_File.clicked.connect()
-        #self.actionLoad_Directory.clicked.connect()
+        self.actionLoad_Directory.triggered.connect(self.loadDirectory)
 
         #EDIT SUBMENU
         #self.actionPlot.clicked.connect()
@@ -66,6 +67,30 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         elif self.gridSize == 4:
             self.make4WindowsGrid()
 
+    def loadDirectory(self):
+        #directory = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+
+
+
+        directory = "/Users/pawelkulig/Desktop/spintronics-visual/data/firstData"
+
+        if directory == None or directory == "":
+            return 0
+        #Parser.set_event_handler()
+
+        
+        #Parser.show_progress_window()
+
+        rawVectorData, omf_header, odt_data =  Parser.readFolder(directory)
+        print(odt_data)
+
+
+
+
+    @pyqtSlot(int)
+    def progressHandler(self, index):
+        print(index)
+
     def showAnimationSettings(self):
         self.animationSettingsWindow = AnimationSettings()
 
@@ -87,7 +112,6 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
             pass
 
         self.openGLWidget.setGeometry(0, 0, self.width()-100, self.height()-100)
-
 
     def make2WindowsGrid(self):
         self.gridSize = 2
