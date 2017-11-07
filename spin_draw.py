@@ -38,7 +38,7 @@ class Window(QWidget):
         self.ySlider.setValue(345 * 16)
         self.zSlider.setValue(0 * 16)
 
-        self.setWindowTitle("Hello GL")
+        self.setWindowTitle("Early Spin Struct")
 
 
     def createSlider(self):

@@ -36,8 +36,18 @@ class Canvas:
         @param **kwargs are the arguments to be passed to the main plot iterator
         """
         #TODO: define minimum_list in arguments and force SPECIFIC keys
+        self.parameter_check(kwargs)
         for k, v in kwargs.items():
             setattr(self, k, v)
+
+    def parameter_check(self, **kwargs):
+        minimum_parameter_list = ['xnodes', 'ynodes', 'znodes',
+                                  'xbase', 'ybase', 'zbase']
+        for parameter in minimum_parameter_list:
+            if not parameter in kwargs.keys():
+                print("No matching parameter has been found in provided list")
+                print("minimum_parameter_list is not provided")
+                raise TypeError
 
     def __str__(self):
         return str(self.__dict__)
