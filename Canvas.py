@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QSizePolicy, QPushButton
 from matplotlib.figure import Figure
 
 class Canvas(FigureCanvas):
-    def __init__(self, parent=None, width=800, height=600, dpi=100):
+    def __init__(self, parent=None, width=8, height=6, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
@@ -25,7 +25,7 @@ class Canvas(FigureCanvas):
         self.fig.suptitle(self.title)
 
         self.ax_pl = self.fig.add_subplot(111)
-        print("test")
+        #print("test")
         self.i = self.i
         self.null_data = [x for x in range(self.iterations)]
         a_handler = self.ax_pl.plot(self.null_data,
@@ -44,7 +44,7 @@ class Canvas(FigureCanvas):
         self.i += 1
 
     def runCanvas(self):
-        plt.show()
+        self.draw()
 
     def shareData(self, **kwargs):
         """

@@ -1,4 +1,3 @@
-
 class Animation:
     def __init__(self, odtData, canvas=None, external_iteration=None, update_function=None):
         self.odtData = odtData
@@ -25,10 +24,14 @@ class Animation:
     def iterator(self, value):
         self._iterator = iterator
 
+    @iterator.getter
+    def iterator(self, value):
+        return self._iterator
+
     def reshape_data(self):
         '''
         Z is number of z layer in structure.
-        Function is reshaping the data so that plotting might happen faster - in omf files data are in odd order. First we increment x with y, z equals 0. If we reach end of x we increment y and again increment x. This function reshapes data structure to 2D (we only need x and y in 2D plot) so we take number of z layer and generate meshgrid to plot in 2D matplotlib
+        Function is reshaping the data so that plotting might happen faster - in omf files data are in odd order. First we increment x with y = const, z equals 0. If we reach end of x we increment y by one and again increment x with y = const. This function reshapes data structure to 2D (we only need x and y in 2D plot) so we take number of z layer and generate meshgrid to plot in 2D matplotlib
         '''
         xc = int(self.base_data['xnodes'])
         yc = int(self.base_data['ynodes'])
