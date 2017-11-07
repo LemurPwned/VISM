@@ -124,7 +124,8 @@ class GLWidget(QOpenGLWidget):
             self.setZRotation(self.zRot + 8 * dx)
         elif event.buttons() & Qt.MidButton:
             print("MOUSE DRAG")
-            gl.glScalef(self.xRot, self.yRot, 1.0)
+            print(dx, dy)
+            gl.glScalef(self.xRot*dx, self.yRot*dy, 1.0)
         self.lastPos = event.pos()
 
     def makeObject(self):

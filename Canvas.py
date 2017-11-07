@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
-
+import time
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 from PyQt5.QtWidgets import QSizePolicy, QPushButton
@@ -16,35 +16,41 @@ class Canvas(FigureCanvas):
                 QSizePolicy.Expanding,
                 QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
-        #self.title = "default"
-        #self.i = 0
 
     def createPlotCanvas(self):
-        #self.fig = plt.figure()
         self.canvas_type = 'panel'
         self.fig.suptitle(self.title)
-
         self.ax_pl = self.fig.add_subplot(111)
-        #print("test")
         self.i = self.i
         self.null_data = [x for x in range(self.iterations)]
         a_handler = self.ax_pl.plot(self.null_data,
             self.graph_data[0:self.i] + self.null_data[self.i:], 'ro')[0]
         self.ax_pl.hpl = a_handler
-        self.ax_pl.axis([0, self.iterations, np.min(self.graph_data), np.max(self.graph_data)])
+        self.ax_pl.axis([0, self.iterations, np.min(self.graph_data),
+                            np.max(self.graph_data)])
         self.ax_pl.set_autoscale_on(False)
         self.ax_pl.set_title('{}/{}'.format(self.i, self.iterations))
 
     def replot(self):
         self.ax_pl.hpl.set_ydata(self.graph_data[0:self.i]+self.null_data[self.i:])
         self.ax_pl.set_title('{}/{}'.format(self.i, self.iterations))
-        self.ax_pl.get_figure().canvas.draw()
 
     def increaseIterator(self):
         self.i += 1
 
-    def runCanvas(self):
-        self.draw()
+    def refresh(self):
+        self.ax_pl.get_figure().canvas.draw()
+
+    def loop(self, scheduler=0.1):
+        i = 0
+        while(self.iterations):
+            time.sleep(scheduler)
+            i += 1
+            self.increaseIterator()
+            self.refresh()
+            self.replot()
+            if (i == self.iterations):
+                i = 0
 
     def shareData(self, **kwargs):
         """
@@ -59,7 +65,7 @@ class Canvas(FigureCanvas):
                                   'xbase', 'ybase', 'zbase']
         for parameter in minimum_parameter_list:
             if not parameter in kwargs.keys():
-                print("No matching parameter has been found in provided list")
+                print("No matching parameter has been found in the provided list")
                 print("minimum_parameter_list is not provided")
                 raise TypeError
 
