@@ -3,7 +3,7 @@ from Parser import Parser
 from threading import Thread
 
 def _shareData():
-    test_odt = "test_folder/voltage-spin-diode.odt"
+    test_odt = "data/firstData/voltage-spin-diode.odt"
     odt_data = Parser.getOdtData(test_odt)
     print("DETECTED COLUMNS:")
     print(odt_data[0].columns)
@@ -25,7 +25,7 @@ def _shareData():
     return new_canvas
 
 def _runCanvas(canvas):
-    print("DONE CREATING CANVAS... PREPARING OT RUN...")
+    print("DONE CREATING CANVAS... PREPARING OF RUN...")
     canvas.runCanvas()
 
 
@@ -40,4 +40,5 @@ def _iterateCanvas(canvas):
 if __name__ == "__main__":
     canvas = _shareData()
     _runCanvas(canvas)
+    print("test")
     _iterateCanvas(canvas)

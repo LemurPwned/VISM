@@ -20,7 +20,7 @@ class Ui_MainWindow(object):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.openGLWidget = QtWidgets.QOpenGLWidget(self.verticalLayoutWidget)
+        #self.openGLWidget = QtWidgets.QOpenGLWidget(self.verticalLayoutWidget)
         self.openGLWidget.setObjectName("openGLWidget")
         self.verticalLayout.addWidget(self.openGLWidget)
         self.statusBar_label = QtWidgets.QLabel(self.verticalLayoutWidget)
@@ -99,4 +99,3 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
-

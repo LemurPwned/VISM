@@ -3,6 +3,7 @@ import pandas
 import numpy
 import time
 
+
 def _getOdtData():
     test_filename = "test_folder/voltage-spin-diode.odt"
     test_odt_data, stages = Parser.getOdtData(test_filename)
@@ -30,8 +31,9 @@ def _readFolderBinary():
     print("\nBINARY FILE TEST ... ")
     test_folder = "data/0520nm"
     start = time.time()
-    rawVectorData, omf_header, odtData = Parser.readFolder(test_folder)
+    rawVectorData, omf_header, odtData, stages = Parser.readFolder(test_folder)
     stop = time.time()
+    assert isinstance(stages, int)
     assert isinstance(omf_header, dict)
     assert isinstance(odtData, pandas.DataFrame)
     assert isinstance(rawVectorData, numpy.ndarray)

@@ -111,3 +111,5 @@ ENV/
 
 #common virtualenv
 spintronics/
+
+.DS_Store

@@ -16,9 +16,9 @@ class PlotCanvas(FigureCanvas):
     def __init__(self, gridSize, parent=None, width=5, height=4, dpi=dpi):
         PlotCanvas.objectCounter += 1
         self.data = []
-        self.plotType = "r-"
-        self.plotTitle = "Plot"
-        self.gridSize = gridSize
+        #self.plotType = "r-"
+        #self.plotTitle = "Plot"
+        #self.gridSize = gridSize
 
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
@@ -30,8 +30,8 @@ class PlotCanvas(FigureCanvas):
                 QSizePolicy.Expanding,
                 QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
-        self.plot()
-        self.selectDataToPlot()
+        #self.plot()
+        #self.selectDataToPlot()
 
     def selectDataToPlot(self):
         self.selectDataButton = QPushButton("Select Data")
@@ -46,7 +46,7 @@ class PlotCanvas(FigureCanvas):
         #data = [random.random() for i in range(25)]
         ax = self.figure.add_subplot(111)
         ax.plot(self.data, self.plotType)
-        ax.set_title(self.plotTitle)
+        #ax.set_title(self.plotTitle)
         self.draw()
 
 
