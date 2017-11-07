@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QTimer, QPoint
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
-from animationSettingsTemplate import Ui_AnimationSettings
+from Windows.animationSettingsTemplate import Ui_AnimationSettings
 
 class AnimationSettings(QWidget, Ui_AnimationSettings):
     animationSpeed = 1.0

@@ -8,7 +8,7 @@ def _shareData():
     print("DETECTED COLUMNS:")
     print(odt_data[0].columns)
     picked_column = 'MR::Energy'
-
+    print(odt_data[1])
     #create data dict that is then passed to canvas
     #this is the exemplary dict, the order must be preserved
     data_dict = {

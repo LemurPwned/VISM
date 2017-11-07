@@ -8,10 +8,6 @@ from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QOpenGLWidget, QSlider,
 from PyQt5.QtGui import QColor
 import numpy as np
 class GLWidget(QOpenGLWidget):
-    xRotationChanged = pyqtSignal(int)
-    yRotationChanged = pyqtSignal(int)
-    zRotationChanged = pyqtSignal(int)
-
     def __init__(self, parent=None):
         super(GLWidget, self).__init__(parent)
         self.object = 0
@@ -24,7 +20,6 @@ class GLWidget(QOpenGLWidget):
         self.lastPos = QPoint()
 
         self.initializeGL()
-
 
     def getOpenglInfo(self):
         info = """
@@ -51,21 +46,18 @@ class GLWidget(QOpenGLWidget):
         angle = self.normalizeAngle(angle)
         if angle != self.xRot:
             self.xRot = angle
-            self.xRotationChanged.emit(angle)
             self.update()
 
     def setYRotation(self, angle):
         angle = self.normalizeAngle(angle)
         if angle != self.yRot:
             self.yRot = angle
-            self.yRotationChanged.emit(angle)
             self.update()
 
     def setZRotation(self, angle):
         angle = self.normalizeAngle(angle)
         if angle != self.zRot:
             self.zRot = angle
-            self.zRotationChanged.emit(angle)
             self.update()
 
     def draw_vector(self, vec, color=[0, 0, 0], a=[1,1,0], b= [-1,-1,0]):

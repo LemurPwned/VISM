@@ -9,41 +9,15 @@ import struct
 from binaryornot.check import is_binary
 from multiprocessing import Pool
 
-from Progress import ProgressBar_Dialog
+from Windows.Progress import ProgressBar_Dialog
 from PyQt5.QtWidgets import QDialog, QProgressBar, QLabel, QHBoxLayout
 
-class Parser(QDialog):
+class Parser():
     progressBar = 0
 
 
     def __init__(self):
         super(Parser ,self).__init__()
-        self.init_ui()
-        #self.working_folder = folder
-
-    #@staticmethod
-    def init_ui(self):
-        # Creating a label
-        self.progressLabel = QLabel('Progress Bar:', self)
-
-        # Creating a progress bar and setting the value limits
-        progressBar = QProgressBar(self)
-        progressBar.setMaximum(100)
-        progressBar.setMinimum(0)
-
-        # Creating a Horizontal Layout to add all the widgets
-        self.hboxLayout = QHBoxLayout(self)
-
-        # Adding the widgets
-        self.hboxLayout.addWidget(self.progressLabel)
-        self.hboxLayout.addWidget(self.progressBar)
-
-        # Setting the hBoxLayout as the main layout
-        self.setLayout(self.hboxLayout)
-        self.setWindowTitle('Dialog with Progressbar')
-
-        self.show()
-
 
     @staticmethod
     def update_progress_bar(current_i, max_i):
@@ -54,7 +28,7 @@ class Parser(QDialog):
         """
 
         k = int(current_i*100/max_i)
-        progressBar.setValue(k)
+        #progressBar.setValue(k)
         #pgBar = k
         sys.stdout.write('\r')
         sys.stdout.write('[%-100s] %d%%'%('='*(k+1),k+1))
