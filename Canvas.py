@@ -51,7 +51,6 @@ class Canvas(FigureCanvas):
         @param **kwargs are the arguments to be passed to the main plot iterator
         """
         #TODO: define minimum_list in arguments and force SPECIFIC keys
-        self.parameter_check(kwargs)
         for k, v in kwargs.items():
             setattr(self, k, v)
 

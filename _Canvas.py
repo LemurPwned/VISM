@@ -24,6 +24,7 @@ def _shareData():
 
     return new_canvas
 
+
 def _runCanvas(canvas):
     print("DONE CREATING CANVAS... PREPARING OF RUN...")
     canvas.runCanvas()
@@ -40,5 +41,4 @@ def _iterateCanvas(canvas):
 if __name__ == "__main__":
     canvas = _shareData()
     _runCanvas(canvas)
-    print("test")
     _iterateCanvas(canvas)
