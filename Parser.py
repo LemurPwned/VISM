@@ -12,13 +12,12 @@ from multiprocessing import Pool
 from Windows.Progress import ProgressBar_Dialog
 from PyQt5.QtWidgets import QDialog, QProgressBar, QLabel, QHBoxLayout
 
-class Parser(QDialog):
+class Parser():
     progressBar = 0
 
 
     def __init__(self):
         super(Parser ,self).__init__()
-        self.init_ui()
 
     @staticmethod
     def update_progress_bar(current_i, max_i):
@@ -76,7 +75,7 @@ class Parser(QDialog):
             if not omf_header:
                 print("no .omf file has been found")
                 return
-        return rawVectorData, omf_header, odt_data
+        return rawVectorData, omf_header, odt_data, stages
 
     @staticmethod
     def readBinary(files_in_directory):
