@@ -97,15 +97,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
                         'graph_data': self.odt_data[picked_column].tolist(),
                         'title' : picked_column
                         }
-            data_3d = {
-                        'i': 0,
-                        'iterations': self.stages,
-                        'omf_header': self.omf_header,
-                        'multiple_data': self.rawVectorData,
-                        'current_layer': 1,
-                        'title' : picked_column
-                        }
-            self.canvasPlot1.shareData(**data_3d)
+            self.canvasPlot1.shareData(**data_dict)
             self.canvasPlot1.createPlotCanvas()
             #TODO: FIND A WAY TO KILL THIS THREAD EXTERNALLY
             try:
@@ -144,7 +136,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         try:
             self.canvasPlot1.show()
         except:
-            self.canvasPlot1 = Canvas3D(self)
+            self.canvasPlot1 = Canvas(self)
         self.canvasPlot1.setGeometry(middlePos+5, 0, self.width()/2-5, self.height())
         self.canvasPlot1.show()
 
