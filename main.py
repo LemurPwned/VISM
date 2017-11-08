@@ -11,10 +11,12 @@ from Canvas import Canvas
 from Parser import Parser
 from Windows.animationSettings import AnimationSettings
 from spin_gl import GLWidget
+from Windows.PlotSettings import PlotSettings
 
 class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
+        self.odt_data = ""
         self.openGLWidget = GLWidget()
         '''IT IS CRUCIAL TO COMMENT OUT IN MainWindowTemplate.py THIS LINE:
         self.openGLWidget = QtWidgets.QOpenGLWidget(self.verticalLayoutWidget)
@@ -29,9 +31,6 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.make1WindowGrid()
         self.events()
 
-    def tests(self):
-        pass
-
     def events(self):
         '''creates listeners for all menu buttons'''
         #FILE SUBMENU
@@ -39,7 +38,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.actionLoad_Directory.triggered.connect(self.loadDirectory)
 
         #EDIT SUBMENU
-        #self.actionPlot.clicked.connect()
+        self.actionPlot.triggered.connect(self.showPlotSettings)
         self.actionAnimation.triggered.connect(self.showAnimationSettings)
 
         #VIEW SUBMENU
@@ -63,45 +62,53 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
 
     def loadDirectory(self):
         '''Loads whole directory based on Parse class as simple as BHP'''
-        #directory = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
-
-
-
-        directory = "/Users/pawelkulig/Desktop/spintronics-visual/data/firstData"
+        directory = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
 
         if directory == None or directory == "":
             return 0
-        #Parser.set_event_handler()
 
+        self.rawVectorData, self.omf_header, self.odt_data, self.stages =  Parser.readFolder(directory)
 
-        #Parser.show_progress_window()
-
-        #_, _, self.odt_data =  Parser.readFolder(directory)
-        self.odt_data = Parser.getOdtData("data/firstData/voltage-spin-diode.odt")
-        picked_column = 'MR::Energy'
+        '''picked_column = 'MR::Energy'
 
         if self.gridSize > 1:
 
             data_dict = {
                         'i': 0,
-                        'iterations': self.odt_data[1],
-                        'graph_data': self.odt_data[0][picked_column].tolist(),
+                        'iterations': stages,
+                        'graph_data': self.odt_data[picked_column].tolist(),
                         'title' : picked_column
                         }
 
             self.canvasPlot1.shareData(**data_dict)
             self.canvasPlot1.createPlotCanvas()
-            self.canvasPlot1.runCanvas()
-
-
-
+            self.canvasPlot1.runCanvas()'''
 
     def showAnimationSettings(self):
         '''Shows window to change animations settings'''
         self.animationSettingsWindow = AnimationSettings()
 
     def showPlotSettings(self):
-        pass
+
+        self.plotSettingsWindow = PlotSettings(list(self.odt_data), self.gridSize)
+        self.plotSettingsWindow.setEventHandler(self.plotSettingsReceiver)
+        #plotSettingsWindow.show()
+
+    def plotSettingsReceiver(self, value):
+        picked_column = value[0][0]
+
+        if self.gridSize > 1:
+
+            data_dict = {
+                        'i': 0,
+                        'iterations': self.stages,
+                        'graph_data': self.odt_data[picked_column].tolist(),
+                        'title' : picked_column
+                        }
+
+            self.canvasPlot1.shareData(**data_dict)
+            self.canvasPlot1.createPlotCanvas()
+            self.canvasPlot1.runCanvas()
 
     def make1WindowGrid(self):
         '''Splits windows into 1 window :P just to show only OpenGLWidget and hide all plots.'''
