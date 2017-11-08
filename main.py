@@ -6,9 +6,11 @@ from PyQt5.QtWidgets import (QHBoxLayout, QOpenGLWidget, QSlider,
                              QWidget)
 from Windows.MainWindowTemplate import Ui_MainWindow
 
-#from mainWindow import GLWidget, Helper
 from Canvas import Canvas
+from Canvas3D import Canvas3D
+
 from Parser import Parser
+
 from Windows.animationSettings import AnimationSettings
 from spin_gl import GLWidget
 import threading
@@ -66,22 +68,32 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
     def loadDirectory(self):
         '''Loads whole directory based on Parse class as simple as BHP'''
         directory = "./data/firstData"
-
+        self.rawVectorData, self.omf_header, self.odt_data, self.stages = Parser.readFolder(directory)
         if directory == None or directory == "":
             return 0
-        self.odt_data = Parser.getOdtData("data/firstData/voltage-spin-diode.odt")
+
+        #odt_data = Parser.getOdtData("data/firstData/voltage-spin-diode.odt")
         picked_column = 'MR::magnetoresistance'
 
         if self.gridSize > 1:
 
-            data_dict = {
+            new_data_dict = {
                         'i': 0,
-                        'iterations': self.odt_data[1],
-                        'graph_data': self.odt_data[0][picked_column].tolist(),
-                        'title' : picked_column
+                        'iterations': self.stages,
+                        'multiple_data': self.rawVectorData,
+                        'current_layer' : 1,
+                        'omf_header': self.omf_header,
+                        'title' : '3d layers'
                         }
 
-            self.canvasPlot1.shareData(**data_dict)
+            # data_dict = {
+            #             'i': 0,
+            #             'iterations': self.odt_data[1],
+            #             'graph_data': self.odt_data[0][picked_column].tolist(),
+            #             'title' : picked_column
+            #             }
+
+            self.canvasPlot1.shareData(**new_data_dict)
             self.canvasPlot1.createPlotCanvas()
             #TODO: FIND A WAY TO KILL THIS THREAD EXTERNALLY
             try:
@@ -127,9 +139,8 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         try:
             self.canvasPlot1.show()
         except:
-            self.canvasPlot1 = Canvas(self)
+            self.canvasPlot1 = Canvas3D(self)
         self.canvasPlot1.setGeometry(middlePos+5, 0, self.width()/2-5, self.height())
-        #self.canvasPlot1.resize((, self.height()-25)
         self.canvasPlot1.show()
 
         try:

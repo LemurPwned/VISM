@@ -58,9 +58,9 @@ class Parser():
             return
         print(odt_file)
         odt_data, stages = Parser.getOdtData(odt_file[0])
-
+        stages = 10
         if not is_binary(files_in_directory[0]):
-            rawVectorData = Parser.readText(files_in_directory)
+            rawVectorData = Parser.readText(files_in_directory[0:10])
             omf_file_for_header = glob.glob(os.path.join(directory, '*.omf'))
             # virtually any will do
             if not omf_file_for_header:
@@ -166,7 +166,7 @@ class Parser():
     @staticmethod
     def getRawVectors(filename):
         """
-        processes a .omf filename into a numpy array of vecotrs
+        processes a .omf filename into a numpy array of vectors
         @param .omf text file
         @return returns raw_vectors from fortran lists
         """
