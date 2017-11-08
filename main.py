@@ -91,24 +91,28 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         picked_column = value[0][0]
 
         if self.gridSize > 1:
-
             data_dict = {
                         'i': 0,
                         'iterations': self.stages,
                         'graph_data': self.odt_data[picked_column].tolist(),
                         'title' : picked_column
                         }
-
-            self.canvasPlot1.shareData(**data_dict)
+            data_3d = {
+                        'i': 0,
+                        'iterations': self.stages,
+                        'omf_header': self.omf_header,
+                        'multiple_data': self.rawVectorData,
+                        'current_layer': 1,
+                        'title' : picked_column
+                        }
+            self.canvasPlot1.shareData(**data_3d)
             self.canvasPlot1.createPlotCanvas()
-            #self.canvasPlot1.runCanvas()
-
             #TODO: FIND A WAY TO KILL THIS THREAD EXTERNALLY
             try:
                 threading.Thread(target=self.canvasPlot1.loop).start()
             except RuntimeError:
                 print("THREADS CLOSED")
-                
+
     def make1WindowGrid(self):
         '''Splits windows into 1 window :P just to show only OpenGLWidget
         and hide all plots.'''
@@ -140,7 +144,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         try:
             self.canvasPlot1.show()
         except:
-            self.canvasPlot1 = Canvas(self)
+            self.canvasPlot1 = Canvas3D(self)
         self.canvasPlot1.setGeometry(middlePos+5, 0, self.width()/2-5, self.height())
         self.canvasPlot1.show()
 
