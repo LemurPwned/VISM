@@ -19,7 +19,7 @@ def _readFolderText():
     print("\nTEXT FILE TEST ...")
     test_folder = "data/firstData"
     start = time.time()
-    rawVectorData, omf_header, odtData = Parser.readFolder(test_folder)
+    rawVectorData, omf_header, odtData, stages = Parser.readFolder(test_folder)
     stop = time.time()
     assert isinstance(omf_header, dict)
     assert isinstance(odtData, pandas.DataFrame)

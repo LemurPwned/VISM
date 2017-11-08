@@ -44,6 +44,5 @@ class Animation:
         self.dx, self.dy = np.meshgrid(x,y)
 
 
-
 if __name__ == "__main__":
     anim = Animation()

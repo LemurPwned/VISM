@@ -15,7 +15,6 @@ from PyQt5.QtWidgets import QDialog, QProgressBar, QLabel, QHBoxLayout
 class Parser():
     progressBar = 0
 
-
     def __init__(self):
         super(Parser ,self).__init__()
 
@@ -26,10 +25,7 @@ class Parser():
         @param current_i current level loading cap of whole progress bar
         @param max_i maximum level loading cap of the progress bar
         """
-
         k = int(current_i*100/max_i)
-        #progressBar.setValue(k)
-        #pgBar = k
         sys.stdout.write('\r')
         sys.stdout.write('[%-100s] %d%%'%('='*(k+1),k+1))
         sys.stdout.flush()
@@ -52,7 +48,8 @@ class Parser():
         files_in_directory = [os.path.join(directory, filename)
                 for filename in files_in_directory if filename.endswith('.omf')]
 
-        odt_file = glob.glob(os.path.join(directory, '*.odt')) # look for .odt in current directory
+        odt_file = glob.glob(os.path.join(directory, '*.odt'))
+        # look for .odt in current directory
         if len(odt_file) > 1:
             print(".odt file extension conflict (too many)")
             return
@@ -64,7 +61,8 @@ class Parser():
 
         if not is_binary(files_in_directory[0]):
             rawVectorData = Parser.readText(files_in_directory)
-            omf_file_for_header = glob.glob(os.path.join(directory, '*.omf')) # virtually any will do
+            omf_file_for_header = glob.glob(os.path.join(directory, '*.omf'))
+            # virtually any will do
             if not omf_file_for_header:
                 print("no .omf file has been found")
                 return
