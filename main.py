@@ -13,11 +13,13 @@ from Parser import Parser
 
 from Windows.animationSettings import AnimationSettings
 from spin_gl import GLWidget
+from Windows.PlotSettings import PlotSettings
 import threading
 
 class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
+        self.odt_data = ""
         self.openGLWidget = GLWidget()
         '''IT IS CRUCIAL TO COMMENT OUT IN MainWindowTemplate.py THIS LINE:
         self.openGLWidget = QtWidgets.QOpenGLWidget(self.verticalLayoutWidget)
@@ -37,15 +39,13 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.make1WindowGrid()
         self.events()
 
-    def tests(self):
-        pass
-
     def events(self):
         '''creates listeners for all menu buttons'''
         #FILE SUBMENU
         self.actionLoad_Directory.triggered.connect(self.loadDirectory)
 
         #EDIT SUBMENU
+        self.actionPlot.triggered.connect(self.showPlotSettings)
         self.actionAnimation.triggered.connect(self.showAnimationSettings)
 
         #VIEW SUBMENU
@@ -67,47 +67,48 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
 
     def loadDirectory(self):
         '''Loads whole directory based on Parse class as simple as BHP'''
-        directory = "./data/firstData"
-        self.rawVectorData, self.omf_header, self.odt_data, self.stages = Parser.readFolder(directory)
+        directory = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+
         if directory == None or directory == "":
             return 0
 
-        #odt_data = Parser.getOdtData("data/firstData/voltage-spin-diode.odt")
-        picked_column = 'MR::magnetoresistance'
+        self.rawVectorData, self.omf_header, self.odt_data, self.stages =  Parser.readFolder(directory)
 
-        if self.gridSize > 1:
 
-            new_data_dict = {
-                        'i': 0,
-                        'iterations': self.stages,
-                        'multiple_data': self.rawVectorData,
-                        'current_layer' : 1,
-                        'omf_header': self.omf_header,
-                        'title' : '3d layers'
-                        }
 
-            # data_dict = {
-            #             'i': 0,
-            #             'iterations': self.odt_data[1],
-            #             'graph_data': self.odt_data[0][picked_column].tolist(),
-            #             'title' : picked_column
-            #             }
-
-            self.canvasPlot1.shareData(**new_data_dict)
-            self.canvasPlot1.createPlotCanvas()
-            #TODO: FIND A WAY TO KILL THIS THREAD EXTERNALLY
-            try:
-                threading.Thread(target=self.canvasPlot1.loop).start()
-            except RuntimeError:
-                print("THREADS CLOSED")
 
     def showAnimationSettings(self):
         '''Shows window to change animations settings'''
         self.animationSettingsWindow = AnimationSettings()
 
     def showPlotSettings(self):
-        pass
 
+        self.plotSettingsWindow = PlotSettings(list(self.odt_data), self.gridSize)
+        self.plotSettingsWindow.setEventHandler(self.plotSettingsReceiver)
+        #plotSettingsWindow.show()
+
+    def plotSettingsReceiver(self, value):
+        picked_column = value[0][0]
+
+        if self.gridSize > 1:
+
+            data_dict = {
+                        'i': 0,
+                        'iterations': self.stages,
+                        'graph_data': self.odt_data[picked_column].tolist(),
+                        'title' : picked_column
+                        }
+
+            self.canvasPlot1.shareData(**data_dict)
+            self.canvasPlot1.createPlotCanvas()
+            #self.canvasPlot1.runCanvas()
+
+            #TODO: FIND A WAY TO KILL THIS THREAD EXTERNALLY
+            try:
+                threading.Thread(target=self.canvasPlot1.loop).start()
+            except RuntimeError:
+                print("THREADS CLOSED")
+                
     def make1WindowGrid(self):
         '''Splits windows into 1 window :P just to show only OpenGLWidget
         and hide all plots.'''
@@ -139,7 +140,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         try:
             self.canvasPlot1.show()
         except:
-            self.canvasPlot1 = Canvas3D(self)
+            self.canvasPlot1 = Canvas(self)
         self.canvasPlot1.setGeometry(middlePos+5, 0, self.width()/2-5, self.height())
         self.canvasPlot1.show()
 
