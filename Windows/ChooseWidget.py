@@ -14,9 +14,12 @@ class ChooseWidget(QtWidgets.QWidget):
     def events(self):
         self.addButton.clicked.connect(self.returnChoice)
 
+    def setHandler(self, handler):
+        self.handler = handler
 
     def returnChoice(self):
-        print(self.list.currentItem().text())
+        self.handler([self.number, self.list.currentItem().text()])
+        self.close()
 
     def loadAvailWidgets(self):
         self.layout = QtWidgets.QGridLayout(self)
@@ -25,6 +28,6 @@ class ChooseWidget(QtWidgets.QWidget):
         self.list.addItem("3D structure Widget")
         self.list.addItem("2D plot Widget")
         self.list.addItem("2D layer plot Widget")
-        #self.list.addItem("item4")
+        #... and so on
         self.addButton = QtWidgets.QPushButton("Add", self)
         self.layout.addWidget(self.addButton, 0, 1)

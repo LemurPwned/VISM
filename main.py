@@ -107,7 +107,15 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
 
     def buttonClicked(self, number):
         self.new = ChooseWidget(number)
+        self.new.setHandler(self.choosingWidgetReceiver)
 
+    def choosingWidgetReceiver(self, value):
+        #value = [number_of_widget, what_to_add_name];
+        if value[1] == "3D structure Widget":
+            self.openGLWidget = GLWidget()
+            #print(self.groupBox[value[0]].children())
+            #self.groupBox[value[0]].children()[1].hide()
+            self.groupBox[value[0]].children()[0].replaceWidget(self.groupBox[value[0]].children()[1], self.openGLWidget)
 
     def createNewSubWindow(self):
         '''Creating new subwindow'''
