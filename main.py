@@ -1,16 +1,17 @@
 import sys
 
 from PyQt5.QtCore import QTimer, QPoint, pyqtSlot
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QGroupBox, QGridLayout
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QGroupBox, QGridLayout, QLabel
 from PyQt5.QtWidgets import (QHBoxLayout, QOpenGLWidget, QSlider,
                              QWidget)
 from Windows.MainWindowTemplate import Ui_MainWindow
+
 
 from Canvas import Canvas
 from Canvas3D import Canvas3D
 
 from Parser import Parser
-
+from Windows.ChooseWidget import ChooseWidget
 from Windows.animationSettings import AnimationSettings
 from spin_gl import GLWidget
 from Windows.PlotSettings import PlotSettings
@@ -35,7 +36,6 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.setGeometry(10,10,1280, 768) #size of window
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height())
         self.groupBox = []
-        self.layout = []
         self.button = []
 
         self.makeGrid()
@@ -56,6 +56,13 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.action2_Windows_Grid.triggered.connect(self.make2WindowsGrid)
         self.action4_Windows_Grid.triggered.connect(self.make4WindowsGrid)
 
+        #GRID BUTTONS
+        #for i, item in enumerate(self.button):
+        self.button[0].clicked.connect(lambda: self.buttonClicked(0))
+        self.button[1].clicked.connect(lambda: self.buttonClicked(1))
+        self.button[2].clicked.connect(lambda: self.buttonClicked(2))
+        self.button[3].clicked.connect(lambda: self.buttonClicked(3))
+
     def resizeEvent(self, event):
         '''What happens when window is resized'''
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height()-5)
@@ -69,9 +76,6 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
             return 0
 
         self.rawVectorData, self.omf_header, self.odt_data, self.stages =  Parser.readFolder(directory)
-
-
-
 
     def showAnimationSettings(self):
         '''Shows window to change animations settings'''
@@ -101,6 +105,9 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
             except RuntimeError:
                 print("THREADS CLOSED")
 
+    def buttonClicked(self, number):
+        self.new = ChooseWidget(number)
+
 
     def createNewSubWindow(self):
         '''Creating new subwindow'''
@@ -108,12 +115,10 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.button[-1].setFixedSize(150, 50)
 
         self.groupBox.append(QGroupBox("Window " + str(len(self.groupBox)), self))
-        #groupBox2 = QGroupBox("Second Window", self)
 
-        self.layout.append(QGridLayout())
-        self.groupBox[-1].setLayout(self.layout[-1])
-        self.layout[-1].addWidget(self.button[-1])
-        #del (self.groupBox[-1])
+        layout = (QGridLayout())
+        self.groupBox[-1].setLayout(layout)
+        layout.addWidget(self.button[-1])
 
     def makeGrid(self):
         '''Initialize all subwindows'''
@@ -125,7 +130,6 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.gridLayout.addWidget(self.groupBox[-1], 1, 0)
         self.createNewSubWindow()
         self.gridLayout.addWidget(self.groupBox[-1], 1, 1)
-
 
     def make1WindowGrid(self):
         '''Splits window in 1 pane.'''
