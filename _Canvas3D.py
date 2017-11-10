@@ -11,6 +11,16 @@ def _shareData():
                     'title': '3dgraph',
                     'i': 0
     }
+
+
+    # data_dict = {
+    #                 'omf_header':  self.omf_header,
+    #                 'multiple_data': self.rawVectorData,
+    #                 'iterations': self.stages,
+    #                 'current_layer': 1,
+    #                 'title': '3dgraph',
+    #                 'i': 0
+    # }
     new_canvas = Canvas3D()
     new_canvas.shareData(**target_dict)
     new_canvas.createPlotCanvas()

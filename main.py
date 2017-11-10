@@ -72,10 +72,9 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         if directory == None or directory == "":
             return 0
 
-        self.rawVectorData, self.omf_header, self.odt_data, self.stages =  Parser.readFolder(directory)
-
-
-
+        self.rawVectorData, self.omf_header, self.odt_data,\
+                                    self.stages =  Parser.readFolder(directory)
+        self.i = 0
 
     def showAnimationSettings(self):
         '''Shows window to change animations settings'''
@@ -97,6 +96,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
                         'graph_data': self.odt_data[picked_column].tolist(),
                         'title' : picked_column
                         }
+
             self.canvasPlot1.shareData(**data_dict)
             self.canvasPlot1.createPlotCanvas()
             #TODO: FIND A WAY TO KILL THIS THREAD EXTERNALLY
