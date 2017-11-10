@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'UI_files/MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.9
+# Created by: PyQt5 UI code generator 5.9.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -14,26 +14,12 @@ class Ui_MainWindow(object):
         MainWindow.resize(863, 690)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(-1, -1, 851, 651))
-        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setObjectName("verticalLayout")
-        #self.openGLWidget = QtWidgets.QOpenGLWidget(self.verticalLayoutWidget)
-        self.openGLWidget.setObjectName("openGLWidget")
-        self.verticalLayout.addWidget(self.openGLWidget)
-        self.statusBar_label = QtWidgets.QLabel(self.verticalLayoutWidget)
-        self.statusBar_label.setMaximumSize(QtCore.QSize(16777215, 10))
-        self.statusBar_label.setText("")
-        self.statusBar_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.statusBar_label.setObjectName("statusBar_label")
-        self.verticalLayout.addWidget(self.statusBar_label)
-        self.progressBar = QtWidgets.QProgressBar(self.verticalLayoutWidget)
-        self.progressBar.setMaximumSize(QtCore.QSize(16777215, 10))
-        self.progressBar.setProperty("value", 0)
-        self.progressBar.setObjectName("progressBar")
-        self.verticalLayout.addWidget(self.progressBar)
+        self.gridLayoutWidget = QtWidgets.QWidget(self.centralwidget)
+        self.gridLayoutWidget.setGeometry(QtCore.QRect(0, 0, 861, 641))
+        self.gridLayoutWidget.setObjectName("gridLayoutWidget")
+        self.gridLayout = QtWidgets.QGridLayout(self.gridLayoutWidget)
+        self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout.setObjectName("gridLayout")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 863, 22))
@@ -99,3 +85,4 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
+
