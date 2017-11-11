@@ -41,17 +41,17 @@ class Canvas(FigureCanvas):
     def refresh(self):
         self.plot_axis.get_figure().canvas.draw()
 
+    def loop_guard(self):
+        if (self.i >= self.iterations):
+            self.i = 0
+
     def loop(self, scheduler=0.1):
-        i = 0
         while(self.iterations):
-            print(i)
             time.sleep(scheduler)
-            i += 1
             self.increaseIterator()
+            self.loop_guard()
             self.refresh()
             self.replot()
-            if (i == self.iterations):
-                i = 0
 
     def shareData(self, **kwargs):
         """
