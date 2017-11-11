@@ -22,7 +22,7 @@ class ChooseWidget(QtWidgets.QWidget):
             self.handler([self.number, "OpenGL"])
         elif self.list.currentItem().text() == "2D plot Widget":
             self.handler([self.number, "2dPlot"])
-        elif self.list.currentItem.text() == "2D layer plot Widget":
+        elif self.list.currentItem().text() == "2D layer plot Widget":
             self.handler([self.number, "2dLayer"])
 
         self.close()
