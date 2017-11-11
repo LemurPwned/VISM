@@ -18,7 +18,11 @@ class ChooseWidget(QtWidgets.QWidget):
         self.handler = handler
 
     def returnChoice(self):
-        self.handler([self.number, self.list.currentItem().text()])
+        if self.list.currentItem().text() == "3D structure Widget":
+            self.handler([self.number, "OpenGL"])
+        elif self.list.currentItem().text() == "2D plot Widget":
+            self.handler([self.number, "2dPlot"])
+
         self.close()
 
     def loadAvailWidgets(self):
