@@ -19,9 +19,7 @@ class Window(QWidget):
         mainLayout.addWidget(self.glWidget)
         self.setLayout(mainLayout)
 
-
         self.setWindowTitle("Early Spin Struct")
-
 
 
 if __name__ == '__main__':

@@ -15,11 +15,12 @@ class GLWidget(QOpenGLWidget):
         self.xRot = 0
         self.yRot = 0
         self.zRot = 0
-        self.null_object = null_object
+
         self.initialRun = True
         self.spacer = 0.2
         self.lastPos = QPoint()
 
+        self.DATA_FLAG = False
         self.initializeGL()
 
     def getOpenglInfo(self):
@@ -75,12 +76,14 @@ class GLWidget(QOpenGLWidget):
 
     def initializeGL(self):
         gl.glClearColor(1.0, 1.0, 1.0, 1.0);
-        #self.object = self.first_draw()
-        self.object = self.null_object_painter()
+        self.null_object = self.null_object_painter()
         self.current_list = 1
         gl.glShadeModel(gl.GL_FLAT)
         gl.glEnable(gl.GL_DEPTH_TEST)
-        print(self.getOpenglInfo())
+
+    def reinitializeGL(self):
+        self.object = self.first_draw()
+        self.current_list = 2
 
     def draw_cordinate_system(self, size=5):
         self.draw_vector([0, 0, 0, size, 0, 0], [1, 0, 0]) #x
@@ -88,6 +91,9 @@ class GLWidget(QOpenGLWidget):
         self.draw_vector([0, 0, 0, 0, 0, size], [0, 0, 1]) #z
 
     def paintGL(self):
+        if (self.DATA_FLAG):
+             self.reinitializeGL()
+             self.DATA_FLAG = False
         gl.glClear(
             gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         gl.glLoadIdentity()
@@ -131,10 +137,9 @@ class GLWidget(QOpenGLWidget):
             gl.glScalef(self.xRot*dx, self.yRot*dy, 1.0)
         self.lastPos = event.pos()
 
-
     def null_object_painter(self):
-        self.spin_struc = gl.glGenLists(1);
-        gl.glNewList(self.spin_struc, gl.GL_COMPILE);
+        spin_struc = gl.glGenLists(1);
+        gl.glNewList(spin_struc, gl.GL_COMPILE);
         gl.glBegin(gl.GL_QUADS)
         gl.glColor3f(1.0, 0.2, 0.1)
         self.draw_cube([0,0,0])
@@ -144,22 +149,22 @@ class GLWidget(QOpenGLWidget):
         gl.glShadeModel(gl.GL_FLAT);
         gl.glClearColor(0.0, 0.0, 0.0, 0.0);
 
+        return spin_struc
+
     def first_draw(self):
         filename = "./data/firstData/voltage-spin-diode-Oxs_TimeDriver-Magnetization-00-0000800.omf"
         #if openGLWidget.null_object:
         self.vec = Parser.getLayerOutlineFromFile(filename)
 
-        #self.vec = self.rawVectorData[self.i]
-
-        self.spin_struc = gl.glGenLists(2);
-        gl.glNewList(self.spin_struc, gl.GL_COMPILE);
+        spin_struc = gl.glGenLists(2);
+        gl.glNewList(spin_struc, gl.GL_COMPILE);
         self.spins();
         gl.glEndList();
 
         gl.glShadeModel(gl.GL_FLAT);
         gl.glClearColor(0.0, 0.0, 0.0, 0.0);
 
-        return self.spin_struc
+        return spin_struc
 
     def spins(self):
         gl.glBegin(gl.GL_QUADS)

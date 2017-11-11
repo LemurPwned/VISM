@@ -29,7 +29,6 @@ class Parser():
         sys.stdout.write('\r')
         sys.stdout.write('[%-100s] %d%%'%('='*(k+1),k+1))
         sys.stdout.flush()
-        time.sleep(0.02)
 
     @staticmethod
     def readFolder(directory, multipleOmfHeaders=False):
@@ -87,10 +86,10 @@ class Parser():
                             (filename, )) for filename in files_in_directory]
         max_len = len(text_file_results)
         for i, result in enumerate(text_file_results):
-            Parser.update_progress_bar(i, max_len)
             omf_header_data, vector_data = result.get(timeout=12)
             rawVectorData.append(vector_data)
             omf_headers.append(omf_header_data)
+            Parser.update_progress_bar(i, max_len)
         #catch errors, replace with custom exceptions
         if not rawVectorData:
             print("\nNo vectors created")
@@ -114,9 +113,9 @@ class Parser():
                             (filename, )) for filename in files_in_directory]
         max_len = len(text_file_results)
         for i, result in enumerate(text_file_results):
-            Parser.update_progress_bar(i, max_len)
             data = result.get(timeout=12)
             rawVectorData.append(data)
+            Parser.update_progress_bar(i, max_len)
         #catch errors, replace with custom exceptions
         if not rawVectorData:
             print("\nNo vectors created")
