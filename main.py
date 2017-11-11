@@ -1,7 +1,8 @@
 import sys
 
 from PyQt5.QtCore import QTimer, QPoint, pyqtSlot
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QGroupBox, QGridLayout, QLabel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, \
+                            QFileDialog, QGroupBox, QGridLayout, QLabel
 from PyQt5.QtWidgets import (QHBoxLayout, QOpenGLWidget, QSlider,
                              QWidget)
 from Windows.MainWindowTemplate import Ui_MainWindow
@@ -13,8 +14,9 @@ from Canvas3D import Canvas3D
 from Parser import Parser
 from Windows.ChooseWidget import ChooseWidget
 from Windows.animationSettings import AnimationSettings
-from spin_gl import GLWidget
 from Windows.PlotSettings import PlotSettings
+
+from spin_gl import GLWidget
 import threading
 
 class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
@@ -64,7 +66,8 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.button[3].clicked.connect(lambda: self.buttonClicked(3))
 
     def refreshScreen(self):
-        '''weird stuff is happening when u want to update window u need to resize i think this is a bug'''
+        '''weird stuff is happening when u want to update window u need to
+        resize i think this is a bug'''
         self.resize(self.width()-1, self.height())
         self.resize(self.width()+1, self.height())
 
@@ -80,7 +83,8 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         if directory == None or directory == "":
             return 0
 
-        self.rawVectorData, self.omf_header, self.odt_data, self.stages =  Parser.readFolder(directory)
+        self.rawVectorData, self.omf_header, self.odt_data, \
+                        self.stages =  Parser.readFolder(directory)
 
     def showAnimationSettings(self):
         '''Shows window to change animations settings'''
@@ -93,28 +97,63 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         #plotSettingsWindow.show()
 
     def plotSettingsReceiver(self, value):
-        picked_column = value[0][0]
+        self.picked_column = value[0][0]
+        if self.plot_active:
+            self.autorun_plot(plot_type='2d plot')
+        elif self.layer_plot_active:
+            self.autorun_plot(plot_type='2d layer')
 
-        if self.gridSize > 1:
+    def autorun_plot(self, plot_type):
+        if plot_type == '2d plot':
+            data_dict = self.compose_dict()
+            ### check all needed exceptions here
+            if self.gridSize > 1:
+                self.groupBoxCanvas.shareData(**data_dict)
+                self.groupBoxCanvas.createPlotCanvas()
+                try:
+                    threading.Thread(target=self.groupBoxCanvas.loop).start()
+                except RuntimeError:
+                    print("THREADS CLOSED DUE RuntimeError")
+        elif plot_type == '2d layer':
+            data_dict = self.compose_dict(plot_type='2d layer')
+            ### check all needed exceptions here
+            self.groupBoxCanvasLayer.shareData(**data_dict)
+            self.groupBoxCanvasLayer.createPlotCanvas()
+            try:
+                threading.Thread(target=self.groupBoxCanvasLayer.loop).start()
+            except RuntimeError:
+                print("THREADS CLOSED DUE RuntimeError")
+        else:
+            msg = "Wrong plot_type argument"
+            raise ValueError(msg)
+        return data_dict
+
+    def compose_dict(self, plot_type='2d plot'):
+        data_dict = None
+        if plot_type == '2d plot':
             data_dict = {
                         'i': 0,
                         'iterations': self.stages,
-                        'graph_data': self.odt_data[picked_column].tolist(),
-                        'title' : picked_column
+                        'graph_data': self.odt_data[self.picked_column].tolist(),
+                        'title' : self.picked_column
                         }
-            self.canvasPlot1.shareData(**data_dict)
-            self.canvasPlot1.createPlotCanvas()
-            #TODO: FIND A WAY TO KILL THIS THREAD EXTERNALLY
-            try:
-                threading.Thread(target=self.canvasPlot1.loop).start()
-            except RuntimeError:
-                print("THREADS CLOSED")
+        elif plot_type == '2d layer':
+            data_dict = {
+                            'omf_header':  self.omf_header,
+                            'multiple_data': self.rawVectorData,
+                            'iterations': self.stages,
+                            'current_layer': 0,
+                            'title': '3dgraph',
+                            'i': 0
+            }
+        else:
+            msg = "Wrong plot_type argument"
+            raise ValueError(msg)
+        return data_dict
 
     def buttonClicked(self, number):
         self.new = ChooseWidget(number)
         self.new.setHandler(self.choosingWidgetReceiver)
-
-
 
     def choosingWidgetReceiver(self, value):
         #value = [number_of_widget, what_to_add_name];
@@ -123,9 +162,30 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
 
             self.groupBox[value[0]].children()[1].deleteLater()
             self.groupBox[value[0]].children()[1].setParent(None)
-            self.groupBox[value[0]].children()[0].addWidget( self.openGLWidget)
+            self.groupBox[value[0]].children()[0].addWidget(self.openGLWidget)
             self.refreshScreen()
             print(self.groupBox[value[0]].children())
+        if value[1] == '2D plot Widget':
+            #create canvas
+            self.groupBoxCanvas = Canvas()
+
+            self.groupBox[value[0]].children()[1].deleteLater()
+            self.groupBox[value[0]].children()[1].setParent(None)
+            self.groupBox[value[0]].children()[0].addWidget(self.groupBoxCanvas)
+            self.refreshScreen()
+            print(self.groupBox[value[0]].children())
+            self.plot_active = True
+
+        elif value[1] == '2D layer plot Widget':
+            #create canvas
+            self.groupBoxLayer = Canvas3D()
+
+            self.groupBox[value[0]].children()[1].deleteLater()
+            self.groupBox[value[0]].children()[1].setParent(None)
+            self.groupBox[value[0]].children()[0].addWidget(self.groupBoxLayer)
+            self.refreshScreen()
+            print(self.groupBox[value[0]].children())
+            self.layer_plot_active = True
 
     def createNewSubWindow(self):
         '''Creating new subwindow'''
@@ -154,6 +214,8 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.groupBox[-1].hide()
         self.groupBox[-2].hide()
         self.groupBox[-3].hide()
+
+        self.gridSize = 1
         #self.refreshScreen()
 
     def make2WindowsGrid(self):
@@ -161,6 +223,8 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.groupBox[-1].hide()
         self.groupBox[-2].hide()
         self.groupBox[-3].show()
+
+        self.gridSize = 2
         #self.refreshScreen()
 
     def make4WindowsGrid(self):
@@ -168,6 +232,8 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.groupBox[-1].show()
         self.groupBox[-2].show()
         self.groupBox[-3].show()
+
+        self.gridSize = 4
         #self.refreshScreen()
 
 
