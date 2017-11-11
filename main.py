@@ -19,6 +19,8 @@ from Windows.PlotSettings import PlotSettings
 from spin_gl import GLWidget
 import threading
 
+from WidgetHandler import WidgetHandler
+
 class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -27,6 +29,8 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.setWindowTitle("ESE - Early Spins Enviroment")
         self.setGeometry(10,10,1280, 768) #size of window
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height())
+
+        self.panes = [] # keeps all widgets in list of library object that handles Widgets
 
         self.groupBox = [] #we store here groupBoxes for all widgets one Widget in one groupBox
         self.button = [] #we need to store these globaly to set event listeners
@@ -51,10 +55,16 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
 
         #GRID BUTTONS
         #lambda required to pass parameter - which button was pressed
-        self.button[0].clicked.connect(lambda: self.showChooseWidgetSettings(0))
-        self.button[1].clicked.connect(lambda: self.showChooseWidgetSettings(1))
-        self.button[2].clicked.connect(lambda: self.showChooseWidgetSettings(2))
-        self.button[3].clicked.connect(lambda: self.showChooseWidgetSettings(3))
+
+        self.panes[0].button.clicked.connect(lambda:self.showChooseWidgetSettings(0))
+        self.panes[1].button.clicked.connect(lambda:self.showChooseWidgetSettings(1))
+        self.panes[2].button.clicked.connect(lambda:self.showChooseWidgetSettings(2))
+        self.panes[3].button.clicked.connect(lambda:self.showChooseWidgetSettings(3))
+        # self.button[0].clicked.connect(lambda: self.showChooseWidgetSettings(0))
+        # self.button[1].clicked.connect(lambda: self.showChooseWidgetSettings(1))
+        # self.button[2].clicked.connect(lambda: self.showChooseWidgetSettings(2))
+        # self.button[3].clicked.connect(lambda: self.showChooseWidgetSettings(3))
+
 
     def refreshScreen(self):
         '''weird stuff is happening when u want to update window u need to
@@ -159,58 +169,54 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
 
     def choosingWidgetReceiver(self, value):
         '''Data receiver for choosingWidget action'''
-        self.groupBox[value[0]].children()[1].deleteLater()
-        self.groupBox[value[0]].children()[1].setParent(None)
+        self.panes[value[0]].clearBox()
 
         if value[1] == "OpenGL":
-            self.openGLWidget = GLWidget()
-            self.groupBox[value[0]].children()[0].addWidget(self.openGLWidget)
+            self.panes[value[0]].addWidget(GLWidget())
             self.refreshScreen()
-            print(self.groupBox[value[0]].children())
+
         if value[1] == '2dPlot':
-            #create canvas
-            self.groupBoxCanvas = Canvas()
-            self.groupBox[value[0]].children()[0].addWidget(self.groupBoxCanvas)
+            self.panes[value[0]].addWidget(Canvas())
             self.refreshScreen()
-            print(self.groupBox[value[0]].children())
-            self.plot_active = True
 
         elif value[1] == '2dLayer':
-            #create canvas
-            self.groupBoxLayer = Canvas3D()
-            self.groupBox[value[0]].children()[0].addWidget(self.groupBoxLayer)
+            self.panes[value[0]].addWidget(Canvas3D())
             self.refreshScreen()
-            print(self.groupBox[value[0]].children())
-            self.layer_plot_active = True
+
 
     def createNewSubWindow(self):
         '''Helper function creates layout and button for widget selection'''
-        self.button.append(QPushButton("Add Widget", self))
-        self.button[-1].setFixedSize(150, 50)
-
-        self.groupBox.append(QGroupBox("Window " + str(len(self.groupBox)), self))
-
-        layout = (QGridLayout())
-        self.groupBox[-1].setLayout(layout)
-        layout.addWidget(self.button[-1])
+        self.panes.append(WidgetHandler())
+        self.panes[-1].button = QPushButton("Add Widget", self)
+        self.panes[-1].groupBox = QGroupBox("Window " + str(len(self.panes)), self)
+        self.panes[-1].layout = QGridLayout()
 
     def makeGrid(self):
         '''Initialize all subwindows'''
-        self.createNewSubWindow()
-        self.gridLayout.addWidget(self.groupBox[-1], 0, 0)
-        self.createNewSubWindow()
-        self.gridLayout.addWidget(self.groupBox[-1], 0, 1)
-        self.createNewSubWindow()
-        self.gridLayout.addWidget(self.groupBox[-1], 1, 0)
-        self.createNewSubWindow()
-        self.gridLayout.addWidget(self.groupBox[-1], 1, 1)
+        for i in range(4):
+            self.createNewSubWindow()
+        self.gridLayout.addWidget(self.panes[0].groupBox, 0, 0)
+        self.gridLayout.addWidget(self.panes[1].groupBox, 0, 1)
+        self.gridLayout.addWidget(self.panes[2].groupBox, 1, 0)
+        self.gridLayout.addWidget(self.panes[3].groupBox, 0, 0)
+
+        #self.gridLayout.addWidget(self.groupBox[-1], 0, 0)
+        # self.createNewSubWindow()
+        # self.gridLayout.addWidget(self.groupBox[-1], 0, 1)
+        # self.createNewSubWindow()
+        # self.gridLayout.addWidget(self.groupBox[-1], 1, 0)
+        # self.createNewSubWindow()
+        # self.gridLayout.addWidget(self.groupBox[-1], 1, 1)
 
     def make1WindowGrid(self):
         '''Splits window in 1 pane.'''
         self.gridSize = 1
-        self.groupBox[-1].hide()
-        self.groupBox[-2].hide()
-        self.groupBox[-3].hide()
+        self.panes[1].groupBox.hide()
+        self.panes[2].groupBox.hide()
+        self.panes[3].groupBox.hide()
+        #self.groupBox[-1].hide()
+        #self.groupBox[-2].hide()
+        #self.groupBox[-3].hide()
 
         self.gridSize = 1
         #self.refreshScreen()
@@ -218,9 +224,13 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
     def make2WindowsGrid(self):
         '''Splits window in 2 panes.'''
         self.gridSize = 2
-        self.groupBox[-1].hide()
-        self.groupBox[-2].hide()
-        self.groupBox[-3].show()
+
+        self.panes[1].groupBox.show()
+        self.panes[2].groupBox.hide()
+        self.panes[3].groupBox.hide()
+        # self.groupBox[-1].hide()
+        # self.groupBox[-2].hide()
+        # self.groupBox[-3].show()
 
         self.gridSize = 2
         #self.refreshScreen()
@@ -228,12 +238,14 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
     def make4WindowsGrid(self):
         '''Splits window in 4 panes.'''
         self.gridSize = 4
-        self.groupBox[-1].show()
-        self.groupBox[-2].show()
-        self.groupBox[-3].show()
 
-        self.gridSize = 4
-        #self.refreshScreen()
+        self.panes[1].groupBox.show()
+        self.panes[2].groupBox.show()
+        self.panes[3].groupBox.show()
+
+        # self.groupBox[-1].show()
+        # self.groupBox[-2].show()
+        # self.groupBox[-3].show()
 
 
 if __name__ == "__main__":
