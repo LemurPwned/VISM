@@ -63,6 +63,11 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.button[2].clicked.connect(lambda: self.buttonClicked(2))
         self.button[3].clicked.connect(lambda: self.buttonClicked(3))
 
+    def refreshScreen(self):
+        '''weird stuff is happening when u want to update window u need to resize i think this is a bug'''
+        self.resize(self.width()-1, self.height())
+        self.resize(self.width()+1, self.height())
+
     def resizeEvent(self, event):
         '''What happens when window is resized'''
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height()-5)
@@ -109,6 +114,8 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.new = ChooseWidget(number)
         self.new.setHandler(self.choosingWidgetReceiver)
 
+
+
     def choosingWidgetReceiver(self, value):
         #value = [number_of_widget, what_to_add_name];
         if value[1] == "3D structure Widget":
@@ -116,11 +123,8 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
 
             self.groupBox[value[0]].children()[1].deleteLater()
             self.groupBox[value[0]].children()[1].setParent(None)
-            #self.button.pop(value[0])
-            #del(self.)
-
-
             self.groupBox[value[0]].children()[0].addWidget( self.openGLWidget)
+            self.refreshScreen()
             print(self.groupBox[value[0]].children())
 
     def createNewSubWindow(self):
@@ -150,18 +154,21 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.groupBox[-1].hide()
         self.groupBox[-2].hide()
         self.groupBox[-3].hide()
+        #self.refreshScreen()
 
     def make2WindowsGrid(self):
         '''Splits window in 2 panes.'''
         self.groupBox[-1].hide()
         self.groupBox[-2].hide()
         self.groupBox[-3].show()
+        #self.refreshScreen()
 
     def make4WindowsGrid(self):
         '''Splits window in 4 panes.'''
         self.groupBox[-1].show()
         self.groupBox[-2].show()
         self.groupBox[-3].show()
+        #self.refreshScreen()
 
 
 if __name__ == "__main__":
