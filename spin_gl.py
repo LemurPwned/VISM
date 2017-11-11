@@ -83,6 +83,7 @@ class GLWidget(QOpenGLWidget):
 
     def reinitializeGL(self):
         self.object = self.first_draw()
+        #change glCallList from null object (1) to (2) custom object
         self.current_list = 2
 
     def draw_cordinate_system(self, size=5):
@@ -92,8 +93,9 @@ class GLWidget(QOpenGLWidget):
 
     def paintGL(self):
         if (self.DATA_FLAG):
-             self.reinitializeGL()
-             self.DATA_FLAG = False
+            #if data has arrived, then call reinitializeGL ONCE!
+            self.reinitializeGL()
+            self.DATA_FLAG = False
         gl.glClear(
             gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         gl.glLoadIdentity()
@@ -143,6 +145,7 @@ class GLWidget(QOpenGLWidget):
         gl.glBegin(gl.GL_QUADS)
         gl.glColor3f(1.0, 0.2, 0.1)
         self.draw_cube([0,0,0])
+        self.draw_cube([1,1,1])
         gl.glEnd()
         gl.glEndList();
 
