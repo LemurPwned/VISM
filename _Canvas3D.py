@@ -18,9 +18,6 @@ def _shareData():
                     'title': '3dgraph',
                     'i': 0
     }
-    for stage in rawVectorData:
-        for el in stage:
-            print(el)
     new_canvas = Canvas3D()
     new_canvas.shareData(**target_dict)
     new_canvas.createPlotCanvas()

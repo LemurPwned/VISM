@@ -20,30 +20,31 @@ class Canvas(FigureCanvas):
     def createPlotCanvas(self):
         self.canvas_type = 'panel'
         self.fig.suptitle(self.title)
-        self.ax_pl = self.fig.add_subplot(111)
+        self.plot_axis = self.fig.add_subplot(111)
         self.i = self.i
         self.null_data = [x for x in range(self.iterations)]
-        a_handler = self.ax_pl.plot(self.null_data,
+        a_handler = self.plot_axis.plot(self.null_data,
             self.graph_data[0:self.i] + self.null_data[self.i:], 'ro')[0]
-        self.ax_pl.hpl = a_handler
-        self.ax_pl.axis([0, self.iterations, np.min(self.graph_data),
+        self.plot_axis.hpl = a_handler
+        self.plot_axis.axis([0, self.iterations, np.min(self.graph_data),
                             np.max(self.graph_data)])
-        self.ax_pl.set_autoscale_on(False)
-        self.ax_pl.set_title('{}/{}'.format(self.i, self.iterations))
+        self.plot_axis.set_autoscale_on(False)
+        self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
 
     def replot(self):
-        self.ax_pl.hpl.set_ydata(self.graph_data[0:self.i]+self.null_data[self.i:])
-        self.ax_pl.set_title('{}/{}'.format(self.i, self.iterations))
+        self.plot_axis.hpl.set_ydata(self.graph_data[0:self.i]+self.null_data[self.i:])
+        self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
 
     def increaseIterator(self):
         self.i += 1
 
     def refresh(self):
-        self.ax_pl.get_figure().canvas.draw()
+        self.plot_axis.get_figure().canvas.draw()
 
     def loop(self, scheduler=0.1):
         i = 0
         while(self.iterations):
+            print(i)
             time.sleep(scheduler)
             i += 1
             self.increaseIterator()

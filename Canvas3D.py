@@ -8,56 +8,32 @@ import matplotlib.animation as animation
 
 from PyQt5.QtWidgets import QSizePolicy, QPushButton
 from matplotlib.figure import Figure
+from Canvas import Canvas
 
-class Canvas3D(FigureCanvas):
+class Canvas3D(Canvas):
     def __init__(self, parent=None, width=8, height=6, dpi=100):
-        self.fig = Figure(figsize=(width, height), dpi=dpi)
-        FigureCanvas.__init__(self, self.fig)
-        self.setParent(parent)
-        FigureCanvas.setSizePolicy(self,
-                QSizePolicy.Expanding,
-                QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
+        Canvas.__init__(self, parent, width, height, dpi)
 
     def createPlotCanvas(self):
         self.canvas_type = 'panel'
         dx, dy = self.reshape_data()
         self.fig.suptitle(self.title)
-        self.ax_sc = self.fig.add_subplot(111)
+        self.plot_axis = self.fig.add_subplot(111)
         color_array = self.layer[self.i].astype(float)
 
-        scat = self.ax_sc.scatter(dx, dy, c=color_array, cmap=cm.jet)
-        self.ax_sc.hpl = scat
-        self.fig.colorbar(self.ax_sc.hpl)
-        self.ax_sc.axis('scaled')
-        self.ax_sc.axis([0, len(dx), 0, len(dy)])
-        self.ax_sc.set_autoscale_on(False)
-        self.ax_sc.set_title('{}/{}'.format(self.i, self.iterations))
-
-    def increaseIterator(self):
-        self.i += 1
-
-    def refresh(self):
-        print(self.ax_sc.hpl.get_array().shape)
-        self.ax_sc.get_figure().canvas.draw()
-
-    def loop(self, scheduler=0.1):
-        i = 0
-        while(self.iterations):
-            time.sleep(scheduler)
-            i += 1
-            self.increaseIterator()
-            self.replot()
-            self.draw()
-            if (i >= self.iterations):
-                self.i = 0
-                i = 0
+        scat = self.plot_axis.scatter(dx, dy, c=color_array, cmap=cm.jet)
+        self.plot_axis.hpl = scat
+        self.fig.colorbar(self.plot_axis.hpl)
+        self.plot_axis.axis('scaled')
+        self.plot_axis.axis([0, len(dx), 0, len(dy)])
+        self.plot_axis.set_autoscale_on(False)
+        self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
 
     def replot(self):
         color_array = self.layer[self.i].reshape(35*35)
-        self.ax_sc.hpl.set_array(color_array)
+        self.plot_axis.hpl.set_array(color_array)
         #change name if you wish
-        self.ax_sc.set_title('{}/{}'.format(self.i, self.iterations))
+        self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
 
     def reshape_data(self):
         '''
@@ -93,11 +69,3 @@ class Canvas3D(FigureCanvas):
         angle = np.arccos(dot)**scale
         angle[np.isnan(angle)] = 0 # get rid of NaN expressions
         return angle
-
-    def shareData(self, **kwargs):
-        """
-        @param **kwargs are the arguments to be passed to the main plot iterator
-        """
-        #TODO: define minimum_list in arguments and force SPECIFIC keys
-        for k, v in kwargs.items():
-            setattr(self, k, v)
