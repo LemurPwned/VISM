@@ -1,27 +1,22 @@
 import sys
 
 from PyQt5.QtCore import QTimer, QPoint, pyqtSlot
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, \
-                            QFileDialog, QGroupBox, QGridLayout, QLabel
-from PyQt5.QtWidgets import (QHBoxLayout, QOpenGLWidget, QSlider,
-                             QWidget)
+from PyQt5 import QtWidgets
 from Windows.MainWindowTemplate import Ui_MainWindow
 
 
 from Canvas import Canvas
 from Canvas3D import Canvas3D
-
 from Parser import Parser
 from Windows.ChooseWidget import ChooseWidget
 from Windows.animationSettings import AnimationSettings
 from Windows.PlotSettings import PlotSettings
-
+from WidgetHandler import WidgetHandler
 from spin_gl import GLWidget
+
 import threading
 
-from WidgetHandler import WidgetHandler
-
-class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
+class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.odt_data = ""
@@ -32,7 +27,6 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
 
         self.panes = [] # keeps all widgets in list of library object that handles Widgets
 
-        self.gridSize = 0 # how many windows visible
         self.makeGrid() #create grid (4 Widgets) and stores them in arrays
         self.make1WindowGrid() #shows default 1 widget Window
         self.events() #create event listeners
@@ -71,7 +65,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
 
     def loadDirectory(self):
         '''Loads whole directory based on Parse class as simple as BHP'''
-        directory = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+        directory = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
 
         if directory == None or directory == "":
             return 0
@@ -163,9 +157,9 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
     def createNewSubWindow(self):
         '''Helper function creates layout and button for widget selection'''
         self.panes.append(WidgetHandler())
-        self.panes[-1].button = QPushButton("Add Widget", self)
-        self.panes[-1].groupBox = QGroupBox("Window " + str(len(self.panes)), self)
-        self.panes[-1].layout = QGridLayout()
+        self.panes[-1].button = QtWidgets.QPushButton("Add Widget", self)
+        self.panes[-1].groupBox = QtWidgets.QGroupBox("Window " + str(len(self.panes)), self)
+        self.panes[-1].layout = QtWidgets.QGridLayout()
 
     def makeGrid(self):
         '''Initialize all subwindows'''
@@ -176,56 +170,26 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         self.gridLayout.addWidget(self.panes[2].groupBox, 1, 0)
         self.gridLayout.addWidget(self.panes[3].groupBox, 0, 0)
 
-        #self.gridLayout.addWidget(self.groupBox[-1], 0, 0)
-        # self.createNewSubWindow()
-        # self.gridLayout.addWidget(self.groupBox[-1], 0, 1)
-        # self.createNewSubWindow()
-        # self.gridLayout.addWidget(self.groupBox[-1], 1, 0)
-        # self.createNewSubWindow()
-        # self.gridLayout.addWidget(self.groupBox[-1], 1, 1)
-
     def make1WindowGrid(self):
         '''Splits window in 1 pane.'''
-        self.gridSize = 1
         self.panes[1].groupBox.hide()
         self.panes[2].groupBox.hide()
         self.panes[3].groupBox.hide()
-        #self.groupBox[-1].hide()
-        #self.groupBox[-2].hide()
-        #self.groupBox[-3].hide()
-
-        self.gridSize = 1
-        #self.refreshScreen()
 
     def make2WindowsGrid(self):
         '''Splits window in 2 panes.'''
-        self.gridSize = 2
-
         self.panes[1].groupBox.show()
         self.panes[2].groupBox.hide()
         self.panes[3].groupBox.hide()
-        # self.groupBox[-1].hide()
-        # self.groupBox[-2].hide()
-        # self.groupBox[-3].show()
-
-        self.gridSize = 2
-        #self.refreshScreen()
 
     def make4WindowsGrid(self):
         '''Splits window in 4 panes.'''
-        self.gridSize = 4
-
         self.panes[1].groupBox.show()
         self.panes[2].groupBox.show()
         self.panes[3].groupBox.show()
 
-        # self.groupBox[-1].show()
-        # self.groupBox[-2].show()
-        # self.groupBox[-3].show()
-
-
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
 
     main_window = MainWindow()
     main_window.show()
