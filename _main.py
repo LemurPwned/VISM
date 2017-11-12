@@ -6,19 +6,21 @@ from PyQt5.QtCore import Qt
 from PyQt5 import QtCore
 from main import MainWindow
 from Parser import Parser
+from Canvas import Canvas
+from CanvasLayer import CanvasLayer
+from spin_gl import GLWidget
+
+App = QtWidgets.QApplication(sys.argv)
 
 class _MainTester(unittest.TestCase):
-
-    def initialize(self):
+    def setUp(self):
         self.mainGui = MainWindow()
 
-    def initialize_data(self):
-        self.initialize()
-        test_folder = "data/firstData"
+    def initializeData(self):
+        test_folder = "data/test_data"
         self.rawVectorData, self.omf_header, self.odtData, self.stages = Parser.readFolder(test_folder)
 
     def test_initialGui(self):
-        self.initialize()
         self.assertEqual(self.mainGui.windowTitle(), "ESE - Early Spins Enviroment")
         self.assertTrue(self.mainGui.width() > 200)
         self.assertTrue(self.mainGui.height() > 100)
@@ -30,12 +32,12 @@ class _MainTester(unittest.TestCase):
 
     '''def test_loadDirectory(self):
         self.initialize()
+        print(self.mainGui.children())
         self.mainGui.actionLoad_Directory.trigger()
         self.assertTrue(len(self.mainGui.odt_data) > 0)'''
 
-    def test_ViewListeners(self):
-        self.initialize()
 
+    def test_ViewListeners(self):
         self.mainGui.action2_Windows_Grid.trigger()
         self.assertTrue(self.mainGui.panes[0].isVisible())
         self.assertTrue(self.mainGui.panes[1].isVisible())
@@ -61,20 +63,47 @@ class _MainTester(unittest.TestCase):
         self.assertFalse(self.mainGui.panes[3].isVisible())
 
 
-        #self.assertEqual(type(self.mainGui.panes[0].button), type(QtWidgets.QPushButton()))
+    def test_PlotSettingsNoData(self):
+        self.initializeData()
 
-        #self.mainGui.action2_Windows_Grid.trigger()
-    def test_PlotSettings(self):
-        self.initialize_data()
         self.mainGui.actionPlot.trigger()
-        self.mainGui.plotSettingsWindow.accept.click()
+        self.assertEqual(self.mainGui.plotSettingsWindow.children()[0].children()[2].text(), "There is no data to show. Load data with File > Load Directory")
+        accept = self.mainGui.plotSettingsWindow.buttonBox.children()[1]
+        print(accept.text())
+        QTest.mouseClick(accept, Qt.LeftButton)
 
-        #QTest.mouseClick(self.window.browseButton_2, QtCore.Qt.LeftButton)
-        #self.initialize()
+    def test_Widgets(self):
+        for i in range(4):
+            QTest.mouseClick(self.mainGui.panes[i].button, Qt.LeftButton)
+            self.mainGui.new.list.setCurrentRow(0) #openGLWidget
+            QTest.mouseClick(self.mainGui.new.addButton, Qt.LeftButton)
+            self.assertEqual(type(self.mainGui.panes[i].widget), GLWidget)
 
-        #self.
+        #this one is problem because of threading - program is not endig after tests completed because of threads in background
+    def test_plotSettingsProperData(self):
+        self.initializeData()
+        self.mainGui.rawVectorData = self.rawVectorData
+        self.mainGui.omf_header = self.omf_header
+        self.mainGui.odt_data = self.odtData
+        self.mainGui.stages = self.stages
+
+        #add 2D plot Widget
+        QTest.mouseClick(self.mainGui.panes[0].button, Qt.LeftButton)
+        self.mainGui.new.list.setCurrentRow(1)
+        QTest.mouseClick(self.mainGui.new.addButton, Qt.LeftButton)
+
+        self.assertEqual(type(self.mainGui.panes[0].widget), Canvas)
+        self.assertNotEqual(type(self.mainGui.panes[0].widget), CanvasLayer)
+
+        self.mainGui.actionPlot.trigger()
+        #print(self.mainGui.plotSettingsWindow.children()[0].children()[2].children()[1])
+        self.mainGui.plotSettingsWindow.comboBox[0].setCurrentIndex(5)
+        #self.mainGui.plotSettingsWindow.radioButton[1].setChecked(True)
+
+
+        print(self.mainGui.plotSettingsWindow.buttonBox.children()[1].text())
+        QTest.mouseClick(self.mainGui.plotSettingsWindow.buttonBox.children()[1], Qt.LeftButton)
+
 
 if __name__ == "__main__":
-
-    app = QtWidgets.QApplication(sys.argv)
     unittest.main()
