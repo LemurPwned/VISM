@@ -145,7 +145,8 @@ class GLWidget(QOpenGLWidget):
         gl.glClearColor(0.0, 0.0, 0.0, 0.0);
 
     def first_draw(self):
-        filename = "./data/firstData/voltage-spin-diode-Oxs_TimeDriver-Magnetization-00-0000800.omf"
+        filename = "./data/firstData/voltage-spin-diode-Oxs_\
+                        TimeDriver-Magnetization-00-0000800.omf"
         #if openGLWidget.null_object:
         self.vec = Parser.getLayerOutlineFromFile(filename)
 

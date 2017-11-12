@@ -32,7 +32,8 @@ class Canvas(FigureCanvas):
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
 
     def replot(self):
-        self.plot_axis.hpl.set_ydata(self.graph_data[0:self.i]+self.null_data[self.i:])
+        self.plot_axis.hpl.set_ydata(self.graph_data[0:self.i] + \
+                                self.null_data[self.i:])
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
 
     def increaseIterator(self):
