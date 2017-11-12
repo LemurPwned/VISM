@@ -99,7 +99,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         temp_val = 0 #fast_fix rethink it later
 
         for i, pane in enumerate(self.panes):
-            if not pane.isVisible:
+            if not pane.isVisible():
                 continue
             data_dict = {}
             if type(pane.widget) is Canvas:
@@ -170,25 +170,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.gridLayout.addWidget(self.panes[0].groupBox, 0, 0)
         self.gridLayout.addWidget(self.panes[1].groupBox, 0, 1)
         self.gridLayout.addWidget(self.panes[2].groupBox, 1, 0)
-        self.gridLayout.addWidget(self.panes[3].groupBox, 0, 0)
+        self.gridLayout.addWidget(self.panes[3].groupBox, 1, 1)
 
     def make1WindowGrid(self):
         '''Splits window in 1 pane.'''
-        self.panes[1].groupBox.hide()
-        self.panes[2].groupBox.hide()
-        self.panes[3].groupBox.hide()
+        self.panes[1].hide()
+        self.panes[2].hide()
+        self.panes[3].hide()
 
     def make2WindowsGrid(self):
         '''Splits window in 2 panes.'''
-        self.panes[1].groupBox.show()
-        self.panes[2].groupBox.hide()
-        self.panes[3].groupBox.hide()
+        self.panes[1].show()
+        self.panes[2].hide()
+        self.panes[3].hide()
 
     def make4WindowsGrid(self):
         '''Splits window in 4 panes.'''
-        self.panes[1].groupBox.show()
-        self.panes[2].groupBox.show()
-        self.panes[3].groupBox.show()
+        self.panes[1].show()
+        self.panes[2].show()
+        self.panes[3].show()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
