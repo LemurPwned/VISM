@@ -1,4 +1,3 @@
-
 import OpenGL.GL as gl
 import OpenGL.GLU as glu
 from Parser import Parser
@@ -7,14 +6,16 @@ from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QOpenGLWidget, QSlider,
                              QWidget)
 from PyQt5.QtGui import QColor
 import numpy as np
+import time
+
 class GLWidget(QOpenGLWidget):
-    def __init__(self, parent=None):
+    def __init__(self, null_object=True, parent=None):
         super(GLWidget, self).__init__(parent)
         self.object = 0
         self.xRot = 0
         self.yRot = 0
         self.zRot = 0
-
+        self.null_object = null_object
         self.initialRun = True
         self.spacer = 0.2
         self.lastPos = QPoint()
@@ -74,7 +75,9 @@ class GLWidget(QOpenGLWidget):
 
     def initializeGL(self):
         gl.glClearColor(1.0, 1.0, 1.0, 1.0);
-        self.object = self.first_draw()
+        #self.object = self.first_draw()
+        self.object = self.null_object_painter()
+        self.current_list = 1
         gl.glShadeModel(gl.GL_FLAT)
         gl.glEnable(gl.GL_DEPTH_TEST)
         print(self.getOpenglInfo())
@@ -82,7 +85,7 @@ class GLWidget(QOpenGLWidget):
     def draw_cordinate_system(self, size=5):
         self.draw_vector([0, 0, 0, size, 0, 0], [1, 0, 0]) #x
         self.draw_vector([0, 0, 0, 0, size, 0], [0, 1, 0]) #y
-        self.draw_vector([0, 0, 0, 0, 0, size], [0, 0, 1]) #z'''
+        self.draw_vector([0, 0, 0, 0, 0, size], [0, 0, 1]) #z
 
     def paintGL(self):
         gl.glClear(
@@ -94,7 +97,7 @@ class GLWidget(QOpenGLWidget):
         gl.glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)
         gl.glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
         gl.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)
-        gl.glCallList(self.object)
+        gl.glCallList(self.current_list)
         gl.glFlush()
 
     def resizeGL(self, width, height):
@@ -128,24 +131,27 @@ class GLWidget(QOpenGLWidget):
             gl.glScalef(self.xRot*dx, self.yRot*dy, 1.0)
         self.lastPos = event.pos()
 
-    def makeObject(self):
-        genList = gl.glGenLists(1)
-        gl.glNewList(genList, gl.GL_COMPILE)
-        gl.glColor3f(0.0,1.0,0.0)
-        for vec in vectors:
-            gl.glTranslate(vec[0], vec[1], vec[2])
-            gl.glBegin(gl.GL_QUADS)
-            self.draw_cube()
-            gl.glEnd()
-        gl.glEndList()
 
-        return genList
+    def null_object_painter(self):
+        self.spin_struc = gl.glGenLists(1);
+        gl.glNewList(self.spin_struc, gl.GL_COMPILE);
+        gl.glBegin(gl.GL_QUADS)
+        gl.glColor3f(1.0, 0.2, 0.1)
+        self.draw_cube([0,0,0])
+        gl.glEnd()
+        gl.glEndList();
+
+        gl.glShadeModel(gl.GL_FLAT);
+        gl.glClearColor(0.0, 0.0, 0.0, 0.0);
 
     def first_draw(self):
         filename = "./data/firstData/voltage-spin-diode-Oxs_TimeDriver-Magnetization-00-0000800.omf"
+        #if openGLWidget.null_object:
         self.vec = Parser.getLayerOutlineFromFile(filename)
 
-        self.spin_struc = gl.glGenLists (1);
+        #self.vec = self.rawVectorData[self.i]
+
+        self.spin_struc = gl.glGenLists(2);
         gl.glNewList(self.spin_struc, gl.GL_COMPILE);
         self.spins();
         gl.glEndList();
@@ -157,43 +163,39 @@ class GLWidget(QOpenGLWidget):
 
     def spins(self):
         gl.glBegin(gl.GL_QUADS)
+        color = [0.1, 1, 0.3]
         for vector in self.vec:
+            gl.glColor3f(color[0], color[1], color[2])
             self.draw_cube(vector)
         gl.glEnd()
 
-    def draw_cube(self, vec, color=[1,0,1], a=[1,1,0], b= [-1,-1,0]):
+    def draw_cube(self, vec):
         #TOP FACE
-        gl.glColor3f(color[0], color[1],color[2])
         gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2]+self.spacer)
         gl.glVertex3f(vec[0], vec[1], vec[2]+self.spacer)
         gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2]+self.spacer)
         gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer)
         #BOTTOM FACE
-        gl.glColor3f(color[0], color[1],color[2])
         gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2])
         gl.glVertex3f(vec[0], vec[1], vec[2])
         gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2])
         gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2])
         #FRONT FACE
-        gl.glColor3f(color[0], color[1],color[2])
         gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer)
         gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2]+self.spacer)
         gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2])
         gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2])
         #BACK FACE
-        gl.glColor3f(color[0], color[1],color[2])
         gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2]+self.spacer)
         gl.glVertex3f(vec[0], vec[1], vec[2]+self.spacer)
         gl.glVertex3f(vec[0], vec[1], vec[2])
         gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2])
         #RIGHT FACE
-        gl.glColor3f(color[0], color[1],color[2])
         gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2]+self.spacer)
         gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer)
         gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2])
         gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2])
         #LEFT FACE
-        gl.glColor3f(color[0], color[1],color[2])
         gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2]+self.spacer)
         gl.glVertex3f(vec[0], vec[1], vec[2]+self.spacer)
         gl.glVertex3f(vec[0], vec[1], vec[2])

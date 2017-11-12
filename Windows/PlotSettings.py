@@ -15,7 +15,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
             self.comboBox = []
             self.radioButton = []
 
-            for i in range(3):
+            for i in range(gridSize):
                 self.additionalSetup(plotOptions)
 
 

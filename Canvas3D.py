@@ -1,59 +1,39 @@
 import matplotlib.pyplot as plt
 from matplotlib import cm
-import matplotlib.animation as animation
+import matplotlib as mpl
 import numpy as np
 import time
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import matplotlib.animation as animation
 
 from PyQt5.QtWidgets import QSizePolicy, QPushButton
 from matplotlib.figure import Figure
+from Canvas import Canvas
 
-class Canvas3D(FigureCanvas):
+class Canvas3D(Canvas):
     def __init__(self, parent=None, width=8, height=6, dpi=100):
-        self.fig = Figure(figsize=(width, height), dpi=dpi)
-        FigureCanvas.__init__(self, self.fig)
-        self.setParent(parent)
-        FigureCanvas.setSizePolicy(self,
-                QSizePolicy.Expanding,
-                QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
+        Canvas.__init__(self, parent, width, height, dpi)
 
     def createPlotCanvas(self):
-        print("PREPARING CANVAS")
         self.canvas_type = 'panel'
-        x, y = self.reshape_data()
+        dx, dy = self.reshape_data()
         self.fig.suptitle(self.title)
-        self.ax_sc = self.fig.add_subplot(111)
-        scat = self.ax_sc.scatter(x, y, c=tuple(self.layer[self.i]), cmap=cm.jet)
-        self.ax_sc.hpl = scat
-        self.fig.colorbar(self.ax_sc.hpl)
-        self.ax_sc.axis('scaled')
-        self.ax_sc.axis([0, len(x), 0, len(y)])
-        self.ax_sc.set_autoscale_on(False)
-        self.ax_sc.set_title('{}/{}'.format(self.i, self.iterations))
-        plt.show()
-    def increaseIterator(self):
-        self.i += 1
+        self.plot_axis = self.fig.add_subplot(111)
+        color_array = self.layer[self.i].astype(float)
 
-    def refresh(self):
-        self.ax_sc.get_figure().canvas.draw()
-
-    def loop(self, scheduler=0.1):
-        i = 0
-        print("ITERATING")
-        while(self.iterations):
-            time.sleep(scheduler)
-            i += 1
-            self.increaseIterator()
-            self.refresh()
-            self.replot()
-            if (i == self.iterations):
-                i = 0
+        scat = self.plot_axis.scatter(dx, dy, c=color_array, cmap=cm.jet)
+        self.plot_axis.hpl = scat
+        self.fig.colorbar(self.plot_axis.hpl)
+        self.plot_axis.axis('scaled')
+        self.plot_axis.axis([0, len(dx), 0, len(dy)])
+        self.plot_axis.set_autoscale_on(False)
+        self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
 
     def replot(self):
-        self.scat.set_array(np.array(self.layer[i]), dtype=float)
+        color_array = self.layer[self.i].reshape(35*35)
+        self.plot_axis.hpl.set_array(color_array)
         #change name if you wish
-        self.ax_pl.set_title('{}/{}'.format(self.i, self.iterations))
+        self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
 
     def reshape_data(self):
         '''
@@ -62,10 +42,11 @@ class Canvas3D(FigureCanvas):
         xc = int(self.omf_header['xnodes'])
         yc = int(self.omf_header['ynodes'])
         zc = int(self.omf_header['znodes'])
-        self.mulitple_layers = np.array([x.reshape(zc,yc*xc,3)[self.current_layer]
+        self.multiple_data = np.array([x.reshape(zc,yc*xc,3)[self.current_layer]
                                         for x in self.multiple_data])
         self.layer = np.array([self.calculate_layer_colors(x)
-                                for x in self.mulitple_layers])
+                                for x in self.multiple_data])
+        self.layer = np.array([x.reshape(yc, xc) for x in self.layer])
         x = np.linspace(0, xc, xc)
         y = np.linspace(0, yc, yc)
         dx, dy = np.meshgrid(x,y)
@@ -86,15 +67,5 @@ class Canvas3D(FigureCanvas):
         dot = np.divide(np.array([np.inner(i, relative_vector)
                                     for i in x]), norm)
         angle = np.arccos(dot)**scale
-        angle[np.isnan(angle)] = -1 # get rid of NaN expressions
+        angle[np.isnan(angle)] = 0 # get rid of NaN expressions
         return angle
-
-    def shareData(self, **kwargs):
-        """
-        @param **kwargs are the arguments to be passed to the main plot iterator
-        """
-        print("SHARING DATA")
-        #TODO: define minimum_list in arguments and force SPECIFIC keys
-        for k, v in kwargs.items():
-            setattr(self, k, v)
-        print("DATA SHARED successfully")
