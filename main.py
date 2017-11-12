@@ -96,16 +96,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             print("No data to plot")
             return
 
+        temp_val = 0 #fast_fix rethink it later
+
         for i, pane in enumerate(self.panes):
             if not pane.isVisible:
                 continue
             data_dict = {}
             if type(pane.widget) is Canvas:
-                picked_column = value[i][0]
+                picked_column = value[temp_val][0]
 
                 #check if we want synchronizedPlot
                 counter = 0
-                if value[i][2]:
+                if value[temp_val][2]:
                     counter = self.stages
                 data_dict = {
                             'i': counter,
@@ -113,7 +115,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             'graph_data': self.odt_data[picked_column].tolist(),
                             'title' : picked_column
                             }
-
+                temp_val = temp_val+1
             if type(pane.widget) is Canvas3D:
                 data_dict = {
                             'omf_header':  self.omf_header,
