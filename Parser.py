@@ -99,7 +99,6 @@ class Parser():
             raise TypeError
         return omf_headers, np.array(rawVectorData)
 
-
     @staticmethod
     def readText(files_in_directory):
         """
@@ -122,7 +121,6 @@ class Parser():
             raise TypeError
 
         return np.array(rawVectorData)
-
 
     @staticmethod
     def getLayerOutline(omf_header, unit_scaler=1e9):
