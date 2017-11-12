@@ -8,7 +8,6 @@ from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QOpenGLWidget, QSlider,
 from spin_gl import GLWidget
 
 class Window(QWidget):
-
     def __init__(self):
         super(Window, self).__init__()
 

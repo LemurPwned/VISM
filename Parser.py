@@ -165,7 +165,7 @@ class Parser():
         cube_outline = np.array([Parser.cube(x) for x in layer_outline],
                         dtype='float32').flatten()
         return cube_outline
-    
+
     @staticmethod
     def cube(vector, spacer=0.2):
         vertices = np.array([
@@ -197,7 +197,8 @@ class Parser():
             vector[0], vector[1]+spacer, vector[2]+spacer,
             vector[0], vector[1], vector[2]+spacer,
             vector[0], vector[1], vector[2],
-            vector[0], vector[1]+spacer, vector[2]], dtype='float32')
+            vector[0], vector[1]+spacer, vector[2]],
+                    dtype='float32')
         return vertices
 
     @staticmethod
