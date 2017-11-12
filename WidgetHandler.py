@@ -1,13 +1,11 @@
 from PyQt5 import QtWidgets
 
 class WidgetHandler:
-
     def __init__(self):
         self._groupBox = None
         self._button = None
         self._layout = None
         self._widget = None
-
 
     @property
     def groupBox(self):
@@ -44,7 +42,12 @@ class WidgetHandler:
     def widget(self, value):
         self._widget = value
 
+    def isVisible(self):
+        """Checks if Wisget is visible"""
+        return self._groupBox.isVisible()
+
     def clearBox(self):
+        """Clears whole Widget and leaves just groupBox with layout"""
         if self._groupBox == None:
             raise ValueError('groupBox must be initialized')
 
@@ -52,7 +55,9 @@ class WidgetHandler:
             self._groupBox.children()[-1].deleteLater()
 
     def addWidget(self, widget):
+        """Just adds new Widget to our Pane"""
         self._widget = widget
+
         if self._groupBox == None:
             raise ValueError("groupBox must be initialized")
         try:

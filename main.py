@@ -32,8 +32,6 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
 
         self.panes = [] # keeps all widgets in list of library object that handles Widgets
 
-        self.groupBox = [] #we store here groupBoxes for all widgets one Widget in one groupBox
-        self.button = [] #we need to store these globaly to set event listeners
         self.gridSize = 0 # how many windows visible
         self.makeGrid() #create grid (4 Widgets) and stores them in arrays
         self.make1WindowGrid() #shows default 1 widget Window
@@ -55,15 +53,10 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
 
         #GRID BUTTONS
         #lambda required to pass parameter - which button was pressed
-
         self.panes[0].button.clicked.connect(lambda:self.showChooseWidgetSettings(0))
         self.panes[1].button.clicked.connect(lambda:self.showChooseWidgetSettings(1))
         self.panes[2].button.clicked.connect(lambda:self.showChooseWidgetSettings(2))
         self.panes[3].button.clicked.connect(lambda:self.showChooseWidgetSettings(3))
-        # self.button[0].clicked.connect(lambda: self.showChooseWidgetSettings(0))
-        # self.button[1].clicked.connect(lambda: self.showChooseWidgetSettings(1))
-        # self.button[2].clicked.connect(lambda: self.showChooseWidgetSettings(2))
-        # self.button[3].clicked.connect(lambda: self.showChooseWidgetSettings(3))
 
 
     def refreshScreen(self):
@@ -93,74 +86,57 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
 
     def showPlotSettings(self):
         """Spawns window for plot settings"""
-        self.plotSettingsWindow = PlotSettings(list(self.odt_data), self.gridSize)
+        #temp = Canvas()
+        counter = 0
+        for _, pane in enumerate(self.panes): #to know how many plots are there to show correct plotMenu
+            if type(pane.widget) is Canvas:
+                counter = counter + 1
+
+
+        self.plotSettingsWindow = PlotSettings(list(self.odt_data), counter)
         self.plotSettingsWindow.setEventHandler(self.plotSettingsReceiver)
-        #plotSettingsWindow.show()
 
     def plotSettingsReceiver(self, value):
-        self.picked_column = value[0][0]
-        if self.plot_active: #check what plot window is active
-            self.autorun_plot(plot_type='2d plot')
-        elif self.layer_plot_active: #check if layering plot is active
-            self.autorun_plot(plot_type='2d layer')
+        #[string whatToPlot, synchronizedPlot, instantPlot]
+        if value == []:
+            print("No data to plot")
+            return
 
-    def autorun_plot(self, plot_type):
-        """
-        initiates a plot runner, creates canvas and distributes threads
-        @plot_type is a plot type necessary to initate proper procedure
-        @return void
-        """
-        if plot_type == '2d plot':
-            data_dict = self.compose_dict()
-            ### check all needed exceptions here
-            if self.gridSize > 1:
-                self.groupBoxCanvas.shareData(**data_dict)
-                self.groupBoxCanvas.createPlotCanvas()
+        for i, pane in enumerate(self.panes):
+            if not pane.isVisible:
+                continue
+            data_dict = {}
+            if type(pane.widget) is Canvas:
+                picked_column = value[i][0]
+
+                #check if we want synchronizedPlot
+                counter = 0
+                if value[i][2]:
+                    counter = self.stages
+                data_dict = {
+                            'i': counter,
+                            'iterations': self.stages,
+                            'graph_data': self.odt_data[picked_column].tolist(),
+                            'title' : picked_column
+                            }
+
+            if type(pane.widget) is Canvas3D:
+                data_dict = {
+                            'omf_header':  self.omf_header,
+                            'multiple_data': self.rawVectorData,
+                            'iterations': self.stages,
+                            'current_layer': 0,
+                            'title': '3dgraph',
+                            'i': 0
+                            }
+
+            if data_dict != {}:
+                pane.widget.shareData(**data_dict)
+                pane.widget.createPlotCanvas()
                 try:
-                    threading.Thread(target=self.groupBoxCanvas.loop).start()
+                    threading.Thread(target=pane.widget.loop).start()
                 except RuntimeError:
                     print("THREADS CLOSED DUE RuntimeError")
-        elif plot_type == '2d layer':
-            data_dict = self.compose_dict(plot_type='2d layer')
-            ### check all needed exceptions here
-            if self.gridSize > 1:
-                self.groupBoxCanvasLayer.shareData(**data_dict)
-                self.groupBoxCanvasLayer.createPlotCanvas()
-                try:
-                    threading.Thread(target=self.groupBoxCanvasLayer.loop).start()
-                except RuntimeError:
-                    print("THREADS CLOSED DUE RuntimeError")
-        else:
-            msg = "Wrong plot_type argument"
-            raise ValueError(msg)
-
-    def compose_dict(self, plot_type='2d plot'):
-        """
-        composes a proper dictionary to pass to a given function shareData(**dict)
-        @param plot_type is a plot type, can be '2d plot' or '2d layer'
-        @return a dict of shareData parameters to pass
-        """
-        data_dict = None
-        if plot_type == '2d plot':
-            data_dict = {
-                        'i': 0,
-                        'iterations': self.stages,
-                        'graph_data': self.odt_data[self.picked_column].tolist(),
-                        'title' : self.picked_column
-                        }
-        elif plot_type == '2d layer':
-            data_dict = {
-                        'omf_header':  self.omf_header,
-                        'multiple_data': self.rawVectorData,
-                        'iterations': self.stages,
-                        'current_layer': 0,
-                        'title': '3dgraph',
-                        'i': 0
-                        }
-        else:
-            msg = "Wrong plot_type argument"
-            raise ValueError(msg)
-        return data_dict
 
     def showChooseWidgetSettings(self, number):
         '''Spawns Window for choosing widget for this pane'''
@@ -174,6 +150,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         if value[1] == "OpenGL":
             self.panes[value[0]].addWidget(GLWidget())
             self.refreshScreen()
+            print(self.panes[value[0]].widget)
 
         if value[1] == '2dPlot':
             self.panes[value[0]].addWidget(Canvas())
@@ -182,7 +159,6 @@ class MainWindow(QMainWindow, Ui_MainWindow, QWidget):
         elif value[1] == '2dLayer':
             self.panes[value[0]].addWidget(Canvas3D())
             self.refreshScreen()
-
 
     def createNewSubWindow(self):
         '''Helper function creates layout and button for widget selection'''
