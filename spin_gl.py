@@ -62,29 +62,15 @@ class GLWidget(QOpenGLWidget):
             self.zRot = angle
             self.update()
 
-    def draw_vector(self, vec, color=[0, 0, 0], a=[1,1,0], b= [-1,-1,0]):
-        gl.glLineWidth(3)
-        gl.glColor3f(np.dot(a, color), np.dot(b, color), 0)
-        gl.glBegin(gl.GL_LINES)
-        gl.glVertex3f(vec[0], vec[1], vec[2])
-        gl.glVertex3f(vec[3]+color[0], vec[4]+color[1], vec[5]+color[2])
-        gl.glEnd()
-        gl.glPointSize(5)
-        gl.glBegin(gl.GL_POINTS)
-        gl.glVertex3f(vec[3]+color[0], vec[4]+color[1], vec[5]+color[2])
-        gl.glEnd()
-
     def initializeGL(self):
-        gl.glClearColor(1.0, 1.0, 1.0, 1.0);
-        self.null_object = self.null_object_painter()
-        self.current_list = 1
-        gl.glShadeModel(gl.GL_FLAT)
-        gl.glEnable(gl.GL_DEPTH_TEST)
-
-    def reinitializeGL(self):
-        self.object = self.first_draw()
-        #change glCallList from null object (1) to (2) custom object
-        self.current_list = 2
+        self._vertexBuffer = gl.glGenBuffers(1)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self._vertexBuffer)
+        filename = './data/firstData/voltage-spin-diode-Oxs_TimeDriver-Magnetization-00-0000100.omf'
+        vertices = Parser.defineCubeOutline(filename)
+        print(vertices.shape, vertices.dtype)
+        print(vertices[0].shape, vertices[0].dtype)
+        print(vertices[0:10])
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, vertices, gl.GL_STATIC_DRAW)
 
     def draw_cordinate_system(self, size=5):
         self.draw_vector([0, 0, 0, size, 0, 0], [1, 0, 0]) #x
@@ -92,21 +78,15 @@ class GLWidget(QOpenGLWidget):
         self.draw_vector([0, 0, 0, 0, 0, size], [0, 0, 1]) #z
 
     def paintGL(self):
-        if (self.DATA_FLAG):
-            #if data has arrived, then call reinitializeGL ONCE!
-            self.reinitializeGL()
-            self.DATA_FLAG = False
-        gl.glClear(
-            gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        gl.glLoadIdentity()
-        self.draw_cordinate_system(5)
-        self.draw_vector([5,5,5,10,10,10])
-        gl.glTranslated(0.0, 0.0, -10.0)
-        gl.glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)
-        gl.glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
-        gl.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)
-        gl.glCallList(self.current_list)
-        gl.glFlush()
+        gl.glViewport(0,0, self.width(), self.height())
+        gl.glClearColor(0.0, 1.0, 0.0, 1.0)
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+
+        gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self._vertexBuffer)
+        gl.glVertexPointer(3, gl.GL_FLOAT, 0, None)
+        gl.glColor3f(1.0, 0.0, 0.0)
+        gl.glDrawArrays(gl.GL_QUADS, 0, 4)
 
     def resizeGL(self, width, height):
         side = min(width, height)
@@ -117,7 +97,7 @@ class GLWidget(QOpenGLWidget):
                            side)
         gl.glMatrixMode(gl.GL_PROJECTION)
         gl.glLoadIdentity()
-        glu.gluPerspective(45.0, float(width)/float(height), 0.1, 100.0)
+        # glu.gluPerspective(45.0, float(width)/float(height), 0.1, 100.0)
         gl.glMatrixMode(gl.GL_MODELVIEW)
 
     def mousePressEvent(self, event):
@@ -138,77 +118,6 @@ class GLWidget(QOpenGLWidget):
             print(dx, dy)
             gl.glScalef(self.xRot*dx, self.yRot*dy, 1.0)
         self.lastPos = event.pos()
-
-    def null_object_painter(self):
-        spin_struc = gl.glGenLists(1);
-        gl.glNewList(spin_struc, gl.GL_COMPILE);
-        gl.glBegin(gl.GL_QUADS)
-        gl.glColor3f(1.0, 0.2, 0.1)
-        self.draw_cube([0,0,0])
-        self.draw_cube([1,1,1])
-        gl.glEnd()
-        gl.glEndList();
-
-        gl.glShadeModel(gl.GL_FLAT);
-        gl.glClearColor(0.0, 0.0, 0.0, 0.0);
-
-        return spin_struc
-
-    def first_draw(self):
-        filename = "./data/firstData/voltage-spin-diode-Oxs_\
-                        TimeDriver-Magnetization-00-0000800.omf"
-        #if openGLWidget.null_object:
-        self.vec = Parser.getLayerOutlineFromFile(filename)
-
-        spin_struc = gl.glGenLists(2);
-        gl.glNewList(spin_struc, gl.GL_COMPILE);
-        self.spins();
-        gl.glEndList();
-
-        gl.glShadeModel(gl.GL_FLAT);
-        gl.glClearColor(0.0, 0.0, 0.0, 0.0);
-
-        return spin_struc
-
-    def spins(self):
-        gl.glBegin(gl.GL_QUADS)
-        color = [0.1, 1, 0.3]
-        for vector in self.vec:
-            gl.glColor3f(color[0], color[1], color[2])
-            self.draw_cube(vector)
-        gl.glEnd()
-
-    def draw_cube(self, vec):
-        #TOP FACE
-        gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2]+self.spacer)
-        gl.glVertex3f(vec[0], vec[1], vec[2]+self.spacer)
-        gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2]+self.spacer)
-        gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer)
-        #BOTTOM FACE
-        gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2])
-        gl.glVertex3f(vec[0], vec[1], vec[2])
-        gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2])
-        gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2])
-        #FRONT FACE
-        gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer)
-        gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2]+self.spacer)
-        gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2])
-        gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2])
-        #BACK FACE
-        gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2]+self.spacer)
-        gl.glVertex3f(vec[0], vec[1], vec[2]+self.spacer)
-        gl.glVertex3f(vec[0], vec[1], vec[2])
-        gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2])
-        #RIGHT FACE
-        gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2]+self.spacer)
-        gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer)
-        gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2])
-        gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2])
-        #LEFT FACE
-        gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2]+self.spacer)
-        gl.glVertex3f(vec[0], vec[1], vec[2]+self.spacer)
-        gl.glVertex3f(vec[0], vec[1], vec[2])
-        gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2])
 
     def normalizeAngle(self, angle):
         while angle < 0:

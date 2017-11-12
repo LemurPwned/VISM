@@ -160,6 +160,47 @@ class Parser():
         return layers_outline
 
     @staticmethod
+    def defineCubeOutline(filename):
+        layer_outline = Parser.getLayerOutlineFromFile(filename)
+        cube_outline = np.array([Parser.cube(x) for x in layer_outline],
+                        dtype='float32').flatten()
+        return cube_outline
+    
+    @staticmethod
+    def cube(vector, spacer=0.2):
+        vertices = np.array([
+            vector[0]+spacer, vector[1], vector[2]+spacer,
+            vector[0], vector[1], vector[2]+spacer,
+            vector[0], vector[1]+spacer, vector[2]+spacer,
+            vector[0]+spacer, vector[1]+spacer, vector[2]+spacer,
+            #BOTTOM FACE
+            vector[0]+spacer, vector[1], vector[2],
+            vector[0], vector[1], vector[2],
+            vector[0], vector[1]+spacer, vector[2],
+            vector[0]+spacer, vector[1]+spacer, vector[2],
+            #FRONT FACE
+            vector[0]+spacer, vector[1]+spacer, vector[2]+spacer,
+            vector[0], vector[1]+spacer, vector[2]+spacer,
+            vector[0], vector[1]+spacer, vector[2],
+            vector[0]+spacer, vector[1]+spacer, vector[2],
+            #BACK FACE
+            vector[0]+spacer, vector[1], vector[2]+spacer,
+            vector[0], vector[1], vector[2]+spacer,
+            vector[0], vector[1], vector[2],
+            vector[0]+spacer, vector[1], vector[2],
+            #RIGHT FACE
+            vector[0]+spacer, vector[1], vector[2]+spacer,
+            vector[0]+spacer, vector[1]+spacer, vector[2]+spacer,
+            vector[0]+spacer, vector[1]+spacer, vector[2],
+            vector[0]+spacer, vector[1], vector[2],
+            #LEFT FACE
+            vector[0], vector[1]+spacer, vector[2]+spacer,
+            vector[0], vector[1], vector[2]+spacer,
+            vector[0], vector[1], vector[2],
+            vector[0], vector[1]+spacer, vector[2]], dtype='float32')
+        return vertices
+
+    @staticmethod
     def getRawVectors(filename):
         """
         processes a .omf filename into a numpy array of vectors
