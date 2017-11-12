@@ -14,14 +14,11 @@ class Window(QWidget):
 
         self.glWidget = GLWidget()
 
-
         mainLayout = QHBoxLayout()
         mainLayout.addWidget(self.glWidget)
         self.setLayout(mainLayout)
 
-
         self.setWindowTitle("Early Spin Struct")
-
 
 
 if __name__ == '__main__':
