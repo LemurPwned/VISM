@@ -30,6 +30,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.makeGrid() #create grid (4 Widgets) and stores them in arrays
         self.make1WindowGrid() #shows default 1 widget Window
         self.events() #create event listeners
+        self.threads = []
 
     def events(self):
         '''Creates all listeners for Main Window'''
@@ -131,9 +132,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 pane.widget.shareData(**data_dict)
                 pane.widget.createPlotCanvas()
                 try:
-                    threading.Thread(target=pane.widget.loop).start()
-                except RuntimeError:
-                    print("THREADS CLOSED DUE RuntimeError")
+                    x = threading.Thread(target=\
+                                pane.widget.loop, daemon=True)
+                    x.start()
+                except (KeyboardInterrupt, SystemExit):
+                    msg = "Ending thread due to system sigkill"
+                    print(msg)
+                    sys.exit()
 
     def showChooseWidgetSettings(self, number):
         '''Spawns Window for choosing widget for this pane'''
