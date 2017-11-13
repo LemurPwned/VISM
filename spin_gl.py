@@ -17,7 +17,6 @@ class GLWidget(QOpenGLWidget):
         self.zRot = 0
 
         self.initialRun = True
-        self.spacer = 0.2
         self.lastPos = QPoint()
 
         self.DATA_FLAG = False
@@ -68,11 +67,11 @@ class GLWidget(QOpenGLWidget):
         filename = './data/firstData/voltage-spin-diode-Oxs_TimeDriver-Magnetization-00-0000100.omf'
         vertices = Parser.defineCubeOutline(filename)
         print(vertices.shape, vertices.dtype)
-        print(vertices[0].shape, vertices[0].dtype)
-        print(vertices[0:50])
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, vertices, gl.GL_DYNAMIC_DRAW)
-        gl.glEnable(gl.GL_DEPTH_TEST)
-        gl.glShadeModel(gl.GL_FLAT)
+
+        print(np.unique(vertices[0:108].reshape(int(108/3),3)))
+            print(vertices[0].shape, vertices[0].dtype)
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, vertices, gl.GL_STATIC_DRAW)
+        #gl.glShadeModel(gl.GL_FLAT)
 
     def draw_cordinate_system(self, size=5):
         self.draw_vector([0, 0, 0, size, 0, 0], [1, 0, 0]) #x
@@ -81,15 +80,20 @@ class GLWidget(QOpenGLWidget):
 
     def paintGL(self):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        gl.glViewport(0,0, self.width(), self.height())
-        #gl.glClearColor(0.0, 1.0, 0.0, 1.0)
+        gl.glEnable(gl.GL_DEPTH_TEST)
 
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self._vertexBuffer)
         gl.glVertexPointer(3, gl.GL_FLOAT, 0, None)
         gl.glColor3f(1.0, 0.0, 0.0)
-        for i in range(1000):
-            gl.glDrawArrays(gl.GL_QUADS, 4*i, 4*(i+1))
+        gl.glDrawArrays(gl.GL_TRIANGLES, 0, 3)
+        #gl.glColor3f(0.0, 1.0, 0.0)
+        gl.glDrawArrays(gl.GL_TRIANGLES, 3, 6)
+        gl.glColor3f(0.0, 1.0, 0.0)
+        gl.glDrawArrays(gl.GL_TRIANGLES, 6, 9)
+        # for i in range(6125):
+        #     gl.glDrawArrays(gl.GL_TRIANGLES, 3*i, 3*(i+1))
+        #     gl.glColor3f(0.0, 0.5, 0.5)
 
     def resizeGL(self, width, height):
         side = min(width, height)

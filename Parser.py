@@ -45,7 +45,8 @@ class Parser():
         odt_data = None
         files_in_directory = os.listdir(directory)
         files_in_directory = [os.path.join(directory, filename)
-                for filename in files_in_directory if filename.endswith('.omf')]
+                for filename in files_in_directory
+                if filename.endswith('.omf')]
 
         odt_file = glob.glob(os.path.join(directory, '*.odt'))
         # look for .odt in current directory
@@ -161,9 +162,9 @@ class Parser():
 
     @staticmethod
     def defineCubeOutline(filename):
-        layer_outline = Parser.getLayerOutlineFromFile(filename)
-        cube_outline = np.array([Parser.cube(x) for x in layer_outline],
-                        dtype='float32').flatten()
+        layer_outline = np.array(Parser.getLayerOutlineFromFile(filename))
+        cube_outline = np.array([Parser.triangular_cube(x)
+                        for x in layer_outline], dtype='float32').flatten()
         return cube_outline
 
     @staticmethod
@@ -201,6 +202,58 @@ class Parser():
                     dtype='float32')
         return vertices
 
+    @staticmethod
+    def triangular_cube(vector, spacer=0.1):
+        vertices = np.array([
+            vector[0]+spacer, vector[1], vector[2]+spacer,
+            vector[0], vector[1], vector[2]+spacer,
+            vector[0], vector[1]+spacer, vector[2]+spacer,
+
+            vector[0]+spacer, vector[1], vector[2]+spacer,
+            vector[0], vector[1]+spacer, vector[2]+spacer,
+            vector[0]+spacer, vector[1]+spacer, vector[2]+spacer,
+            #BOTTOM FACE
+            vector[0]+spacer, vector[1], vector[2],
+            vector[0], vector[1], vector[2],
+            vector[0], vector[1]+spacer, vector[2],
+
+            vector[0]+spacer, vector[1], vector[2],
+            vector[0], vector[1]+spacer, vector[2],
+            vector[0]+spacer, vector[1]+spacer, vector[2],
+            #FRONT FACE
+            vector[0]+spacer, vector[1]+spacer, vector[2]+spacer,
+            vector[0], vector[1]+spacer, vector[2]+spacer,
+            vector[0], vector[1]+spacer, vector[2],
+
+            vector[0]+spacer, vector[1]+spacer, vector[2]+spacer,
+            vector[0], vector[1]+spacer, vector[2],
+            vector[0]+spacer, vector[1]+spacer, vector[2],
+            #BACK FACE
+            vector[0]+spacer, vector[1], vector[2]+spacer,
+            vector[0], vector[1], vector[2]+spacer,
+            vector[0], vector[1], vector[2],
+
+            vector[0]+spacer, vector[1], vector[2]+spacer,
+            vector[0], vector[1], vector[2],
+            vector[0]+spacer, vector[1], vector[2],
+            #RIGHT FACE
+            vector[0]+spacer, vector[1], vector[2]+spacer,
+            vector[0]+spacer, vector[1]+spacer, vector[2]+spacer,
+            vector[0]+spacer, vector[1]+spacer, vector[2],
+
+            vector[0]+spacer, vector[1], vector[2]+spacer,
+            vector[0]+spacer, vector[1]+spacer, vector[2],
+            vector[0]+spacer, vector[1], vector[2],
+            #LEFT FACE
+            vector[0], vector[1]+spacer, vector[2]+spacer,
+            vector[0], vector[1], vector[2]+spacer,
+            vector[0], vector[1], vector[2],
+
+            vector[0], vector[1]+spacer, vector[2]+spacer,
+            vector[0], vector[1], vector[2],
+            vector[0], vector[1]+spacer, vector[2]],
+                    dtype='float32')
+        return vertices
     @staticmethod
     def getRawVectors(filename):
         """

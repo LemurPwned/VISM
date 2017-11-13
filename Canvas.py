@@ -70,9 +70,3 @@ class Canvas(FigureCanvas):
                 print("No matching parameter has been found in the provided list")
                 print("minimum_parameter_list is not provided")
                 raise TypeError
-
-    def __str__(self):
-        return str(self.__dict__)
-
-    def check_instance(self):
-        print(self.title)
