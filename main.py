@@ -1,6 +1,6 @@
 import sys
 
-from PyQt5.QtCore import QTimer, QPoint, pyqtSlot
+from PyQt5.QtCore import QTimer, QPoint, pyqtSlot, QThread, pyqtSlot
 from PyQt5 import QtWidgets
 from Windows.MainWindowTemplate import Ui_MainWindow
 
@@ -11,8 +11,11 @@ from Parser import Parser
 from Windows.ChooseWidget import ChooseWidget
 from Windows.animationSettings import AnimationSettings
 from Windows.PlotSettings import PlotSettings
+from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
 from spin_gl import GLWidget
+
+
 
 import threading
 
@@ -30,6 +33,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.makeGrid() #create grid (4 Widgets) and stores them in arrays
         self.make1WindowGrid() #shows default 1 widget Window
         self.events() #create event listeners
+
+        #self.worker = WorkerObject()
+        self.playerWindow = PlayerWindow(self)
+        self.playerWindow.setHandler(self.onIteratorChange)
+        # self.playerWindow.setHandler(self.onIteratorChange)
+        # self.worker_thread = QThread()
+        # self.playerWindow.moveToThread(self.worker_thread)
+        # self.worker_thread.start()
+
+
 
     def events(self):
         '''Creates all listeners for Main Window'''
@@ -100,9 +113,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             if not pane.isVisible:
                 continue
             data_dict = {}
-            if type(pane.widget) is Canvas:
-                picked_column = value[i][0]
+            #change order, because CanvasLayer is of type Canvas
+            if type(pane.widget) is CanvasLayer:
+                data_dict = {
+                            'omf_header':  self.omf_header,
+                            'multiple_data': self.rawVectorData,
+                            'iterations': self.stages,
+                            'current_layer': 0,
+                            'title': '3dgraph',
+                            'i': 0
+                            }
 
+            #second condtition not neccessary for now, lack of it may cause bugs later
+            if type(pane.widget) is Canvas and type(pane.widget) is not CanvasLayer:
+                picked_column = value[temp_val][0]
                 #check if we want synchronizedPlot
                 counter = 0
                 if value[i][2]:
@@ -113,24 +137,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             'graph_data': self.odt_data[picked_column].tolist(),
                             'title' : picked_column
                             }
-
-            if type(pane.widget) is Canvas3D:
-                data_dict = {
-                            'omf_header':  self.omf_header,
-                            'multiple_data': self.rawVectorData,
-                            'iterations': self.stages,
-                            'current_layer': 0,
-                            'title': '3dgraph',
-                            'i': 0
-                            }
+                temp_val = temp_val+1
+                print("plot settings receiver")
 
             if data_dict != {}:
+                print("plot settings receiver dict")
+                print (data_dict)
                 pane.widget.shareData(**data_dict)
                 pane.widget.createPlotCanvas()
-                try:
-                    threading.Thread(target=pane.widget.loop).start()
+
+                """try:
+                    #threading.Thread(target=pane.widget.loop).start()
                 except RuntimeError:
-                    print("THREADS CLOSED DUE RuntimeError")
+                    print("THREADS CLOSED DUE RuntimeError")"""
+
+    @pyqtSlot(str)
+    def onIteratorChange(self, value):
+        print("main: ", int(value))
+        value = int(value)
+        self.panes[0].widget.i = value
 
     def showChooseWidgetSettings(self, number):
         '''Spawns Window for choosing widget for this pane'''
