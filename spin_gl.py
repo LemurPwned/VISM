@@ -20,42 +20,19 @@ class GLWidget(QOpenGLWidget):
 
         self.initialRun = True
         self.lastPos = QPoint()
-
+        self.initial_transformation()
+        self.spacer = 0.2
         self.DATA_FLAG = False
         self.initializeGL()
         s=0.5
         self.yaw = 0
         self.pitch = 0
         self.shader = None
-        self.vertices=[
-                -s, -s, -s,
-                 s, -s, -s,
-                 s,  s, -s,
-                -s,  s, -s,
-                -s, -s,  s,
-                 s, -s,  s,
-                 s,  s,  s,
-                -s,  s,  s,
-                ]
-        self.colors=[
-                0, 0, 0,
-                1, 0, 0,
-                0, 1, 0,
-                0, 0, 1,
-                0, 1, 1,
-                1, 0, 1,
-                1, 1, 1,
-                1, 1, 0,
-                ]
-        self.indices=[
-                0, 1, 2, 2, 3, 0,
-                0, 4, 5, 5, 1, 0,
-                1, 5, 6, 6, 2, 1,
-                2, 6, 7, 7, 3, 2,
-                3, 7, 4, 4, 0, 3,
-                4, 7, 6, 6, 5, 4,
-                ]
-
+        directory = './data/firstData'
+        self.color_list, self.bd, self.odt, self.iterations = Parser.readFolder(directory)
+        self.vectors_list = Parser.getLayerOutline(self.bd)
+        self.i = 0
+        self.av = 1
 
     def getOpenglInfo(self):
         info = """
@@ -108,20 +85,24 @@ class GLWidget(QOpenGLWidget):
         self.draw_vector([0, 0, 0, 0, 0, size], [0, 0, 1]) #z
 
     def paintGL(self):
-        print("rotating")
-        self.yaw+=0.39
-        self.pitch+=0.27
-        glTranslatef(0.0, 0.0, -2.0)
-        glRotatef(self.yaw, 0, 1, 0)
-        glRotatef(self.pitch, 1, 0, 0)
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glPushMatrix()
+        for vector, color in zip(self.vectors_list[0::self.av], \
+                                                self.colors[0::self.av]):
+            self.draw_cube(vector, color=color)
+        glPopMatrix()
+        print(self.i)
+        self.resizeGL(480, 800)
 
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
+    def transformate(self):  # applies rotation and transformation
+        glRotatef(self.rotation[0], 0, 1, 0)  # weird
+        glRotatef(self.rotation[1], 1, 0, 0)  # weird
+        glRotatef(self.rotation[2], 0, 0, 1)
+        glTranslatef(self.position[0], self.position[1], self.position[2])
 
-        self.draw_cubeX()
-
-        glFlush()
+    def initial_transformation(self):
+        self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
+        self.position = [-10, -10, -40]  # xyz initial
+        # self.pointing = [0,0,0] #where camera points
 
     def draw_cubeX(self):
         global buffers
@@ -179,13 +160,19 @@ class GLWidget(QOpenGLWidget):
 
     def resizeGL(self, width, height):
         # viewport
-        if height == 0:
-            height = 1
         glViewport(0, 0, width, height)
-        # projection
+        # using Projection mode
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(45.0, float(width)/float(height), 0.1, 100.0)
+        aspectRatio = width / height
+        gluPerspective(85, aspectRatio, 1, 1000)
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
+        glTranslatef(0, 0, 0)
+        self.colors = self.color_list[self.i]
+        self.i += 1
+        print(self.i)
+        self.paintGL()
 
     def mousePressEvent(self, event):
         self.lastPos = event.pos()
@@ -212,6 +199,52 @@ class GLWidget(QOpenGLWidget):
         while angle > 360 * 16:
             angle -= 360 * 16
         return angle
+
+    def draw_cube(self, vec, color=[1,0,1], a=[1,1,0], b= [-1,-1,0]):
+        glBegin(GL_QUADS)
+        #TOP FACE
+        #glColor3f(color[0], color[1],color[2])
+        glColor3f(np.dot(a, color), np.dot(b, color), 0)
+        glVertex3f(vec[0]+self.spacer, vec[1], vec[2]+self.spacer)
+        glVertex3f(vec[0], vec[1], vec[2]+self.spacer)
+        glVertex3f(vec[0], vec[1]+self.spacer, vec[2]+self.spacer)
+        glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer)
+        #BOTTOM FACE
+        glColor3f(np.dot(a, color), np.dot(b, color), 0)
+        #glColor3f(color[0], color[1],color[2])
+        glVertex3f(vec[0]+self.spacer, vec[1], vec[2])
+        glVertex3f(vec[0], vec[1], vec[2])
+        glVertex3f(vec[0], vec[1]+self.spacer, vec[2])
+        glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2])
+        #FRONT FACE
+        glColor3f(np.dot(a, color), np.dot(b, color), 0)
+        #glColor3f(color[0], color[1],color[2])
+        glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer)
+        glVertex3f(vec[0], vec[1]+self.spacer, vec[2]+self.spacer)
+        glVertex3f(vec[0], vec[1]+self.spacer, vec[2])
+        glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2])
+        #BACK FACE
+        glColor3f(np.dot(a, color), np.dot(b, color), 0)
+        #glColor3f(color[0], color[1],color[2])
+        glVertex3f(vec[0]+self.spacer, vec[1], vec[2]+self.spacer)
+        glVertex3f(vec[0], vec[1], vec[2]+self.spacer)
+        glVertex3f(vec[0], vec[1], vec[2])
+        glVertex3f(vec[0]+self.spacer, vec[1], vec[2])
+        #RIGHT FACE
+        glColor3f(np.dot(a, color), np.dot(b, color), 0)
+        #glColor3f(color[0], color[1],color[2])
+        glVertex3f(vec[0]+self.spacer, vec[1], vec[2]+self.spacer)
+        glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer)
+        glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2])
+        glVertex3f(vec[0]+self.spacer, vec[1], vec[2])
+        #LEFT FACE
+        glColor3f(np.dot(a, color), np.dot(b, color), 0)
+        #glColor3f(color[0], color[1],color[2])
+        glVertex3f(vec[0], vec[1]+self.spacer, vec[2]+self.spacer)
+        glVertex3f(vec[0], vec[1], vec[2]+self.spacer)
+        glVertex3f(vec[0], vec[1], vec[2])
+        glVertex3f(vec[0], vec[1]+self.spacer, vec[2])
+        glEnd()
 
 def printOpenGLError():
     err = glGetError()
