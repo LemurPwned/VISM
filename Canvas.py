@@ -16,28 +16,36 @@ class Canvas(FigureCanvas):
                 QSizePolicy.Expanding,
                 QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
+        self._i = 0
 
     def createPlotCanvas(self):
         self.canvas_type = 'panel'
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
-        self.i = self.i
+        self._i = self.i
         self.null_data = [x for x in range(self.iterations)]
         a_handler = self.plot_axis.plot(self.null_data,
-            self.graph_data[0:self.i] + self.null_data[self.i:], 'ro')[0]
+            self.graph_data[0:self._i] + self.null_data[self._i:], 'ro')[0]
         self.plot_axis.hpl = a_handler
         self.plot_axis.axis([0, self.iterations, np.min(self.graph_data),
                             np.max(self.graph_data)])
         self.plot_axis.set_autoscale_on(False)
-        self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
+<<<<<<< HEAD
+        self.plot_axis.set_title('{}/{}'.format(self._i, self.iterations))
 
     def replot(self):
-        self.plot_axis.hpl.set_ydata(self.graph_data[0:self.i] + \
-                                self.null_data[self.i:])
-        self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
+        self.plot_axis.hpl.set_ydata(self.graph_data[0:self._i] + \
+                                self.null_data[self._i:])
+        self.plot_axis.set_title('{}/{}'.format(self._i, self.iterations))
 
-    def increaseIterator(self):
-        self.i += 1
+    def set_i(self, value):
+        self._i = value
+        try:
+            self.loop_guard()
+            self.replot()
+            self.refresh()
+        except:
+            pass
 
     def refresh(self):
         self.plot_axis.get_figure().canvas.draw()

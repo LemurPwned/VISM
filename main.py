@@ -1,6 +1,6 @@
 import sys
 
-from PyQt5.QtCore import QTimer, QPoint, pyqtSlot
+from PyQt5.QtCore import QTimer, QPoint, pyqtSlot, QThread, pyqtSlot
 from PyQt5 import QtWidgets
 from Windows.MainWindowTemplate import Ui_MainWindow
 
@@ -11,8 +11,11 @@ from Parser import Parser
 from Windows.ChooseWidget import ChooseWidget
 from Windows.animationSettings import AnimationSettings
 from Windows.PlotSettings import PlotSettings
+from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
 from spin_gl import GLWidget
+
+
 
 import threading
 
@@ -31,6 +34,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.make1WindowGrid() #shows default 1 widget Window
         self.events() #create event listeners
         self.threads = []
+
+        #self.worker = WorkerObject()
+        self.playerWindow = PlayerWindow(self)
+        self.playerWindow.setHandler(self.onIteratorChange)
+        # self.playerWindow.setHandler(self.onIteratorChange)
+        # self.worker_thread = QThread()
+        # self.playerWindow.moveToThread(self.worker_thread)
+        # self.worker_thread.start()
+
+
 
     def events(self):
         '''Creates all listeners for Main Window'''
@@ -114,7 +127,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             'i': 0
                             }
 
+<<<<<<< HEAD
+            #second condtition not neccessary for now, lack of it may cause bugs later
+            if type(pane.widget) is Canvas and type(pane.widget) is not CanvasLayer:
+=======
             if type(pane.widget) is Canvas:
+>>>>>>> 0b1b798df07ff3868ef61cc11a3bcc5fe5933292
                 picked_column = value[temp_val][0]
                 #check if we want synchronizedPlot
                 counter = 0
@@ -127,10 +145,29 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             'title' : picked_column
                             }
                 temp_val = temp_val+1
+<<<<<<< HEAD
+                print("plot settings receiver")
+=======
+>>>>>>> 0b1b798df07ff3868ef61cc11a3bcc5fe5933292
 
             if data_dict != {}:
+                print("plot settings receiver dict")
+                print (data_dict)
                 pane.widget.shareData(**data_dict)
                 pane.widget.createPlotCanvas()
+<<<<<<< HEAD
+
+                """try:
+                    #threading.Thread(target=pane.widget.loop).start()
+                except RuntimeError:
+                    print("THREADS CLOSED DUE RuntimeError")"""
+
+    @pyqtSlot(str)
+    def onIteratorChange(self, value):
+        print("main: ", int(value))
+        value = int(value)
+        self.panes[0].widget.i = value
+=======
                 try:
                     x = threading.Thread(target=\
                                 pane.widget.loop, daemon=True)
@@ -139,6 +176,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                     msg = "Ending thread due to system sigkill"
                     print(msg)
                     sys.exit()
+>>>>>>> 0b1b798df07ff3868ef61cc11a3bcc5fe5933292
 
     def showChooseWidgetSettings(self, number):
         '''Spawns Window for choosing widget for this pane'''
