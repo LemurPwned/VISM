@@ -193,7 +193,40 @@ shader=None
 def draw_cube3():
     global shader, buffers
     if shader==None:
-        shader=Shader()
+        shader=Shader()class Shader(object):
+
+    def initShader(self, vertex_shader_source, fragment_shader_source):
+        # create program
+        self.program=glCreateProgram()
+        print('create program')
+        printOpenGLError()
+
+        # vertex shader
+        print('compile vertex shader...')
+        self.vs = glCreateShader(GL_VERTEX_SHADER)
+        glShaderSource(self.vs, [vertex_shader_source])
+        glCompileShader(self.vs)
+        glAttachShader(self.program, self.vs)
+        printOpenGLError()
+
+        # fragment shader
+        print('compile fragment shader...')
+        self.fs = glCreateShader(GL_FRAGMENT_SHADER)
+        glShaderSource(self.fs, [fragment_shader_source])
+        glCompileShader(self.fs)
+        glAttachShader(self.program, self.fs)
+        printOpenGLError()
+
+        print('link...')
+        glLinkProgram(self.program)
+        printOpenGLError()
+
+    def begin(self):
+        if glUseProgram(self.program):
+            printOpenGLError()
+
+    def end(self):
+        glUseProgram(0)
         shader.initShader('''
 void main()
 {
