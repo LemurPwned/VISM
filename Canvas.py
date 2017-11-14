@@ -21,7 +21,6 @@ class Canvas(FigureCanvas):
         self.canvas_type = 'panel'
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
-        self.i = self.i
         self.null_data = [x for x in range(self.iterations)]
         a_handler = self.plot_axis.plot(self.null_data,
             self.graph_data[0:self.i] + self.null_data[self.i:], 'ro')[0]
