@@ -35,15 +35,22 @@ class Canvas(FigureCanvas):
                                 self.null_data[self.i:])
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
 
-    def increaseIterator(self):
-        self.i += 1
+    def set_i(self, value):
+        self.i = value
+        try:
+            self.loop_guard()
+            self.replot()
+            self.refresh()
+        except:
+            pass
 
     def refresh(self):
         self.plot_axis.get_figure().canvas.draw()
 
     def loop_guard(self):
-        if (self.i >= self.iterations):
-            self.i = 0
+        #if (self.i >= self.iterations):
+            self.i = self.i%self.iterations
+
 
     def loop(self, scheduler=0.1):
         while(self.iterations):

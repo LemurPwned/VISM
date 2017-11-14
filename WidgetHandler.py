@@ -6,6 +6,7 @@ class WidgetHandler:
         self._button = None
         self._layout = None
         self._widget = None
+        self._visible = True
 
     @property
     def groupBox(self):
@@ -42,9 +43,18 @@ class WidgetHandler:
     def widget(self, value):
         self._widget = value
 
+    def hide(self):
+        self._groupBox.hide()
+        self._visible = False
+
+    def show(self):
+        self._groupBox.show()
+        self._visible = True
+
     def isVisible(self):
-        """Checks if Wisget is visible"""
-        return self._groupBox.isVisible()
+        """Checks if Widget is visible"""
+        return self._visible
+
 
     def clearBox(self):
         """Clears whole Widget and leaves just groupBox with layout"""
