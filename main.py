@@ -6,7 +6,7 @@ from Windows.MainWindowTemplate import Ui_MainWindow
 
 
 from Canvas import Canvas
-from Canvas3D import Canvas3D
+from CanvasLayer import CanvasLayer
 from Parser import Parser
 from Windows.ChooseWidget import ChooseWidget
 from Windows.animationSettings import AnimationSettings
@@ -28,11 +28,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.setGeometry(10,10,1280, 768) #size of window
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height())
 
-        self.panes = [] # keeps all widgets in list of library object that handles Widgets
-
+        # keeps all widgets in list of library object that handles Widgets
+        self.panes = []
         self.makeGrid() #create grid (4 Widgets) and stores them in arrays
         self.make1WindowGrid() #shows default 1 widget Window
         self.events() #create event listeners
+        self.threads = []
 
         #self.worker = WorkerObject()
         self.playerWindow = PlayerWindow(self)
@@ -65,7 +66,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[2].button.clicked.connect(lambda:self.showChooseWidgetSettings(2))
         self.panes[3].button.clicked.connect(lambda:self.showChooseWidgetSettings(3))
 
-
     def refreshScreen(self):
         '''weird stuff is happening when u want to update window u need to
         resize i think this is a bug'''
@@ -78,7 +78,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def loadDirectory(self):
         '''Loads whole directory based on Parse class as simple as BHP'''
-        directory = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
+        directory = str(QtWidgets.QFileDialog.getExistingDirectory(self, \
+                        "Select Directory"))
 
         if directory == None or directory == "":
             return 0
@@ -93,9 +94,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def showPlotSettings(self):
         """Spawns window for plot settings"""
-        #temp = Canvas()
         counter = 0
-        for _, pane in enumerate(self.panes): #to know how many plots are there to show correct plotMenu
+        #to know how many plots are there to show correct plotMenu
+        for _, pane in enumerate(self.panes):
             if type(pane.widget) is Canvas:
                 counter = counter + 1
 
@@ -109,8 +110,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             print("No data to plot")
             return
 
+        temp_val = 0 #fast_fix rethink it later
+
         for i, pane in enumerate(self.panes):
-            if not pane.isVisible:
+            if not pane.isVisible():
                 continue
             data_dict = {}
             #change order, because CanvasLayer is of type Canvas
@@ -124,12 +127,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             'i': 0
                             }
 
+<<<<<<< HEAD
             #second condtition not neccessary for now, lack of it may cause bugs later
             if type(pane.widget) is Canvas and type(pane.widget) is not CanvasLayer:
+=======
+            if type(pane.widget) is Canvas:
+>>>>>>> 0b1b798df07ff3868ef61cc11a3bcc5fe5933292
                 picked_column = value[temp_val][0]
                 #check if we want synchronizedPlot
                 counter = 0
-                if value[i][2]:
+                if value[temp_val][2]:
                     counter = self.stages
                 data_dict = {
                             'i': counter,
@@ -138,13 +145,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             'title' : picked_column
                             }
                 temp_val = temp_val+1
+<<<<<<< HEAD
                 print("plot settings receiver")
+=======
+>>>>>>> 0b1b798df07ff3868ef61cc11a3bcc5fe5933292
 
             if data_dict != {}:
                 print("plot settings receiver dict")
                 print (data_dict)
                 pane.widget.shareData(**data_dict)
                 pane.widget.createPlotCanvas()
+<<<<<<< HEAD
 
                 """try:
                     #threading.Thread(target=pane.widget.loop).start()
@@ -156,6 +167,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         print("main: ", int(value))
         value = int(value)
         self.panes[0].widget.i = value
+=======
+                try:
+                    x = threading.Thread(target=\
+                                pane.widget.loop, daemon=True)
+                    x.start()
+                except (KeyboardInterrupt, SystemExit):
+                    msg = "Ending thread due to system sigkill"
+                    print(msg)
+                    sys.exit()
+>>>>>>> 0b1b798df07ff3868ef61cc11a3bcc5fe5933292
 
     def showChooseWidgetSettings(self, number):
         '''Spawns Window for choosing widget for this pane'''
@@ -176,14 +197,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.refreshScreen()
 
         elif value[1] == '2dLayer':
-            self.panes[value[0]].addWidget(Canvas3D())
+            self.panes[value[0]].addWidget(CanvasLayer())
             self.refreshScreen()
 
     def createNewSubWindow(self):
         '''Helper function creates layout and button for widget selection'''
         self.panes.append(WidgetHandler())
         self.panes[-1].button = QtWidgets.QPushButton("Add Widget", self)
-        self.panes[-1].groupBox = QtWidgets.QGroupBox("Window " + str(len(self.panes)), self)
+        self.panes[-1].groupBox = QtWidgets.QGroupBox("Window " + \
+                                                    str(len(self.panes)), self)
         self.panes[-1].layout = QtWidgets.QGridLayout()
 
     def makeGrid(self):
@@ -193,25 +215,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.gridLayout.addWidget(self.panes[0].groupBox, 0, 0)
         self.gridLayout.addWidget(self.panes[1].groupBox, 0, 1)
         self.gridLayout.addWidget(self.panes[2].groupBox, 1, 0)
-        self.gridLayout.addWidget(self.panes[3].groupBox, 0, 0)
+        self.gridLayout.addWidget(self.panes[3].groupBox, 1, 1)
 
     def make1WindowGrid(self):
         '''Splits window in 1 pane.'''
-        self.panes[1].groupBox.hide()
-        self.panes[2].groupBox.hide()
-        self.panes[3].groupBox.hide()
+        self.panes[1].hide()
+        self.panes[2].hide()
+        self.panes[3].hide()
 
     def make2WindowsGrid(self):
         '''Splits window in 2 panes.'''
-        self.panes[1].groupBox.show()
-        self.panes[2].groupBox.hide()
-        self.panes[3].groupBox.hide()
+        self.panes[1].show()
+        self.panes[2].hide()
+        self.panes[3].hide()
 
     def make4WindowsGrid(self):
         '''Splits window in 4 panes.'''
-        self.panes[1].groupBox.show()
-        self.panes[2].groupBox.show()
-        self.panes[3].groupBox.show()
+        self.panes[1].show()
+        self.panes[2].show()
+        self.panes[3].show()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

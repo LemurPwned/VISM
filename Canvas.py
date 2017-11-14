@@ -30,6 +30,7 @@ class Canvas(FigureCanvas):
         self.plot_axis.axis([0, self.iterations, np.min(self.graph_data),
                             np.max(self.graph_data)])
         self.plot_axis.set_autoscale_on(False)
+<<<<<<< HEAD
         self.plot_axis.set_title('{}/{}'.format(self._i, self.iterations))
 
     def replot(self):
@@ -37,12 +38,7 @@ class Canvas(FigureCanvas):
                                 self.null_data[self._i:])
         self.plot_axis.set_title('{}/{}'.format(self._i, self.iterations))
 
-    @property
-    def i(self):
-        return self._i
-
-    @i.setter
-    def i(self, value):
+    def set_i(self, value):
         self._i = value
         try:
             self.loop_guard()
@@ -52,7 +48,19 @@ class Canvas(FigureCanvas):
             pass
 
     def refresh(self):
-        self.ax_pl.get_figure().canvas.draw()
+        self.plot_axis.get_figure().canvas.draw()
+
+    def loop_guard(self):
+        if (self.i >= self.iterations):
+            self.i = 0
+
+    def loop(self, scheduler=0.1):
+        while(self.iterations):
+            time.sleep(scheduler)
+            self.increaseIterator()
+            self.loop_guard()
+            self.refresh()
+            self.replot()
 
     def shareData(self, **kwargs):
         """

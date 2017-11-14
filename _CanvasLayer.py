@@ -1,5 +1,5 @@
 from Parser import Parser
-from Canvas3D import Canvas3D
+from CanvasLayer import CanvasLayer
 import numpy as np
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
@@ -18,16 +18,13 @@ def _shareData():
                     'title': '3dgraph',
                     'i': 0
     }
-    for stage in rawVectorData:
-        for el in stage:
-            print(el)
-    new_canvas = Canvas3D()
+    new_canvas = CanvasLayer()
     new_canvas.shareData(**target_dict)
     new_canvas.createPlotCanvas()
     new_canvas.loop()
 
 def _anims():
-    test_canvas = Canvas3D()
+    test_canvas = CanvasLayer()
     multiple_data, omf_header, odt_data, stages = Parser.readFolder(test_folder)
     xc = int(omf_header['xnodes'])
     yc = int(omf_header['ynodes'])
