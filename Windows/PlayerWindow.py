@@ -70,6 +70,7 @@ class Window(QtWidgets.QWidget):
 
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
+        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
         self.button_start = QtWidgets.QPushButton('Start', self)
         self.button_pause = QtWidgets.QPushButton('Pause', self)
         self.label_status = QtWidgets.QLabel('', self)

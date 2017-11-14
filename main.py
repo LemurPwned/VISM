@@ -36,7 +36,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.threads = []
 
         #self.worker = WorkerObject()
-        self.playerWindow = PlayerWindow(self)
+        self.playerWindow = PlayerWindow()
         self.playerWindow.setHandler(self.onIteratorChange)
         # self.playerWindow.setHandler(self.onIteratorChange)
         # self.worker_thread = QThread()
@@ -127,12 +127,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             'i': 0
                             }
 
-<<<<<<< HEAD
             #second condtition not neccessary for now, lack of it may cause bugs later
             if type(pane.widget) is Canvas and type(pane.widget) is not CanvasLayer:
-=======
-            if type(pane.widget) is Canvas:
->>>>>>> 0b1b798df07ff3868ef61cc11a3bcc5fe5933292
+
                 picked_column = value[temp_val][0]
                 #check if we want synchronizedPlot
                 counter = 0
@@ -145,38 +142,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             'title' : picked_column
                             }
                 temp_val = temp_val+1
-<<<<<<< HEAD
-                print("plot settings receiver")
-=======
->>>>>>> 0b1b798df07ff3868ef61cc11a3bcc5fe5933292
 
             if data_dict != {}:
-                print("plot settings receiver dict")
-                print (data_dict)
                 pane.widget.shareData(**data_dict)
                 pane.widget.createPlotCanvas()
-<<<<<<< HEAD
 
-                """try:
-                    #threading.Thread(target=pane.widget.loop).start()
-                except RuntimeError:
-                    print("THREADS CLOSED DUE RuntimeError")"""
+            self.refreshScreen()
 
     @pyqtSlot(str)
     def onIteratorChange(self, value):
-        print("main: ", int(value))
         value = int(value)
-        self.panes[0].widget.i = value
-=======
-                try:
-                    x = threading.Thread(target=\
-                                pane.widget.loop, daemon=True)
-                    x.start()
-                except (KeyboardInterrupt, SystemExit):
-                    msg = "Ending thread due to system sigkill"
-                    print(msg)
-                    sys.exit()
->>>>>>> 0b1b798df07ff3868ef61cc11a3bcc5fe5933292
+        self.panes[0].widget.set_i(value)
 
     def showChooseWidgetSettings(self, number):
         '''Spawns Window for choosing widget for this pane'''
