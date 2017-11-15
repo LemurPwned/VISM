@@ -38,6 +38,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.playerWindow = PlayerWindow()
         self.playerWindow.setHandler(self.onIteratorChange)
 
+        self._LOADED_FLAG_ = False
+
     def events(self):
         '''Creates all listeners for Main Window'''
         #FILE SUBMENU
@@ -80,6 +82,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         #should be thrown into separate thread by pyqt
         self.rawVectorData, self.omf_header, self.odt_data, \
                         self.stages =  Parser.readFolder(directory)
+        self._LOADED_FLAG_ = True
 
     def showAnimationSettings(self):
         '''Shows window to change animations settings'''
@@ -155,7 +158,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         finally:
             #exit this properly! It does not work!
             print("TRYING TO QUIT")
-            #quit()
             self.panes[self.gl_val].widget.increaseIterator()
 
     def showChooseWidgetSettings(self, number):
@@ -168,6 +170,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[value[0]].clearBox()
 
         if value[1] == "OpenGL":
+            if not self._LOADED_FLAG_:
+                msg = "Data has not been uploaded before accessing GL"
+                raise ValueError(msg)
             gl_dict = {
                         'omf_header':  self.omf_header,
                         'colors': self.rawVectorData,
