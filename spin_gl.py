@@ -1,7 +1,5 @@
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from OpenGL.GLUT import *
-
+import OpenGL.GL as gl
+import OpenGL.GLU as glu
 from Parser import Parser
 from PyQt5.QtCore import pyqtSignal, QPoint, QSize, Qt
 from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QOpenGLWidget, QSlider,
@@ -17,22 +15,20 @@ class GLWidget(QOpenGLWidget):
         self.xRot = 0
         self.yRot = 0
         self.zRot = 0
-
+        self.null_object = null_object
         self.initialRun = True
-        self.lastPos = QPoint()
-        self.initial_transformation()
         self.spacer = 0.2
-        self.DATA_FLAG = False
-        self.initializeGL()
-        s=0.5
-        self.yaw = 0
-        self.pitch = 0
-        self.shader = None
-        directory = './data/firstData'
-        self.color_list, self.bd, self.odt, self.iterations = Parser.readFolder(directory)
-        self.vectors_list = Parser.getLayerOutline(self.bd)
+        self.lastPos = QPoint()
+        self.DATA_FLAG = True
+
+        self.shareData()
         self.i = 0
-        self.av = 1
+        self.initializeGL()
+
+    def shareData(self):
+        directory = './data/firstData'
+        self.colors, self.header, self.odt, self.it = Parser.readFolder(directory)
+        self.vectors = Parser.getLayerOutline(self.header)
 
     def getOpenglInfo(self):
         info = """
@@ -73,11 +69,26 @@ class GLWidget(QOpenGLWidget):
             self.zRot = angle
             self.update()
 
+    def draw_vector(self, vec, color=[0, 0, 0], a=[1,1,0], b= [-1,-1,0]):
+        gl.glLineWidth(3)
+        gl.glColor3f(np.dot(a, color), np.dot(b, color), 0)
+        gl.glBegin(gl.GL_LINES)
+        gl.glVertex3f(vec[0], vec[1], vec[2])
+        gl.glVertex3f(vec[3]+color[0], vec[4]+color[1], vec[5]+color[2])
+        gl.glEnd()
+        gl.glPointSize(5)
+        gl.glBegin(gl.GL_POINTS)
+        gl.glVertex3f(vec[3]+color[0], vec[4]+color[1], vec[5]+color[2])
+        gl.glEnd()
+
     def initializeGL(self):
-        glEnable(GL_DEPTH_TEST)
-        glClearColor(0.0, 0.0, 0.0, 0.0)
-        glClearDepth(1.0)
-        glDepthFunc(GL_LESS)
+        gl.glClearColor(1.0, 1.0, 1.0, 1.0);
+        #self.object = self.first_draw()
+        self.object = self.null_object_painter()
+        self.current_list = 1
+        gl.glShadeModel(gl.GL_FLAT)
+        gl.glEnable(gl.GL_DEPTH_TEST)
+        print(self.getOpenglInfo())
 
     def draw_cordinate_system(self, size=5):
         self.draw_vector([0, 0, 0, size, 0, 0], [1, 0, 0]) #x
@@ -85,94 +96,34 @@ class GLWidget(QOpenGLWidget):
         self.draw_vector([0, 0, 0, 0, 0, size], [0, 0, 1]) #z
 
     def paintGL(self):
-        glPushMatrix()
-        for vector, color in zip(self.vectors_list[0::self.av], \
-                                                self.colors[0::self.av]):
-            self.draw_cube(vector, color=color)
-        glPopMatrix()
-        print(self.i)
-        self.resizeGL(480, 800)
-
-    def transformate(self):  # applies rotation and transformation
-        glRotatef(self.rotation[0], 0, 1, 0)  # weird
-        glRotatef(self.rotation[1], 1, 0, 0)  # weird
-        glRotatef(self.rotation[2], 0, 0, 1)
-        glTranslatef(self.position[0], self.position[1], self.position[2])
-
-    def initial_transformation(self):
-        self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
-        self.position = [-10, -10, -40]  # xyz initial
-        # self.pointing = [0,0,0] #where camera points
-
-    def draw_cubeX(self):
-        global buffers
-        if self.shader == None:
-            self.shader = Shader()
-            self.shader.initShader('''
-            void main()
-            {
-                gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-                gl_FrontColor = gl_Color;
-            }
-                    ''',
-                    '''
-            void main()
-            {
-                gl_FragColor = gl_Color;
-            }
-                    ''')
-        buffers=self.create_vbo()
-
-        self.shader.begin()
-        self.draw_vbo()
-        self.shader.end()
-
-    def create_vbo(self):
-        buffers = glGenBuffers(3)
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[0])
-        glBufferData(GL_ARRAY_BUFFER,
-                len(self.vertices)*4,  # byte size
-                (ctypes.c_float*len(self.vertices))(*self.vertices),
-                GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[1])
-        glBufferData(GL_ARRAY_BUFFER,
-                len(self.colors)*4, # byte size
-                (ctypes.c_float*len(self.colors))(*self.colors),
-                GL_STATIC_DRAW)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[2])
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                len(self.indices)*4, # byte size
-                (ctypes.c_uint*len(self.indices))(*self.indices),
-                GL_STATIC_DRAW)
-        return buffers
-
-    def draw_vbo(self):
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableClientState(GL_COLOR_ARRAY);
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-        glVertexPointer(3, GL_FLOAT, 0, None);
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
-        glColorPointer(3, GL_FLOAT, 0, None);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[2]);
-        glDrawElements(GL_TRIANGLES, len(self.indices), GL_UNSIGNED_INT, None);
-        glDisableClientState(GL_COLOR_ARRAY)
-        glDisableClientState(GL_VERTEX_ARRAY);
+        self.i += 1
+        if self.DATA_FLAG:
+            self.current_list = 2
+            self.DATA_FLAG = False
+            self.first_draw()
+        gl.glClear(
+            gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+        gl.glLoadIdentity()
+        self.draw_cordinate_system(5)
+        self.draw_vector([5,5,5,10,10,10])
+        gl.glTranslated(0.0, 0.0, -10.0)
+        gl.glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)
+        gl.glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
+        gl.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)
+        gl.glCallList(self.current_list)
+        gl.glFlush()
 
     def resizeGL(self, width, height):
-        # viewport
-        glViewport(0, 0, width, height)
-        # using Projection mode
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        aspectRatio = width / height
-        gluPerspective(85, aspectRatio, 1, 1000)
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-        glTranslatef(0, 0, 0)
-        self.colors = self.color_list[self.i]
-        self.i += 1
-        print(self.i)
-        self.paintGL()
+        side = min(width, height)
+        if side < 0:
+            return
+
+        gl.glViewport((width - side) // 2, (height - side) // 2, side,
+                           side)
+        gl.glMatrixMode(gl.GL_PROJECTION)
+        gl.glLoadIdentity()
+        glu.gluPerspective(45.0, float(width)/float(height), 0.1, 100.0)
+        gl.glMatrixMode(gl.GL_MODELVIEW)
 
     def mousePressEvent(self, event):
         self.lastPos = event.pos()
@@ -190,8 +141,76 @@ class GLWidget(QOpenGLWidget):
         elif event.buttons() & Qt.MidButton:
             print("MOUSE DRAG")
             print(dx, dy)
-            glScalef(self.xRot*dx, self.yRot*dy, 1.0)
+            gl.glScalef(self.xRot*dx, self.yRot*dy, 1.0)
         self.lastPos = event.pos()
+
+
+    def null_object_painter(self):
+        self.spin_struc = gl.glGenLists(1);
+        gl.glNewList(self.spin_struc, gl.GL_COMPILE);
+        gl.glBegin(gl.GL_QUADS)
+        gl.glColor3f(1.0, 0.2, 0.1)
+        self.draw_cube([0,0,0])
+        gl.glEnd()
+        gl.glEndList();
+
+        gl.glShadeModel(gl.GL_FLAT);
+        gl.glClearColor(0.0, 0.0, 0.0, 0.0);
+
+    def first_draw(self):
+        #filename = "./data/firstData/voltage-spin-diode-Oxs_TimeDriver-Magnetization-00-0000800.omf"
+        #self.vec = Parser.getLayerOutlineFromFile(filename)
+
+        self.spin_struc = gl.glGenLists(2);
+        gl.glNewList(self.spin_struc, gl.GL_COMPILE);
+        self.spins();
+        gl.glEndList();
+
+        gl.glShadeModel(gl.GL_FLAT);
+        gl.glClearColor(0.0, 0.0, 0.0, 0.0);
+
+        return self.spin_struc
+
+    def spins(self):
+        gl.glBegin(gl.GL_QUADS)
+        color = [0.1, 1, 0.3]
+        for vector, color in zip(self.vectors, self.colors[self.i]):
+            print(color)
+            gl.glColor3f(color[0], color[1], color[2])
+            self.draw_cube(vector)
+        gl.glEnd()
+
+    def draw_cube(self, vec):
+        #TOP FACE
+        gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2]+self.spacer)
+        gl.glVertex3f(vec[0], vec[1], vec[2]+self.spacer)
+        gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2]+self.spacer)
+        gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer)
+        #BOTTOM FACE
+        gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2])
+        gl.glVertex3f(vec[0], vec[1], vec[2])
+        gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2])
+        gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2])
+        #FRONT FACE
+        gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer)
+        gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2]+self.spacer)
+        gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2])
+        gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2])
+        #BACK FACE
+        gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2]+self.spacer)
+        gl.glVertex3f(vec[0], vec[1], vec[2]+self.spacer)
+        gl.glVertex3f(vec[0], vec[1], vec[2])
+        gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2])
+        #RIGHT FACE
+        gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2]+self.spacer)
+        gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer)
+        gl.glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2])
+        gl.glVertex3f(vec[0]+self.spacer, vec[1], vec[2])
+        #LEFT FACE
+        gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2]+self.spacer)
+        gl.glVertex3f(vec[0], vec[1], vec[2]+self.spacer)
+        gl.glVertex3f(vec[0], vec[1], vec[2])
+        gl.glVertex3f(vec[0], vec[1]+self.spacer, vec[2])
 
     def normalizeAngle(self, angle):
         while angle < 0:
@@ -199,90 +218,3 @@ class GLWidget(QOpenGLWidget):
         while angle > 360 * 16:
             angle -= 360 * 16
         return angle
-
-    def draw_cube(self, vec, color=[1,0,1], a=[1,1,0], b= [-1,-1,0]):
-        glBegin(GL_QUADS)
-        #TOP FACE
-        #glColor3f(color[0], color[1],color[2])
-        glColor3f(np.dot(a, color), np.dot(b, color), 0)
-        glVertex3f(vec[0]+self.spacer, vec[1], vec[2]+self.spacer)
-        glVertex3f(vec[0], vec[1], vec[2]+self.spacer)
-        glVertex3f(vec[0], vec[1]+self.spacer, vec[2]+self.spacer)
-        glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer)
-        #BOTTOM FACE
-        glColor3f(np.dot(a, color), np.dot(b, color), 0)
-        #glColor3f(color[0], color[1],color[2])
-        glVertex3f(vec[0]+self.spacer, vec[1], vec[2])
-        glVertex3f(vec[0], vec[1], vec[2])
-        glVertex3f(vec[0], vec[1]+self.spacer, vec[2])
-        glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2])
-        #FRONT FACE
-        glColor3f(np.dot(a, color), np.dot(b, color), 0)
-        #glColor3f(color[0], color[1],color[2])
-        glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer)
-        glVertex3f(vec[0], vec[1]+self.spacer, vec[2]+self.spacer)
-        glVertex3f(vec[0], vec[1]+self.spacer, vec[2])
-        glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2])
-        #BACK FACE
-        glColor3f(np.dot(a, color), np.dot(b, color), 0)
-        #glColor3f(color[0], color[1],color[2])
-        glVertex3f(vec[0]+self.spacer, vec[1], vec[2]+self.spacer)
-        glVertex3f(vec[0], vec[1], vec[2]+self.spacer)
-        glVertex3f(vec[0], vec[1], vec[2])
-        glVertex3f(vec[0]+self.spacer, vec[1], vec[2])
-        #RIGHT FACE
-        glColor3f(np.dot(a, color), np.dot(b, color), 0)
-        #glColor3f(color[0], color[1],color[2])
-        glVertex3f(vec[0]+self.spacer, vec[1], vec[2]+self.spacer)
-        glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer)
-        glVertex3f(vec[0]+self.spacer, vec[1]+self.spacer, vec[2])
-        glVertex3f(vec[0]+self.spacer, vec[1], vec[2])
-        #LEFT FACE
-        glColor3f(np.dot(a, color), np.dot(b, color), 0)
-        #glColor3f(color[0], color[1],color[2])
-        glVertex3f(vec[0], vec[1]+self.spacer, vec[2]+self.spacer)
-        glVertex3f(vec[0], vec[1], vec[2]+self.spacer)
-        glVertex3f(vec[0], vec[1], vec[2])
-        glVertex3f(vec[0], vec[1]+self.spacer, vec[2])
-        glEnd()
-
-def printOpenGLError():
-    err = glGetError()
-    if (err != GL_NO_ERROR):
-        print('GLERROR: ', gluErrorString(err))
-        #sys.exit()
-
-class Shader(object):
-
-    def initShader(self, vertex_shader_source, fragment_shader_source):
-        # create program
-        self.program=glCreateProgram()
-        print('create program')
-        printOpenGLError()
-
-        # vertex shader
-        print('compile vertex shader...')
-        self.vs = glCreateShader(GL_VERTEX_SHADER)
-        glShaderSource(self.vs, [vertex_shader_source])
-        glCompileShader(self.vs)
-        glAttachShader(self.program, self.vs)
-        printOpenGLError()
-
-        # fragment shader
-        print('compile fragment shader...')
-        self.fs = glCreateShader(GL_FRAGMENT_SHADER)
-        glShaderSource(self.fs, [fragment_shader_source])
-        glCompileShader(self.fs)
-        glAttachShader(self.program, self.fs)
-        printOpenGLError()
-
-        print('link...')
-        glLinkProgram(self.program)
-        printOpenGLError()
-
-    def begin(self):
-        if glUseProgram(self.program):
-            printOpenGLError()
-
-    def end(self):
-        glUseProgram(0)
