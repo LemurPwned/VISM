@@ -20,7 +20,6 @@ def _shareData():
                 }
     new_canvas = Canvas()
     new_canvas.shareData(**data_dict)
-    new_canvas.check_instance()
     new_canvas.createPlotCanvas()
 
     return new_canvas
@@ -40,6 +39,5 @@ def _iterateCanvas(canvas):
 
 if __name__ == "__main__":
     canvas = _shareData()
-    plt.show()
     _runCanvas(canvas)
     _iterateCanvas(canvas)

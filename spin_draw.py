@@ -8,7 +8,6 @@ from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QOpenGLWidget, QSlider,
 from spin_gl import GLWidget
 
 class Window(QWidget):
-
     def __init__(self):
         super(Window, self).__init__()
 
@@ -20,9 +19,7 @@ class Window(QWidget):
 
         self.setWindowTitle("Early Spin Struct")
 
-
 if __name__ == '__main__':
-
     app = QApplication(sys.argv)
     window = Window()
     window.show()

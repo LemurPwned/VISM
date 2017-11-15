@@ -4,12 +4,12 @@ from Parser import Parser
 from PyQt5.QtCore import pyqtSignal, QPoint, QSize, Qt
 from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QOpenGLWidget, QSlider,
                              QWidget)
-from PyQt5.QtGui import QColor
+from PyQt5.Qt import QWheelEvent, Qt
 import numpy as np
 import time
 
 class GLWidget(QOpenGLWidget):
-    def __init__(self, null_object=True, parent=None):
+    def __init__(self, ddict, null_object=True, parent=None):
         super(GLWidget, self).__init__(parent)
         self.object = 0
         self.xRot = 0
@@ -19,8 +19,19 @@ class GLWidget(QOpenGLWidget):
         self.initialRun = True
         self.spacer = 0.2
         self.lastPos = QPoint()
-
+        self.DATA_FLAG = False
+        self.steps = 1
+        self.shareData(**ddict)
         self.initializeGL()
+
+    def shareData(self, **kwargs):
+        """
+        @param **kwargs are the arguments to be passed to the main plot iterator
+        """
+        #TODO: define minimum_list in arguments and force SPECIFIC keys
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+        self.vectors = Parser.getLayerOutline(self.omf_header)
 
     def getOpenglInfo(self):
         info = """
@@ -87,30 +98,37 @@ class GLWidget(QOpenGLWidget):
         self.draw_vector([0, 0, 0, 0, size, 0], [0, 1, 0]) #y
         self.draw_vector([0, 0, 0, 0, 0, size], [0, 0, 1]) #z
 
+    def increaseIterator(self):
+        self.i += 1
+
     def paintGL(self):
         gl.glClear(
             gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         gl.glLoadIdentity()
-        self.draw_cordinate_system(5)
-        self.draw_vector([5,5,5,10,10,10])
         gl.glTranslated(0.0, 0.0, -10.0)
+        glu.gluPerspective(45.0*self.steps, \
+                    float(self.width)/float(self.height), 0.1, 100.0)
         gl.glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)
         gl.glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
         gl.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)
-        gl.glCallList(self.current_list)
-        gl.glFlush()
+        if self.DATA_FLAG:
+            self.spins()
+        else:
+            gl.glCallList(self.current_list)
 
     def resizeGL(self, width, height):
         side = min(width, height)
+        self.width = width
+        self.height = height
         if side < 0:
             return
-
         gl.glViewport((width - side) // 2, (height - side) // 2, side,
                            side)
         gl.glMatrixMode(gl.GL_PROJECTION)
         gl.glLoadIdentity()
         glu.gluPerspective(45.0, float(width)/float(height), 0.1, 100.0)
         gl.glMatrixMode(gl.GL_MODELVIEW)
+        print("CHANGING")
 
     def mousePressEvent(self, event):
         self.lastPos = event.pos()
@@ -128,9 +146,13 @@ class GLWidget(QOpenGLWidget):
         elif event.buttons() & Qt.MidButton:
             print("MOUSE DRAG")
             print(dx, dy)
-            gl.glScalef(self.xRot*dx, self.yRot*dy, 1.0)
         self.lastPos = event.pos()
 
+    def wheelEvent(self, event):
+        print("SCROLl")
+        degs = event.angleDelta().y()/8
+        self.steps += degs/15
+        self.update()
 
     def null_object_painter(self):
         self.spin_struc = gl.glGenLists(1);
@@ -145,13 +167,7 @@ class GLWidget(QOpenGLWidget):
         gl.glClearColor(0.0, 0.0, 0.0, 0.0);
 
     def first_draw(self):
-        filename = "./data/firstData/voltage-spin-diode-Oxs_\
-                        TimeDriver-Magnetization-00-0000800.omf"
-        #if openGLWidget.null_object:
-        self.vec = Parser.getLayerOutlineFromFile(filename)
-
-        #self.vec = self.rawVectorData[self.i]
-
+        print("CALLED DRAW")
         self.spin_struc = gl.glGenLists(2);
         gl.glNewList(self.spin_struc, gl.GL_COMPILE);
         self.spins();
@@ -163,9 +179,9 @@ class GLWidget(QOpenGLWidget):
         return self.spin_struc
 
     def spins(self):
+        print("redrawn")
         gl.glBegin(gl.GL_QUADS)
-        color = [0.1, 1, 0.3]
-        for vector in self.vec:
+        for vector, color in zip(self.vectors, self.colors[self.i]):
             gl.glColor3f(color[0], color[1], color[2])
             self.draw_cube(vector)
         gl.glEnd()
