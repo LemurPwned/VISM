@@ -4,7 +4,7 @@ from Parser import Parser
 from PyQt5.QtCore import pyqtSignal, QPoint, QSize, Qt
 from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QOpenGLWidget, QSlider,
                              QWidget)
-from PyQt5.QtGui import QColor
+from PyQt5.Qt import QWheelEvent, Qt
 import numpy as np
 import time
 
@@ -20,6 +20,7 @@ class GLWidget(QOpenGLWidget):
         self.spacer = 0.2
         self.lastPos = QPoint()
         self.DATA_FLAG = True
+        self.steps = 1
 
         self.shareData()
         self.i = 0
@@ -107,6 +108,7 @@ class GLWidget(QOpenGLWidget):
         self.draw_cordinate_system(5)
         self.draw_vector([5,5,5,10,10,10])
         gl.glTranslated(0.0, 0.0, -10.0)
+        glu.gluPerspective(45.0*self.steps, float(self.width)/float(self.height), 0.1, 100.0)
         gl.glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)
         gl.glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
         gl.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)
@@ -115,6 +117,8 @@ class GLWidget(QOpenGLWidget):
 
     def resizeGL(self, width, height):
         side = min(width, height)
+        self.width = width
+        self.height = height
         if side < 0:
             return
 
@@ -124,6 +128,7 @@ class GLWidget(QOpenGLWidget):
         gl.glLoadIdentity()
         glu.gluPerspective(45.0, float(width)/float(height), 0.1, 100.0)
         gl.glMatrixMode(gl.GL_MODELVIEW)
+        print("CHANGING")
 
     def mousePressEvent(self, event):
         self.lastPos = event.pos()
@@ -141,9 +146,13 @@ class GLWidget(QOpenGLWidget):
         elif event.buttons() & Qt.MidButton:
             print("MOUSE DRAG")
             print(dx, dy)
-            gl.glScalef(self.xRot*dx, self.yRot*dy, 1.0)
         self.lastPos = event.pos()
 
+    def wheelEvent(self, event):
+        print("SCROLl")
+        degs = event.angleDelta().y()/8
+        self.steps += degs/15
+        self.update()
 
     def null_object_painter(self):
         self.spin_struc = gl.glGenLists(1);
@@ -158,9 +167,6 @@ class GLWidget(QOpenGLWidget):
         gl.glClearColor(0.0, 0.0, 0.0, 0.0);
 
     def first_draw(self):
-        #filename = "./data/firstData/voltage-spin-diode-Oxs_TimeDriver-Magnetization-00-0000800.omf"
-        #self.vec = Parser.getLayerOutlineFromFile(filename)
-
         self.spin_struc = gl.glGenLists(2);
         gl.glNewList(self.spin_struc, gl.GL_COMPILE);
         self.spins();
@@ -172,10 +178,10 @@ class GLWidget(QOpenGLWidget):
         return self.spin_struc
 
     def spins(self):
+        print("redrawn")
         gl.glBegin(gl.GL_QUADS)
         color = [0.1, 1, 0.3]
         for vector, color in zip(self.vectors, self.colors[self.i]):
-            print(color)
             gl.glColor3f(color[0], color[1], color[2])
             self.draw_cube(vector)
         gl.glEnd()
