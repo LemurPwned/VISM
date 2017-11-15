@@ -19,7 +19,7 @@ class GLWidget(QOpenGLWidget):
         self.initialRun = True
         self.spacer = 0.2
         self.lastPos = QPoint()
-        self.DATA_FLAG = True
+        self.DATA_FLAG = False
         self.steps = 1
         self.shareData(**ddict)
         self.initializeGL()
@@ -98,25 +98,23 @@ class GLWidget(QOpenGLWidget):
         self.draw_vector([0, 0, 0, 0, size, 0], [0, 1, 0]) #y
         self.draw_vector([0, 0, 0, 0, 0, size], [0, 0, 1]) #z
 
-    def paintGL(self):
+    def increaseIterator(self):
         self.i += 1
-        print(self.i)
-        if self.DATA_FLAG:
-            self.current_list = 2
-            self.DATA_FLAG = False
+
+    def paintGL(self):
         gl.glClear(
             gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        self.spins()
         gl.glLoadIdentity()
-        #self.draw_cordinate_system(5)
-        #self.draw_vector([5,5,5,10,10,10])
         gl.glTranslated(0.0, 0.0, -10.0)
-        glu.gluPerspective(45.0*self.steps, float(self.width)/float(self.height), 0.1, 100.0)
+        glu.gluPerspective(45.0*self.steps, \
+                    float(self.width)/float(self.height), 0.1, 100.0)
         gl.glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)
         gl.glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
         gl.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)
-        #gl.glCallList(self.current_list)
-        #gl.glFlush()
+        if self.DATA_FLAG:
+            self.spins()
+        else:
+            gl.glCallList(self.current_list)
 
     def resizeGL(self, width, height):
         side = min(width, height)
@@ -171,8 +169,8 @@ class GLWidget(QOpenGLWidget):
 
     def first_draw(self):
         print("CALLED DRAW")
-        #self.spin_struc = gl.glGenLists(2);
-        #gl.glNewList(self.spin_struc, gl.GL_COMPILE);
+        self.spin_struc = gl.glGenLists(2);
+        gl.glNewList(self.spin_struc, gl.GL_COMPILE);
         self.spins();
         gl.glEndList();
 

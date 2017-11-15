@@ -156,8 +156,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             #exit this properly! It does not work!
             print("TRYING TO QUIT")
             #quit()
-            self.panes[self.gl_val].widget.paintGL()
-            time.sleep(0.2)
+            self.panes[self.gl_val].widget.increaseIterator()
 
     def showChooseWidgetSettings(self, number):
         '''Spawns Window for choosing widget for this pane'''
