@@ -4,10 +4,10 @@ from PyQt5.QtCore import QTimer, QPoint, pyqtSlot, QThread, pyqtSlot
 from PyQt5 import QtWidgets
 from Windows.MainWindowTemplate import Ui_MainWindow
 
-
 from Canvas import Canvas
 from CanvasLayer import CanvasLayer
 from Parser import Parser
+
 from Windows.ChooseWidget import ChooseWidget
 from Windows.animationSettings import AnimationSettings
 from Windows.PlotSettings import PlotSettings
@@ -16,8 +16,8 @@ from WidgetHandler import WidgetHandler
 from spin_gl import GLWidget
 
 
-
 import threading
+import time
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
@@ -35,15 +35,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.events() #create event listeners
         self.threads = []
 
-        #self.worker = WorkerObject()
         self.playerWindow = PlayerWindow()
         self.playerWindow.setHandler(self.onIteratorChange)
-        # self.playerWindow.setHandler(self.onIteratorChange)
-        # self.worker_thread = QThread()
-        # self.playerWindow.moveToThread(self.worker_thread)
-        # self.worker_thread.start()
-
-
 
     def events(self):
         '''Creates all listeners for Main Window'''
@@ -100,7 +93,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             if type(pane.widget) is Canvas:
                 counter = counter + 1
 
-
         self.plotSettingsWindow = PlotSettings(list(self.odt_data), counter)
         self.plotSettingsWindow.setEventHandler(self.plotSettingsReceiver)
 
@@ -127,8 +119,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             'i': 0
                             }
 
-            #second condtition not neccessary for now, lack of it may cause bugs later
-            if type(pane.widget) is Canvas and type(pane.widget) is not CanvasLayer:
+            #second condtition not neccessary for now,
+            # lack of it may cause bugs later
+            if type(pane.widget) is Canvas and \
+                    type(pane.widget) is not CanvasLayer:
 
                 picked_column = value[temp_val][0]
                 #check if we want synchronizedPlot
@@ -152,7 +146,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     @pyqtSlot(str)
     def onIteratorChange(self, value):
         value = int(value)
-        self.panes[0].widget.set_i(value)
+        try:
+            self.panes[0].widget.set_i(value)
+        except AttributeError:
+            #put pop-up later
+            msg = "Threre is no pane intitated to be played over"
+            print(msg)
+        finally:
+            #exit this properly! It does not work!
+            print("TRYING TO QUIT")
+            #quit()
+            self.panes[self.gl_val].widget.paintGL()
+            time.sleep(0.2)
 
     def showChooseWidgetSettings(self, number):
         '''Spawns Window for choosing widget for this pane'''
@@ -164,7 +169,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[value[0]].clearBox()
 
         if value[1] == "OpenGL":
-            self.panes[value[0]].addWidget(GLWidget())
+            gl_dict = {
+                        'omf_header':  self.omf_header,
+                        'colors': self.rawVectorData,
+                        'iterations': self.stages,
+                        'i': 0
+                        }
+            self.panes[value[0]].addWidget(GLWidget(ddict=gl_dict))
+            self.gl_val = value[0]
             self.refreshScreen()
             print(self.panes[value[0]].widget)
 

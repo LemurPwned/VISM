@@ -9,7 +9,7 @@ import numpy as np
 import time
 
 class GLWidget(QOpenGLWidget):
-    def __init__(self, null_object=True, parent=None):
+    def __init__(self, ddict, null_object=True, parent=None):
         super(GLWidget, self).__init__(parent)
         self.object = 0
         self.xRot = 0
@@ -21,15 +21,17 @@ class GLWidget(QOpenGLWidget):
         self.lastPos = QPoint()
         self.DATA_FLAG = True
         self.steps = 1
-
-        self.shareData()
-        self.i = 0
+        self.shareData(**ddict)
         self.initializeGL()
 
-    def shareData(self):
-        directory = './data/firstData'
-        self.colors, self.header, self.odt, self.it = Parser.readFolder(directory)
-        self.vectors = Parser.getLayerOutline(self.header)
+    def shareData(self, **kwargs):
+        """
+        @param **kwargs are the arguments to be passed to the main plot iterator
+        """
+        #TODO: define minimum_list in arguments and force SPECIFIC keys
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+        self.vectors = Parser.getLayerOutline(self.omf_header)
 
     def getOpenglInfo(self):
         info = """
@@ -98,22 +100,23 @@ class GLWidget(QOpenGLWidget):
 
     def paintGL(self):
         self.i += 1
+        print(self.i)
         if self.DATA_FLAG:
             self.current_list = 2
             self.DATA_FLAG = False
-            self.first_draw()
         gl.glClear(
             gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+        self.spins()
         gl.glLoadIdentity()
-        self.draw_cordinate_system(5)
-        self.draw_vector([5,5,5,10,10,10])
+        #self.draw_cordinate_system(5)
+        #self.draw_vector([5,5,5,10,10,10])
         gl.glTranslated(0.0, 0.0, -10.0)
         glu.gluPerspective(45.0*self.steps, float(self.width)/float(self.height), 0.1, 100.0)
         gl.glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)
         gl.glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
         gl.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)
-        gl.glCallList(self.current_list)
-        gl.glFlush()
+        #gl.glCallList(self.current_list)
+        #gl.glFlush()
 
     def resizeGL(self, width, height):
         side = min(width, height)
@@ -167,8 +170,9 @@ class GLWidget(QOpenGLWidget):
         gl.glClearColor(0.0, 0.0, 0.0, 0.0);
 
     def first_draw(self):
-        self.spin_struc = gl.glGenLists(2);
-        gl.glNewList(self.spin_struc, gl.GL_COMPILE);
+        print("CALLED DRAW")
+        #self.spin_struc = gl.glGenLists(2);
+        #gl.glNewList(self.spin_struc, gl.GL_COMPILE);
         self.spins();
         gl.glEndList();
 
@@ -180,7 +184,6 @@ class GLWidget(QOpenGLWidget):
     def spins(self):
         print("redrawn")
         gl.glBegin(gl.GL_QUADS)
-        color = [0.1, 1, 0.3]
         for vector, color in zip(self.vectors, self.colors[self.i]):
             gl.glColor3f(color[0], color[1], color[2])
             self.draw_cube(vector)
