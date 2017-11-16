@@ -87,7 +87,6 @@ class Parser():
                             (filename, )) for filename in files_in_directory]
         max_len = len(text_file_results)
         for i, result in enumerate(text_file_results):
-            Parser.update_progress_bar(i, max_len)
             omf_header_data, vector_data = result.get(timeout=12)
             rawVectorData.append(vector_data)
             omf_headers.append(omf_header_data)
@@ -113,7 +112,6 @@ class Parser():
                             (filename, )) for filename in files_in_directory]
         max_len = len(text_file_results)
         for i, result in enumerate(text_file_results):
-            Parser.update_progress_bar(i, max_len)
             data = result.get(timeout=12)
             rawVectorData.append(data)
         #catch errors, replace with custom exceptions
