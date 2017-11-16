@@ -21,7 +21,6 @@ class Canvas(FigureCanvas):
         self.canvas_type = 'panel'
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
-        self.i = self.i
         self.null_data = [x for x in range(self.iterations)]
         a_handler = self.plot_axis.plot(self.null_data,
             self.graph_data[0:self.i] + self.null_data[self.i:], 'ro')[0]
@@ -52,7 +51,6 @@ class Canvas(FigureCanvas):
         #if (self.i >= self.iterations):
             self.i = self.i%self.iterations
 
-
     def loop(self, scheduler=0.1):
         while(self.iterations):
             time.sleep(scheduler)
@@ -77,9 +75,3 @@ class Canvas(FigureCanvas):
                 print("No matching parameter has been found in the provided list")
                 print("minimum_parameter_list is not provided")
                 raise TypeError
-
-    def __str__(self):
-        return str(self.__dict__)
-
-    def check_instance(self):
-        print(self.title)
