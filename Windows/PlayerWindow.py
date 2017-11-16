@@ -9,16 +9,50 @@ class PlayerWindow(QtCore.QObject):
     def __init__(self, parent=None):
         super(self.__class__, self).__init__(parent)
 
+
         # Create a gui object.
         self.gui = Window()
+
+        self.checkForErrors(parent)
 
         # Setup the worker object and the worker_thread.
         self.worker = WorkerObject()
         self.worker_thread = QtCore.QThread()
         self.worker.moveToThread(self.worker_thread)
         self.worker_thread.start()
-
         self.gui.show()
+
+
+    def checkForErrors(self, parent=""):
+        if parent == None:
+            msg = "PlayerWindow: no parent provided! Use: x = PlayerWindow(self) instead of x = PlayerWindow()"
+            print(msg)
+            exit()
+
+        if parent._LOADED_FLAG_ == False:
+            msg = "PlayerWindow: First load data! Go to: File > Load Directory and select proper directory!"
+            print(msg)
+            for element in self.gui.elements:
+                element.setEnabled(False)
+
+            return False
+
+        if parent.panes[0].widget == None:
+            msg = "PlayerWindow: No widget selected Click Add Widget button in main window!"
+            print(msg)
+            for element in self.gui.elements:
+                element.setEnabled(False)
+
+            return False
+
+        return True
+
+
+    def reloadGui(self):
+        if self.checkForErrors():
+            for element in self.gui.elements:
+                element.setEnabled(True)
+
 
     def setHandler(self, handler):
         self.handler = handler
@@ -105,6 +139,7 @@ class Window(QtWidgets.QWidget):
 
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
+        self.elements = []
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
         self.button_start = QtWidgets.QPushButton('Play', self)
         self.button_stop = QtWidgets.QPushButton('Reset', self)
@@ -113,6 +148,14 @@ class Window(QtWidgets.QWidget):
         self.slider_speed = QtWidgets.QSlider(QtCore.Qt.Horizontal, self)
         self.speedLabel = QtWidgets.QLabel("Animtaion Speed: 1", self)
         #self.label_status = QtWidgets.QLabel('test', self)
+
+        self.elements.append(self.button_start)
+        self.elements.append(self.button_stop)
+        self.elements.append(self.button_nextFrame)
+        self.elements.append(self.button_prevFrame)
+        self.elements.append(self.slider_speed)
+        self.elements.append(self.speedLabel)
+
 
         self.mainLayout = QtWidgets.QGridLayout(self)
         layout = QtWidgets.QGridLayout()
