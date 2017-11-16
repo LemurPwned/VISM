@@ -69,8 +69,8 @@ class WidgetHandler:
         self._widget = widget
 
         if self._groupBox == None:
-            raise ValueError("groupBox must be initialized")
+            raise ValueError("GroupBox must be initialized")
         try:
             self._layout.addWidget(widget)
         except:
-            raise ValueError("layout is not proper or argument is not a widget")
+            raise ValueError("Layout is not proper or argument is not a widget")

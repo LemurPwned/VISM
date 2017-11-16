@@ -1,6 +1,6 @@
 import sys
 
-from PyQt5.QtCore import QTimer, QPoint, pyqtSlot, QThread, pyqtSlot
+from PyQt5.QtCore import QTimer, QPoint, pyqtSlot, QThread, pyqtSlot, Qt
 from PyQt5 import QtWidgets
 from Windows.MainWindowTemplate import Ui_MainWindow
 
@@ -22,6 +22,7 @@ import time
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
+        self.setWindowFlags(Qt.WindowStaysOnBottomHint)
         self.odt_data = ""
         self.setupUi(self)
         self.setWindowTitle("ESE - Early Spins Enviroment")
@@ -148,17 +149,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     @pyqtSlot(str)
     def onIteratorChange(self, value):
+        print(value)
         value = int(value)
-        try:
-            self.panes[0].widget.set_i(value)
-        except AttributeError:
-            #put pop-up later
-            msg = "Threre is no pane intitated to be played over"
-            print(msg)
-        finally:
-            #exit this properly! It does not work!
-            print("TRYING TO QUIT")
-            self.panes[self.gl_val].widget.increaseIterator()
+        for pane in self.panes:
+            if pane.isVisible():
+                pane.widget.set_i(value)
+
 
     def showChooseWidgetSettings(self, number):
         '''Spawns Window for choosing widget for this pane'''
@@ -170,6 +166,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[value[0]].clearBox()
 
         if value[1] == "OpenGL":
+            #CAN't be here!!!!
             if not self._LOADED_FLAG_:
                 msg = "Data has not been uploaded before accessing GL"
                 raise ValueError(msg)
@@ -180,9 +177,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                         'i': 0
                         }
             self.panes[value[0]].addWidget(GLWidget(ddict=gl_dict))
-            self.gl_val = value[0]
             self.refreshScreen()
-            print(self.panes[value[0]].widget)
 
         if value[1] == '2dPlot':
             self.panes[value[0]].addWidget(Canvas())

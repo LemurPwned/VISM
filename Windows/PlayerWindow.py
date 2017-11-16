@@ -27,19 +27,30 @@ class PlayerWindow(QtCore.QObject):
         self._connectSignals()
 
     def _connectSignals(self):
-        self.gui.button_start.clicked.connect(self.worker.startWork)
-        self.gui.button_pause.clicked.connect(self.forceWorkerReset)
-        #self.signalStatus.connect(self.gui.updateStatus)
+        self.gui.button_start.clicked.connect(self.PlayPauseClicked)
+        self.gui.button_start.clicked.connect(self.worker.play)
+        self.gui.button_stop.clicked.connect(lambda: self.forceWorkerReset(True))
         self.worker.signalStatus.connect(self.handler)
+        self.gui.button_nextFrame.clicked.connect(lambda: self.worker.moveFrame(1))
+        self.gui.button_prevFrame.clicked.connect(lambda: self.worker.moveFrame(-1))
 
-        #self.parent().aboutToQuit.connect(self.forceWorkerQuit)
+        #self.parent().aboutToQuit.connect(self.forceWorkerQuit) #TODO search about this
 
-    def forceWorkerReset(self):
+    def PlayPauseClicked(self):
+        self.worker.running = not self.worker.running
+        if self.worker.running:
+            self.gui.button_start.setText("Pause")
+        else:
+            self.forceWorkerReset(False)
+            self.gui.button_start.setText("Play")
+
+    def forceWorkerReset(self, reset=True):
         if self.worker_thread.isRunning():
             self.worker_thread.terminate()
             self.worker_thread.wait()
-
-            self.signalStatus.emit('Idle.')
+            if reset:
+                self.worker.resetIterator()
+            self.worker.running = False
             self.worker_thread.start()
 
     def forceWorkerQuit(self):
@@ -47,40 +58,82 @@ class PlayerWindow(QtCore.QObject):
             self.worker_thread.terminate()
             self.worker_thread.wait()
 
-
 class WorkerObject(QtCore.QObject):
     signalStatus = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(self.__class__, self).__init__(parent)
         self._iterator = 0
+        self.running = False
 
-    @QtCore.pyqtSlot()
+    def resetIterator(self):
+        self._iterator = 0
+
+
     def startWork(self):
-        factors = self.play()
-        self.signalStatus.emit('Idle.')
+        #self.running = not self.running
+        if self.running:
+            self.play()
 
+        #self.signalStatus.emit('Idle.')
+    @QtCore.pyqtSlot()
     def play(self):
         while(True):
+            if self.running:
+                self._iterator = self._iterator + 1
+                self.signalStatus.emit(str(self._iterator))
+
+            if not self.running:
+                pass
+
             tm.sleep(0.1)
-            self._iterator = self._iterator + 1
+
+    @QtCore.pyqtSlot()
+    def moveFrame(self, howMany):
+        print(self._iterator, howMany)
+        if ((self._iterator + howMany) >= 0):
+            print("not reseting")
+            self._iterator = (self._iterator + howMany)
             self.signalStatus.emit(str(self._iterator))
+        else:
+            print("reseting")
+            self._iterator = 0
+            self.signalStatus.emit(str(self._iterator))
+
 
 class Window(QtWidgets.QWidget):
 
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-        self.button_start = QtWidgets.QPushButton('Start', self)
-        self.button_pause = QtWidgets.QPushButton('Pause', self)
-        self.label_status = QtWidgets.QLabel('', self)
+        self.button_start = QtWidgets.QPushButton('Play', self)
+        self.button_stop = QtWidgets.QPushButton('Reset', self)
+        self.button_nextFrame = QtWidgets.QPushButton('>', self)
+        self.button_prevFrame = QtWidgets.QPushButton('<', self)
+        self.slider_speed = QtWidgets.QSlider(QtCore.Qt.Horizontal, self)
+        self.speedLabel = QtWidgets.QLabel("Animtaion Speed: 1", self)
+        #self.label_status = QtWidgets.QLabel('test', self)
 
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.addWidget(self.button_start)
-        layout.addWidget(self.button_pause)
-        layout.addWidget(self.label_status)
+        self.mainLayout = QtWidgets.QGridLayout(self)
+        layout = QtWidgets.QGridLayout()
+        layout.addWidget(self.button_prevFrame,0,0)
+        layout.addWidget(self.button_start,0,1)
+        layout.addWidget(self.button_stop,0,2)
+        layout.addWidget(self.button_nextFrame,0,3)
+        #layout.addWidget(self.label_status)
 
-        self.setFixedSize(400, 200)
+        layout2 = QtWidgets.QVBoxLayout()
+        layoutin2_1 = QtWidgets.QHBoxLayout()
+        layoutin2_2 = QtWidgets.QHBoxLayout()
+        layoutin2_1.addWidget(self.slider_speed)
+        layoutin2_2.addWidget(self.speedLabel)
+
+        layout2.addLayout(layoutin2_1)
+        layout2.addLayout(layoutin2_2)
+        self.mainLayout.addLayout(layout, 0,0)
+        self.mainLayout.addLayout(layout2, 1,0)
+
+        self.setFixedSize(400, 150)
 
     '''@QtCore.pyqtSlot(str)
     def updateStatus(self, status):

@@ -48,8 +48,7 @@ class Canvas(FigureCanvas):
         self.plot_axis.get_figure().canvas.draw()
 
     def loop_guard(self):
-        #if (self.i >= self.iterations):
-            self.i = self.i%self.iterations
+        self.i = self.i%self.iterations
 
     def loop(self, scheduler=0.1):
         while(self.iterations):
