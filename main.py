@@ -7,13 +7,12 @@ from Windows.MainWindowTemplate import Ui_MainWindow
 from Canvas import Canvas
 from CanvasLayer import CanvasLayer
 from Parser import Parser
-from pygletContext import PygletContext
 
 from Windows.ChooseWidget import ChooseWidget
 from Windows.PlotSettings import PlotSettings
 from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
-from pygletContext import PygletContext
+from openGLContext import OpenGLContext
 
 import threading
 import time
@@ -171,7 +170,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                         'iterations': self.stages,
                         'i': 0
                         }
-            self.panes[value[0]].addWidget(PygletContext(data_dict=gl_dict))
+            self.panes[value[0]].addWidget(OpenGLContext(data_dict=gl_dict))
             self.refreshScreen()
 
         if value[1] == '2dPlot':

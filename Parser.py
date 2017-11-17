@@ -56,7 +56,6 @@ class Parser():
         elif not odt_file:
             print("None .odt")
             return
-        print(odt_file)
         odt_data, stages = Parser.getOdtData(odt_file[0])
         if not is_binary(files_in_directory[0]):
             rawVectorData = Parser.readText(files_in_directory)
