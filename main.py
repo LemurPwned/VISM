@@ -7,6 +7,7 @@ from Windows.MainWindowTemplate import Ui_MainWindow
 from Canvas import Canvas
 from CanvasLayer import CanvasLayer
 from Parser import Parser
+from pygletContext import PygletContext
 
 from Windows.ChooseWidget import ChooseWidget
 from Windows.animationSettings import AnimationSettings
@@ -170,16 +171,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[value[0]].clearBox()
 
         if value[1] == "OpenGL":
+            directory = './data/firstData'
+            self.rawVectorData, self.omf_header, self.odt_data, \
+                            self.stages =  Parser.readFolder(directory)
+            self._LOADED_FLAG_ = True
             if not self._LOADED_FLAG_:
                 msg = "Data has not been uploaded before accessing GL"
                 raise ValueError(msg)
             gl_dict = {
                         'omf_header':  self.omf_header,
-                        'colors': self.rawVectorData,
+                        'color_list': self.rawVectorData,
                         'iterations': self.stages,
                         'i': 0
                         }
-            self.panes[value[0]].addWidget(GLWidget(ddict=gl_dict))
+            self.panes[value[0]].addWidget(PygletContext(data_dict=gl_dict))
             self.gl_val = value[0]
             self.refreshScreen()
             print(self.panes[value[0]].widget)

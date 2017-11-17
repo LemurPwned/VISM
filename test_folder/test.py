@@ -1,271 +1,195 @@
-# coding: utf-8
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from OpenGL.GLUT import *
+"""
+This module contains the definiton of a pyglet widget for a
+PySide application: QPygletWidget
+
+It also provides a basic usage example.
+"""
 import sys
-
-##############################################################################
-# OpenGL funcs
-##############################################################################
-def initialize():
-    glClearColor(0.0, 0.0, 0.0, 0.0)
-    glClearDepth(1.0)
-    glDepthFunc(GL_LESS)
-    glEnable(GL_DEPTH_TEST)
-
-def resize(Width, Height):
-    # viewport
-    if Height == 0:
-        Height = 1
-    glViewport(0, 0, Width, Height)
-    # projection
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-    gluPerspective(45.0, float(Width)/float(Height), 0.1, 100.0)
-
-yaw=0
-pitch=0
-def draw():
-    global yaw, pitch
-    # clear
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
-    # view
-    glMatrixMode(GL_MODELVIEW)
-    glLoadIdentity()
-    yaw+=0.39
-    pitch+=0.27
-    glTranslatef(0.0, 0.0, -2.0)
-    glRotatef(yaw, 0, 1, 0)
-    glRotatef(pitch, 1, 0, 0)
-
-    # cube
-    #draw_cube0()
-    #draw_cube1()
-    #draw_cube2()
-    draw_cube3()
-
-    glFlush()
-
-##############################################################################
-# Shader
-##############################################################################
-# Checks for GL posted errors after appropriate calls
-def printOpenGLError():
-    err = glGetError()
-    if (err != GL_NO_ERROR):
-        print('GLERROR: ', gluErrorString(err))
-        #sys.exit()
-
-class Shader(object):
-
-    def initShader(self, vertex_shader_source, fragment_shader_source):
-        # create program
-        self.program=glCreateProgram()
-        print('create program')
-        printOpenGLError()
-
-        # vertex shader
-        print('compile vertex shader...')
-        self.vs = glCreateShader(GL_VERTEX_SHADER)
-        glShaderSource(self.vs, [vertex_shader_source])
-        glCompileShader(self.vs)
-        glAttachShader(self.program, self.vs)
-        printOpenGLError()
-
-        # fragment shader
-        print('compile fragment shader...')
-        self.fs = glCreateShader(GL_FRAGMENT_SHADER)
-        glShaderSource(self.fs, [fragment_shader_source])
-        glCompileShader(self.fs)
-        glAttachShader(self.program, self.fs)
-        printOpenGLError()
-
-        print('link...')
-        glLinkProgram(self.program)
-        printOpenGLError()
-
-    def begin(self):
-        if glUseProgram(self.program):
-            printOpenGLError()
-
-    def end(self):
-        glUseProgram(0)
+import pyglet
+pyglet.options['shadow_window'] = False
+pyglet.options['debug_gl'] = False
+from pyglet import gl
+from PySide import QtCore, QtGui, QtOpenGL
 
 
-##############################################################################
-# vertices
-##############################################################################
-s=0.5
-vertices=[
-        -s, -s, -s,
-         s, -s, -s,
-         s,  s, -s,
-        -s,  s, -s,
-        -s, -s,  s,
-         s, -s,  s,
-         s,  s,  s,
-        -s,  s,  s,
-        ]
-colors=[
-        0, 0, 0,
-        1, 0, 0,
-        0, 1, 0,
-        0, 0, 1,
-        0, 1, 1,
-        1, 0, 1,
-        1, 1, 1,
-        1, 1, 0,
-        ]
-indices=[
-        0, 1, 2, 2, 3, 0,
-        0, 4, 5, 5, 1, 0,
-        1, 5, 6, 6, 2, 1,
-        2, 6, 7, 7, 3, 2,
-        3, 7, 4, 4, 0, 3,
-        4, 7, 6, 6, 5, 4,
-        ]
+class ObjectSpace(object):
+    """ Object space mocker """
+    def __init__(self):
+        # Textures and buffers scheduled for deletion the next time this
+        # object space is active.
+        self._doomed_textures = []
+        self._doomed_buffers = []
 
-def draw_cube0():
-    glBegin(GL_TRIANGLES)
-    for i in range(0, len(indices), 3):
-        index=indices[i]*3
-        glColor3f(*colors[index:index+3])
-        glVertex3f(*vertices[index:index+3])
 
-        index=indices[i+1]*3
-        glColor3f(*colors[index:index+3])
-        glVertex3f(*vertices[index:index+3])
+class Context(object):
+    """
+    pyglet.gl.Context mocker. This is used to make pyglet believe that a valid
+    context has already been setup. (Qt takes care of creating the open gl
+    context)
 
-        index=indices[i+2]*3
-        glColor3f(*colors[index:index+3])
-        glVertex3f(*vertices[index:index+3])
-    glEnd()
+    _Most of the methods are empty, there is just the minimum required to make
+    it look like a duck..._
+    """
+    # define the same class attribute as pyglet.gl.Context
+    CONTEXT_SHARE_NONE = None
+    CONTEXT_SHARE_EXISTING = 1
+    _gl_begin = False
+    _info = None
+    _workaround_checks = [
+        ('_workaround_unpack_row_length',
+         lambda info: info.get_renderer() == 'GDI Generic'),
+        ('_workaround_vbo',
+         lambda info: info.get_renderer().startswith('ATI Radeon X')),
+        ('_workaround_vbo_finish',
+         lambda info: ('ATI' in info.get_renderer() and
+                       info.have_version(1, 5) and
+                       sys.platform == 'darwin'))]
 
-def draw_cube1():
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glVertexPointer(3, GL_FLOAT, 0, vertices);
-    glColorPointer(3, GL_FLOAT, 0, colors)
-    glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, indices);
-    glDisableClientState(GL_COLOR_ARRAY)
-    glDisableClientState(GL_VERTEX_ARRAY);
+    def __init__(self, context_share=None):
+        """
+        Setup workaround attr and object spaces (again to mock what is done in
+        pyglet context)
+        """
+        self.object_space = ObjectSpace()
+        for attr, check in self._workaround_checks:
+            setattr(self, attr, None)
 
-buffers=None
-def create_vbo():
-    buffers = glGenBuffers(3)
-    glBindBuffer(GL_ARRAY_BUFFER, buffers[0])
-    glBufferData(GL_ARRAY_BUFFER,
-            len(vertices)*4,  # byte size
-            (ctypes.c_float*len(vertices))(*vertices),
-            GL_STATIC_DRAW)
-    glBindBuffer(GL_ARRAY_BUFFER, buffers[1])
-    glBufferData(GL_ARRAY_BUFFER,
-            len(colors)*4, # byte size
-            (ctypes.c_float*len(colors))(*colors),
-            GL_STATIC_DRAW)
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[2])
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-            len(indices)*4, # byte size
-            (ctypes.c_uint*len(indices))(*indices),
-            GL_STATIC_DRAW)
-    return buffers
+    def __repr__(self):
+        return '%s()' % self.__class__.__name__
 
-def draw_vbo():
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-    glVertexPointer(3, GL_FLOAT, 0, None);
-    glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
-    glColorPointer(3, GL_FLOAT, 0, None);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[2]);
-    glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None);
-    glDisableClientState(GL_COLOR_ARRAY)
-    glDisableClientState(GL_VERTEX_ARRAY);
+    def set_current(self):
+        pass
 
-def draw_cube2():
-    global buffers
-    if buffers==None:
-        buffers=create_vbo()
-    draw_vbo()
+    def destroy(self):
+        pass
 
-shader=None
-def draw_cube3():
-    global shader, buffers
-    if shader==None:
-        shader=Shader()class Shader(object):
+    def delete_texture(self, texture_id):
+        pass
 
-    def initShader(self, vertex_shader_source, fragment_shader_source):
-        # create program
-        self.program=glCreateProgram()
-        print('create program')
-        printOpenGLError()
+    def delete_buffer(self, buffer_id):
+        pass
 
-        # vertex shader
-        print('compile vertex shader...')
-        self.vs = glCreateShader(GL_VERTEX_SHADER)
-        glShaderSource(self.vs, [vertex_shader_source])
-        glCompileShader(self.vs)
-        glAttachShader(self.program, self.vs)
-        printOpenGLError()
 
-        # fragment shader
-        print('compile fragment shader...')
-        self.fs = glCreateShader(GL_FRAGMENT_SHADER)
-        glShaderSource(self.fs, [fragment_shader_source])
-        glCompileShader(self.fs)
-        glAttachShader(self.program, self.fs)
-        printOpenGLError()
+class QPygletWidget(QtOpenGL.QGLWidget):
+    """
+    A simple pyglet widget.
 
-        print('link...')
-        glLinkProgram(self.program)
-        printOpenGLError()
+    User can subclass this widget and implement the following methods:
+        - on_init: called when open gl has been initialised
+        - on_update: called every dt.
+        - on_draw: called when paintGL is executed
+        - on_resize: called when resizeGL is executed
+    """
+    def __init__(self, parent=None,
+                 clear_color=(0.0, 0.0, 0.0, 1.0),
+                 frame_time=32,
+                 dt=16):
+        """
+        :param clear_color: The widget clear color
+        :type clear_color: tuple(r, g, b, a)
 
-    def begin(self):
-        if glUseProgram(self.program):
-            printOpenGLError()
+        :param frame_time: The desired frame time [ms]
+        :type: frame_time: int
 
-    def end(self):
-        glUseProgram(0)
-        shader.initShader('''
-void main()
-{
-    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-    gl_FrontColor = gl_Color;
-}
-        ''',
-        '''
-void main()
-{
-    gl_FragColor = gl_Color;
-}
-        ''')
-        buffers=create_vbo()
+        :param dt: The desired update rate [ms]
+        :type: dt: int
+        """
+        QtOpenGL.QGLWidget.__init__(self, parent)
 
-    shader.begin()
-    draw_vbo()
-    shader.end()
+        # init members
+        self._clear_color = clear_color
+        self._dt = dt
+        self.update_timer = QtCore.QTimer()
+        self.draw_timer = QtCore.QTimer()
 
-##############################################################################
-def reshape_func(w, h):
-    resize(w, h == 0 and 1 or h)
+        # configure draw and update timers
+        self.update_timer.setInterval(dt)
+        self.update_timer.timeout.connect(self._update)
+        self.draw_timer.setInterval(frame_time)
+        self.draw_timer.timeout.connect(self.updateGL)
 
-def disp_func():
-    draw()
-    glutSwapBuffers()
+        # start timers
+        self.update_timer.start()
+        self.draw_timer.start()
 
-if __name__=="__main__":
-    if bool(glutInit):
-        glutInit(sys.argv)
-        glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
-        glutInitWindowSize(256, 256)
-        glutCreateWindow(b"vbo")
-        glutDisplayFunc(disp_func)
-        glutIdleFunc(disp_func)
-        glutReshapeFunc(reshape_func)
+    def _update(self):
+        """
+        Calls on_update with the choosen dt
+        """
+        self.on_update(self._dt)
 
-        initialize()
+    def on_init(self):
+        """
+        Lets the user initialise himself
+        """
+        pass
 
-        glutMainLoop()
-    else:
-        print("NO GLUT")
+    def on_draw(self):
+        """
+        Lets the user draw his scene
+        """
+        pass
+
+    def on_update(self, dt):
+        """
+        Lets the user draw his scene
+        """
+        pass
+
+    def on_resize(self, w, h):
+        """
+        Lets the user handle the widget resize event. By default, this method
+        resizes the view to the widget size.
+        """
+        gl.glViewport(0, 0, w, h)
+        gl.glMatrixMode(gl.GL_PROJECTION)
+        gl.glLoadIdentity()
+        gl.glOrtho(0, w, 0, h, -1, 1)
+        gl.glMatrixMode(gl.GL_MODELVIEW)
+
+    def initializeGL(self):
+        """
+        Initialises open gl:
+            - create a mock context to fool pyglet
+            - setup various opengl rule (only the clear color atm)
+        """
+        gl.current_context = Context()
+        gl.glClearColor(0.0, 0.0, 0.0, 1.0)
+        self.on_init()
+
+    def resizeGL(self, w, h):
+        """
+        Resizes the gl camera to match the widget size.
+        """
+        self.on_resize(w, h)
+
+    def paintGL(self):
+        """
+        Clears the back buffer than calls the on_draw method
+        """
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+        self.on_draw()
+
+
+class MyPygletWidget(QPygletWidget):
+    def on_init(self):
+        self.sprite = pyglet.sprite.Sprite(pyglet.resource.image("logo.png"))
+        self.label = pyglet.text.Label(
+            text="This is a pyglet label rendered in a Qt widget :)")
+        self.setMinimumSize(QtCore.QSize(640, 480))
+
+    def on_draw(self):
+        self.sprite.draw()
+        self.label.draw()
+
+
+def main():
+    app = QtGui.QApplication(sys.argv)
+    window = QtGui.QMainWindow()
+    widget = MyPygletWidget()
+    window.setCentralWidget(widget)
+    window.show()
+    app.exec_()
+
+if __name__ == "__main__":
+    main()
