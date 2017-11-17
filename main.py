@@ -10,7 +10,6 @@ from Parser import Parser
 from pygletContext import PygletContext
 
 from Windows.ChooseWidget import ChooseWidget
-#from Windows.animationSettings import AnimationSettings
 from Windows.PlotSettings import PlotSettings
 from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
@@ -147,7 +146,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     @pyqtSlot(str)
     def onIteratorChange(self, value):
-        print(value)
         value = int(value)
         for pane in self.panes:
             if pane.isVisible():

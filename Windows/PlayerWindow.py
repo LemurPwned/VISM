@@ -12,8 +12,9 @@ class PlayerWindow(QtCore.QObject):
 
         # Create a gui object.
         self.gui = Window()
+        self.parent = parent
 
-        self.checkForErrors(parent)
+        self.checkForErrors()
 
         # Setup the worker object and the worker_thread.
         self.worker = WorkerObject()
@@ -23,13 +24,13 @@ class PlayerWindow(QtCore.QObject):
         self.gui.show()
 
 
-    def checkForErrors(self, parent=""):
-        if parent == None:
+    def checkForErrors(self):
+        if self.parent == None:
             msg = "PlayerWindow: no parent provided! Use: x = PlayerWindow(self) instead of x = PlayerWindow()"
             print(msg)
             exit()
 
-        if parent._LOADED_FLAG_ == False:
+        if self.parent._LOADED_FLAG_ == False:
             msg = "PlayerWindow: First load data! Go to: File > Load Directory and select proper directory!"
             print(msg)
             for element in self.gui.elements:
@@ -37,7 +38,7 @@ class PlayerWindow(QtCore.QObject):
 
             return False
 
-        if parent.panes[0].widget == None:
+        if self.parent.panes[0].widget == None:
             msg = "PlayerWindow: No widget selected Click Add Widget button in main window!"
             print(msg)
             for element in self.gui.elements:
@@ -67,6 +68,7 @@ class PlayerWindow(QtCore.QObject):
         self.worker.signalStatus.connect(self.handler)
         self.gui.button_nextFrame.clicked.connect(lambda: self.worker.moveFrame(1))
         self.gui.button_prevFrame.clicked.connect(lambda: self.worker.moveFrame(-1))
+        self.gui.slider_speed.valueChanged.connect(self.speedChange)
 
         #self.parent().aboutToQuit.connect(self.forceWorkerQuit) #TODO search about this
 
@@ -92,6 +94,11 @@ class PlayerWindow(QtCore.QObject):
             self.worker_thread.terminate()
             self.worker_thread.wait()
 
+    def speedChange(self):
+        self.gui.speedLabel.setText("Animation Speed: " + \
+                                    str(self.gui.slider_speed.value()/10))
+        self.worker.setSpeed(self.gui.slider_speed.value())
+
 class WorkerObject(QtCore.QObject):
     signalStatus = QtCore.pyqtSignal(str)
 
@@ -99,6 +106,10 @@ class WorkerObject(QtCore.QObject):
         super(self.__class__, self).__init__(parent)
         self._iterator = 0
         self.running = False
+        self._speed = 10
+
+    def setSpeed(self, speed):
+        self._speed = speed
 
     def resetIterator(self):
         self._iterator = 0
@@ -120,7 +131,7 @@ class WorkerObject(QtCore.QObject):
             if not self.running:
                 pass
 
-            tm.sleep(0.1)
+            tm.sleep(1/self._speed)
 
     @QtCore.pyqtSlot()
     def moveFrame(self, howMany):
@@ -147,6 +158,10 @@ class Window(QtWidgets.QWidget):
         self.button_prevFrame = QtWidgets.QPushButton('<', self)
         self.slider_speed = QtWidgets.QSlider(QtCore.Qt.Horizontal, self)
         self.speedLabel = QtWidgets.QLabel("Animtaion Speed: 1", self)
+        self.slider_speed.setMaximum(50)
+        self.slider_speed.setMinimum(1)
+        self.slider_speed.setValue(10)
+        self.slider_speed.setSingleStep(1)
         #self.label_status = QtWidgets.QLabel('test', self)
 
         self.elements.append(self.button_start)
@@ -177,14 +192,3 @@ class Window(QtWidgets.QWidget):
         self.mainLayout.addLayout(layout2, 1,0)
 
         self.setFixedSize(400, 150)
-
-    '''@QtCore.pyqtSlot(str)
-    def updateStatus(self, status):
-        #self.label_status.setText(status)
-        print(status)
-
-
-if __name__=='__main__':
-    app = QtWidgets.QApplication(sys.argv)
-    example = PlayerWindow(app)
-    sys.exit(app.exec_())'''

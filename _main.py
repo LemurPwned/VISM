@@ -17,7 +17,7 @@ class _MainTester(unittest.TestCase):
         self.mainGui = MainWindow()
 
     def initializeData(self):
-        test_folder = "data/test_data"
+        test_folder = "data/firstData/"
         self.rawVectorData, self.omf_header, self.odtData, self.stages = Parser.readFolder(test_folder)
 
     def test_initialGui(self):
@@ -75,9 +75,9 @@ class _MainTester(unittest.TestCase):
     def test_Widgets(self):
         for i in range(4):
             QTest.mouseClick(self.mainGui.panes[i].button, Qt.LeftButton)
-            self.mainGui.new.list.setCurrentRow(0) #openGLWidget
+            self.mainGui.new.list.setCurrentRow(1) #Plot2D
             QTest.mouseClick(self.mainGui.new.addButton, Qt.LeftButton)
-            self.assertEqual(type(self.mainGui.panes[i].widget), GLWidget)
+            self.assertEqual(type(self.mainGui.panes[i].widget), Canvas)
 
         #this one is problem because of threading - program is not endig after tests completed because of threads in background
     def test_plotSettingsProperData(self):
@@ -89,7 +89,7 @@ class _MainTester(unittest.TestCase):
 
         #add 2D plot Widget
         QTest.mouseClick(self.mainGui.panes[0].button, Qt.LeftButton)
-        self.mainGui.new.list.setCurrentRow(1)
+        self.mainGui.new.list.setCurrentRow(1) #createPlot2D
         QTest.mouseClick(self.mainGui.new.addButton, Qt.LeftButton)
 
         self.assertEqual(type(self.mainGui.panes[0].widget), Canvas)
@@ -103,6 +103,49 @@ class _MainTester(unittest.TestCase):
 
         print(self.mainGui.plotSettingsWindow.buttonBox.children()[1].text())
         QTest.mouseClick(self.mainGui.plotSettingsWindow.buttonBox.children()[1], Qt.LeftButton)
+
+    def test_AnimationSettings(self):
+        '''checking if Gui is disabled when there is no data'''
+        self.mainGui.showAnimationSettings()
+
+        for element in self.mainGui.playerWindow.gui.elements:
+            self.assertFalse(element.isEnabled())
+
+
+        #GUI still should be disabled
+        self.mainGui._LOADED_FLAG_ = True
+        for element in self.mainGui.playerWindow.gui.elements:
+            self.assertFalse(element.isEnabled())
+
+        self.initializeData()
+        self.mainGui.rawVectorData = self.rawVectorData
+        self.mainGui.omf_header = self.omf_header
+        self.mainGui.odt_data = self.odtData
+        self.mainGui.stages = self.stages
+
+        # add 2D plot Widget
+        QTest.mouseClick(self.mainGui.panes[0].button, Qt.LeftButton)
+        self.mainGui.new.list.setCurrentRow(1)  # createPlot2D
+        QTest.mouseClick(self.mainGui.new.addButton, Qt.LeftButton)
+
+        self.mainGui.playerWindow.reloadGui()
+
+        for element in self.mainGui.playerWindow.gui.elements:
+            self.assertTrue(element.isEnabled())
+
+    def test_PlayerWindow_sliderSpeed(self):
+        self.initializeData()
+        self.mainGui.rawVectorData = self.rawVectorData
+        self.mainGui.omf_header = self.omf_header
+        self.mainGui.odt_data = self.odtData
+        self.mainGui.stages = self.stages
+        self.mainGui._LOADED_FLAG_ = True
+
+        QTest.mouseClick(self.mainGui.panes[0].button, Qt.LeftButton)
+        self.mainGui.new.list.setCurrentRow(1)  # createPlot2D
+        QTest.mouseClick(self.mainGui.new.addButton, Qt.LeftButton)
+
+        self.mainGui.showAnimationSettings()
 
 
 if __name__ == "__main__":
