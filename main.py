@@ -164,10 +164,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         '''Data receiver for choosingWidget action'''
         self.panes[value[0]].clearBox()
         if value[1] == "OpenGL":
-            self._LOADED_FLAG_ = True
-            directory = './data/firstData'
-            self.rawVectorData, self.omf_header, self.odt_data, \
-                self.stages = Parser.readFolder(directory)
             #CAN't be here!!!!
             if not self._LOADED_FLAG_:
                 msg = "Data has not been uploaded before accessing GL"

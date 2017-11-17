@@ -188,5 +188,4 @@ class PygletContext(QOpenGLWidget):
 
     def set_i(self, value):
         self.i = value
-        print("JAKUBS", self.i)
         self.update()
