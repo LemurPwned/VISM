@@ -21,7 +21,7 @@ class PygletContext(QOpenGLWidget):
         self.width = 800
         self.height = 480
         # init members
-        #place QTimer here with 0
+        # place QTimer here with 0
 
     def shareData(self, **kwargs):
         """
@@ -149,7 +149,7 @@ class PygletContext(QOpenGLWidget):
         gl.glEnd()
 
     def wheelEvent(self, event):
-        print("EVENT")
+        print("SCROLL")
         degs = event.angleDelta().y()/8
         self.steps += degs/15
         scroll_y = self.steps

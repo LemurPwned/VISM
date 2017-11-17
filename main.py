@@ -13,7 +13,6 @@ from Windows.ChooseWidget import ChooseWidget
 from Windows.PlotSettings import PlotSettings
 from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
-from spin_gl import GLWidget
 from pygletContext import PygletContext
 
 import threading
