@@ -9,7 +9,6 @@ from CanvasLayer import CanvasLayer
 from Parser import Parser
 
 from Windows.ChooseWidget import ChooseWidget
-#from Windows.animationSettings import AnimationSettings
 from Windows.PlotSettings import PlotSettings
 from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
@@ -37,9 +36,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.threads = []
 
         self._LOADED_FLAG_ = False
-
-        # self.playerWindow = PlayerWindow(self)
-        # self.playerWindow.setHandler(self.onIteratorChange)
 
     def events(self):
         '''Creates all listeners for Main Window'''
@@ -150,7 +146,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     @pyqtSlot(str)
     def onIteratorChange(self, value):
-        print(value)
         value = int(value)
         for pane in self.panes:
             if pane.isVisible():
