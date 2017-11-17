@@ -7,13 +7,13 @@ from Windows.MainWindowTemplate import Ui_MainWindow
 from Canvas import Canvas
 from CanvasLayer import CanvasLayer
 from Parser import Parser
+from pygletContext import PygletContext
 
 from Windows.ChooseWidget import ChooseWidget
 from Windows.PlotSettings import PlotSettings
 from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
-from spin_gl import GLWidget
-
+from pygletContext import PygletContext
 
 import threading
 import time
@@ -119,7 +119,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             'title': '3dgraph',
                             'i': 0
                             }
-
             #second condtition not neccessary for now,
             # lack of it may cause bugs later
             if type(pane.widget) is Canvas and \
@@ -161,7 +160,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def choosingWidgetReceiver(self, value):
         '''Data receiver for choosingWidget action'''
         self.panes[value[0]].clearBox()
-
         if value[1] == "OpenGL":
             #CAN't be here!!!!
             if not self._LOADED_FLAG_:
@@ -169,11 +167,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 raise ValueError(msg)
             gl_dict = {
                         'omf_header':  self.omf_header,
-                        'colors': self.rawVectorData,
+                        'color_list': self.rawVectorData,
                         'iterations': self.stages,
                         'i': 0
                         }
-            self.panes[value[0]].addWidget(GLWidget(ddict=gl_dict))
+            self.panes[value[0]].addWidget(PygletContext(data_dict=gl_dict))
             self.refreshScreen()
 
         if value[1] == '2dPlot':
