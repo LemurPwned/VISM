@@ -1,6 +1,6 @@
 import sys
 
-from PyQt5.QtCore import QTimer, QPoint, pyqtSlot, QThread, pyqtSlot
+from PyQt5.QtCore import QTimer, QPoint, pyqtSlot, QThread, pyqtSlot, Qt
 from PyQt5 import QtWidgets
 from Windows.MainWindowTemplate import Ui_MainWindow
 
@@ -10,12 +10,12 @@ from Parser import Parser
 from pygletContext import PygletContext
 
 from Windows.ChooseWidget import ChooseWidget
-from Windows.animationSettings import AnimationSettings
+#from Windows.animationSettings import AnimationSettings
 from Windows.PlotSettings import PlotSettings
 from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
 from spin_gl import GLWidget
-
+from pygletContext import PygletContext
 
 import threading
 import time
@@ -23,6 +23,7 @@ import time
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
+        self.setWindowFlags(Qt.WindowStaysOnBottomHint)
         self.odt_data = ""
         self.setupUi(self)
         self.setWindowTitle("ESE - Early Spins Enviroment")
@@ -35,9 +36,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.make1WindowGrid() #shows default 1 widget Window
         self.events() #create event listeners
         self.threads = []
-
-        self.playerWindow = PlayerWindow()
-        self.playerWindow.setHandler(self.onIteratorChange)
 
         self._LOADED_FLAG_ = False
 
@@ -87,7 +85,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def showAnimationSettings(self):
         '''Shows window to change animations settings'''
-        self.animationSettingsWindow = AnimationSettings()
+        self.playerWindow = PlayerWindow(self)
+        self.playerWindow.setHandler(self.onIteratorChange)
 
     def showPlotSettings(self):
         """Spawns window for plot settings"""
@@ -122,7 +121,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             'title': '3dgraph',
                             'i': 0
                             }
-
             #second condtition not neccessary for now,
             # lack of it may cause bugs later
             if type(pane.widget) is Canvas and \
@@ -149,32 +147,28 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     @pyqtSlot(str)
     def onIteratorChange(self, value):
+        print(value)
         value = int(value)
-        try:
-            self.panes[0].widget.set_i(value)
-        except AttributeError:
-            #put pop-up later
-            msg = "Threre is no pane intitated to be played over"
-            print(msg)
-        finally:
-            #exit this properly! It does not work!
-            print("TRYING TO QUIT")
-            self.panes[self.gl_val].widget.increaseIterator()
+        for pane in self.panes:
+            if pane.isVisible():
+                pane.widget.set_i(value)
+
 
     def showChooseWidgetSettings(self, number):
         '''Spawns Window for choosing widget for this pane'''
         self.new = ChooseWidget(number)
         self.new.setHandler(self.choosingWidgetReceiver)
 
+
     def choosingWidgetReceiver(self, value):
         '''Data receiver for choosingWidget action'''
         self.panes[value[0]].clearBox()
-
         if value[1] == "OpenGL":
+            self._LOADED_FLAG_ = True
             directory = './data/firstData'
             self.rawVectorData, self.omf_header, self.odt_data, \
-                            self.stages =  Parser.readFolder(directory)
-            self._LOADED_FLAG_ = True
+                self.stages = Parser.readFolder(directory)
+            #CAN't be here!!!!
             if not self._LOADED_FLAG_:
                 msg = "Data has not been uploaded before accessing GL"
                 raise ValueError(msg)
@@ -185,9 +179,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                         'i': 0
                         }
             self.panes[value[0]].addWidget(PygletContext(data_dict=gl_dict))
-            self.gl_val = value[0]
             self.refreshScreen()
-            print(self.panes[value[0]].widget)
 
         if value[1] == '2dPlot':
             self.panes[value[0]].addWidget(Canvas())

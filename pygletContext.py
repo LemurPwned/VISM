@@ -75,8 +75,6 @@ class PygletContext(QOpenGLWidget):
         """
         Lets the user draw his scene
         """
-        self.i += 1
-        print(self.i)
         self.on_resize(self.width, self.height)
 
     def on_resize(self, w, h):
@@ -93,12 +91,6 @@ class PygletContext(QOpenGLWidget):
         gl.gluPerspective(85*self.steps, aspectRatio, 1, 1000)
         gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glLoadIdentity()
-        #gl.glTranslatef(0, 0, 0)
-        # gl.glViewport(0, 0, w, h)
-        # gl.glMatrixMode(gl.GL_PROJECTION)
-        # gl.glLoadIdentity()
-        # gl.glOrtho(0, w, 0, h, -1, 1)
-        # gl.glMatrixMode(gl.GL_MODELVIEW)
 
     def initializeGL(self):
         """
@@ -192,4 +184,9 @@ class PygletContext(QOpenGLWidget):
             self.position[1] += dy * 0.1
 
         self.lastPos = event.pos()
+        self.update()
+
+    def set_i(self, value):
+        self.i = value
+        print("JAKUBS", self.i)
         self.update()
