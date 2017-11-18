@@ -7,13 +7,12 @@ from Windows.MainWindowTemplate import Ui_MainWindow
 from Canvas import Canvas
 from CanvasLayer import CanvasLayer
 from Parser import Parser
-from pygletContext import PygletContext
 
 from Windows.ChooseWidget import ChooseWidget
 from Windows.PlotSettings import PlotSettings
 from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
-from pygletContext import PygletContext
+from openGLContext import OpenGLContext
 
 import threading
 import time
@@ -109,32 +108,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             if not pane.isVisible():
                 continue
             data_dict = {}
-            #change order, because CanvasLayer is of type Canvas
             if type(pane.widget) is CanvasLayer:
-                data_dict = {
-                            'omf_header':  self.omf_header,
-                            'multiple_data': self.rawVectorData,
-                            'iterations': self.stages,
-                            'current_layer': 0,
-                            'title': '3dgraph',
-                            'i': 0
-                            }
-            #second condtition not neccessary for now,
-            # lack of it may cause bugs later
-            if type(pane.widget) is Canvas and \
-                    type(pane.widget) is not CanvasLayer:
-
+                data_dict = self.compose_dict('2dLayer')
+            # separated both classes, type is uniqe now
+            if type(pane.widget) is Canvas:
                 picked_column = value[temp_val][0]
                 #check if we want synchronizedPlot
                 counter = 0
                 if value[temp_val][2]:
                     counter = self.stages
-                data_dict = {
-                            'i': counter,
-                            'iterations': self.stages,
-                            'graph_data': self.odt_data[picked_column].tolist(),
-                            'title' : picked_column
-                            }
+                data_dict = self.compose_dict('2dPlot', current_state=counter,
+                                                column=picked_column)
                 temp_val = temp_val+1
 
             if data_dict != {}:
@@ -147,31 +131,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def onIteratorChange(self, value):
         value = int(value)
         for pane in self.panes:
-            if pane.isVisible():
+            if (pane.isVisible()) and (not pane.widget is None):
                 pane.widget.set_i(value)
-
 
     def showChooseWidgetSettings(self, number):
         '''Spawns Window for choosing widget for this pane'''
         self.new = ChooseWidget(number)
         self.new.setHandler(self.choosingWidgetReceiver)
 
-
     def choosingWidgetReceiver(self, value):
         '''Data receiver for choosingWidget action'''
         self.panes[value[0]].clearBox()
-        if value[1] == "OpenGL":
+        if value[1] == 'OpenGL':
             #CAN't be here!!!!
             if not self._LOADED_FLAG_:
                 msg = "Data has not been uploaded before accessing GL"
                 raise ValueError(msg)
-            gl_dict = {
-                        'omf_header':  self.omf_header,
-                        'color_list': self.rawVectorData,
-                        'iterations': self.stages,
-                        'i': 0
-                        }
-            self.panes[value[0]].addWidget(PygletContext(data_dict=gl_dict))
+            gl_dict = self.compose_dict(value[1])
+            self.panes[value[0]].addWidget(OpenGLContext(data_dict=gl_dict))
             self.refreshScreen()
 
         if value[1] == '2dPlot':
@@ -179,6 +156,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.refreshScreen()
 
         elif value[1] == '2dLayer':
+            layer_dict = self.compose_dict(value[1])
             self.panes[value[0]].addWidget(CanvasLayer())
             self.refreshScreen()
 
@@ -216,6 +194,36 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[1].show()
         self.panes[2].show()
         self.panes[3].show()
+
+    def compose_dict(self, widgetType, column=None, current_state=0):
+        data_dict = None
+        if widgetType == 'OpenGL':
+            data_dict = {
+                        'omf_header':  self.omf_header,
+                        'color_list': self.rawVectorData,
+                        'iterations': self.stages,
+                        'i': current_state
+                        }
+        elif widgetType == '2dPlot':
+            data_dict = {
+                        'i': current_state,
+                        'iterations': self.stages,
+                        'graph_data': self.odt_data[column].tolist(),
+                        'title' : column
+                        }
+        elif widgetType == '2dLayer':
+            data_dict = {
+                        'omf_header':  self.omf_header,
+                        'multiple_data': self.rawVectorData,
+                        'iterations': self.stages,
+                        'current_layer': 0,
+                        'title': '3dgraph',
+                        'i': current_state
+                        }
+        else:
+            msg = "Invalid argument {}".format(widgetType)
+            raise ValueError(msg)
+        return data_dict
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

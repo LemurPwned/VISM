@@ -2,18 +2,21 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import matplotlib as mpl
 import numpy as np
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.animation as animation
 
-from PyQt5.QtWidgets import QSizePolicy, QPushButton
-from matplotlib.figure import Figure
-from Canvas import Canvas
+from AbstractCanvas import AbstractCanvas
 
-class CanvasLayer(Canvas):
-    def __init__(self, parent=None, width=8, height=6, dpi=100):
-        Canvas.__init__(self, parent, width, height, dpi)
+class CanvasLayer(AbstractCanvas):
+    def __init__(self):
+        super().__init__(self)
+        self._MINIMUM_PARAMS_ = ['i', 'iterations', 'multiple_data', 'title',
+                                    'omf_header', 'current_layer']
 
     def createPlotCanvas(self):
+        if self.parameter_check():
+            msg = "Cannot create layer canvas"
+            raise ValueError(msg)
+
         self.canvas_type = 'panel'
         dx, dy = self.reshape_data()
         self.fig.suptitle(self.title)
@@ -27,6 +30,7 @@ class CanvasLayer(Canvas):
         self.plot_axis.axis([0, len(dx), 0, len(dy)])
         self.plot_axis.set_autoscale_on(False)
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
+        self._CANVAS_ALREADY_CREATED_ = True
 
     def replot(self):
         color_array = self.layer[self.i].reshape(35*35)
@@ -50,15 +54,6 @@ class CanvasLayer(Canvas):
         y = np.linspace(0, yc, yc)
         dx, dy = np.meshgrid(x,y)
         return dx, dy
-
-    def parameter_check(self, **kwargs):
-        minimum_parameter_list = ['xnodes', 'ynodes', 'znodes',
-                                  'xbase', 'ybase', 'zbase']
-        for parameter in minimum_parameter_list:
-            if not parameter in kwargs.keys():
-                print("No matching parameter has been found in the provided list")
-                print("minimum_parameter_list is not provided")
-                raise TypeError
 
     def calculate_layer_colors(self, x, relative_vector = [0,1,0], scale=1):
         #TODO: make relate object a variable
