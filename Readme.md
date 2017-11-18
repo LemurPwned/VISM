@@ -1,26 +1,24 @@
-### USE FEWER SELF.VARIABLE  = xxxx
+### Spintronics Visual
+Software for agile visualisation of magnetisation dynamics.
 
+### Quick User Reference
+To use this software, in form as for now, you need:
+- Python 3.6.0 or newer
+- installed Python modules from requirements.txt file (to automate this use: **pip install -r requirements.txt**)
+- Qt 5 or newer
 
-### Function
-1. readFolder(directory, multipleOmfHeaders=False)
-  -> if multipleOmfHeaders = False then getOmfHeader is returned only for
-    one .omf, else returns for each filename in folder
-  -> detects filetype (binary/text)
-  -> detects file format (.omf, .odt)
-  -> processes dataset
-  -> returns omfHeader, odtData (for 2d plots), rawVectorData(from .omf)
+Run application by typing
 
-2. getOdtData(filename)
-   -> returns dataFrame with columns as specified in .odt filename
-3. getOmfHeader(filename)
-  -> returns .omf header in form of a dictionary
+**python3 main.py** in a main repository directory
 
-2. drawPlot(odtData, canvas, external_iteration=iterator)
-  -> odtData should be a Series of a dataFrame odtData e.g.
-      odtData contins colums A, B, C of which we want to plot A & B on one plots
-      then
-      drawPlot(odtData[['A', 'B']], cavnas=None, external_iteration=None,
-      update_function=None)
+A window pops-up:
 
-  ->draws plots dynamically on provided canvas
-  -> can have external iterating function
+-**To load your data please use: File -> Load Directory** 
+
+*Directory must contain at least one .odt file and at least one .omf file*
+
+- **You can now add widgets and specify their input by clicking Edit -> Plot**
+
+- **If you wish to run an animation, please use animation player. 
+  To do this, go to Edit -> Animation. 
+  You should see your player panel now.** 
