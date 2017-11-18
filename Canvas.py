@@ -2,22 +2,18 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 import time
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from AbstractCanvas import AbstractCanvas
 
-from PyQt5.QtWidgets import QSizePolicy, QPushButton
-from matplotlib.figure import Figure
-
-class Canvas(FigureCanvas):
-    def __init__(self, parent=None, width=8, height=6, dpi=100):
-        self.fig = Figure(figsize=(width, height), dpi=dpi)
-        FigureCanvas.__init__(self, self.fig)
-        self.setParent(parent)
-        FigureCanvas.setSizePolicy(self,
-                QSizePolicy.Expanding,
-                QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
+class Canvas(AbstractCanvas):
+    def __init__(self):
+        super().__init__(self)
+        self._MINIMUM_PARAMS_ = ['i', 'iterations', 'graph_data', 'title']
 
     def createPlotCanvas(self):
+        if self.parameter_check():
+            msg = "Cannot create canvas"
+            raise ValueError(msg)
+
         self.canvas_type = 'panel'
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
@@ -29,26 +25,12 @@ class Canvas(FigureCanvas):
                             np.max(self.graph_data)])
         self.plot_axis.set_autoscale_on(False)
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
+        self._CANVAS_ALREADY_CREATED_ = True
 
     def replot(self):
         self.plot_axis.hpl.set_ydata(self.graph_data[0:self.i] + \
                                 self.null_data[self.i:])
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
-
-    def set_i(self, value):
-        self.i = value
-        try:
-            self.loop_guard()
-            self.replot()
-            self.refresh()
-        except:
-            pass
-
-    def refresh(self):
-        self.plot_axis.get_figure().canvas.draw()
-
-    def loop_guard(self):
-        self.i = self.i%self.iterations
 
     def loop(self, scheduler=0.1):
         while(self.iterations):
@@ -57,20 +39,3 @@ class Canvas(FigureCanvas):
             self.loop_guard()
             self.refresh()
             self.replot()
-
-    def shareData(self, **kwargs):
-        """
-        @param **kwargs are the arguments to be passed to the main plot iterator
-        """
-        #TODO: define minimum_list in arguments and force SPECIFIC keys
-        for k, v in kwargs.items():
-            setattr(self, k, v)
-
-    def parameter_check(self, **kwargs):
-        minimum_parameter_list = ['xnodes', 'ynodes', 'znodes',
-                                  'xbase', 'ybase', 'zbase']
-        for parameter in minimum_parameter_list:
-            if not parameter in kwargs.keys():
-                print("No matching parameter has been found in the provided list")
-                print("minimum_parameter_list is not provided")
-                raise TypeError
