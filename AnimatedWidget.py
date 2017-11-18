@@ -1,12 +1,8 @@
-from abc import abstractmethod, ABC
-
-class AnimatedWidget(ABC):
-    def __init__(self):
-        self._MINIMUM_PARAMS_ = ['i', 'iterations']
-
+class AnimatedWidget():
     def shareData(self, **kwargs):
         """
-        @param **kwargs are the arguments to be passed to the main plot iterator
+        @param **kwargs are the arguments to be passed to the main widget
+        iterator
         """
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -14,7 +10,6 @@ class AnimatedWidget(ABC):
     def loop_guard(self):
         self.i %= self.iterations
 
-    @abstractmethod
     def parameter_check(self):
         """
         parameter_check function should define minimum number and list
@@ -32,7 +27,6 @@ class AnimatedWidget(ABC):
                 print(msg)
         return _MISSING_FLAG_
 
-    @abstractmethod
     def set_i(self, value):
         """
         This is iterating setter. Function set_i should provide
