@@ -1,5 +1,4 @@
 from abc import abstractmethod, ABC
-import time
 from AnimatedWidget import AnimatedWidget
 
 class AbstractCanvas(ABC, AnimatedWidget):
