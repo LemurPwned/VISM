@@ -110,11 +110,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             if not pane.isVisible():
                 continue
             data_dict = {}
+            param_dict = {}
             if type(pane.widget) is CanvasLayer:
                 data_dict = self.compose_dict('2dLayer')
             # separated both classes, type is uniqe now
             if type(pane.widget) is Canvas:
                 picked_column = value[temp_val][0]
+                param_dict = {
+                                'color': value[temp_val][3],
+                                'line_style': value[temp_val][5],
+                                'marker': value[temp_val][4],
+                                'marker_size': value[temp_val][6],
+                                'marker_color': value[temp_val][3]
+                            }
                 #check if we want synchronizedPlot
                 counter = 0
                 if value[temp_val][2]:
@@ -125,6 +133,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
             if data_dict != {}:
                 pane.widget.shareData(**data_dict)
+                pane.widget.setPlotParameters(param_dict)
                 pane.widget.createPlotCanvas()
 
             self.refreshScreen()
