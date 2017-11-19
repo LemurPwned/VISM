@@ -28,14 +28,15 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
         """
         pass
 
-    def refresh(self):
-        self.plot_axis.get_figure().canvas.draw()
-
     def set_i(self, value):
         self.i = value
-        try:
+        self.replot()
+        self.plot_axis.get_figure().canvas.draw()
+
+    def loop(self, scheduler=0.1):
+        while(self.iterations):
+            time.sleep(scheduler)
+            self.increaseIterator()
             self.loop_guard()
-            self.replot()
             self.refresh()
-        except:
-            pass
+            self.replot()

@@ -7,15 +7,13 @@ from Windows.MainWindowTemplate import Ui_MainWindow
 from Canvas import Canvas
 from CanvasLayer import CanvasLayer
 from Parser import Parser
+from openGLContext import OpenGLContext
 
 from Windows.ChooseWidget import ChooseWidget
 from Windows.PlotSettings import PlotSettings
 from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
-from openGLContext import OpenGLContext
 
-import threading
-import time
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
@@ -129,10 +127,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     @pyqtSlot(int)
     def onIteratorChange(self, value):
-        #value = int(value)
-        #self.panes[0].widget.set_i(value)
         for pane in self.panes:
-            if (pane.isVisible()) and (not pane.widget is None):
+            if pane.isVisible() and pane.widget:
+                value %= self.stages
                 pane.widget.set_i(value)
 
     def showChooseWidgetSettings(self, number):

@@ -16,8 +16,6 @@ class OpenGLContext(AbstractGLContext):
         super().__init__()
         self.spacer = 0.2
         self.lastPos = QPoint()
-        self.width = 800
-        self.height = 480
         self.shareData(**data_dict)
 
     def shareData(self, **kwargs):
@@ -46,8 +44,8 @@ class OpenGLContext(AbstractGLContext):
     def resizeGL(self, w, h):
         """
         Resize function, applied when windows change size
-        @param w width
-        @param h height
+        @param w width - use self.width() function
+        @param h height - use self.height() function
         """
         gl.glViewport(0, 0, w, h)
         # using Projection mode
@@ -117,14 +115,13 @@ class OpenGLContext(AbstractGLContext):
         """
         degs = event.angleDelta().y()/8
         self.steps += degs/15
-        scroll_y = self.steps
         #SMART SCROLL BETA
         self.position[0] -= mt.sin(self.rotation[0] * mt.pi / 180) * \
-                            mt.cos(self.rotation[1] * mt.pi / 180) * scroll_y
+                            mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
         self.position[1] += mt.cos(self.rotation[0] * mt.pi / 180) * \
-                            mt.sin(self.rotation[1] * mt.pi / 180) * scroll_y
+                            mt.sin(self.rotation[1] * mt.pi / 180) * self.steps
         self.position[2] += mt.cos(self.rotation[0] * mt.pi / 180) * \
-                            mt.cos(self.rotation[1] * mt.pi / 180) * scroll_y
+                            mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
         self.update()
 
     def mouseMoveEvent(self, event):
@@ -133,7 +130,6 @@ class OpenGLContext(AbstractGLContext):
         """
         dx = event.x() - self.lastPos.x()
         dy = event.y() - self.lastPos.y()
-        rotation_speed = 1
         if event.buttons() & Qt.LeftButton:
             rotation_speed = 0.5
             self.rotation[0] += dx * rotation_speed
@@ -154,5 +150,4 @@ class OpenGLContext(AbstractGLContext):
 
     def set_i(self, value):
         self.i = value
-        self.i %= self.iterations
         self.update()
