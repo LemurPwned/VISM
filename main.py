@@ -66,6 +66,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def resizeEvent(self, event):
         '''What happens when window is resized'''
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height()-25)
+        self.panes[0].groupBox.setMinimumWidth(self.width() / 2 - 20)
+        self.panes[1].groupBox.setMinimumWidth(self.width() / 2 - 20)
+        self.panes[2].groupBox.setMinimumWidth(self.width() / 2 - 20)
+        self.panes[3].groupBox.setMinimumWidth(self.width() / 2 - 20)
+
 
     def loadDirectory(self):
         '''Loads whole directory based on Parse class as simple as BHP'''
@@ -129,8 +134,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     @pyqtSlot(int)
     def onIteratorChange(self, value):
-        #value = int(value)
-        #self.panes[0].widget.set_i(value)
         for pane in self.panes:
             if (pane.isVisible()) and (not pane.widget is None):
                 pane.widget.set_i(value)
