@@ -31,11 +31,3 @@ class Canvas(AbstractCanvas):
         self.plot_axis.hpl.set_ydata(self.graph_data[0:self.i] + \
                                 self.null_data[self.i:])
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
-
-    def loop(self, scheduler=0.1):
-        while(self.iterations):
-            time.sleep(scheduler)
-            self.increaseIterator()
-            self.loop_guard()
-            self.refresh()
-            self.replot()
