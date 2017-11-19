@@ -4,7 +4,7 @@ import sys #temp
 
 class PlayerWindow(QtCore.QObject):
 
-    signalStatus = QtCore.pyqtSignal(str)
+    signalStatus = QtCore.pyqtSignal(int)
 
     def __init__(self, parent=None):
         super(self.__class__, self).__init__(parent)
@@ -100,7 +100,7 @@ class PlayerWindow(QtCore.QObject):
         self.worker.setSpeed(self.gui.slider_speed.value())
 
 class WorkerObject(QtCore.QObject):
-    signalStatus = QtCore.pyqtSignal(str)
+    signalStatus = QtCore.pyqtSignal(int)
 
     def __init__(self, parent=None):
         super(self.__class__, self).__init__(parent)
@@ -126,7 +126,7 @@ class WorkerObject(QtCore.QObject):
         while(True):
             if self.running:
                 self._iterator = self._iterator + 1
-                self.signalStatus.emit(str(self._iterator))
+                self.signalStatus.emit(self._iterator)
 
             if not self.running:
                 pass
@@ -139,11 +139,11 @@ class WorkerObject(QtCore.QObject):
         if ((self._iterator + howMany) >= 0):
             print("not reseting")
             self._iterator = (self._iterator + howMany)
-            self.signalStatus.emit(str(self._iterator))
+            self.signalStatus.emit(self._iterator)
         else:
             print("reseting")
             self._iterator = 0
-            self.signalStatus.emit(str(self._iterator))
+            self.signalStatus.emit(self._iterator)
 
 
 class Window(QtWidgets.QWidget):

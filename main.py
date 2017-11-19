@@ -127,9 +127,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
             self.refreshScreen()
 
-    @pyqtSlot(str)
+    @pyqtSlot(int)
     def onIteratorChange(self, value):
-        value = int(value)
+        #value = int(value)
+        #self.panes[0].widget.set_i(value)
         for pane in self.panes:
             if (pane.isVisible()) and (not pane.widget is None):
                 pane.widget.set_i(value)
