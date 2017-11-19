@@ -31,3 +31,10 @@ class Canvas(AbstractCanvas):
         self.plot_axis.hpl.set_ydata(self.graph_data[0:self.i] + \
                                 self.null_data[self.i:])
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
+
+    def plot_parameter_specifier(self, **kwargs):
+        plot_dict = {'color' : color,
+                     'points_connected': connected,
+                     'dot_size': size
+                        }
+        return plot_dict

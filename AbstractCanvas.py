@@ -7,7 +7,6 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
     def __init__(self, parent=None, width=8, height=6, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         FigureCanvas.__init__(self, self.fig)
-        #self.setParent(parent)
         FigureCanvas.setSizePolicy(self,
                 QSizePolicy.Expanding,
                 QSizePolicy.Expanding)
