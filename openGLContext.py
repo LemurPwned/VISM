@@ -10,36 +10,7 @@ from Parser import Parser
 import math as mt
 from Parser import Parser
 from AbstractGLContext import AbstractGLContext
-s=5.0
-vertices=[
-        -s, -s, -s,
-         s, -s, -s,
-         s,  s, -s,
-        -s,  s, -s,
-        -s, -s,  s,
-         s, -s,  s,
-         s,  s,  s,
-        -s,  s,  s,
-        ]
-
-colors=[
-        0, 0, 0,
-        1, 0, 0,
-        0, 1, 0,
-        0, 0, 1,
-        0, 1, 1,
-        1, 0, 1,
-        1, 1, 1,
-        1, 1, 0,
-        ]
-indices=[
-        0, 1, 2, 2, 3, 0,
-        0, 4, 5, 5, 1, 0,
-        1, 5, 6, 6, 2, 1,
-        2, 6, 7, 7, 3, 2,
-        3, 7, 4, 4, 0, 3,
-        4, 7, 6, 6, 5, 4,
-]
+from multiprocessing import Pool
 
 class OpenGLContext(AbstractGLContext):
     def __init__(self, data_dict):
@@ -60,10 +31,20 @@ class OpenGLContext(AbstractGLContext):
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         self.vectors_list = Parser.getLayerOutline(self.omf_header)
-        self.colors = [np.array([[x for i in range(24)] for x in color_iteration]).flatten()
-            for color_iteration in self.color_list[0:10]]
-        print(self.color_list[0].shape)
-        print(self.colors[self.i].shape)
+        self.colors = self.color_list
+        # p1 = Pool()
+        # res = [p1.apply_async(OpenGLContext.expand, (y,)) for y in self.color_list]
+        # # self.colors = [np.array([[x for i in range(24)] for x in color_iteration]).flatten()
+        # #     for color_iteration in self.color_list[0:10]]
+        # # print(self.color_list[0].shape)
+        # # print(self.colors[self.i].shape)
+        # self.colors = []
+        # for result in res:
+        #     self.colors.append(result.get())
+
+    @staticmethod
+    def expand(y):
+        return np.array([[x for i in range(24)] for x in y]).flatten()
 
     def initial_transformation(self):
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
@@ -107,15 +88,7 @@ class OpenGLContext(AbstractGLContext):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         # Push Matrix onto stack
         gl.glPushMatrix()
-        # glMatrixMode(GL_MODELVIEW)
-        # glLoadIdentity()
-        # glTranslatef(0.0, 0.0, -2.0)
         self.transformate()
-        # for vector, color in zip(self.vectors_list, \
-        #                                         self.color_list[self.i]):
-        #     gl.glColor3f(color[0], color[1], color[2])
-        #     self.draw_cube(vector)
-        # gl.glColor3f(1.0, 0.0, 0.0)
         self.draw_cube2()
         # Pop Matrix off stack
         gl.glPopMatrix()
@@ -131,22 +104,18 @@ class OpenGLContext(AbstractGLContext):
         # color buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                np.array(self.colors, dtype='float32'),
-                gl.GL_STATIC_DRAW)
-        # indices buffer
-        # gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, buffers[2])
-        # gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER,
-        #         np.array(indices, dtype='uint'),
-        #         gl.GL_STATIC_DRAW)
+                np.array(self.colors[self.i], dtype='float32').flatten(),
+                gl.GL_DYNAMIC_DRAW)
         return buffers
 
     def draw_cube2(self):
         if self.buffers is None:
             self.buffers=self.create_vbo()
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
-        gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                np.array(self.colors[self.i], dtype='float32'),
-                gl.GL_STATIC_DRAW)
+        else:
+            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
+            gl.glBufferData(gl.GL_ARRAY_BUFFER,
+                    np.array(self.colors[self.i], dtype='float32').flatten(),
+                    gl.GL_DYNAMIC_DRAW)
         self.draw_vbo()
 
     def draw_vbo(self):
