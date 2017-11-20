@@ -14,13 +14,6 @@ class Canvas(AbstractCanvas):
             msg = "Cannot create canvas"
             raise ValueError(msg)
 
-        p_dict = {
-                    'color': 'green',
-                    'line_style': 'dashed',
-                    'marker': '*',
-                    'marker_color': 'blue',
-                    'marker_size': 3
-                    }
         self.canvas_type = 'panel'
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
