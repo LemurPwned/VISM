@@ -57,6 +57,7 @@ class PlayerWindow(QtCore.QObject):
 
     def setHandler(self, handler):
         self.handler = handler
+        self.worker.handler = handler
 
         # Make any cross object connections.
         self._connectSignals()
@@ -107,6 +108,7 @@ class WorkerObject(QtCore.QObject):
         self._iterator = 0
         self.running = False
         self._speed = 10
+        self.handler = None
 
     def setSpeed(self, speed):
         self._speed = speed
