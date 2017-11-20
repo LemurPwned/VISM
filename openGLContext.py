@@ -8,7 +8,7 @@ from PyQt5.Qt import QWheelEvent, Qt
 from PyQt5.QtCore import QPoint, QTimer
 from Parser import Parser
 import math as mt
-
+from Parser import Parser
 from AbstractGLContext import AbstractGLContext
 s=5.0
 vertices=[
@@ -49,41 +49,21 @@ class OpenGLContext(AbstractGLContext):
         self.buffers = None
         if data_dict != {}:
             self.shareData(**data_dict)
-        vec = [5, 5, 5]
-        self.v1 =[
-            vec[0]+self.spacer, vec[1], vec[2]+self.spacer,
-            vec[0], vec[1], vec[2]+self.spacer,
-            vec[0], vec[1]+self.spacer, vec[2]+self.spacer,
-            vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer,
-            #BOTTOM FACE
-            vec[0]+self.spacer, vec[1], vec[2],
-            vec[0], vec[1], vec[2],
-            vec[0], vec[1]+self.spacer, vec[2],
-            vec[0]+self.spacer, vec[1]+self.spacer, vec[2],
-            #FRONT FACE
-            vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer,
-            vec[0], vec[1]+self.spacer, vec[2]+self.spacer,
-            vec[0], vec[1]+self.spacer, vec[2],
-            vec[0]+self.spacer, vec[1]+self.spacer, vec[2],
-            #BACK FACE
-            vec[0]+self.spacer, vec[1], vec[2]+self.spacer,
-            vec[0], vec[1], vec[2]+self.spacer,
-            vec[0], vec[1], vec[2],
-            vec[0]+self.spacer, vec[1], vec[2],
-            #RIGHT FACE
-            vec[0]+self.spacer, vec[1], vec[2]+self.spacer,
-            vec[0]+self.spacer, vec[1]+self.spacer, vec[2]+self.spacer,
-            vec[0]+self.spacer, vec[1]+self.spacer, vec[2],
-            vec[0]+self.spacer, vec[1], vec[2],
-            #LEFT FACE
-            vec[0], vec[1]+self.spacer, vec[2]+self.spacer,
-            vec[0], vec[1], vec[2]+self.spacer,
-            vec[0], vec[1], vec[2],
-            vec[0], vec[1]+self.spacer, vec[2]]
+        filename = './test_folder/voltage-spin-diode-Oxs_TimeDriver-Magnetization-00-0000000.omf'
+        self.v1, self.sp = Parser.generate_cubes(filename) #sp = vertices
+        # self.colors1 = np.array([[0.0, 0.0, 1.0] for i in range(int(self.sp))], dtype='float32')
+        # self.colors2 = np.array([[1.0, 0.0, 0.0] for i in range(int(self.sp))], dtype='float32')
+        # self.colors = np.concatenate((self.colors1.flatten(), self.colors2.flatten()))
+        # print(self.colors.shape)
+        print(self.sp)
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         self.vectors_list = Parser.getLayerOutline(self.omf_header)
+        self.colors = [np.array([[x for i in range(24)] for x in color_iteration]).flatten()
+            for color_iteration in self.color_list[0:10]]
+        print(self.color_list[0].shape)
+        print(self.colors[self.i].shape)
 
     def initial_transformation(self):
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
@@ -103,11 +83,7 @@ class OpenGLContext(AbstractGLContext):
         self.steps = 1
         gl.glEnable(gl.GL_DEPTH_TEST)
         self.initial_transformation()
-        self.vbo = gl.glGenBuffers(1)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-        vertices= np.array([
-                    0.5, 0.5, -0.5, 0.5, -0.5,-0.5,0.5, -0.5], dtype='float32')
-        gl.glBufferData(gl.GL_ARRAY_BUFFER,  vertices, gl.GL_STATIC_DRAW)
+
 
     def resizeGL(self, w, h):
         """
@@ -139,24 +115,24 @@ class OpenGLContext(AbstractGLContext):
         #                                         self.color_list[self.i]):
         #     gl.glColor3f(color[0], color[1], color[2])
         #     self.draw_cube(vector)
-        gl.glColor3f(1.0, 0.0, 0.0)
+        # gl.glColor3f(1.0, 0.0, 0.0)
         self.draw_cube2()
         # Pop Matrix off stack
         gl.glPopMatrix()
         self.update()
 
     def create_vbo(self):
-        buffers = gl.glGenBuffers(1)
+        buffers = gl.glGenBuffers(2)
         # vertices buffer
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[0])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
                 np.array(self.v1, dtype='float32'),
                 gl.GL_STATIC_DRAW)
         # color buffer
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
-        # gl.glBufferData(gl.GL_ARRAY_BUFFER,
-        #         np.array(colors, dtype='float32'),
-        #         gl.GL_STATIC_DRAW)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
+        gl.glBufferData(gl.GL_ARRAY_BUFFER,
+                np.array(self.colors, dtype='float32'),
+                gl.GL_STATIC_DRAW)
         # indices buffer
         # gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, buffers[2])
         # gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER,
@@ -167,20 +143,23 @@ class OpenGLContext(AbstractGLContext):
     def draw_cube2(self):
         if self.buffers is None:
             self.buffers=self.create_vbo()
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
+        gl.glBufferData(gl.GL_ARRAY_BUFFER,
+                np.array(self.colors[self.i], dtype='float32'),
+                gl.GL_STATIC_DRAW)
         self.draw_vbo()
 
     def draw_vbo(self):
-        gl.glEnableClientState(gl.GL_VERTEX_ARRAY);
-        #gl.glEnableClientState(gl.GL_COLOR_ARRAY);
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers);
-        gl.glVertexPointer(3, gl.GL_FLOAT, 0, None);
-        #gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1]);
-        #gl.glColorPointer(3, gl.GL_FLOAT, 0, None);
-        #gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.buffers[2]);
-        # gl.glDrawElements(gl.GL_QUADS, len(indices), gl.GL_UNSIGNED_INT, None);
-        # gl.glDisableClientState(gl.GL_COLOR_ARRAY)
-        gl.glDrawArrays(gl.GL_QUADS, 0, 24)
-        gl.glDisableClientState(gl.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
+        gl.glEnableClientState(gl.GL_COLOR_ARRAY);
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0]);
+        gl.glVertexPointer(3, gl.GL_FLOAT, 0, None)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1]);
+        gl.glColorPointer(3, gl.GL_FLOAT, 0, None)
+        gl.glDrawArrays(gl.GL_QUADS, 0, int(self.sp))
+
+        gl.glDisableClientState(gl.GL_COLOR_ARRAY)
+        gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
     def draw_cube(self, vec):
         """

@@ -295,3 +295,43 @@ class Parser():
             df = pd.DataFrame.from_records(dataset, columns=cols)
             stages = len(lines) -1
             return df, stages
+
+    @staticmethod
+    def generate_cubes(filename):
+        layer_outline = Parser.getLayerOutlineFromFile(filename)
+        layer_cubed = np.array([Parser.cube(x) for x in layer_outline]).flatten()
+        return layer_cubed, len(layer_cubed)/3
+
+    @staticmethod
+    def cube(vec, spacer=0.1):
+        v1 =[
+            vec[0]+spacer, vec[1], vec[2]+spacer,
+            vec[0], vec[1], vec[2]+spacer,
+            vec[0], vec[1]+spacer, vec[2]+spacer,
+            vec[0]+spacer, vec[1]+spacer, vec[2]+spacer,
+            #BOTTOM FACE
+            vec[0]+spacer, vec[1], vec[2],
+            vec[0], vec[1], vec[2],
+            vec[0], vec[1]+spacer, vec[2],
+            vec[0]+spacer, vec[1]+spacer, vec[2],
+            #FRONT FACE
+            vec[0]+spacer, vec[1]+spacer, vec[2]+spacer,
+            vec[0], vec[1]+spacer, vec[2]+spacer,
+            vec[0], vec[1]+spacer, vec[2],
+            vec[0]+spacer, vec[1]+spacer, vec[2],
+            #BACK FACE
+            vec[0]+spacer, vec[1], vec[2]+spacer,
+            vec[0], vec[1], vec[2]+spacer,
+            vec[0], vec[1], vec[2],
+            vec[0]+spacer, vec[1], vec[2],
+            #RIGHT FACE
+            vec[0]+spacer, vec[1], vec[2]+spacer,
+            vec[0]+spacer, vec[1]+spacer, vec[2]+spacer,
+            vec[0]+spacer, vec[1]+spacer, vec[2],
+            vec[0]+spacer, vec[1], vec[2],
+            #LEFT FACE
+            vec[0], vec[1]+spacer, vec[2]+spacer,
+            vec[0], vec[1], vec[2]+spacer,
+            vec[0], vec[1], vec[2],
+            vec[0], vec[1]+spacer, vec[2]]
+        return v1
