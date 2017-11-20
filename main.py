@@ -18,7 +18,6 @@ from WidgetHandler import WidgetHandler
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
-        #self.setWindowFlags(Qt.WindowStaysOnBottomHint)
         self.odt_data = ""
         self.setupUi(self)
         self.setWindowTitle("ESE - Early Spins Enviroment")

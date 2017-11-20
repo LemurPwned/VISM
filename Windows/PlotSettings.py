@@ -11,7 +11,6 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.GroupCounter = 0
         if len(plotOptions) == 0:
             self.showMessage("There is no data to show. Load data with File > Load Directory")
-
         else:
             #self.EventListeners()
             self.comboBox = []

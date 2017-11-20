@@ -63,3 +63,6 @@ class CanvasLayer(AbstractCanvas):
         angle = np.arccos(dot)**scale
         angle[np.isnan(angle)] = 0 # get rid of NaN expressions
         return angle
+
+    def setPlotParameters(self, **kwargs):
+        pass

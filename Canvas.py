@@ -14,17 +14,22 @@ class Canvas(AbstractCanvas):
             msg = "Cannot create canvas"
             raise ValueError(msg)
 
+        p_dict = {
+                    'color': 'green',
+                    'line_style': 'dashed',
+                    'marker': '*',
+                    'marker_color': 'blue',
+                    'marker_size': 3
+                    }
         self.canvas_type = 'panel'
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
         self.null_data = [x for x in range(self.iterations)]
         a_handler = self.plot_axis.plot(self.null_data,
             self.graph_data[0:self.i] + self.null_data[self.i:],
-            color=self.p_dict['color'],
-            linestyle=self.p_dict['line_style'],
-            marker=self.p_dict['marker'],
-            markerfacecolor=self.p_dict['marker_color'],
-            markersize=self.p_dict['marker_size'])[0]
+            color= p_dict['color'], linestyle=p_dict['line_style'],
+            marker=p_dict['marker'], markerfacecolor=p_dict['marker_color'],
+            markersize=p_dict['marker_size'])[0]
         self.plot_axis.hpl = a_handler
         self.plot_axis.axis([0, self.iterations, np.min(self.graph_data),
                             np.max(self.graph_data)])
@@ -36,16 +41,3 @@ class Canvas(AbstractCanvas):
         self.plot_axis.hpl.set_ydata(self.graph_data[0:self.i] + \
                                 self.null_data[self.i:])
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
-
-    def setPlotParameters(self, param_dict):
-        if param_dict != {}:
-            self.p_dict = param_dict
-        else:
-            # set default if not specified
-            self.p_dict = {
-                        'color': 'green',
-                        'line_style': 'dashed',
-                        'marker': '*',
-                        'marker_color': 'blue',
-                        'marker_size': 3
-                        }
