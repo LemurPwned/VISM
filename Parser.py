@@ -60,7 +60,7 @@ class Parser():
         if not is_binary(files_in_directory[0]):
             rawVectorData = Parser.readText(files_in_directory)
             omf_file_for_header = glob.glob(os.path.join(directory, '*.omf'))
-            # virtually any will do
+            # virtually any will do]
             if not omf_file_for_header:
                 msg = "no .omf file has been found"
                 raise ValueError(msg)

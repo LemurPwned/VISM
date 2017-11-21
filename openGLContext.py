@@ -28,20 +28,7 @@ class OpenGLContext(AbstractGLContext):
         super().shareData(**kwargs)
         self.vectors_list = Parser.getLayerOutline(self.omf_header)
         self.colors = self.color_list
-        # p1 = Pool()
-        # res = [p1.apply_async(OpenGLContext.expand, (y,)) for y in self.color_list]
-        # # self.colors = [np.array([[x for i in range(24)] for x in color_iteration]).flatten()
-        # #     for color_iteration in self.color_list[0:10]]
-        # # print(self.color_list[0].shape)
-        # # print(self.colors[self.i].shape)
-        # self.colors = []
-        # for result in res:
-        #     self.colors.append(result.get())
-
-    @staticmethod
-    def expand(y):
-        return np.array([[x for i in range(24)] for x in y]).flatten()
-
+        self.buffer_len = len(self.color_list[0])
     def initial_transformation(self):
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
         self.position = [-10, -10, -40]  # xyz initial
@@ -60,7 +47,6 @@ class OpenGLContext(AbstractGLContext):
         self.steps = 1
         gl.glEnable(gl.GL_DEPTH_TEST)
         self.initial_transformation()
-
 
     def resizeGL(self, w, h):
         """
@@ -109,18 +95,20 @@ class OpenGLContext(AbstractGLContext):
             self.buffers=self.create_vbo()
         else:
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
-            gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                    np.array(self.colors[self.i], dtype='float32').flatten(),
-                    gl.GL_DYNAMIC_DRAW)
+            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
+                                self.colors[self.i])
         self.draw_vbo()
 
     def draw_vbo(self):
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
         gl.glEnableClientState(gl.GL_COLOR_ARRAY);
+
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0]);
         gl.glVertexPointer(3, gl.GL_FLOAT, 0, None)
+
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1]);
         gl.glColorPointer(3, gl.GL_FLOAT, 0, None)
+
         gl.glDrawArrays(gl.GL_QUADS, 0, int(self.sp))
 
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
