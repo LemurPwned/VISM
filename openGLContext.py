@@ -22,10 +22,6 @@ class OpenGLContext(AbstractGLContext):
             self.shareData(**data_dict)
         filename = './test_folder/voltage-spin-diode-Oxs_TimeDriver-Magnetization-00-0000000.omf'
         self.v1, self.sp = Parser.generate_cubes(filename) #sp = vertices
-        # self.colors1 = np.array([[0.0, 0.0, 1.0] for i in range(int(self.sp))], dtype='float32')
-        # self.colors2 = np.array([[1.0, 0.0, 0.0] for i in range(int(self.sp))], dtype='float32')
-        # self.colors = np.concatenate((self.colors1.flatten(), self.colors2.flatten()))
-        # print(self.colors.shape)
         print(self.sp)
 
     def shareData(self, **kwargs):
