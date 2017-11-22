@@ -46,5 +46,5 @@ if __name__ == "__main__":
     debugger.mainGui.show()
     debugger.loadData()
     debugger.setupPanes(1)
-    debugger.makeAllPanes2DPlot()
+    #debugger.makeAllPanes2DPlot()
     sys.exit(app.exec_())

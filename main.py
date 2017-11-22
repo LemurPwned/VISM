@@ -190,7 +190,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.panes[value[0]].addWidget(CanvasLayer())
 
         if value[1] == "better2dPlot":
-            self.panes[value[0]].addWidget(Canvas2Dupgraded())
+            self.panes[value[0]].addWidget(Canvas2Dupgraded(self))
 
         self.refreshScreen()
 
