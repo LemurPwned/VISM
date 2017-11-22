@@ -37,7 +37,7 @@ class Debugger:
     def makeAllPanes2DPlot(self):
         for i in range(self.count):
             QTest.mouseClick(self.mainGui.panes[i].button, Qt.LeftButton)
-            self.mainGui.new.list.setCurrentRow(1)  # Plot2D
+            self.mainGui.new.list.setCurrentRow(3)  # Plot2D
             QTest.mouseClick(self.mainGui.new.addButton, Qt.LeftButton)
 
 if __name__ == "__main__":
@@ -45,6 +45,6 @@ if __name__ == "__main__":
     debugger = Debugger()
     debugger.mainGui.show()
     debugger.loadData()
-    debugger.setupPanes(4)
+    debugger.setupPanes(1)
     debugger.makeAllPanes2DPlot()
     sys.exit(app.exec_())

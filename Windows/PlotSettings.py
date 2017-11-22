@@ -13,7 +13,6 @@ class PlotSettings(QWidget, Ui_PlotSettings):
             self.showMessage("There is no data to show. Load data with File > Load Directory")
 
         else:
-            #self.EventListeners()
             self.comboBox = []
             self.comboBox2 = []
             self.comboBox3 = []
@@ -24,7 +23,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
             for i in range(gridSize):
                 self.additionalSetup(plotOptions)
 
-        self.setGeometry(10,10,300, 800)
+        self.setGeometry(10,10,600, 800)
         self.eventListeners()
         self.setWindowTitle("Plot Settings")
         self.show()
@@ -32,7 +31,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
     def showMessage(self, msg):
         label = QLabel(msg, self)
         #groupLayout = QVBoxLayout(self)
-        self.verticalLayout.insertWidget(0, label)
+        self.gridLayout_2.addWidget(label)
         label.setWordWrap(True)
 
     def setEventHandler(self, handler):
@@ -43,7 +42,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.buttonBox.rejected.connect(self.reject)
 
     def additionalSetup(self, plotOptions=[None]):
-        #for i in range(gridSize-1):
+        #for i in range(gridSize-):
         groupBox = QGroupBox("Plot"+str(self.GroupCounter), self)
         groupLayout = QVBoxLayout(self) #layout to put in group
         self.comboBox.append(QComboBox(self))
@@ -85,7 +84,17 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.radioButton[self.GroupCounter*2].setChecked(True)
         self.radioButton.append(QRadioButton("Show Plot", self))
 
-        self.verticalLayout.insertWidget(self.GroupCounter, groupBox)
+        if self.GroupCounter == 0:
+            self.gridLayout_2.addWidget(groupBox,0,0)
+
+        if self.GroupCounter == 1:
+            self.gridLayout_2.addWidget(groupBox,1,0)
+
+        if self.GroupCounter == 2:
+            self.gridLayout_2.addWidget(groupBox,0,1)
+
+        if self.GroupCounter == 3:
+            self.gridLayout_2.addWidget(groupBox,1,1)
 
         groupLayout.addWidget(self.comboBox[self.GroupCounter])
         groupLayout.addWidget(self.colorOptions_label)
@@ -104,6 +113,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
 
         groupBox.setLayout(groupLayout)
         self.GroupCounter += 1
+        print("additionalSetup Done!")
 
     def markersizeEvent(self):
         self.slider_markersize.valueChanged.connect(self.sizeChange)
@@ -113,8 +123,9 @@ class PlotSettings(QWidget, Ui_PlotSettings):
                                     str(self.slider_markersize.value()))
 
     def resizeEvent(self, event):
-        self.verticalLayoutWidget.setGeometry(9,9, self.width()-18,
-                                                            self.height()-80)
+        pass
+        # self.gridLayout_2.setGeometry(9,9, self.width()-18, \
+        #                                                   self.height()-80)
 
     def accept(self):
         ret = []
@@ -137,13 +148,12 @@ class PlotSettings(QWidget, Ui_PlotSettings):
 '''maybe it's stupid but it works if, we want to return some value from
 our class without using signals we can create function which we pass to o
 class and then we can execute some code after window closes'''
-
-def hand(x):
-    print("hand: ", x)
+def hand(val):
+    print(val)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    settings = PlotSettings("", 3)
+    settings = PlotSettings(["black", "red"], 3)
     settings.setEventHandler(hand)
     # we pass handler function to execute code after closing Window
     sys.exit(app.exec_())

@@ -20,10 +20,12 @@ class ChooseWidget(QtWidgets.QWidget):
     def returnChoice(self):
         if self.list.currentItem().text() == "3D structure Widget":
             self.handler([self.number, "OpenGL"])
-        elif self.list.currentItem().text() == "2D plot Widget":
+        if self.list.currentItem().text() == "2D plot Widget":
             self.handler([self.number, "2dPlot"])
-        elif self.list.currentItem().text() == "2D layer plot Widget":
+        if self.list.currentItem().text() == "2D layer plot Widget":
             self.handler([self.number, "2dLayer"])
+        if self.list.currentItem().text() == "Better 2D plot Widget":
+            self.handler([self.number, "better2dPlot"])
 
         self.close()
 
@@ -34,6 +36,7 @@ class ChooseWidget(QtWidgets.QWidget):
         self.list.addItem("3D structure Widget")
         self.list.addItem("2D plot Widget")
         self.list.addItem("2D layer plot Widget")
+        self.list.addItem("Better 2D plot Widget")
         #... and so on
         self.addButton = QtWidgets.QPushButton("Add", self)
         self.layout.addWidget(self.addButton, 0, 1)

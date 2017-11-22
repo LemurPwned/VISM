@@ -154,5 +154,7 @@ class _MainTester(unittest.TestCase):
         self.assertEqual(self.mainGui.playerWindow.gui.speedLabel.text(), "Animation Speed: 5.0")
 
 
+#checking how many plot options are there
+
 if __name__ == "__main__":
     unittest.main()

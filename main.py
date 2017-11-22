@@ -15,6 +15,8 @@ from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
 from threading import Thread
 
+from Widgets.Canvas2Dupgraded import Canvas2Dupgraded
+
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
@@ -93,14 +95,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         counter = 0
         #to know how many plots are there to show correct plotMenu
         for _, pane in enumerate(self.panes):
-            if type(pane.widget) is Canvas:
+            if type(pane.widget) is Canvas or \
+                    type(pane.widget) is Canvas2Dupgraded \
+                    and pane.isVisible():
                 counter = counter + 1
+
+        #print(counter)
 
         self.plotSettingsWindow = PlotSettings(list(self.odt_data), counter)
         self.plotSettingsWindow.setEventHandler(self.plotSettingsReceiver)
 
+
     def plotSettingsReceiver(self, value):
         #[string whatToPlot, synchronizedPlot, instantPlot]
+        print("test")
         if value == []:
             print("No data to plot")
             return
@@ -115,7 +123,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             if type(pane.widget) is CanvasLayer:
                 data_dict = self.compose_dict('2dLayer')
             # separated both classes, type is uniqe now
-            if type(pane.widget) is Canvas:
+            if type(pane.widget) is Canvas \
+                    or type(pane.widget) is Canvas2Dupgraded:
                 picked_column = value[temp_val][0]
                 param_dict = {
                                 'color': value[temp_val][3],
@@ -131,6 +140,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 data_dict = self.compose_dict('2dPlot', current_state=counter,
                                                 column=picked_column)
                 temp_val = temp_val+1
+
+
+
 
             if data_dict != {}:
                 pane.widget.shareData(**data_dict)
@@ -169,16 +181,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 raise ValueError(msg)
             gl_dict = self.compose_dict(value[1])
             self.panes[value[0]].addWidget(OpenGLContext(data_dict=gl_dict))
-            self.refreshScreen()
 
         if value[1] == '2dPlot':
             self.panes[value[0]].addWidget(Canvas())
-            self.refreshScreen()
 
-        elif value[1] == '2dLayer':
+        if value[1] == '2dLayer':
             layer_dict = self.compose_dict(value[1])
             self.panes[value[0]].addWidget(CanvasLayer())
-            self.refreshScreen()
+
+        if value[1] == "better2dPlot":
+            self.panes[value[0]].addWidget(Canvas2Dupgraded())
+
+        self.refreshScreen()
 
     def createNewSubWindow(self):
         '''Helper function creates layout and button for widget selection'''
