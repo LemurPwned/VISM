@@ -26,8 +26,13 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
             self.plotWidget.plot(self.graph_data[:self._i], pen="r", name="data1")
 
         def set_i(self, value):
-            self._i = value;
-            self.plotWidget.plot(self.graph_data[:self._i], pen="r", name="data1") #TODO
+            self._i = value
+            print(value)
+            if self._i == 0:
+                self.plotWidget.clear()
+            else:
+                print("plotting")
+                self.plotWidget.plot(self.graph_data[:self._i], pen="r", name="data1") #TODO
 
 
         def setPlotParameters(self, param_dict):

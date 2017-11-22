@@ -71,7 +71,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[2].groupBox.setMinimumWidth(self.width() / 2 - 20)
         self.panes[3].groupBox.setMinimumWidth(self.width() / 2 - 20)
 
-
     def loadDirectory(self):
         '''Loads whole directory based on Parse class as simple as BHP'''
         directory = str(QtWidgets.QFileDialog.getExistingDirectory(self, \
@@ -87,8 +86,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def showAnimationSettings(self):
         '''Shows window to change animations settings'''
+        self.properWidgetsIterators = []
+        for pane in self.panes:
+            if pane.isVisible() and pane.widget:
+                self.properWidgetsIterators.append(pane.widget.set_i)
+
+        print(self.properWidgetsIterators)
         self.playerWindow = PlayerWindow(self)
-        self.playerWindow.setHandler(self.onIteratorChange)
+        self.playerWindow.setIterators(self.properWidgetsIterators)
+        #self.playerWindow.setHandler(self.onIteratorChange)
 
     def showPlotSettings(self):
         """Spawns window for plot settings"""
@@ -104,7 +110,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         self.plotSettingsWindow = PlotSettings(list(self.odt_data), counter)
         self.plotSettingsWindow.setEventHandler(self.plotSettingsReceiver)
-
 
     def plotSettingsReceiver(self, value):
         #[string whatToPlot, synchronizedPlot, instantPlot]
@@ -151,13 +156,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         self.refreshScreen()
 
-    @pyqtSlot(int)
+    '''@pyqtSlot(int)
     def onIteratorChange(self, value):
         for pane in self.panes:
             if pane.isVisible() and pane.widget:
                 value %= self.stages
                 pane.widget.set_i(value)
-
+    '''
 
     def showChooseWidgetSettings(self, number):
         '''Spawns Window for choosing widget for this pane'''
