@@ -64,7 +64,7 @@ class PlayerWindow(QtCore.QObject):
 
     def _connectSignals(self):
         self.gui.button_start.clicked.connect(self.PlayPauseClicked)
-        self.gui.button_start.clicked.connect(self.worker.play)
+        self.gui.button_start.clicked.connect(self.worker.startWork)
         self.gui.button_stop.clicked.connect(lambda: self.forceWorkerReset(True))
         self.worker.signalStatus.connect(self.handler)
         self.gui.button_nextFrame.clicked.connect(lambda: self.worker.moveFrame(1))
@@ -131,7 +131,7 @@ class WorkerObject(QtCore.QObject):
                 self.signalStatus.emit(self._iterator)
 
             if not self.running:
-                pass
+                self.quit()
 
             tm.sleep(1/self._speed)
 

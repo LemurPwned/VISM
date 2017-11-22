@@ -153,17 +153,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     @pyqtSlot(int)
     def onIteratorChange(self, value):
-        threads = []
         for pane in self.panes:
             if pane.isVisible() and pane.widget:
                 value %= self.stages
-                t = Thread(target = pane.widget.set_i, args = (value,))
-                t.start()
-                threads.append(t)
-
-
-        for t in threads:
-            t.join()
+                pane.widget.set_i(value)
 
 
     def showChooseWidgetSettings(self, number):
