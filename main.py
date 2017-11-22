@@ -13,6 +13,7 @@ from Windows.ChooseWidget import ChooseWidget
 from Windows.PlotSettings import PlotSettings
 from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
+from threading import Thread
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
@@ -135,14 +136,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 pane.widget.setPlotParameters(param_dict)
                 pane.widget.createPlotCanvas()
 
-            self.refreshScreen()
+        self.refreshScreen()
 
     @pyqtSlot(int)
     def onIteratorChange(self, value):
+        threads = []
         for pane in self.panes:
             if pane.isVisible() and pane.widget:
                 value %= self.stages
-                pane.widget.set_i(value)
+                t = Thread(target = pane.widget.set_i, args = (value,))
+                t.start()
+                threads.append(t)
+
+
+        for t in threads:
+            t.join()
+
 
     def showChooseWidgetSettings(self, number):
         '''Spawns Window for choosing widget for this pane'''

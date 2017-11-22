@@ -25,6 +25,7 @@ class Debugger:
 
 
     def setupPanes(self, count):
+        self.count = count
         if count == 2:
             self.mainGui.action2_Windows_Grid.trigger()
         elif count == 4:
@@ -33,10 +34,17 @@ class Debugger:
             self.mainGui.action1_Window_Grid.trigger()
 
 
+    def makeAllPanes2DPlot(self):
+        for i in range(self.count):
+            QTest.mouseClick(self.mainGui.panes[i].button, Qt.LeftButton)
+            self.mainGui.new.list.setCurrentRow(1)  # Plot2D
+            QTest.mouseClick(self.mainGui.new.addButton, Qt.LeftButton)
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     debugger = Debugger()
     debugger.mainGui.show()
     debugger.loadData()
-    debugger.setupPanes(2)
+    debugger.setupPanes(4)
+    debugger.makeAllPanes2DPlot()
     sys.exit(app.exec_())
