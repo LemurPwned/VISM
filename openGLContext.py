@@ -15,20 +15,26 @@ from multiprocessing import Pool
 class OpenGLContext(AbstractGLContext):
     def __init__(self, data_dict):
         super().__init__()
-        self.spacer = 10
+        self.spacer = 0.2
+        self.modified_animation = False
         self.lastPos = QPoint()
         self.buffers = None
-        if data_dict != {}:
-            self.shareData(**data_dict)
-        filename = './test_folder/voltage-spin-diode-Oxs_TimeDriver-Magnetization-00-0000000.omf'
-        self.v1, self.sp = Parser.generate_cubes(filename) #sp = vertices
-        print(self.sp)
+        self.shareData(**data_dict)
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         self.vectors_list = Parser.getLayerOutline(self.omf_header)
-        self.colors = self.color_list
-        self.buffer_len = len(self.color_list[0])
+        if self.modified_animation:
+            self.spacer = 10
+            self.drawing_function = self.vbo_cubic_draw
+            self.colors = self.color_list
+            self.buffer_len = len(self.color_list[0])
+            filename = './test_folder/voltage-spin-diode-Oxs_TimeDriver-Magnetization-00-0000000.omf'
+            self.v1, self.sp = Parser.generate_cubes(filename) #sp = vertices
+            print(self.sp)
+        else:
+            self.drawing_function = self.slower_cubic_draw
+
     def initial_transformation(self):
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
         self.position = [-10, -10, -40]  # xyz initial
@@ -71,7 +77,7 @@ class OpenGLContext(AbstractGLContext):
         # Push Matrix onto stack
         gl.glPushMatrix()
         self.transformate()
-        self.draw_cube2()
+        self.drawing_function()
         # Pop Matrix off stack
         gl.glPopMatrix()
         self.update()
@@ -90,7 +96,7 @@ class OpenGLContext(AbstractGLContext):
                 gl.GL_DYNAMIC_DRAW)
         return buffers
 
-    def draw_cube2(self):
+    def vbo_cubic_draw(self):
         if self.buffers is None:
             self.buffers=self.create_vbo()
         else:
@@ -113,6 +119,11 @@ class OpenGLContext(AbstractGLContext):
 
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
+
+    def slower_cubic_draw(self):
+        for vector, color in zip(self.vectors_list, self.color_list[self.i]):
+            gl.glColor3f(*color)
+            self.draw_cube(vector)
 
     def draw_cube(self, vec):
         """

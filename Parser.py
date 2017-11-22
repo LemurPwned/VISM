@@ -159,7 +159,7 @@ class Parser():
         return layers_outline
 
     @staticmethod
-    def getRawVectors2(filename):
+    def getRawVectors(filename):
         """
         processes a .omf filename into a numpy array of vectors
         @param .omf text file
@@ -175,7 +175,7 @@ class Parser():
         return np.array(raw_vectors)
 
     @staticmethod
-    def getRawVectors(filename):
+    def getRawVectorsVBO(filename):
         """
         processes a .omf filename into a numpy array of vectors
         @param .omf text file
