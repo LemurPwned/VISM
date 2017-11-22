@@ -22,7 +22,7 @@ class Ui_PlotSettings(object):
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
-        self.gridLayout_2.addWidget(self.buttonBox, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.buttonBox, 0, 0, 10, 10)
 
         self.retranslateUi(PlotSettings)
         QtCore.QMetaObject.connectSlotsByName(PlotSettings)
