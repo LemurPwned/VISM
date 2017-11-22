@@ -139,11 +139,9 @@ class WorkerObject(QtCore.QObject):
     def moveFrame(self, howMany):
         print(self._iterator, howMany)
         if ((self._iterator + howMany) >= 0):
-            print("not reseting")
             self._iterator = (self._iterator + howMany)
             self.signalStatus.emit(self._iterator)
         else:
-            print("reseting")
             self._iterator = 0
             self.signalStatus.emit(self._iterator)
 

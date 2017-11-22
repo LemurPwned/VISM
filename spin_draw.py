@@ -5,13 +5,13 @@ from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
 from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QOpenGLWidget, QSlider,
                              QWidget)
-from spin_gl import GLWidget
+from openGLContext import OpenGLContext
 
 class Window(QWidget):
     def __init__(self):
         super(Window, self).__init__()
 
-        self.glWidget = GLWidget()
+        self.glWidget = OpenGLContext({})
 
         mainLayout = QHBoxLayout()
         mainLayout.addWidget(self.glWidget)

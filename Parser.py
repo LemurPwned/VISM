@@ -51,26 +51,27 @@ class Parser():
         odt_file = glob.glob(os.path.join(directory, '*.odt'))
         # look for .odt in current directory
         if len(odt_file) > 1:
-            print(".odt file extension conflict (too many)")
-            return
+            msg = ".odt file extension conflict (too many)"
+            raise ValueError(msg)
         elif not odt_file:
-            print("None .odt")
-            return
+            msg = "None .odt"
+            raise ValueError(msg)
         odt_data, stages = Parser.getOdtData(odt_file[0])
         if not is_binary(files_in_directory[0]):
             rawVectorData = Parser.readText(files_in_directory)
             omf_file_for_header = glob.glob(os.path.join(directory, '*.omf'))
-            # virtually any will do
+            # virtually any will do]
             if not omf_file_for_header:
-                print("no .omf file has been found")
+                msg = "no .omf file has been found"
+                raise ValueError(msg)
                 return
             omf_header = Parser.getOmfHeader(omf_file_for_header[0])
         else:
             omf_headers, rawVectorData = Parser.readBinary(files_in_directory)
             omf_header = omf_headers[0]
             if not omf_header:
-                print("no .omf file has been found")
-                return
+                msg = "no .omf file has been found"
+                raise ValueError(msg)
         return rawVectorData, omf_header, odt_data, stages
 
     @staticmethod
@@ -172,6 +173,22 @@ class Parser():
         raw_vectors = [[float(row[0]), float(row[1]), float(row[2])]
                             for row in raw_vectors]
         return np.array(raw_vectors)
+
+    @staticmethod
+    def getRawVectorsVBO(filename):
+        """
+        processes a .omf filename into a numpy array of vectors
+        @param .omf text file
+        @return returns raw_vectors from fortran lists
+        """
+        raw_vectors = []
+        with open(filename, 'r') as f:
+            lines = f.readlines()
+        f.close()
+        raw_vectors = [g.strip().split(' ') for g in lines if '#' not in g]
+        raw_vectors = [[float(row[0]), float(row[1]), float(row[2])] for
+                            i in range(24) for row in raw_vectors]
+        return np.array(raw_vectors).flatten()
 
     @staticmethod
     def getRawVectorsBinary(filename):
@@ -295,3 +312,43 @@ class Parser():
             df = pd.DataFrame.from_records(dataset, columns=cols)
             stages = len(lines) -1
             return df, stages
+
+    @staticmethod
+    def generate_cubes(filename):
+        layer_outline = Parser.getLayerOutlineFromFile(filename)
+        layer_cubed = np.array([Parser.cube(x) for x in layer_outline]).flatten()
+        return layer_cubed, len(layer_cubed)/3
+
+    @staticmethod
+    def cube(vec, spacer=0.1):
+        v1 =[
+            vec[0]+spacer, vec[1], vec[2]+spacer,
+            vec[0], vec[1], vec[2]+spacer,
+            vec[0], vec[1]+spacer, vec[2]+spacer,
+            vec[0]+spacer, vec[1]+spacer, vec[2]+spacer,
+            #BOTTOM FACE
+            vec[0]+spacer, vec[1], vec[2],
+            vec[0], vec[1], vec[2],
+            vec[0], vec[1]+spacer, vec[2],
+            vec[0]+spacer, vec[1]+spacer, vec[2],
+            #FRONT FACE
+            vec[0]+spacer, vec[1]+spacer, vec[2]+spacer,
+            vec[0], vec[1]+spacer, vec[2]+spacer,
+            vec[0], vec[1]+spacer, vec[2],
+            vec[0]+spacer, vec[1]+spacer, vec[2],
+            #BACK FACE
+            vec[0]+spacer, vec[1], vec[2]+spacer,
+            vec[0], vec[1], vec[2]+spacer,
+            vec[0], vec[1], vec[2],
+            vec[0]+spacer, vec[1], vec[2],
+            #RIGHT FACE
+            vec[0]+spacer, vec[1], vec[2]+spacer,
+            vec[0]+spacer, vec[1]+spacer, vec[2]+spacer,
+            vec[0]+spacer, vec[1]+spacer, vec[2],
+            vec[0]+spacer, vec[1], vec[2],
+            #LEFT FACE
+            vec[0], vec[1]+spacer, vec[2]+spacer,
+            vec[0], vec[1], vec[2]+spacer,
+            vec[0], vec[1], vec[2],
+            vec[0], vec[1]+spacer, vec[2]]
+        return v1

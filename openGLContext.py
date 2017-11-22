@@ -8,19 +8,32 @@ from PyQt5.Qt import QWheelEvent, Qt
 from PyQt5.QtCore import QPoint, QTimer
 from Parser import Parser
 import math as mt
-
+from Parser import Parser
 from AbstractGLContext import AbstractGLContext
+from multiprocessing import Pool
 
 class OpenGLContext(AbstractGLContext):
     def __init__(self, data_dict):
         super().__init__()
         self.spacer = 0.2
+        self.modified_animation = False
         self.lastPos = QPoint()
+        self.buffers = None
         self.shareData(**data_dict)
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         self.vectors_list = Parser.getLayerOutline(self.omf_header)
+        if self.modified_animation:
+            self.spacer = 10
+            self.drawing_function = self.vbo_cubic_draw
+            self.colors = self.color_list
+            self.buffer_len = len(self.color_list[0])
+            filename = './test_folder/voltage-spin-diode-Oxs_TimeDriver-Magnetization-00-0000000.omf'
+            self.v1, self.sp = Parser.generate_cubes(filename) #sp = vertices
+            print(self.sp)
+        else:
+            self.drawing_function = self.slower_cubic_draw
 
     def initial_transformation(self):
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
@@ -64,12 +77,53 @@ class OpenGLContext(AbstractGLContext):
         # Push Matrix onto stack
         gl.glPushMatrix()
         self.transformate()
-        for vector, color in zip(self.vectors_list, \
-                                                self.color_list[self.i]):
-            gl.glColor3f(color[0], color[1], color[2])
-            self.draw_cube(vector)
+        self.drawing_function()
         # Pop Matrix off stack
         gl.glPopMatrix()
+        self.update()
+
+    def create_vbo(self):
+        buffers = gl.glGenBuffers(2)
+        # vertices buffer
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[0])
+        gl.glBufferData(gl.GL_ARRAY_BUFFER,
+                np.array(self.v1, dtype='float32'),
+                gl.GL_STATIC_DRAW)
+        # color buffer
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
+        gl.glBufferData(gl.GL_ARRAY_BUFFER,
+                np.array(self.colors[self.i], dtype='float32').flatten(),
+                gl.GL_DYNAMIC_DRAW)
+        return buffers
+
+    def vbo_cubic_draw(self):
+        if self.buffers is None:
+            self.buffers=self.create_vbo()
+        else:
+            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
+            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
+                                self.colors[self.i])
+        self.draw_vbo()
+
+    def draw_vbo(self):
+        gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
+        gl.glEnableClientState(gl.GL_COLOR_ARRAY);
+
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0]);
+        gl.glVertexPointer(3, gl.GL_FLOAT, 0, None)
+
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1]);
+        gl.glColorPointer(3, gl.GL_FLOAT, 0, None)
+
+        gl.glDrawArrays(gl.GL_QUADS, 0, int(self.sp))
+
+        gl.glDisableClientState(gl.GL_COLOR_ARRAY)
+        gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
+
+    def slower_cubic_draw(self):
+        for vector, color in zip(self.vectors_list, self.color_list[self.i]):
+            gl.glColor3f(*color)
+            self.draw_cube(vector)
 
     def draw_cube(self, vec):
         """
