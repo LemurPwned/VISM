@@ -222,6 +222,15 @@ class Parser():
         f.close()
         return omf_header, rawVectorDatavectors
 
+    def vbo_vertex_mode(self, file, k):
+        return np.array([struct.unpack('d', f.read(8))[0]
+                            for i in range(int(k*3))])
+
+    def standard_vertex_mode(self, file, k):
+        return np.array([(struct.unpack('d', f.read(8))[0],
+                struct.unpack('d', f.read(8))[0],
+                struct.unpack('d', f.read(8))[0]) for i in range(int(k))])
+                
     @staticmethod
     def process_header(headers):
         """

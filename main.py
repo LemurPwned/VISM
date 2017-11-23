@@ -85,13 +85,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def showAnimationSettings(self):
         '''Shows window to change animations settings'''
         self.playerWindow = PlayerWindow(self)
-        self.properPanesIterators = []
-        for pane in self.panes:
-            if pane.isVisible() and pane.widget:
-                self.properPanesIterators.append(pane.widget.set_i)
-
-
-        self.playerWindow.setIterators(self.properPanesIterators)
+        self.playerWindow.setHandler(self.onIteratorChange)
 
     def showPlotSettings(self):
         """Spawns window for plot settings"""
@@ -139,25 +133,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
             if data_dict != {}:
                 pane.widget.shareData(**data_dict)
-                #pane.widget.setPlotParameters(param_dict)
+                pane.widget.setPlotParameters(param_dict)
                 pane.widget.createPlotCanvas()
 
         self.refreshScreen()
 
-    # @pyqtSlot(int)
-    # def onIteratorChange(self, value):
-    #     threads = []
-    #     for pane in self.panes:
-    #         if pane.isVisible() and pane.widget:
-    #             value %= self.stages
-    #             t = Thread(target = pane.widget.set_i, args = (value,))
-    #             t.start()
-    #             threads.append(t)
-    #
-    #
-    #     for t in threads:
-    #         t.join()
+    @pyqtSlot(int)
+    def onIteratorChange(self, value):
+        threads = []
+        for pane in self.panes:
+            if pane.isVisible() and pane.widget:
+                value %= self.stages
+                t = Thread(target = pane.widget.set_i, args = (value,))
+                t.start()
+                threads.append(t)
 
+        for t in threads:
+            t.join()
 
     def showChooseWidgetSettings(self, number):
         '''Spawns Window for choosing widget for this pane'''
