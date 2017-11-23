@@ -13,8 +13,6 @@ from Windows.Progress import ProgressBar_Dialog
 from PyQt5.QtWidgets import QDialog, QProgressBar, QLabel, QHBoxLayout
 
 class Parser():
-    progressBar = 0
-
     def __init__(self):
         super(Parser ,self).__init__()
 
@@ -57,7 +55,10 @@ class Parser():
             msg = "None .odt"
             raise ValueError(msg)
         odt_data, stages = Parser.getOdtData(odt_file[0])
-        if not is_binary(files_in_directory[0]):
+        test_file = os.path.join(directory,
+                            glob.glob(os.path.join(directory, '*.omf'))[0])
+        print(test_file)
+        if not is_binary(test_file):
             rawVectorData = Parser.readText(files_in_directory)
             omf_file_for_header = glob.glob(os.path.join(directory, '*.omf'))
             # virtually any will do]
@@ -66,9 +67,12 @@ class Parser():
                 raise ValueError(msg)
                 return
             omf_header = Parser.getOmfHeader(omf_file_for_header[0])
+            omf_header['binary'] = False
         else:
+            print("Detected binary")
             omf_headers, rawVectorData = Parser.readBinary(files_in_directory)
             omf_header = omf_headers[0]
+            omf_header['binary'] = True
             if not omf_header:
                 msg = "no .omf file has been found"
                 raise ValueError(msg)
@@ -216,21 +220,21 @@ class Parser():
             omf_header = Parser.process_header(headers)
             k = omf_header['xnodes']*omf_header['ynodes']*omf_header['znodes']
             f.read(8)
-            rawVectorDatavectors = np.array([(struct.unpack('d', f.read(8))[0],
-                    struct.unpack('d', f.read(8))[0],
-                    struct.unpack('d', f.read(8))[0]) for i in range(int(k))])
+            rawVectorDatavectors = Parser.vbo_vertex_mode(f, k)
         f.close()
         return omf_header, rawVectorDatavectors
 
-    def vbo_vertex_mode(self, file, k):
+    @staticmethod
+    def vbo_vertex_mode(f, k):
         return np.array([struct.unpack('d', f.read(8))[0]
                             for i in range(int(k*3))])
 
-    def standard_vertex_mode(self, file, k):
+    @staticmethod
+    def standard_vertex_mode(file, k):
         return np.array([(struct.unpack('d', f.read(8))[0],
                 struct.unpack('d', f.read(8))[0],
                 struct.unpack('d', f.read(8))[0]) for i in range(int(k))])
-                
+
     @staticmethod
     def process_header(headers):
         """
@@ -323,8 +327,8 @@ class Parser():
             return df, stages
 
     @staticmethod
-    def generate_cubes(filename):
-        layer_outline = Parser.getLayerOutlineFromFile(filename)
+    def generate_cubes(omf_header):
+        layer_outline = Parser.getLayerOutline(omf_header)
         layer_cubed = np.array([Parser.cube(x) for x in layer_outline]).flatten()
         return layer_cubed, len(layer_cubed)/3
 

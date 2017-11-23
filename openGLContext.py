@@ -16,23 +16,25 @@ class OpenGLContext(AbstractGLContext):
     def __init__(self, data_dict):
         super().__init__()
         self.spacer = 0.2
-        self.modified_animation = False
+        self.modified_animation = True
         self.lastPos = QPoint()
         self.buffers = None
         self.shareData(**data_dict)
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
-        self.vectors_list = Parser.getLayerOutline(self.omf_header)
-        if self.modified_animation:
-            self.spacer = 10
-            self.drawing_function = self.vbo_cubic_draw
-            self.colors = self.color_list
-            self.buffer_len = len(self.color_list[0])
-            filename = './test_folder/voltage-spin-diode-Oxs_TimeDriver-Magnetization-00-0000000.omf'
-            self.v1, self.sp = Parser.generate_cubes(filename) #sp = vertices
-            print(self.sp)
+        if self.omf_header['binary']:
+            self.modified_animation = True
         else:
+            self.modified_animation = False
+        if self.modified_animation:
+            self.spacer = 0.1
+            self.drawing_function = self.vbo_cubic_draw
+            self.buffer_len = len(self.color_list[0])
+            self.v1, self.sp = Parser.generate_cubes(self.omf_header)
+            #sp = vertices
+        else:
+            self.vectors_list = Parser.getLayerOutline(self.omf_header)
             self.drawing_function = self.slower_cubic_draw
 
     def initial_transformation(self):
@@ -92,7 +94,7 @@ class OpenGLContext(AbstractGLContext):
         # color buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                np.array(self.colors[self.i], dtype='float32').flatten(),
+                np.array(self.color_list[self.i], dtype='float32').flatten(),
                 gl.GL_DYNAMIC_DRAW)
         return buffers
 
@@ -101,8 +103,10 @@ class OpenGLContext(AbstractGLContext):
             self.buffers=self.create_vbo()
         else:
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
+            # later move to set_i function so that reference change
+            # does not casue buffer rebinding
             gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
-                                self.colors[self.i])
+                                self.color_list[self.i])
         self.draw_vbo()
 
     def draw_vbo(self):
