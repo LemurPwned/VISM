@@ -28,7 +28,7 @@ class OpenGLContext(AbstractGLContext):
         else:
             self.modified_animation = False
         if self.modified_animation:
-            self.spacer = 0.1
+            self.spacer = 5
             self.drawing_function = self.vbo_cubic_draw
             self.buffer_len = len(self.color_list[0])
             self.v1, self.sp = Parser.generate_cubes(self.omf_header)
@@ -211,4 +211,6 @@ class OpenGLContext(AbstractGLContext):
 
     def set_i(self, value):
         self.i = value
+        self.i %= (self.iterations)
+        print(self.i)
         self.update()

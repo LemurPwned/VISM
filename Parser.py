@@ -61,7 +61,7 @@ class Parser():
         if not is_binary(test_file):
             rawVectorData = Parser.readText(files_in_directory)
             omf_file_for_header = glob.glob(os.path.join(directory, '*.omf'))
-            # virtually any will do]
+            # virtually any will do
             if not omf_file_for_header:
                 msg = "no .omf file has been found"
                 raise ValueError(msg)
@@ -126,11 +126,19 @@ class Parser():
         return np.array(rawVectorData)
 
     @staticmethod
-    def getLayerOutline(omf_header, unit_scaler=1e9):
+    def getLayerOutline(omf_header, unit_scaler=1e9, averaging=3,
+                            layer_skip=True):
         """
         constructs the vector outline of each layer, this is a shell that
         colors function operate on (masking)
         @param omf_header is a dictionary form .omf file
+        @param unit_scaler is a unit scaler of dictionary, it indicates
+                how much a value stored in a dictionary should be
+                multiplied to get a proper unit scale
+        @param averaging determines how many vectors to skip before taking the
+                next one. Must be alligned with other averaging parameters in
+                functions like getRawVectors
+        @param layer_skip determines if just one layer should be plotted
         @return returns a proper list of vectors creating layer outlines
         """
         xc = int(omf_header['xnodes'])
@@ -139,9 +147,11 @@ class Parser():
         xb = float(omf_header['xbase']) * unit_scaler
         yb = float(omf_header['ybase']) * unit_scaler
         zb = float(omf_header['zbase']) * unit_scaler
+        if layer_skip:
+            zc = 1 #generate just one layer
         layers_outline = [[xb * (x%xc), yb * (y%yc), zb * (z%zc)]
                 for z in range(zc) for y in range(yc) for x in range(xc)]
-        return layers_outline
+        return layers_outline[0::averaging]
 
     @staticmethod
     def getLayerOutlineFromFile(filename, unit_scaler=1e9):
@@ -163,20 +173,25 @@ class Parser():
         return layers_outline
 
     @staticmethod
-    def getRawVectors(filename):
+    def getRawVectors(filename, averaging=3, layer_selection):
         """
         processes a .omf filename into a numpy array of vectors
         @param .omf text file
+        @param averaging determines how many vectors to skip before taking the
+                next one. Must be alligned with other averaging parameters in
+                functions like getRawVectors
         @return returns raw_vectors from fortran lists
         """
         raw_vectors = []
         with open(filename, 'r') as f:
             lines = f.readlines()
         f.close()
+        if layer_selection:
+            layer_skip = 35*35*layer_selection
         raw_vectors = [g.strip().split(' ') for g in lines if '#' not in g]
         raw_vectors = [[float(row[0]), float(row[1]), float(row[2])]
-                            for row in raw_vectors]
-        return np.array(raw_vectors)
+                            for row in raw_vectors[:layer_skip]]
+        return np.array(raw_vectors)[0::averaging]
 
     @staticmethod
     def getRawVectorsVBO(filename):
@@ -225,10 +240,11 @@ class Parser():
         return omf_header, rawVectorDatavectors
 
     @staticmethod
-    def vbo_vertex_mode(f, k):
+    def vbo_vertex_mode(f, k, averaging=3):
         p = np.array([[struct.unpack('d', f.read(8))[0],
                 struct.unpack('d', f.read(8))[0],
-                struct.unpack('d', f.read(8))[0]] for i in range(int(k))])
+                struct.unpack('d', f.read(8))[0]] for i in range(int(k))
+                if k%averaging == 0])
         return np.repeat(p, 24, axis=0).flatten()
 
     @staticmethod
