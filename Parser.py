@@ -226,8 +226,10 @@ class Parser():
 
     @staticmethod
     def vbo_vertex_mode(f, k):
-        return np.array([struct.unpack('d', f.read(8))[0]
-                            for i in range(int(k*3))])
+        p = np.array([[struct.unpack('d', f.read(8))[0],
+                struct.unpack('d', f.read(8))[0],
+                struct.unpack('d', f.read(8))[0]] for i in range(int(k))])
+        return np.repeat(p, 24, axis=0).flatten()
 
     @staticmethod
     def standard_vertex_mode(file, k):

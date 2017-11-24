@@ -32,6 +32,9 @@ class OpenGLContext(AbstractGLContext):
             self.drawing_function = self.vbo_cubic_draw
             self.buffer_len = len(self.color_list[0])
             self.v1, self.sp = Parser.generate_cubes(self.omf_header)
+            print(len(self.v1))
+            print(self.sp)
+            print(len(self.color_list[0]))
             #sp = vertices
         else:
             self.vectors_list = Parser.getLayerOutline(self.omf_header)
