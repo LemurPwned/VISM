@@ -25,14 +25,11 @@ class OpenGLContext(AbstractGLContext, QWidget):
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         if self.omf_header['binary']:
-            self.modified_animation = True
-        else:
-            self.modified_animation = False
-        if self.modified_animation:
-            self.spacer = 5
+            self.spacer = 1
             self.drawing_function = self.vbo_cubic_draw
             self.buffer_len = len(self.color_list[0])
-            self.v1, self.sp = Parser.generate_cubes(self.omf_header)
+            self.v1, self.sp = Parser.generate_cubes(self.omf_header,
+                                                    self.spacer)
             print(len(self.v1))
             print(self.sp)
             print(len(self.color_list[0]))
@@ -46,8 +43,8 @@ class OpenGLContext(AbstractGLContext, QWidget):
         self.position = [10, 10, -50]  # xyz initial
 
     def transformate(self):  # applies rotation and transformation
-        gl.glRotatef(self.rotation[0], 1, 0, 0) # rotate around y axis
-        gl.glRotatef(self.rotation[1], 0, 1, 0) # rotate around x axis
+        gl.glRotatef(self.rotation[0], 0, 1, 0) # rotate around y axis
+        gl.glRotatef(self.rotation[1], 1, 0, 0) # rotate around x axis
         gl.glRotatef(self.rotation[2], 0, 0, 1) # rotate around z axis
         gl.glTranslatef(self.position[0], self.position[1], self.position[2])
 
@@ -190,11 +187,11 @@ class OpenGLContext(AbstractGLContext, QWidget):
     def mouseMoveEvent(self, event):
         """
         Handles basic mouse press
+        SHOULD BE MOUSE DRAG RATHER A MOUSE EVENT
         """
         dx = event.x() - self.lastPos.x()
         dy = event.y() - self.lastPos.y()
-        if event.buttons() & Qt.LeftButton & Qt.RightButton:
-            self.initial_transformation
+        self.lastPos = event.pos()
         if event.buttons() & Qt.LeftButton:
             rotation_speed = 0.5
             self.rotation[0] += dx * rotation_speed
@@ -205,13 +202,12 @@ class OpenGLContext(AbstractGLContext, QWidget):
 
             self.position[0] = xpos
             self.position[2] = zpos
-
         elif event.buttons() & Qt.RightButton:
-            self.position[0] += dx * 0.1
-            self.position[1] += dy * 0.1
+            self.position[0] += dx * 0.2
+            self.position[1] += dy * 0.2
 
-        self.lastPos = event.pos()
         self.update()
+
 
     def keyPressEvent(self, event):
         key = event.key()
