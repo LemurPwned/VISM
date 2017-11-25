@@ -55,11 +55,13 @@ class Parser():
             msg = "None .odt"
             raise ValueError(msg)
         odt_data, stages = Parser.getOdtData(odt_file[0])
+        stages = glob.glob(os.path.join(directory, '*.omf'))
         test_file = os.path.join(directory,
-                            glob.glob(os.path.join(directory, '*.omf'))[0])
-        print(test_file)
+                            stages[0])
+        stages = len(stages)
+        averaging = 1
         if not is_binary(test_file):
-            rawVectorData = Parser.readText(files_in_directory)
+            rawVectorData = Parser.readText(files_in_directory, averaging)
             omf_file_for_header = glob.glob(os.path.join(directory, '*.omf'))
             # virtually any will do
             if not omf_file_for_header:
@@ -70,16 +72,18 @@ class Parser():
             omf_header['binary'] = False
         else:
             print("Detected binary")
-            omf_headers, rawVectorData = Parser.readBinary(files_in_directory)
+            omf_headers, rawVectorData = Parser.readBinary(files_in_directory,
+                                                        averaging)
             omf_header = omf_headers[0]
             omf_header['binary'] = True
             if not omf_header:
                 msg = "no .omf file has been found"
                 raise ValueError(msg)
+        omf_header['averaging'] = 1
         return rawVectorData, omf_header, odt_data, stages
 
     @staticmethod
-    def readBinary(files_in_directory):
+    def readBinary(files_in_directory, averaging):
         """
         @param files_in_directory is a list of binary filenames in a directory
         @return numpy array of vectors form .omf files
@@ -88,7 +92,8 @@ class Parser():
         rawVectorData = []
         omf_headers = []
         text_file_results = [text_pool.apply_async(Parser.getRawVectorsBinary,
-                            (filename, )) for filename in files_in_directory]
+                            (filename, averaging))
+                            for filename in files_in_directory]
         max_len = len(text_file_results)
         for i, result in enumerate(text_file_results):
             omf_header_data, vector_data = result.get(timeout=12)
@@ -104,7 +109,7 @@ class Parser():
         return omf_headers, np.array(rawVectorData)
 
     @staticmethod
-    def readText(files_in_directory):
+    def readText(files_in_directory, averaging):
         """
         @param files_in_directory is a list of text filenames in a directory
         @return numpy array of vectors form .omf files
@@ -113,10 +118,11 @@ class Parser():
         text_pool = Pool()
         rawVectorData = []
         text_file_results = [text_pool.apply_async(Parser.getRawVectors,
-                            (filename, )) for filename in files_in_directory]
+                            (filename, averaging))
+                            for filename in files_in_directory]
         max_len = len(text_file_results)
         for i, result in enumerate(text_file_results):
-            data = result.get(timeout=12)
+            data = result.get(timeout=20)
             rawVectorData.append(data)
         #catch errors, replace with custom exceptions
         if not rawVectorData:
@@ -126,8 +132,8 @@ class Parser():
         return np.array(rawVectorData)
 
     @staticmethod
-    def getLayerOutline(omf_header, unit_scaler=1e9, averaging=3,
-                            layer_skip=True):
+    def getLayerOutline(omf_header, unit_scaler=1e9,
+                            layer_skip=False):
         """
         constructs the vector outline of each layer, this is a shell that
         colors function operate on (masking)
@@ -151,7 +157,7 @@ class Parser():
             zc = 1 #generate just one layer
         layers_outline = [[xb * (x%xc), yb * (y%yc), zb * (z%zc)]
                 for z in range(zc) for y in range(yc) for x in range(xc)]
-        return layers_outline[0::averaging]
+        return layers_outline
 
     @staticmethod
     def getLayerOutlineFromFile(filename, unit_scaler=1e9):
@@ -173,7 +179,7 @@ class Parser():
         return layers_outline
 
     @staticmethod
-    def getRawVectors(filename, averaging=3, layer_selection):
+    def getRawVectors(filename, averaging=1, layer_num=3):
         """
         processes a .omf filename into a numpy array of vectors
         @param .omf text file
@@ -186,11 +192,11 @@ class Parser():
         with open(filename, 'r') as f:
             lines = f.readlines()
         f.close()
-        if layer_selection:
-            layer_skip = 35*35*layer_selection
+        layer_skip = 35*35
+        p = layer_num*layer_skip
         raw_vectors = [g.strip().split(' ') for g in lines if '#' not in g]
         raw_vectors = [[float(row[0]), float(row[1]), float(row[2])]
-                            for row in raw_vectors[:layer_skip]]
+                            for row in raw_vectors[p:p+layer_skip]]
         return np.array(raw_vectors)[0::averaging]
 
     @staticmethod
@@ -210,7 +216,7 @@ class Parser():
         return np.array(raw_vectors).flatten()
 
     @staticmethod
-    def getRawVectorsBinary(filename):
+    def getRawVectorsBinary(filename, averaging):
         """
         @param .omf binary file
         @return returns raw_vectors from fortran lists
@@ -235,16 +241,18 @@ class Parser():
             omf_header = Parser.process_header(headers)
             k = omf_header['xnodes']*omf_header['ynodes']*omf_header['znodes']
             f.read(8)
+            layer_skip = int(omf_header['xnodes']*omf_header['ynodes'])
+            layer_num = 3
+            s = layer_num*layer_skip
             rawVectorDatavectors = Parser.vbo_vertex_mode(f, k)
         f.close()
         return omf_header, rawVectorDatavectors
 
     @staticmethod
-    def vbo_vertex_mode(f, k, averaging=3):
+    def vbo_vertex_mode(f, k):
         p = np.array([[struct.unpack('d', f.read(8))[0],
                 struct.unpack('d', f.read(8))[0],
-                struct.unpack('d', f.read(8))[0]] for i in range(int(k))
-                if k%averaging == 0])
+                struct.unpack('d', f.read(8))[0]] for i in range(int(k))])
         return np.repeat(p, 24, axis=0).flatten()
 
     @staticmethod

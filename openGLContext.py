@@ -12,9 +12,10 @@ from Parser import Parser
 from AbstractGLContext import AbstractGLContext
 from multiprocessing import Pool
 
-class OpenGLContext(AbstractGLContext):
+class OpenGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
         super().__init__()
+        self.setFocusPolicy(Qt.StrongFocus)
         self.spacer = 0.2
         self.modified_animation = True
         self.lastPos = QPoint()
@@ -35,14 +36,14 @@ class OpenGLContext(AbstractGLContext):
             print(len(self.v1))
             print(self.sp)
             print(len(self.color_list[0]))
-            #sp = vertices
+            #sp = vertices = 3*vectors
         else:
             self.vectors_list = Parser.getLayerOutline(self.omf_header)
             self.drawing_function = self.slower_cubic_draw
 
     def initial_transformation(self):
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
-        self.position = [-10, -10, -40]  # xyz initial
+        self.position = [10, 10, -50]  # xyz initial
 
     def transformate(self):  # applies rotation and transformation
         gl.glRotatef(self.rotation[0], 0, 1, 0)
@@ -191,6 +192,8 @@ class OpenGLContext(AbstractGLContext):
         """
         dx = event.x() - self.lastPos.x()
         dy = event.y() - self.lastPos.y()
+        if event.buttons() & Qt.LeftButton & Qt.RightButton:
+            self.initial_transformation
         if event.buttons() & Qt.LeftButton:
             rotation_speed = 0.5
             self.rotation[0] += dx * rotation_speed
@@ -209,8 +212,14 @@ class OpenGLContext(AbstractGLContext):
         self.lastPos = event.pos()
         self.update()
 
+    def keyPressEvent(self, event):
+        key = event.key()
+        print("Anything")
+        if key == Qt.Key_R :
+            self.initial_transformation()
+            self.update()
+
     def set_i(self, value):
         self.i = value
-        self.i %= (self.iterations)
-        print(self.i)
+        self.i %= self.iterations
         self.update()
