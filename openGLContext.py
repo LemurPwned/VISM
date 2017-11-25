@@ -46,9 +46,9 @@ class OpenGLContext(AbstractGLContext, QWidget):
         self.position = [10, 10, -50]  # xyz initial
 
     def transformate(self):  # applies rotation and transformation
-        gl.glRotatef(self.rotation[0], 0, 1, 0)
-        gl.glRotatef(self.rotation[1], 1, 0, 0)
-        gl.glRotatef(self.rotation[2], 0, 0, 1)
+        gl.glRotatef(self.rotation[0], 1, 0, 0) # rotate around y axis
+        gl.glRotatef(self.rotation[1], 0, 1, 0) # rotate around x axis
+        gl.glRotatef(self.rotation[2], 0, 0, 1) # rotate around z axis
         gl.glTranslatef(self.position[0], self.position[1], self.position[2])
 
     def initializeGL(self):
@@ -177,6 +177,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
         """
         degs = event.angleDelta().y()/8
         self.steps += degs/15
+        print(degs)
         #SMART SCROLL BETA
         self.position[0] -= mt.sin(self.rotation[0] * mt.pi / 180) * \
                             mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
