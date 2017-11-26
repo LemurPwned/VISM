@@ -8,7 +8,7 @@ from PyQt5.Qt import QWheelEvent, Qt
 from PyQt5.QtCore import QPoint, QTimer
 from Parser import Parser
 import math as mt
-from Parser import Parser
+from cython_modules.Parser import Parser
 from AbstractGLContext import AbstractGLContext
 from multiprocessing import Pool
 
