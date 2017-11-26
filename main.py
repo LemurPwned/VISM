@@ -6,7 +6,7 @@ from Windows.MainWindowTemplate import Ui_MainWindow
 
 from Canvas import Canvas
 from CanvasLayer import CanvasLayer
-from Parser import Parser
+from cython_modules.Parser import Parser
 from openGLContext import OpenGLContext
 
 from Windows.ChooseWidget import ChooseWidget

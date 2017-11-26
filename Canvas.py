@@ -15,13 +15,12 @@ class Canvas(AbstractCanvas):
             raise ValueError(msg)
 
         p_dict = {
-                                'color': 'green',
-                                'line_style': 'dashed',
-                                'marker': '*',
-                                'marker_color': 'blue',
-                                'marker_size': 3
-                                                }
-
+                    'color': 'green',
+                    'line_style': 'dashed',
+                    'marker': '*',
+                    'marker_color': 'blue',
+                    'marker_size': 3
+                    }
         self.canvas_type = 'panel'
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
@@ -39,6 +38,6 @@ class Canvas(AbstractCanvas):
         self._CANVAS_ALREADY_CREATED_ = True
 
     def replot(self):
-        self.plot_axis.hpl.set_ydata(self.graph_data[0:self.i] + \
-                                self.null_data[self.i:])
+        self.plot_axis.hpl.set_ydata(np.lib.pad(self.graph_data[:self.i],
+                (0, self.iterations-self.i), mode='constant'))
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))

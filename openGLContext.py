@@ -8,41 +8,44 @@ from PyQt5.Qt import QWheelEvent, Qt
 from PyQt5.QtCore import QPoint, QTimer
 from Parser import Parser
 import math as mt
-from Parser import Parser
+from cython_modules.Parser import Parser
 from AbstractGLContext import AbstractGLContext
 from multiprocessing import Pool
 
-class OpenGLContext(AbstractGLContext):
+class OpenGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
         super().__init__()
+        self.setFocusPolicy(Qt.StrongFocus)
         self.spacer = 0.2
-        self.modified_animation = False
+        self.modified_animation = True
         self.lastPos = QPoint()
         self.buffers = None
         self.shareData(**data_dict)
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
-        self.vectors_list = Parser.getLayerOutline(self.omf_header)
-        if self.modified_animation:
-            self.spacer = 10
+        if self.omf_header['binary']:
+            self.spacer = 1
             self.drawing_function = self.vbo_cubic_draw
-            self.colors = self.color_list
             self.buffer_len = len(self.color_list[0])
-            filename = './test_folder/voltage-spin-diode-Oxs_TimeDriver-Magnetization-00-0000000.omf'
-            self.v1, self.sp = Parser.generate_cubes(filename) #sp = vertices
+            self.v1, self.sp = Parser.generate_cubes(self.omf_header,
+                                                    self.spacer)
+            print(len(self.v1))
             print(self.sp)
+            print(len(self.color_list[0]))
+            #sp = vertices = 3*vectors
         else:
+            self.vectors_list = Parser.getLayerOutline(self.omf_header)
             self.drawing_function = self.slower_cubic_draw
 
     def initial_transformation(self):
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
-        self.position = [-10, -10, -40]  # xyz initial
+        self.position = [10, 10, -50]  # xyz initial
 
     def transformate(self):  # applies rotation and transformation
-        gl.glRotatef(self.rotation[0], 0, 1, 0)
-        gl.glRotatef(self.rotation[1], 1, 0, 0)
-        gl.glRotatef(self.rotation[2], 0, 0, 1)
+        gl.glRotatef(self.rotation[0], 0, 1, 0) # rotate around y axis
+        gl.glRotatef(self.rotation[1], 1, 0, 0) # rotate around x axis
+        gl.glRotatef(self.rotation[2], 0, 0, 1) # rotate around z axis
         gl.glTranslatef(self.position[0], self.position[1], self.position[2])
 
     def initializeGL(self):
@@ -92,7 +95,7 @@ class OpenGLContext(AbstractGLContext):
         # color buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                np.array(self.colors[self.i], dtype='float32').flatten(),
+                np.array(self.color_list[self.i], dtype='float32').flatten(),
                 gl.GL_DYNAMIC_DRAW)
         return buffers
 
@@ -101,8 +104,10 @@ class OpenGLContext(AbstractGLContext):
             self.buffers=self.create_vbo()
         else:
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
+            # later move to set_i function so that reference change
+            # does not casue buffer rebinding
             gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
-                                self.colors[self.i])
+                                self.color_list[self.i])
         self.draw_vbo()
 
     def draw_vbo(self):
@@ -169,6 +174,7 @@ class OpenGLContext(AbstractGLContext):
         """
         degs = event.angleDelta().y()/8
         self.steps += degs/15
+        print(degs)
         #SMART SCROLL BETA
         self.position[0] -= mt.sin(self.rotation[0] * mt.pi / 180) * \
                             mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
@@ -181,9 +187,11 @@ class OpenGLContext(AbstractGLContext):
     def mouseMoveEvent(self, event):
         """
         Handles basic mouse press
+        SHOULD BE MOUSE DRAG RATHER A MOUSE EVENT
         """
         dx = event.x() - self.lastPos.x()
         dy = event.y() - self.lastPos.y()
+        self.lastPos = event.pos()
         if event.buttons() & Qt.LeftButton:
             rotation_speed = 0.5
             self.rotation[0] += dx * rotation_speed
@@ -194,14 +202,21 @@ class OpenGLContext(AbstractGLContext):
 
             self.position[0] = xpos
             self.position[2] = zpos
-
         elif event.buttons() & Qt.RightButton:
-            self.position[0] += dx * 0.1
-            self.position[1] += dy * 0.1
+            self.position[0] += dx * 0.2
+            self.position[1] += dy * 0.2
 
-        self.lastPos = event.pos()
         self.update()
+
+
+    def keyPressEvent(self, event):
+        key = event.key()
+        print("Anything")
+        if key == Qt.Key_R :
+            self.initial_transformation()
+            self.update()
 
     def set_i(self, value):
         self.i = value
+        self.i %= self.iterations
         self.update()

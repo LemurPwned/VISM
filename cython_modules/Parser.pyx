@@ -91,12 +91,9 @@ class Parser():
         text_pool = Pool()
         rawVectorData = []
         omf_headers = []
-        text_file_results = [text_pool.apply_async(Parser.getRawVectorsBinary,
-                            (filename, averaging))
-                            for filename in files_in_directory]
-        max_len = len(text_file_results)
-        for i, result in enumerate(text_file_results):
-            omf_header_data, vector_data = result.get(timeout=20)
+        for filename in files_in_directory:
+            omf_header_data, vector_data = Parser.getRawVectorsBinary(filename,
+                                                                    averaging)
             rawVectorData.append(vector_data)
             omf_headers.append(omf_header_data)
         #catch errors, replace with custom exceptions
