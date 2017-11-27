@@ -8,14 +8,14 @@ from PyQt5.Qt import QWheelEvent, Qt
 from PyQt5.QtCore import QPoint, QTimer
 from Parser import Parser
 import math as mt
-from cython_modules.Parser import Parser
+#from cython_modules.Parser import Parser
+from cython_parse import generate_cubes
 from AbstractGLContext import AbstractGLContext
-from multiprocessing import Pool
 
 class OpenGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
         super().__init__()
-        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFocusPolicy(Qt.StrongFocus) #needed if keyboard to be active
         self.spacer = 0.2
         self.modified_animation = True
         self.lastPos = QPoint()
@@ -28,7 +28,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
             self.spacer = 1
             self.drawing_function = self.vbo_cubic_draw
             self.buffer_len = len(self.color_list[0])
-            self.v1, self.sp = Parser.generate_cubes(self.omf_header,
+            self.v1, self.sp = generate_cubes(self.omf_header,
                                                     self.spacer)
             print(len(self.v1))
             print(self.sp)
@@ -210,8 +210,10 @@ class OpenGLContext(AbstractGLContext, QWidget):
 
 
     def keyPressEvent(self, event):
+        """
+        if r is pressed on the keyboard, then reset view
+        """
         key = event.key()
-        print("Anything")
         if key == Qt.Key_R :
             self.initial_transformation()
             self.update()

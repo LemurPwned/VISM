@@ -6,7 +6,8 @@ from Windows.MainWindowTemplate import Ui_MainWindow
 
 from Canvas import Canvas
 from CanvasLayer import CanvasLayer
-from cython_modules.Parser import Parser
+#from cython_modules.Parser import Parser
+from multiprocessing_parse import MultiprocessingParse
 from openGLContext import OpenGLContext
 
 from Windows.ChooseWidget import ChooseWidget
@@ -79,7 +80,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         #should be thrown into separate thread by pyqt
         self.rawVectorData, self.omf_header, self.odt_data, \
-                        self.stages =  Parser.readFolder(directory)
+                        self.stages =  MultiprocessingParse.readFolder(directory)
         self._LOADED_FLAG_ = True
 
     def showAnimationSettings(self):

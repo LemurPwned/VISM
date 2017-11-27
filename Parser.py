@@ -9,9 +9,6 @@ import struct
 from binaryornot.check import is_binary
 from multiprocessing import Pool
 
-from Windows.Progress import ProgressBar_Dialog
-from PyQt5.QtWidgets import QDialog, QProgressBar, QLabel, QHBoxLayout
-
 class Parser():
     def __init__(self):
         super(Parser ,self).__init__()
@@ -160,25 +157,6 @@ class Parser():
         return layers_outline
 
     @staticmethod
-    def getLayerOutlineFromFile(filename, unit_scaler=1e9):
-        """
-        constructs the vector outline of each layer, this is a shell that
-        colors function operate on (masking)
-        @param filename (path) of a .omf file
-        @return returns a proper list of vectors creating layer outlines
-        """
-        omf_header = Parser.getOmfHeader(filename)
-        xc = int(omf_header['xnodes'])
-        yc = int(omf_header['ynodes'])
-        zc = int(omf_header['znodes'])
-        xb = float(omf_header['xbase']) * unit_scaler
-        yb = float(omf_header['ybase']) * unit_scaler
-        zb = float(omf_header['zbase']) * unit_scaler
-        layers_outline = [[xb * (x%xc), yb * (y%yc), zb * (z%zc)]
-                for z in range(zc) for y in range(yc) for x in range(xc)]
-        return layers_outline
-
-    @staticmethod
     def getRawVectors(filename, averaging=1, layer_num=3):
         """
         processes a .omf filename into a numpy array of vectors
@@ -198,22 +176,6 @@ class Parser():
         raw_vectors = [[float(row[0]), float(row[1]), float(row[2])]
                             for row in raw_vectors[p:p+layer_skip]]
         return np.array(raw_vectors)[0::averaging]
-
-    @staticmethod
-    def getRawVectorsVBO(filename):
-        """
-        processes a .omf filename into a numpy array of vectors
-        @param .omf text file
-        @return returns raw_vectors from fortran lists
-        """
-        raw_vectors = []
-        with open(filename, 'r') as f:
-            lines = f.readlines()
-        f.close()
-        raw_vectors = [g.strip().split(' ') for g in lines if '#' not in g]
-        raw_vectors = [[float(row[0]), float(row[1]), float(row[2])] for
-                            i in range(24) for row in raw_vectors]
-        return np.array(raw_vectors).flatten()
 
     @staticmethod
     def getRawVectorsBinary(filename, averaging):
