@@ -9,7 +9,7 @@ from PyQt5.QtCore import QPoint, QTimer
 from Parser import Parser
 import math as mt
 #from cython_modules.Parser import Parser
-from cython_parse import generate_cubes
+from cython_modules.cython_parse import generate_cubes
 from AbstractGLContext import AbstractGLContext
 
 class OpenGLContext(AbstractGLContext, QWidget):
@@ -25,7 +25,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         if self.omf_header['binary']:
-            self.spacer = 1
+            self.spacer = 0.2
             self.drawing_function = self.vbo_cubic_draw
             self.buffer_len = len(self.color_list[0])
             self.v1, self.sp = generate_cubes(self.omf_header,

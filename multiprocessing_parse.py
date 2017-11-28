@@ -5,7 +5,7 @@ from multiprocessing import Pool
 from Windows.Progress import ProgressBar_Dialog
 from PyQt5.QtWidgets import QDialog, QProgressBar, QLabel, QHBoxLayout
 
-from cython_parse import *
+from cython_modules.cython_parse import *
 from binaryornot.check import is_binary
 
 class MultiprocessingParse():
