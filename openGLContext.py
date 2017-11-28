@@ -107,7 +107,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
             # later move to set_i function so that reference change
             # does not casue buffer rebinding
             gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
-                                self.color_list[self.i])
+                    np.array(self.color_list[self.i], dtype='float32').flatten())
         self.draw_vbo()
 
     def draw_vbo(self):
@@ -174,7 +174,6 @@ class OpenGLContext(AbstractGLContext, QWidget):
         """
         degs = event.angleDelta().y()/8
         self.steps += degs/15
-        print(degs)
         #SMART SCROLL BETA
         self.position[0] -= mt.sin(self.rotation[0] * mt.pi / 180) * \
                             mt.cos(self.rotation[1] * mt.pi / 180) * self.steps

@@ -113,6 +113,7 @@ def getLayerOutline(omf_header, unit_scaler=1e9,
     xc = int(omf_header['xnodes'])
     yc = int(omf_header['ynodes'])
     zc = int(omf_header['znodes'])
+    print(xc, yc, zc)
     xb = float(omf_header['xbase']) * unit_scaler
     yb = float(omf_header['ybase']) * unit_scaler
     zb = float(omf_header['zbase']) * unit_scaler
