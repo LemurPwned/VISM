@@ -90,8 +90,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         for pane in self.panes:
             if pane.isVisible() and pane.widget:
                 self.properPanesIterators.append(pane.widget.set_i)
-
-
         self.playerWindow.setIterators(self.properPanesIterators)
 
     def showPlotSettings(self):
@@ -144,21 +142,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 pane.widget.createPlotCanvas()
 
         self.refreshScreen()
-
-    # @pyqtSlot(int)
-    # def onIteratorChange(self, value):
-    #     threads = []
-    #     for pane in self.panes:
-    #         if pane.isVisible() and pane.widget:
-    #             value %= self.stages
-    #             t = Thread(target = pane.widget.set_i, args = (value,))
-    #             t.start()
-    #             threads.append(t)
-    #
-    #
-    #     for t in threads:
-    #         t.join()
-
 
     def showChooseWidgetSettings(self, number):
         '''Spawns Window for choosing widget for this pane'''

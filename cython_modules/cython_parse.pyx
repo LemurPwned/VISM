@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import struct
+cimport cython
 
 def getOmfHeader(filename):
     """
@@ -74,6 +75,8 @@ def getOdtData(filename):
         return df, stages
 
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def getRawVectors(filename, averaging=1, layer_num=3):
     """
     processes a .omf filename into a numpy array of vectors
@@ -95,6 +98,8 @@ def getRawVectors(filename, averaging=1, layer_num=3):
     return np.array(raw_vectors)[0::averaging]
 
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def getLayerOutline(omf_header, unit_scaler=1e9,
                         layer_skip=False):
     """
@@ -176,6 +181,8 @@ def process_header(headers):
     return omf_header
 
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def vbo_vertex_mode(f, k):
     p = np.array([[struct.unpack('d', f.read(8))[0],
             struct.unpack('d', f.read(8))[0],
@@ -187,6 +194,7 @@ def standard_vertex_mode(f, k):
     return np.array([(struct.unpack('d', f.read(8))[0],
             struct.unpack('d', f.read(8))[0],
             struct.unpack('d', f.read(8))[0]) for i in range(int(k))])
+
 
 def generate_cubes(omf_header, spacer):
     layer_outline = getLayerOutline(omf_header)
