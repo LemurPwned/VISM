@@ -6,7 +6,7 @@ class PlayerWindow(QtCore.QObject):
 
     signalStatus = QtCore.pyqtSignal(int)
 
-    def __init__(self, parent=None, iterators = []):
+    def __init__(self, parent=None):
         super(self.__class__, self).__init__(parent)
 
 
@@ -22,10 +22,8 @@ class PlayerWindow(QtCore.QObject):
         self.worker.moveToThread(self.worker_thread)
         self.worker_thread.start()
 
-        self._connectSignals()
-
+        #self._connectSignals()
         self.gui.show()
-
 
 
     def checkForErrors(self):
@@ -59,21 +57,17 @@ class PlayerWindow(QtCore.QObject):
                 element.setEnabled(True)
 
 
-    def setIterators(self, iterators):
-        self.worker.WidgetsIterators = iterators
-
     def setHandler(self, handler):
         self.handler = handler
         self.worker.handler = handler
 
-        # Make any cross object connections.
-
+        self._connectSignals()
 
     def _connectSignals(self):
         self.gui.button_start.clicked.connect(self.PlayPauseClicked)
         self.gui.button_start.clicked.connect(self.worker.startWork)
         self.gui.button_stop.clicked.connect(lambda: self.forceWorkerReset(True))
-        #self.worker.signalStatus.connect(self.handler)
+        self.worker.signalStatus.connect(self.handler)
         self.gui.button_nextFrame.clicked.connect(lambda: self.worker.moveFrame(1))
         self.gui.button_prevFrame.clicked.connect(lambda: self.worker.moveFrame(-1))
         self.gui.slider_speed.valueChanged.connect(self.speedChange)
@@ -116,7 +110,6 @@ class WorkerObject(QtCore.QObject):
         self.running = False
         self._speed = 10
         self.handler = None
-        self.WidgetsIterators = None
 
     def setSpeed(self, speed):
         self._speed = speed
@@ -125,26 +118,23 @@ class WorkerObject(QtCore.QObject):
         self._iterator = 0
 
     def startWork(self):
-        #self.running = not self.running
         if self.running:
             self.play()
 
-        #self.signalStatus.emit('Idle.')
+
     @QtCore.pyqtSlot()
     def play(self):
         while(True):
             if self.running:
                 self._iterator = self._iterator + 1
-                for i in self.WidgetsIterators:
-                    i(self._iterator)
-                #self.signalStatus.emit(self._iterator)
+                self.signalStatus.emit(self._iterator)
 
             if not self.running:
-                pass
+                tm.sleep(1)
 
             tm.sleep(1/self._speed)
 
-    @QtCore.pyqtSlot() ##TODO FIX THIS
+    @QtCore.pyqtSlot()
     def moveFrame(self, howMany):
         print(self._iterator, howMany)
         if ((self._iterator + howMany) >= 0):

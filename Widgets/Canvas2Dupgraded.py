@@ -17,7 +17,7 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
             self.graph_data = np.random.random(self.iterations)
 
         def createPlotCanvas(self):
-            print("working")
+            #print("working")
             self.plotWidget.setTitle(self.title)
             self.plotWidget.setGeometry(0, 0, 800, 600)
             self.plotWidget.setXRange(0, self.iterations)
@@ -27,11 +27,9 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
 
         def set_i(self, value):
             self._i = value
-            print(value)
             if self._i == 0:
                 self.plotWidget.clear()
             else:
-                print("plotting")
                 self.plotWidget.plot(self.graph_data[:self._i], pen="r", name="data1") #TODO
 
 
