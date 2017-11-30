@@ -151,17 +151,15 @@ def getRawVectorsBinary(filename, averaging):
                 raise struct.error
         headers = str(f.read(constant+guard))
         omf_header = process_header(headers)
-        k = omf_header['xnodes']*omf_header['ynodes']*omf_header['znodes']
+        k = int(omf_header['xnodes']*omf_header['ynodes']*omf_header['znodes'])
         f.read(8)
         layer_skip = int(omf_header['xnodes']*omf_header['ynodes'])
         layer_num = 3
         s = layer_num*layer_skip
         rawVectorDatavectors = vbo_vertex_mode(f, k)
-    rawVectorDatavectors = np.array(len(rawVectorDatavectors)*rawVectorDatavectors/np.linalg.norm(rawVectorDatavectors))
     f.close()
 
     return omf_header, rawVectorDatavectors
-
 
 def process_header(headers):
     """
@@ -184,10 +182,13 @@ def process_header(headers):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def vbo_vertex_mode(f, k):
-    p = np.array([[struct.unpack('d', f.read(8))[0],
-            struct.unpack('d', f.read(8))[0],
-            struct.unpack('d', f.read(8))[0]] for i in range(int(k))])
+def vbo_vertex_mode(f, k, a= [1,0,1], b =[-1,-1,0]):
+    p = []
+    for i in range(k):
+      x = [struct.unpack('d', f.read(8))[0],
+              struct.unpack('d', f.read(8))[0],
+              struct.unpack('d', f.read(8))[0]]
+      p.append([np.dot(x, a), np.dot(x, b), 0])
     return np.repeat(p, 24, axis=0).flatten()
 
 
