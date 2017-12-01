@@ -32,5 +32,3 @@ class ColorPolicy:
             color_type = ColorPolicy.atomic_dot_product(vector_tip, relative_vector_set=rel_set)
             interleaved_array.extend([*vector_begin, *vector_tip, *color_type])
         return interleaved_array
-
-    

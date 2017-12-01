@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import struct
-cimport cython
+
 
 def getOmfHeader(filename):
     """
@@ -71,37 +71,33 @@ def getOdtData(filename):
             dataset.append(temp_line)
         dataset = dataset[:-1]
         df = pd.DataFrame.from_records(dataset, columns=cols)
-        stages = len(lines) -1
+        stages = len(lines) - 1
         return df, stages
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def getRawVectors(filename, averaging=1, layer_num=3):
     """
     processes a .omf filename into a numpy array of vectors
-    @param .omf text file
+    @param filename .omf text file
     @param averaging determines how many vectors to skip before taking the
-            next one. Must be alligned with other averaging parameters in
+            next one. Must be aligned with other averaging parameters in
             functions like getRawVectors
+    @param layer_num is the layer number
     @return returns raw_vectors from fortran lists
     """
-    raw_vectors = []
     with open(filename, 'r') as f:
         lines = f.readlines()
     f.close()
-    layer_skip = 35*35
-    p = layer_num*layer_skip
+    layer_skip = 35 * 35
+    p = layer_num * layer_skip
     raw_vectors = [g.strip().split(' ') for g in lines if '#' not in g]
     raw_vectors = [[float(row[0]), float(row[1]), float(row[2])]
-                        for row in raw_vectors[p:p+layer_skip]]
+                   for row in raw_vectors[p:p + layer_skip]]
     return np.array(raw_vectors)[0::averaging]
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def getLayerOutline(omf_header, unit_scaler=1e9,
-                        layer_skip=False):
+                    layer_skip=False):
     """
     constructs the vector outline of each layer, this is a shell that
     colors function operate on (masking)
@@ -109,22 +105,20 @@ def getLayerOutline(omf_header, unit_scaler=1e9,
     @param unit_scaler is a unit scaler of dictionary, it indicates
             how much a value stored in a dictionary should be
             multiplied to get a proper unit scale
-    @param averaging determines how many vectors to skip before taking the
-            next one. Must be alligned with other averaging parameters in
-            functions like getRawVectors
     @param layer_skip determines if just one layer should be plotted
     @return returns a proper list of vectors creating layer outlines
     """
     xc = int(omf_header['xnodes'])
     yc = int(omf_header['ynodes'])
     zc = int(omf_header['znodes'])
+    print(xc, yc, zc)
     xb = float(omf_header['xbase']) * unit_scaler
     yb = float(omf_header['ybase']) * unit_scaler
     zb = float(omf_header['zbase']) * unit_scaler
     if layer_skip:
-        zc = 1 #generate just one layer
-    layers_outline = [[xb * (x%xc), yb * (y%yc), zb * (z%zc)]
-            for z in range(zc) for y in range(yc) for x in range(xc)]
+        zc = 1  # generate just one layer
+    layers_outline = [[xb * (x % xc), yb * (y % yc), zb * (z % zc)]
+                      for z in range(zc) for y in range(yc) for x in range(xc)]
     return layers_outline
 
 
@@ -135,8 +129,6 @@ def getRawVectorsBinary(filename, averaging):
     use this as it is the fastest way of reading binary files, however,
     this has little error handling
     """
-    vectors = []
-    base_data = {}
     validation = 123456789012345.0  # this is IEEE validation value
     guard = 0
     constant = 900
@@ -144,22 +136,22 @@ def getRawVectorsBinary(filename, averaging):
         last = f.read(constant)
         while last != validation:
             guard += 1
-            f.seek(constant+guard)
+            f.seek(constant + guard)
             last = struct.unpack('d', f.read(8))[0]
             f.seek(0)
             if guard > 250:
                 raise struct.error
-        headers = str(f.read(constant+guard))
+        headers = str(f.read(constant + guard))
         omf_header = process_header(headers)
-        k = int(omf_header['xnodes']*omf_header['ynodes']*omf_header['znodes'])
+        k = omf_header['xnodes'] * omf_header['ynodes'] * omf_header['znodes']
         f.read(8)
-        layer_skip = int(omf_header['xnodes']*omf_header['ynodes'])
+        layer_skip = int(omf_header['xnodes'] * omf_header['ynodes'])
         layer_num = 3
-        s = layer_num*layer_skip
+        s = layer_num * layer_skip
         rawVectorDatavectors = vbo_vertex_mode(f, k)
     f.close()
-
     return omf_header, rawVectorDatavectors
+
 
 def process_header(headers):
     """
@@ -180,60 +172,55 @@ def process_header(headers):
     return omf_header
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-def vbo_vertex_mode(f, k, a= [1,0,1], b =[-1,-1,0]):
-    p = []
-    for i in range(k):
-      x = [struct.unpack('d', f.read(8))[0],
-              struct.unpack('d', f.read(8))[0],
-              struct.unpack('d', f.read(8))[0]]
-      p.append([np.dot(x, a), np.dot(x, b), 0])
+def vbo_vertex_mode(f, k):
+    p = np.array([[struct.unpack('d', f.read(8))[0],
+                   struct.unpack('d', f.read(8))[0],
+                   struct.unpack('d', f.read(8))[0]] for i in range(int(k))])
     return np.repeat(p, 24, axis=0).flatten()
 
 
 def standard_vertex_mode(f, k):
     return np.array([(struct.unpack('d', f.read(8))[0],
-            struct.unpack('d', f.read(8))[0],
-            struct.unpack('d', f.read(8))[0]) for i in range(int(k))])
+                      struct.unpack('d', f.read(8))[0],
+                      struct.unpack('d', f.read(8))[0]) for i in range(int(k))])
 
 
 def generate_cubes(omf_header, spacer):
     layer_outline = getLayerOutline(omf_header)
     layer_cubed = np.array([cube(x, spacer)
-                                    for x in layer_outline]).flatten()
-    return layer_cubed, len(layer_cubed)/3
+                            for x in layer_outline]).flatten()
+    return layer_cubed, len(layer_cubed) / 3
 
 
 def cube(vec, spacer=0.1):
-    vertex_list =[
-        vec[0]+spacer, vec[1], vec[2]+spacer,
-        vec[0], vec[1], vec[2]+spacer,
-        vec[0], vec[1]+spacer, vec[2]+spacer,
-        vec[0]+spacer, vec[1]+spacer, vec[2]+spacer,
-        #BOTTOM FACE
-        vec[0]+spacer, vec[1], vec[2],
+    vertex_list = [
+        vec[0] + spacer, vec[1], vec[2] + spacer,
+        vec[0], vec[1], vec[2] + spacer,
+        vec[0], vec[1] + spacer, vec[2] + spacer,
+        vec[0] + spacer, vec[1] + spacer, vec[2] + spacer,
+        # BOTTOM FACE
+        vec[0] + spacer, vec[1], vec[2],
         vec[0], vec[1], vec[2],
-        vec[0], vec[1]+spacer, vec[2],
-        vec[0]+spacer, vec[1]+spacer, vec[2],
-        #FRONT FACE
-        vec[0]+spacer, vec[1]+spacer, vec[2]+spacer,
-        vec[0], vec[1]+spacer, vec[2]+spacer,
-        vec[0], vec[1]+spacer, vec[2],
-        vec[0]+spacer, vec[1]+spacer, vec[2],
-        #BACK FACE
-        vec[0]+spacer, vec[1], vec[2]+spacer,
-        vec[0], vec[1], vec[2]+spacer,
+        vec[0], vec[1] + spacer, vec[2],
+        vec[0] + spacer, vec[1] + spacer, vec[2],
+        # FRONT FACE
+        vec[0] + spacer, vec[1] + spacer, vec[2] + spacer,
+        vec[0], vec[1] + spacer, vec[2] + spacer,
+        vec[0], vec[1] + spacer, vec[2],
+        vec[0] + spacer, vec[1] + spacer, vec[2],
+        # BACK FACE
+        vec[0] + spacer, vec[1], vec[2] + spacer,
+        vec[0], vec[1], vec[2] + spacer,
         vec[0], vec[1], vec[2],
-        vec[0]+spacer, vec[1], vec[2],
-        #RIGHT FACE
-        vec[0]+spacer, vec[1], vec[2]+spacer,
-        vec[0]+spacer, vec[1]+spacer, vec[2]+spacer,
-        vec[0]+spacer, vec[1]+spacer, vec[2],
-        vec[0]+spacer, vec[1], vec[2],
-        #LEFT FACE
-        vec[0], vec[1]+spacer, vec[2]+spacer,
-        vec[0], vec[1], vec[2]+spacer,
+        vec[0] + spacer, vec[1], vec[2],
+        # RIGHT FACE
+        vec[0] + spacer, vec[1], vec[2] + spacer,
+        vec[0] + spacer, vec[1] + spacer, vec[2] + spacer,
+        vec[0] + spacer, vec[1] + spacer, vec[2],
+        vec[0] + spacer, vec[1], vec[2],
+        # LEFT FACE
+        vec[0], vec[1] + spacer, vec[2] + spacer,
+        vec[0], vec[1], vec[2] + spacer,
         vec[0], vec[1], vec[2],
-        vec[0], vec[1]+spacer, vec[2]]
+        vec[0], vec[1] + spacer, vec[2]]
     return vertex_list
