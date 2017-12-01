@@ -2,14 +2,16 @@ from AnimatedWidget import AnimatedWidget
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtWidgets import QSizePolicy, QPushButton
+import time
+
 
 class AbstractCanvas(AnimatedWidget, FigureCanvas):
     def __init__(self, parent=None, width=8, height=6, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         FigureCanvas.__init__(self, self.fig)
         FigureCanvas.setSizePolicy(self,
-                QSizePolicy.Expanding,
-                QSizePolicy.Expanding)
+                                   QSizePolicy.Expanding,
+                                   QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
         self._CANVAS_ALREADY_CREATED_ = False
 
@@ -33,7 +35,7 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
         self.plot_axis.get_figure().canvas.draw()
 
     def loop(self, scheduler=0.1):
-        while(self.iterations):
+        while (self.iterations):
             time.sleep(scheduler)
             self.increaseIterator()
             self.loop_guard()

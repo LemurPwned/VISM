@@ -1,12 +1,9 @@
 import os
 import glob
-import numpy as np
 from multiprocessing import Pool
-from Windows.Progress import ProgressBar_Dialog
-from PyQt5.QtWidgets import QDialog, QProgressBar, QLabel, QHBoxLayout
-
 from cython_modules.cython_parse import *
 from binaryornot.check import is_binary
+
 
 class MultiprocessingParse():
     @staticmethod
@@ -19,12 +16,9 @@ class MultiprocessingParse():
         @param directory
         @return rawVectorData, omf_headers, getOdtData
         """
-        omf_headers = []
-        rawVectorData = []
-        odt_data = None
         files_in_directory = os.listdir(directory)
         files_in_directory = [os.path.join(directory, filename)
-                for filename in files_in_directory if filename.endswith('.omf')]
+                              for filename in files_in_directory if filename.endswith('.omf')]
 
         odt_file = glob.glob(os.path.join(directory, '*.odt'))
         # look for .odt in current directory
@@ -37,7 +31,7 @@ class MultiprocessingParse():
         odt_data, stages = getOdtData(odt_file[0])
         stages = glob.glob(os.path.join(directory, '*.omf'))
         test_file = os.path.join(directory,
-                            stages[0])
+                                 stages[0])
         stages = len(stages)
         averaging = 1
         if not is_binary(test_file):
@@ -47,13 +41,12 @@ class MultiprocessingParse():
             if not omf_file_for_header:
                 msg = "no .omf file has been found"
                 raise ValueError(msg)
-                return
             omf_header = getOmfHeader(omf_file_for_header[0])
             omf_header['binary'] = False
         else:
             print("Detected binary")
             omf_headers, rawVectorData = MultiprocessingParse.readBinary(files_in_directory,
-                                                        averaging)
+                                                                         averaging)
             omf_header = omf_headers[0]
             omf_header['binary'] = True
             if not omf_header:
@@ -72,14 +65,13 @@ class MultiprocessingParse():
         rawVectorData = []
         omf_headers = []
         text_file_results = [text_pool.apply_async(getRawVectorsBinary,
-                            (filename, averaging))
-                            for filename in files_in_directory]
-        max_len = len(text_file_results)
+                                                   (filename, averaging))
+                             for filename in files_in_directory]
         for i, result in enumerate(text_file_results):
             omf_header_data, vector_data = result.get(timeout=20)
             rawVectorData.append(vector_data)
             omf_headers.append(omf_header_data)
-        #catch errors, replace with custom exceptions
+        # catch errors, replace with custom exceptions
         if not rawVectorData:
             print("\nNo vectors created")
             raise TypeError
@@ -94,17 +86,16 @@ class MultiprocessingParse():
         @param files_in_directory is a list of text filenames in a directory
         @return numpy array of vectors form .omf files
         """
-        #use multiprocessing
+        # use multiprocessing
         text_pool = Pool()
         rawVectorData = []
         text_file_results = [text_pool.apply_async(getRawVectors,
-                            (filename, averaging))
-                            for filename in files_in_directory]
-        max_len = len(text_file_results)
+                                                   (filename, averaging))
+                             for filename in files_in_directory]
         for i, result in enumerate(text_file_results):
             data = result.get(timeout=20)
             rawVectorData.append(data)
-        #catch errors, replace with custom exceptions
+        # catch errors, replace with custom exceptions
         if not rawVectorData:
             print("\nNo vectors created")
             raise TypeError
