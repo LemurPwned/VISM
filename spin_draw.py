@@ -1,11 +1,8 @@
 import sys
 
-from PyQt5.QtCore import pyqtSignal, QPoint, QSize, Qt
-from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
-from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QOpenGLWidget, QSlider,
-                             QWidget)
+from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QWidget)
 from openGLContext import OpenGLContext
+
 
 class Window(QWidget):
     def __init__(self):
