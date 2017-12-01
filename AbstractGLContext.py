@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QOpenGLWidget, QSlider,
 class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     def __init__(self, parent=None):
         super(AbstractGLContext, self).__init__(parent)
-        self._MINIMUM_PARAMS_ = ['i', 'iterations', 'vectors_list',
+        self._MINIMUM_PARAMS_ = ['i', 'iterations', 'v1',
                                     'color_list', 'omf_header']
 
     def getOpenglInfo(self):
