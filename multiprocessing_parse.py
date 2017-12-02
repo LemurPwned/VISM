@@ -5,16 +5,15 @@ from cython_modules.cython_parse import *
 from binaryornot.check import is_binary
 
 
-class MultiprocessingParse():
+class MultiprocessingParse:
     @staticmethod
     def readFolder(directory, multipleOmfHeaders=False):
         """
         dumps process-ready format from directory
         Returns raw numpy array of vectors, omf_header_files and odt data for
         2d plotting
-
-        @param directory
-        @return rawVectorData, omf_headers, getOdtData
+        :param directory
+        :return rawVectorData, omf_headers, getOdtData
         """
         files_in_directory = os.listdir(directory)
         files_in_directory = [os.path.join(directory, filename)
@@ -58,8 +57,8 @@ class MultiprocessingParse():
     @staticmethod
     def readBinary(files_in_directory, averaging):
         """
-        @param files_in_directory is a list of binary filenames in a directory
-        @return numpy array of vectors form .omf files
+        :param files_in_directory: is a list of binary filenames in a directory
+        :return numpy array of vectors form .omf files
         """
         text_pool = Pool()
         rawVectorData = []
@@ -83,8 +82,8 @@ class MultiprocessingParse():
     @staticmethod
     def readText(files_in_directory, averaging):
         """
-        @param files_in_directory is a list of text filenames in a directory
-        @return numpy array of vectors form .omf files
+        :param files_in_directory: is a list of text filenames in a directory
+        :return numpy array of vectors form .omf files
         """
         # use multiprocessing
         text_pool = Pool()

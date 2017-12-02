@@ -1,10 +1,11 @@
 import OpenGL.GLU as glu
 import OpenGL.GL as gl
 import numpy as np
+import math as mt
+
 from PyQt5.QtWidgets import QWidget
 from PyQt5.Qt import Qt
 from PyQt5.QtCore import QPoint
-import math as mt
 from cython_modules.cython_parse import generate_cubes, getLayerOutline
 from AbstractGLContext import AbstractGLContext
 

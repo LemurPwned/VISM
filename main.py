@@ -6,6 +6,7 @@ from Canvas import Canvas
 from CanvasLayer import CanvasLayer
 from multiprocessing_parse import MultiprocessingParse
 from openGLContext import OpenGLContext
+from arrowGLContex import ArrowGLContext
 
 from Windows.ChooseWidget import ChooseWidget
 from Windows.PlotSettings import PlotSettings
@@ -18,7 +19,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         super(MainWindow, self).__init__()
         self.odt_data = ""
         self.setupUi(self)
-        self.setWindowTitle("ESE - Early Spins Enviroment")
+        self.setWindowTitle("ESE - Early Spins Environment")
         self.setGeometry(10, 10, 1280, 768)  # size of window
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height())
 
@@ -100,7 +101,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def plotSettingsReceiver(self, value):
         # [string whatToPlot, synchronizedPlot, instantPlot]
-        if value == []:
+        if not value:
             print("No data to plot")
             return
 
@@ -152,7 +153,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 msg = "Data has not been uploaded before accessing GL"
                 raise ValueError(msg)
             gl_dict = self.compose_dict(value[1])
-            self.panes[value[0]].addWidget(OpenGLContext(data_dict=gl_dict))
+            self.panes[value[0]].addWidget(ArrowGLContext(data_dict=gl_dict))
             self.refreshScreen()
 
         if value[1] == '2dPlot':

@@ -6,8 +6,8 @@ import struct
 def getOmfHeader(filename):
     """
     .omf format reader
-    @param filename is .omf file path
-    @return dictionary with headers and their corresponding values
+    :param filename: is .omf file path
+    :return dictionary with headers and their corresponding values
                 and number of these headers
     """
     omf_header = {}
@@ -33,8 +33,8 @@ def getOmfHeader(filename):
 def getOdtData(filename):
     """
     Reads .odt file
-    @param filename is .odt file path
-    @return dataFrame and stages number
+    :param filename: is .odt file path
+    :return dataFrame and stages number
     """
     if not filename.endswith(".odt"):
         print("\nWrong file type passed, only .odt")
@@ -78,12 +78,12 @@ def getOdtData(filename):
 def getRawVectors(filename, averaging=1, layer_num=3):
     """
     processes a .omf filename into a numpy array of vectors
-    @param filename .omf text file
-    @param averaging determines how many vectors to skip before taking the
+    :param filename: .omf text file
+    :param averaging: determines how many vectors to skip before taking the
             next one. Must be aligned with other averaging parameters in
             functions like getRawVectors
-    @param layer_num is the layer number
-    @return returns raw_vectors from fortran lists
+    :param layer_num: is the layer number
+    :return returns raw_vectors from fortran lists
     """
     with open(filename, 'r') as f:
         lines = f.readlines()
@@ -101,12 +101,12 @@ def getLayerOutline(omf_header, unit_scaler=1e9,
     """
     constructs the vector outline of each layer, this is a shell that
     colors function operate on (masking)
-    @param omf_header is a dictionary form .omf file
-    @param unit_scaler is a unit scaler of dictionary, it indicates
+    :param omf_header: is a dictionary form .omf file
+    :param unit_scaler: is a unit scaler of dictionary, it indicates
             how much a value stored in a dictionary should be
             multiplied to get a proper unit scale
-    @param layer_skip determines if just one layer should be plotted
-    @return returns a proper list of vectors creating layer outlines
+    :param layer_skip: determines if just one layer should be plotted
+    :return: returns a proper list of vectors creating layer outlines
     """
     xc = int(omf_header['xnodes'])
     yc = int(omf_header['ynodes'])
@@ -119,15 +119,17 @@ def getLayerOutline(omf_header, unit_scaler=1e9,
         zc = 1  # generate just one layer
     layers_outline = [[xb * (x % xc), yb * (y % yc), zb * (z % zc)]
                       for z in range(zc) for y in range(yc) for x in range(xc)]
+    print("Done")
     return layers_outline
 
 
 def getRawVectorsBinary(filename, averaging):
     """
-    @param .omf binary file
-    @return returns raw_vectors from fortran lists
     use this as it is the fastest way of reading binary files, however,
     this has little error handling
+    :param filename: .omf binary file
+    :param averaging: averaging on vectors
+    :return returns raw_vectors from fortran lists
     """
     validation = 123456789012345.0  # this is IEEE validation value
     guard = 0
