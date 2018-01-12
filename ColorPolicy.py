@@ -22,7 +22,8 @@ class ColorPolicy:
                          for color_iteration in color_array]
         new_color_matrix = []
         for result in color_results:
-            new_color_matrix.append(result.get(timeout=20))
+            interleaved = result.get(timeout=20)
+            new_color_matrix.append(interleaved)
         return new_color_matrix
 
     @staticmethod
@@ -42,7 +43,12 @@ class ColorPolicy:
         # get start_vertex array
         rel_set = [[1, 1, 0], [-1, 0, 1], [0, 1, 0]]
         for vector_begin, vector_tip in zip(layer_outline, raw_vector_data):
-            color_type = ColorPolicy.atomic_dot_product(vector_tip,
-                                                        relative_vector_set=rel_set)
+            if vector_tip.any():
+                vector_tip /= np.linalg.norm(vector_tip)
+                vector_begin /= np.linalg.norm(vector_begin)
+                color_type = ColorPolicy.atomic_dot_product(vector_tip,
+                                                            relative_vector_set=rel_set)
+            else:
+                color_type = [0,0,0]
             interleaved_array.extend([*vector_begin, *vector_tip, *color_type])
         return interleaved_array

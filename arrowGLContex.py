@@ -14,7 +14,6 @@ class ArrowGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
         super().__init__()
         self.shareData(**data_dict)
-        self.color_matrix = None
         self.buffer = None
         self.steps = 1
         self.vertices = 0
@@ -25,8 +24,10 @@ class ArrowGLContext(AbstractGLContext, QWidget):
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         custom_color_policy = ColorPolicy()
-        self.color_matrix = custom_color_policy.apply_dot_product(self.rawVectorData,
+        self.color_matrix = custom_color_policy.apply_dot_product(self.color_list,
                                                                   self.omf_header)
+        print(self.color_matrix[self.i])
+        print(len(self.color_matrix))
         self.vertices = len(self.color_matrix[0])
         print("DONE")
 
@@ -66,19 +67,25 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glLoadIdentity()
 
-    def create_vbo_buffer(self):
-        self.buffer = gl.glGenBuffers(1)
-        # interleaved buffer
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffer)
-        gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                        np.array(self.color_matrix[self.i], dtype='float32').flatten(),
-                        gl.GL_DYNAMIC_DRAW)
-
-    def update_buffer(self):
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffer)
-        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
-                           np.array(self.color_matrix[self.i], dtype='float32').flatten())
-        self.draw_vbo()
+    def transformate(self):  # applies rotation and transformation
+        gl.glRotatef(self.rotation[0], 0, 1, 0)  # rotate around y axis
+        gl.glRotatef(self.rotation[1], 1, 0, 0)  # rotate around x axis
+        gl.glRotatef(self.rotation[2], 0, 0, 1)  # rotate around z axis
+        gl.glTranslatef(self.position[0], self.position[1], self.position[2])
+    #
+    # def create_vbo_buffer(self):
+    #     self.buffer = gl.glGenBuffers(1)
+    #     # interleaved buffer
+    #     gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffer)
+    #     gl.glBufferData(gl.GL_ARRAY_BUFFER,
+    #                     np.array(self.color_matrix[self.i], dtype='float32'),
+    #                     gl.GL_DYNAMIC_DRAW)
+    #
+    # def update_buffer(self):
+    #     gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffer)
+    #     gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
+    #                        np.array(self.color_matrix[self.i], dtype='float32'))
+    #     self.draw_vbo()
 
     def draw_vbo(self):
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
@@ -87,8 +94,8 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffer)
 
         # float32 is 4 bytes so 4*(3 for color + 3 for vertex) = 4*6 =24
-        gl.glInterleavedArrays(gl.GL_C3F_V3F, 4*(3+3),
-                               np.array(self.color_matrix[self.i], dtype='float32'))
+        g = np.array(self.color_matrix[self.i], dtype='float32')
+        gl.glInterleavedArrays(gl.GL_C3F_V3F, 4*(3+3), g)
         gl.glDrawArrays(gl.GL_LINE_STRIP, 0, int(self.vertices))
 
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
