@@ -46,7 +46,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
     def initial_transformation(self):
         """
         resets the view to the initial one
-        :return: 
+        :return:
         """
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
         self.position = [10, 10, -50]  # xyz initial

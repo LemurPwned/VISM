@@ -10,8 +10,11 @@ class ColorPolicy:
         self._DATA_STRUCTURE_TYPES = ['flattened_array', 'interleaved_array',
                                       'tensor_array']
 
-    def apply_normalization(self, color_array):
-        pass
+    def apply_normalization(self, color_array, xc, yc, zc):
+        normalized_color_array = np.array([x/np.linalg.norm(x)
+                        if x.any() else [0.0,0.0,0.0] for x in color_array])\
+                            .reshape(xc*yc*zc, 3)
+        return normalized_color_array
 
     def apply_dot_product(self, color_array, omf_header):
         print("STARTING POOL")
@@ -47,7 +50,7 @@ class ColorPolicy:
                 vector_tip /= np.linalg.norm(vector_tip)
                 vector_begin /= np.linalg.norm(vector_begin)
                 color_type = ColorPolicy.atomic_dot_product(vector_tip,
-                                                            relative_vector_set=rel_set)
+                                                relative_vector_set=rel_set)
             else:
                 color_type = [0,0,0]
             interleaved_array.extend([*vector_begin, *vector_tip, *color_type])

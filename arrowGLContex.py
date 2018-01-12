@@ -3,12 +3,16 @@ from AbstractGLContext import AbstractGLContext
 from ColorPolicy import ColorPolicy
 from ctypes import c_void_p
 from PyQt5.Qt import Qt
+from PyQt5.QtCore import QPoint
+
+from cython_modules.cython_parse import generate_cubes, getLayerOutline
+
 
 import numpy as np
 import OpenGL.GLU as glu
 import OpenGL.GL as gl
 import math as mt
-
+from multiprocessing import Pool
 
 class ArrowGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
@@ -18,19 +22,36 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         self.steps = 1
         self.vertices = 0
 
+        self.lastPos = QPoint()
+        self.setFocusPolicy(Qt.StrongFocus)  # needed if keyboard to be active
+
+        self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
+        self.position = [10, 10, -50]  # xyz initial
+
+    def initial_transformation(self):
+        """
+        resets the view to the initial one
+        :return:
+        """
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
         self.position = [10, 10, -50]  # xyz initial
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
+        self.vectors_list = getLayerOutline(self.omf_header)
         custom_color_policy = ColorPolicy()
-        self.color_matrix = custom_color_policy.apply_dot_product(self.color_list,
-                                                                  self.omf_header)
-        print(self.color_matrix[self.i])
-        print(len(self.color_matrix))
-        self.vertices = len(self.color_matrix[0])
-        print("DONE")
+        xc = int(self.omf_header['xnodes'])
+        yc = int(self.omf_header['ynodes'])
+        zc = int(self.omf_header['znodes'])
 
+        pool = Pool()
+        multiple_results = [pool.apply_async(
+                            custom_color_policy.apply_normalization,
+                            (self.color_list[i], xc, yc, zc))
+                            for i in range(len(self.color_list))]
+        self.color_list = [result.get(timeout=12) for result
+                            in multiple_results]
+        print("POLICY CALCULATED")
     def initializeGL(self):
         """
         Initializes openGL context
@@ -47,7 +68,8 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         # Push Matrix onto stack
         gl.glPushMatrix()
         self.transformate()
-        self.draw_vbo()
+        # self.draw_vbo()
+        self.slow_arrow_draw()
         # Pop Matrix off stack
         gl.glPopMatrix()
         self.update()
@@ -72,20 +94,23 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         gl.glRotatef(self.rotation[1], 1, 0, 0)  # rotate around x axis
         gl.glRotatef(self.rotation[2], 0, 0, 1)  # rotate around z axis
         gl.glTranslatef(self.position[0], self.position[1], self.position[2])
-    #
-    # def create_vbo_buffer(self):
-    #     self.buffer = gl.glGenBuffers(1)
-    #     # interleaved buffer
-    #     gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffer)
-    #     gl.glBufferData(gl.GL_ARRAY_BUFFER,
-    #                     np.array(self.color_matrix[self.i], dtype='float32'),
-    #                     gl.GL_DYNAMIC_DRAW)
-    #
-    # def update_buffer(self):
-    #     gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffer)
-    #     gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
-    #                        np.array(self.color_matrix[self.i], dtype='float32'))
-    #     self.draw_vbo()
+
+    def slow_arrow_draw(self):
+        for vector, color in zip(self.vectors_list,
+                                    self.color_list[self.i]):
+            gl.glColor3f(*color)
+            gl.glLineWidth(3)
+            gl.glBegin(gl.GL_LINES)
+            gl.glVertex3f(*vector)
+            gl.glVertex3f(vector[0]+color[0], vector[1]+color[1],
+                            vector[2]+color[2])
+            gl.glEnd()
+            gl.glPointSize(5)
+            gl.glBegin(gl.GL_POINTS)
+            gl.glVertex3f(vector[0]+color[0], vector[1]+color[1],
+                            vector[2]+color[2])
+            gl.glEnd()
+
 
     def draw_vbo(self):
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
