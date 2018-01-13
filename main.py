@@ -72,12 +72,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                                             "Select Directory"))
 
         if directory is None or directory == "":
+            msg = "Invalid directory: {}".format(directory)
+            # raise TypeError(msg)
+            self._LOADED_FLAG_ = False
             return 0
-
-        # should be thrown into separate thread by pyqt
-        self.rawVectorData, self.omf_header, self.odt_data, \
-        self.stages = MultiprocessingParse.readFolder(directory)
-        self._LOADED_FLAG_ = True
+        else:
+            # should be thrown into separate thread by pyqt
+            self.rawVectorData, self.omf_header, self.odt_data, \
+            self.stages = MultiprocessingParse.readFolder(directory)
+            self._LOADED_FLAG_ = True
 
     def showAnimationSettings(self):
         """Shows window to change animations settings"""
@@ -142,8 +145,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def showChooseWidgetSettings(self, number):
         """Spawns Window for choosing widget for this pane"""
-        self.new = ChooseWidget(number)
-        self.new.setHandler(self.choosingWidgetReceiver)
+        if not self._LOADED_FLAG_:
+            # spawn directory picker again
+            self.loadDirectory()
+        else:
+            self.new = ChooseWidget(number)
+            self.new.setHandler(self.choosingWidgetReceiver)
 
     def choosingWidgetReceiver(self, value):
         """Data receiver for choosingWidget action"""
