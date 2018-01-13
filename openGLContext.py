@@ -1,14 +1,13 @@
 import OpenGL.GLU as glu
 import OpenGL.GL as gl
 import numpy as np
-import math as mt
 
 from PyQt5.QtWidgets import QWidget
 from PyQt5.Qt import Qt
-from PyQt5.QtCore import QPoint
+
 from cython_modules.cython_parse import generate_cubes, getLayerOutline
 from AbstractGLContext import AbstractGLContext
-
+from ColorPolicy import ColorPolicy
 
 class OpenGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
@@ -28,6 +27,10 @@ class OpenGLContext(AbstractGLContext, QWidget):
         super().shareData(**kwargs)
         if self.omf_header['binary']:
             self.drawing_function = self.vbo_cubic_draw
+
+            cp = ColorPolicy()
+            self.color_list = cp.apply_vbo_format(self.color_list)
+
             self.buffer_len = len(self.color_list[0])
             self.vectors_list, self.vertices = generate_cubes(self.omf_header,
                                                     self.spacer)
@@ -102,7 +105,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
     def draw_cube(self, vec):
         """
         draws basic cubes separated by spacer value
-        @param vec (x,y,z) coordinate determining bottom left face
+        @param vec (x,y,z) coordinate specifying bottom left face corner
         """
         # TOP FACE
         gl.glBegin(gl.GL_QUADS)

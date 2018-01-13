@@ -2,7 +2,6 @@ import numpy as np
 from cython_modules.cython_parse import getLayerOutline
 from multiprocessing import Pool
 
-
 class ColorPolicy:
     def __init__(self):
         print("POLICY")
@@ -16,11 +15,25 @@ class ColorPolicy:
                             .reshape(xc*yc*zc, 3)
         return normalized_color_array
 
+    def apply_vbo_format(self, color_array):
+        pool = Pool()
+        multiple_results = [pool.apply_async(self.color_matrix_flatten,
+                                                (p, 24)) for p in color_array]
+        new_color_matrix = []
+        for result in multiple_results:
+            repeated_array = result.get(timeout=20)
+            new_color_matrix.append(repeated_array)
+        return new_color_matrix
+
+    def color_matrix_flatten(self, vector, times):
+        return np.repeat(vector, times, axis=0).flatten()
+
     def apply_dot_product(self, color_array, omf_header):
         print("STARTING POOL")
         layer_outline = getLayerOutline(omf_header)
         pool = Pool()
-        color_results = [pool.apply_async(ColorPolicy.compose_arrow_interleaved_array,
+        color_results = [pool.apply_async(
+                                ColorPolicy.compose_arrow_interleaved_array,
                                           (color_iteration, layer_outline))
                          for color_iteration in color_array]
         new_color_matrix = []

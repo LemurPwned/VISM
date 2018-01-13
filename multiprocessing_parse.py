@@ -17,7 +17,8 @@ class MultiprocessingParse:
         """
         files_in_directory = os.listdir(directory)
         files_in_directory = [os.path.join(directory, filename)
-                              for filename in files_in_directory if filename.endswith('.omf')]
+                              for filename in files_in_directory
+                              if filename.endswith('.omf')]
 
         odt_file = glob.glob(os.path.join(directory, '*.odt'))
         # look for .odt in current directory
@@ -34,7 +35,8 @@ class MultiprocessingParse:
         stages = len(stages)
         averaging = 1
         if not is_binary(test_file):
-            rawVectorData = MultiprocessingParse.readText(files_in_directory, averaging)
+            rawVectorData = MultiprocessingParse.readText(files_in_directory,
+                                                            averaging)
             omf_file_for_header = glob.glob(os.path.join(directory, '*.omf'))
             # virtually any will do
             if not omf_file_for_header:
@@ -44,8 +46,9 @@ class MultiprocessingParse:
             omf_header['binary'] = False
         else:
             print("Detected binary")
-            omf_headers, rawVectorData = MultiprocessingParse.readBinary(files_in_directory,
-                                                                         averaging)
+            omf_headers, rawVectorData = MultiprocessingParse.readBinary(
+                                                            files_in_directory,
+                                                            averaging)
             omf_header = omf_headers[0]
             omf_header['binary'] = True
             if not omf_header:
