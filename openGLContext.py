@@ -102,7 +102,8 @@ class OpenGLContext(AbstractGLContext, QWidget):
         # color buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                        np.array(self.color_list[self.i], dtype='float32').flatten(),
+                        np.array(self.color_list[self.i],
+                        dtype='float32').flatten(),
                         gl.GL_DYNAMIC_DRAW)
         return buffers
 
@@ -114,7 +115,8 @@ class OpenGLContext(AbstractGLContext, QWidget):
             # later move to set_i function so that reference change
             # does not cause buffer rebinding
             gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
-                               np.array(self.color_list[self.i], dtype='float32').flatten())
+                               np.array(self.color_list[self.i],
+                               dtype='float32').flatten())
         self.draw_vbo()
 
     def draw_vbo(self):

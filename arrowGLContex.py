@@ -23,7 +23,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         self.vertices = 0
 
         self.lastPos = QPoint()
-        self.setFocusPolicy(Qt.StrongFocus)  # needed if keyboard to be active
+        self.setFocusPolicy(Qt.Stron2dLayerArrowsgFocus)  # needed if keyboard to be active
 
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
         self.position = [10, 10, -50]  # xyz initial
@@ -44,6 +44,11 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         yc = int(self.omf_header['ynodes'])
         zc = int(self.omf_header['znodes'])
 
+        layer = 3
+        # testing layer extraction
+        self.color_list = [self.color_list[i].reshape(zc, xc*yc,3)[layer-1]
+                                for i in range(self.iterations)]
+        zc = 1
         pool = Pool()
         multiple_results = [pool.apply_async(
                             custom_color_policy.apply_normalization,
@@ -99,13 +104,13 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         for vector, color in zip(self.vectors_list,
                                     self.color_list[self.i]):
             gl.glColor3f(*color)
-            gl.glLineWidth(3)
+            gl.glLineWidth(2)
             gl.glBegin(gl.GL_LINES)
             gl.glVertex3f(*vector)
             gl.glVertex3f(vector[0]+color[0], vector[1]+color[1],
                             vector[2]+color[2])
             gl.glEnd()
-            gl.glPointSize(5)
+            gl.glPointSize(3)
             gl.glBegin(gl.GL_POINTS)
             gl.glVertex3f(vector[0]+color[0], vector[1]+color[1],
                             vector[2]+color[2])

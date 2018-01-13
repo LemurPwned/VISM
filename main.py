@@ -68,7 +68,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def loadDirectory(self):
         """Loads whole directory based on Parse class as simple as BHP"""
-        directory = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
+        directory = str(QtWidgets.QFileDialog.getExistingDirectory(self,
+                                                            "Select Directory"))
 
         if directory is None or directory == "":
             return 0
@@ -147,16 +148,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def choosingWidgetReceiver(self, value):
         """Data receiver for choosingWidget action"""
         self.panes[value[0]].clearBox()
-        if value[1] == 'OpenGL':
+        if value[1] == 'OpenGLCubes':
+            type_value = "OpenGL"
             # CAN't be here!!!!
             if not self._LOADED_FLAG_:
                 msg = "Data has not been uploaded before accessing GL"
                 raise ValueError(msg)
-            gl_dict = self.compose_dict(value[1])
+            gl_dict = self.compose_dict(type_value)
+            self.panes[value[0]].addWidget(OpenGLContext(data_dict=gl_dict))
+            self.refreshScreen()
+        elif value[1] == 'OpenGLArrows':
+            # CAN't be here!!!!
+            type_value = "OpenGL"
+            if not self._LOADED_FLAG_:
+                msg = "Data has not been uploaded before accessing GL"
+                raise ValueError(msg)
+            gl_dict = self.compose_dict(type_value)
             self.panes[value[0]].addWidget(ArrowGLContext(data_dict=gl_dict))
             self.refreshScreen()
-
-        if value[1] == '2dPlot':
+        elif value[1] == '2dPlot':
             self.panes[value[0]].addWidget(Canvas())
             self.refreshScreen()
 

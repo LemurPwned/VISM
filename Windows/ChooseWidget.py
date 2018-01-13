@@ -18,20 +18,22 @@ class ChooseWidget(QtWidgets.QWidget):
         self.handler = handler
 
     def returnChoice(self):
-        if self.list.currentItem().text() == "3D structure Widget":
-            self.handler([self.number, "OpenGL"])
+        if self.list.currentItem().text() == "3D structure Widget - cubes":
+            self.handler([self.number, "OpenGLCubes"])
         elif self.list.currentItem().text() == "2D plot Widget":
             self.handler([self.number, "2dPlot"])
         elif self.list.currentItem().text() == "2D layer plot Widget":
             self.handler([self.number, "2dLayer"])
-
+        elif self.list.currentItem().text() == "3D structure Widget - arrows":
+            self.handler([self.number, "OpenGLArrows"])
         self.close()
 
     def loadAvailWidgets(self):
         self.layout = QtWidgets.QGridLayout(self)
         self.list = QtWidgets.QListWidget(self)
         self.layout.addWidget(self.list)
-        self.list.addItem("3D structure Widget")
+        self.list.addItem("3D structure Widget - cubes")
+        self.list.addItem("3D structure Widget - arrows")
         self.list.addItem("2D plot Widget")
         self.list.addItem("2D layer plot Widget")
         #... and so on
