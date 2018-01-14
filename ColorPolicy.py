@@ -28,8 +28,10 @@ class ColorPolicy:
     def color_matrix_flatten(self, vector, times):
         return np.repeat(vector, times, axis=0).flatten()
 
+    def normalize_flatten_dot_product(self, vector):
+        pass
+
     def apply_dot_product(self, color_array, omf_header):
-        print("STARTING POOL")
         layer_outline = getLayerOutline(omf_header)
         pool = Pool()
         color_results = [pool.apply_async(

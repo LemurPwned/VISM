@@ -156,8 +156,7 @@ def getRawVectorsBinary(filename, averaging):
         layer_skip = int(omf_header['xnodes']*omf_header['ynodes'])
         layer_num = 3
         s = layer_num*layer_skip
-        #rawVectorDatavectors = vbo_vertex_mode(f, k)
-        rawVectorDatavectors = standard_vertex_mode(f,k)
+        rawVectorDatavectors = standard_vertex_mode(f, k)
     f.close()
 
     return omf_header, rawVectorDatavectors

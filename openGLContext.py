@@ -8,6 +8,8 @@ from PyQt5.Qt import Qt
 from cython_modules.cython_parse import generate_cubes, getLayerOutline
 from AbstractGLContext import AbstractGLContext
 from ColorPolicy import ColorPolicy
+from multiprocessing import Pool
+
 
 class OpenGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
@@ -29,6 +31,16 @@ class OpenGLContext(AbstractGLContext, QWidget):
             self.drawing_function = self.vbo_cubic_draw
 
             cp = ColorPolicy()
+            xc = int(self.omf_header['xnodes'])
+            yc = int(self.omf_header['ynodes'])
+            zc = int(self.omf_header['znodes'])
+            pool = Pool()
+            multiple_results = [pool.apply_async(
+                                cp.apply_normalization,
+                                (self.color_list[i], xc, yc, zc))
+                                for i in range(len(self.color_list))]
+            self.color_list = [result.get(timeout=12) for result
+                                in multiple_results]
             self.color_list = cp.apply_vbo_format(self.color_list)
 
             self.buffer_len = len(self.color_list[0])
