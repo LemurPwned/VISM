@@ -20,7 +20,6 @@ class ColorPolicy:
         x_dim, y_dim = vector_matrix.shape
         print("DIMS {}, {}".format(x_dim, y_dim))
         print(color_matrix.shape)
-        quit()
         self.sample_mask = self.sampling_policy(x_dim, y_dim, 1/5)
         pool = Pool()
         multiple_results = [pool.apply_async(self.filter_and_sample,

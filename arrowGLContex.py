@@ -28,12 +28,12 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         xc = int(self.omf_header['xnodes'])
         yc = int(self.omf_header['ynodes'])
         zc = int(self.omf_header['znodes'])
-        print(xc, yc, zc)
         layer = 3
         # testing layer extraction
         self.color_list = [self.color_list[i].reshape(zc, xc*yc,3)[layer-1]
                                 for i in range(self.iterations)]
         zc = 1
+        self.vectors_list = self.vectors_list[:xc*yc]
         pool = Pool()
         multiple_results = [pool.apply_async(
                             custom_color_policy.apply_normalization,
