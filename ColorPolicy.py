@@ -1,13 +1,53 @@
 import numpy as np
 from cython_modules.cython_parse import getLayerOutline
 from multiprocessing import Pool
+import scipy.signal
 
 class ColorPolicy:
     def __init__(self):
-        print("POLICY")
         self.data_structure = 'flattened_array'
         self._DATA_STRUCTURE_TYPES = ['flattened_array', 'interleaved_array',
                                       'tensor_array']
+        self.kernel_size = 3
+        self.averaging_kernel = np.ones((self.kernel_size,
+                                    self.kernel_size))*(1/(self.kernel_size**2))
+
+    def averaging_policy(self, color_matrix, vector_matrix):
+        """
+        this function applies the averaging kernel and then samples
+        the matrices to return averaged vector
+        """
+        x_dim, y_dim = vector_matrix.shape
+        print("DIMS {}, {}".format(x_dim, y_dim))
+        print(color_matrix.shape)
+        quit()
+        self.sample_mask = self.sampling_policy(x_dim, y_dim, 1/5)
+        pool = Pool()
+        multiple_results = [pool.apply_async(self.filter_and_sample,
+                            (current_matrix_state, self.averaging_kernel,
+                            self.sample_mask))
+                            for current_matrix_state in color_matrix]
+        new_color_matrix = []
+        for result in multiple_results:
+            repeated_array = result.get(timeout=20)
+            new_color_matrix.append(repeated_array)
+
+        return new_color_matrix, vector_matrix[self.sample_mask]
+
+    def sampling_policy(self, x_dim, y_dim, prob_x):
+        """
+        this function samples the array
+        """
+        return np.random.choice([True, False], (x_dim, y_dim),
+                p=[prob_x, 1-prob_x])
+
+
+    def filter_function(self, matrix, kernel):
+        return scipy.signal.convolve2d(matrix, kernel, 'same')
+
+    def filter_and_sample(self, matrix, kernel, sampling_mask):
+        return self.filter_function(matrix, kernel)[sampling_mask]
+
 
     def apply_normalization(self, color_array, xc, yc, zc):
         normalized_color_array = np.array([x/np.linalg.norm(x)

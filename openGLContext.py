@@ -41,6 +41,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
                                 for i in range(len(self.color_list))]
             self.color_list = [result.get(timeout=12) for result
                                 in multiple_results]
+
             self.color_list = cp.apply_vbo_format(self.color_list)
 
             self.buffer_len = len(self.color_list[0])

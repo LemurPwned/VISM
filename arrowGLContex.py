@@ -28,7 +28,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         xc = int(self.omf_header['xnodes'])
         yc = int(self.omf_header['ynodes'])
         zc = int(self.omf_header['znodes'])
-
+        print(xc, yc, zc)
         layer = 3
         # testing layer extraction
         self.color_list = [self.color_list[i].reshape(zc, xc*yc,3)[layer-1]
@@ -41,6 +41,10 @@ class ArrowGLContext(AbstractGLContext, QWidget):
                             for i in range(len(self.color_list))]
         self.color_list = [result.get(timeout=12) for result
                             in multiple_results]
+
+
+        self.color_list, self.vectors_list = custom_color_policy.averaging_policy(
+                        np.array(self.color_list), np.array(self.vectors_list))
 
     def paintGL(self):
         """
