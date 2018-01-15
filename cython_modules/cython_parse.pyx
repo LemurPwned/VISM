@@ -198,8 +198,13 @@ def standard_vertex_mode(f, k):
             struct.unpack('d', f.read(8))[0]) for i in range(int(k))])
 
 
-def generate_cubes(omf_header, spacer):
+def generate_cubes(omf_header, spacer, skip=None, layer=None):
     layer_outline = getLayerOutline(omf_header)
+    if layer:
+      layer_outline = layer_outline[:int(omf_header['xnodes'])*\
+                                    int(omf_header['ynodes'])]
+      layer_outline = layer_outline[::skip]
+
     layer_cubed = np.array([cube(x, spacer)
                                     for x in layer_outline]).flatten()
     return layer_cubed, len(layer_cubed)/3

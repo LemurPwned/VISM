@@ -24,28 +24,24 @@ class ArrowGLContext(AbstractGLContext, QWidget):
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         self.vectors_list = getLayerOutline(self.omf_header)
+        
         custom_color_policy = ColorPolicy()
         xc = int(self.omf_header['xnodes'])
         yc = int(self.omf_header['ynodes'])
         zc = int(self.omf_header['znodes'])
         layer = 3
         # testing layer extraction
-        self.color_list = [self.color_list[i].reshape(zc, xc*yc,3)[layer-1]
-                                for i in range(self.iterations)]
-        zc = 1
-        pool = Pool()
-        multiple_results = [pool.apply_async(
-                            custom_color_policy.apply_normalization,
-                            (self.color_list[i], xc, yc, zc))
-                            for i in range(len(self.color_list))]
-        self.color_list = [result.get(timeout=12) for result
-                            in multiple_results]
-
+        # extarction of layer means limiting vectors list
         self.vectors_list = self.vectors_list[:xc*yc]
-        self.vectors_list = self.vectors_list[::3]
-        self.color_list = np.array([matrix[::3] for matrix in self.color_list])
-        # self.color_list, self.vectors_list = custom_color_policy.averaging_policy(
-        #                 np.array(self.color_list), np.array(self.vectors_list))
+        self.color_list = np.array([self.color_list[i].reshape(zc, xc*yc,3)[layer-1]
+                                for i in range(self.iterations)])
+
+        self.color_list = custom_color_policy.apply_normalization(self.color_list,
+                            xc, yc, zc=1)
+
+        self.color_list, self.vectors_list = \
+                        custom_color_policy.averaging_policy(self.color_list,
+                                                            self.vectors_list, 3)
 
     def paintGL(self):
         """

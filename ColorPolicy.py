@@ -8,30 +8,33 @@ class ColorPolicy:
         self.data_structure = 'flattened_array'
         self._DATA_STRUCTURE_TYPES = ['flattened_array', 'interleaved_array',
                                       'tensor_array']
-        self.kernel_size = 3
+        self.averaging_kernel = None
+        self.flat_av_kernel = None
+
+        self.kernel_size = self.set_kernel_size(3)
+
+    def set_kernel_size(self, kernel_size):
+        self.kernel_size = kernel_size
         self.averaging_kernel = np.ones((self.kernel_size,
                                     self.kernel_size))*(1/(self.kernel_size**2))
+        self.flat_av_kernel = np.ravel(
+                            np.ones((self.kernel_size, 1))*(1/self.kernel_size))
 
-    def averaging_policy(self, color_matrix, vector_matrix):
+    def averaging_policy(self, color_matrix, vector_matrix=None, av_scale=3):
         """
         this function applies the averaging kernel and then samples
         the matrices to return averaged vector
         """
-        x_dim, y_dim = vector_matrix.shape
-        print("DIMS {}, {}".format(x_dim, y_dim))
-        print(color_matrix.shape)
-        self.sample_mask = self.sampling_policy(x_dim, y_dim, 1/5)
-        pool = Pool()
-        multiple_results = [pool.apply_async(self.filter_and_sample,
-                            (current_matrix_state, self.averaging_kernel,
-                            self.sample_mask))
-                            for current_matrix_state in color_matrix]
-        new_color_matrix = []
-        for result in multiple_results:
-            repeated_array = result.get(timeout=20)
-            new_color_matrix.append(repeated_array)
-
-        return new_color_matrix, vector_matrix[self.sample_mask]
+        self.kernel_size = self.set_kernel_size(av_scale)
+        # firstly average the color matrix with kernel
+        color_matrix = self.linear_convolution(color_matrix)
+        # now take every nth element from both
+        color_matrix = np.array([color[::av_scale] for color in color_matrix])
+        if vector_matrix:
+            vector_matrix = vector_matrix[::av_scale]
+            return color_matrix, vector_matrix
+        else:
+            return color_matrix
 
     def sampling_policy(self, x_dim, y_dim, prob_x):
         """
@@ -40,15 +43,38 @@ class ColorPolicy:
         return np.random.choice([True, False], (x_dim, y_dim),
                 p=[prob_x, 1-prob_x])
 
+    def linear_convolution(self, matrix):
+        pool = Pool()
+        multiple_results = [pool.apply_async(self.composite_convolution,
+                            (np.array(m), self.flat_av_kernel))
+                            for m in matrix]
+        new_color_matrix = []
+        for result in multiple_results:
+            convolved_array = result.get(timeout=20)
+            new_color_matrix.append(convolved_array)
+        return new_color_matrix
 
-    def filter_function(self, matrix, kernel):
-        return scipy.signal.convolve2d(matrix, kernel, 'same')
+    def composite_convolution(self, composite_matrix, kernel):
+        resultant_matrix = np.zeros(composite_matrix.shape)
+        for i in range(3):
+            resultant_matrix[:, i] = self.atomic_convolution(
+                                                composite_matrix[:, i], kernel)
+        return resultant_matrix
 
-    def filter_and_sample(self, matrix, kernel, sampling_mask):
-        return self.filter_function(matrix, kernel)[sampling_mask]
-
+    def atomic_convolution(self, vecA, vecB):
+        return np.convolve(vecA, vecB, 'same')
 
     def apply_normalization(self, color_array, xc, yc, zc):
+        pool = Pool()
+        multiple_results = [pool.apply_async(
+                            self.atomic_normalization,
+                            (color_array[i], xc, yc, zc))
+                            for i in range(len(color_array))]
+        color_array = [result.get(timeout=12) for result
+                            in multiple_results]
+        return color_array
+
+    def atomic_normalization(self, color_array, xc, yc, zc):
         normalized_color_array = np.array([x/np.linalg.norm(x)
                         if x.any() else [0.0,0.0,0.0] for x in color_array])\
                             .reshape(xc*yc*zc, 3)

@@ -30,26 +30,29 @@ class OpenGLContext(AbstractGLContext, QWidget):
         if self.omf_header['binary']:
             self.drawing_function = self.vbo_cubic_draw
 
-            cp = ColorPolicy()
+            custom_color_policy = ColorPolicy()
             xc = int(self.omf_header['xnodes'])
             yc = int(self.omf_header['ynodes'])
             zc = int(self.omf_header['znodes'])
-            pool = Pool()
-            multiple_results = [pool.apply_async(
-                                cp.apply_normalization,
-                                (self.color_list[i], xc, yc, zc))
-                                for i in range(len(self.color_list))]
-            self.color_list = [result.get(timeout=12) for result
-                                in multiple_results]
+            layer = 3
+            # testing layer extraction
+            # extarction of layer means limiting vectors list
+            self.color_list = np.array([self.color_list[i].reshape(zc, xc*yc,3)[layer-1]
+                                    for i in range(self.iterations)])
 
-            self.color_list = cp.apply_vbo_format(self.color_list)
+            self.color_list = custom_color_policy.apply_normalization(self.color_list,
+                                xc, yc, zc=1)
+
+            self.color_list = \
+                            custom_color_policy.averaging_policy(self.color_list,
+                                                                None, 3)
+
+            self.color_list = custom_color_policy.apply_vbo_format(self.color_list)
 
             self.buffer_len = len(self.color_list[0])
             self.vectors_list, self.vertices = generate_cubes(self.omf_header,
-                                                    self.spacer)
-            print(len(self.vectors_list))
-            print(self.vertices)
-            print(len(self.color_list[0]))
+                                                    self.spacer, skip=3,
+                                                    layer=1)
             # vertices = 3*vectors
         else:
             self.vectors_list = getLayerOutline(self.omf_header)
