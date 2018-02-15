@@ -24,7 +24,10 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
     def receivedOptions(self):
         print(self.opt)
-        
+        self.color_scheme = self.opt[0]
+        self.averaging = int(self.opt[1])
+        self.layer = self.opt[2]
+
     def initial_transformation(self):
         """
         resets the view to the initial one

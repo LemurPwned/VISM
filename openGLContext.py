@@ -23,41 +23,64 @@ class OpenGLContext(AbstractGLContext, QWidget):
         self.modified_animation = True
         self.buffers = None
         self.buffer_len = 0
+
         self.shareData(**data_dict)
-        self.receivedOptions()
-        
+
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
+        self.receivedOptions()
+
+        xc = int(self.omf_header['xnodes'])
+        yc = int(self.omf_header['ynodes'])
+        zc = int(self.omf_header['znodes'])
+
         if self.omf_header['binary']:
+            # change drawing function
             self.drawing_function = self.vbo_cubic_draw
 
             custom_color_policy = ColorPolicy()
-            xc = int(self.omf_header['xnodes'])
-            yc = int(self.omf_header['ynodes'])
-            zc = int(self.omf_header['znodes'])
-            layer = 3
-            # testing layer extraction
-            # extarction of layer means limiting vectors list
-            self.color_list = np.array([self.color_list[i].reshape(zc, xc*yc,3)[layer-1]
-                                    for i in range(self.iterations)])
 
-            self.color_list = custom_color_policy.apply_normalization(self.color_list,
-                                xc, yc, zc=1)
-
-            self.color_list = \
-                            custom_color_policy.averaging_policy(self.color_list,
-                                                                None, 3)
-
-            self.color_list = custom_color_policy.apply_vbo_format(self.color_list)
-
-            self.buffer_len = len(self.color_list[0])
-            self.vectors_list, self.vertices = generate_cubes(self.omf_header,
-                                                    self.spacer, skip=3,
-                                                    layer=1)
+            if self.layer != 'all':
+                self.specificLayerDisplay(int(self.layer), xc, yc, zc)
+            else:
+                self.fullLayerDisplay(xc, yc, zc)
             # vertices = 3*vectors
+            self.generalPrep()
         else:
-            self.vectors_list = getLayerOutline(self.omf_header)
+            if self.layer != 'all':
+                # take only one layer
+                layer_size = xc*yc
+                sl = self.layer*layer_size # slice
+                self.color_list = [c[sl:sl+layer_size] for c in self.color_list]
+            self.color_list = np.array([c[::self.averaging] for c in self.color_list])
+            self.vectors_list = getLayerOutline(self.omf_header)[::self.averaging]
             self.drawing_function = self.slower_cubic_draw
+
+    def generalPrep(self):
+        self.color_list = \
+                        custom_color_policy.averaging_policy(self.color_list,
+                                                        None, self.averaging)
+
+        self.color_list = custom_color_policy.apply_vbo_format(self.color_list)
+
+        self.buffer_len = len(self.color_list[0])
+        self.vectors_list, self.vertices = generate_cubes(self.omf_header,
+                                                self.spacer, skip=self.averaging,
+                                                layer=True)
+
+    def fullLayerDisplay(self, xc, yc, zc):
+        self.color_list = custom_color_policy.apply_normalization(self.color_list,
+                            xc, yc, zc)
+
+    def specificLayerDisplay(self, layer, xc, yc, zc):
+        # testing layer extraction
+        # extraction of layer means limiting vectors list
+        self.color_list = np.array([self.color_list[i].reshape(zc, xc*yc,3)[layer-1]
+                                for i in range(self.iterations)])
+
+        # zc is set to 1 because now only single layer is displayed
+        self.color_list = custom_color_policy.apply_normalization(self.color_list,
+                            xc, yc, zc=1)
 
     def paintGL(self):
         """
@@ -92,7 +115,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
             self.buffers = self.create_vbo()
         else:
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
-            # later move to set_i function so that reference change
+            # later move to set_i function so that reference changes
             # does not cause buffer rebinding
             gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
                                np.array(self.color_list[self.i],

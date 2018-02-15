@@ -33,10 +33,8 @@ class MultiprocessingParse:
         test_file = os.path.join(directory,
                                  stages[0])
         stages = len(stages)
-        averaging = 1
         if not is_binary(test_file):
-            rawVectorData = MultiprocessingParse.readText(files_in_directory,
-                                                            averaging)
+            rawVectorData = MultiprocessingParse.readText(files_in_directory)
             omf_file_for_header = glob.glob(os.path.join(directory, '*.omf'))
             # virtually any will do
             if not omf_file_for_header:
@@ -47,8 +45,7 @@ class MultiprocessingParse:
         else:
             print("Detected binary")
             omf_headers, rawVectorData = MultiprocessingParse.readBinary(
-                                                            files_in_directory,
-                                                            averaging)
+                                                            files_in_directory)
             omf_header = omf_headers[0]
             omf_header['binary'] = True
             if not omf_header:
@@ -58,7 +55,7 @@ class MultiprocessingParse:
         return rawVectorData, omf_header, odt_data, stages
 
     @staticmethod
-    def readBinary(files_in_directory, averaging):
+    def readBinary(files_in_directory):
         """
         :param files_in_directory: is a list of binary filenames in a directory
         :return numpy array of vectors form .omf files
@@ -67,7 +64,7 @@ class MultiprocessingParse:
         rawVectorData = []
         omf_headers = []
         text_file_results = [text_pool.apply_async(getRawVectorsBinary,
-                                                   (filename, averaging))
+                                                   (filename, ))
                              for filename in files_in_directory]
         for i, result in enumerate(text_file_results):
             omf_header_data, vector_data = result.get(timeout=20)
@@ -83,7 +80,7 @@ class MultiprocessingParse:
         return omf_headers, np.array(rawVectorData)
 
     @staticmethod
-    def readText(files_in_directory, averaging):
+    def readText(files_in_directory):
         """
         :param files_in_directory: is a list of text filenames in a directory
         :return numpy array of vectors form .omf files
@@ -92,7 +89,7 @@ class MultiprocessingParse:
         text_pool = Pool()
         rawVectorData = []
         text_file_results = [text_pool.apply_async(getRawVectors,
-                                                   (filename, averaging))
+                                                   (filename, ))
                              for filename in files_in_directory]
         for i, result in enumerate(text_file_results):
             data = result.get(timeout=20)

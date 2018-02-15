@@ -24,6 +24,12 @@ class ColorPolicy:
         """
         this function applies the averaging kernel and then samples
         the matrices to return averaged vector
+        if no vector matrix is provided, only color_matrix is transformed as if
+        it was a vector_matrix
+        :param color_matrix: maps color on vector_matrix should be of size N*(k,m)
+        where N is number of iterations and (k,m) is vector matrix size
+        :param vector_matrix: has shape (k,m) or linear m = 1
+        :param av_scale: specifies how much averaging is done
         """
         self.kernel_size = self.set_kernel_size(av_scale)
         # firstly average the color matrix with kernel
@@ -65,6 +71,13 @@ class ColorPolicy:
         return np.convolve(vecA, vecB, 'same')
 
     def apply_normalization(self, color_array, xc, yc, zc):
+        """
+        normalizes a large input color_array to unit vectors
+        :param color_array: to be normalized, numpy array
+        :param xc: nodes in x direction
+        :param yc: nodes in y direction
+        :parac zc: nodes in z direction
+        """
         pool = Pool()
         multiple_results = [pool.apply_async(
                             self.atomic_normalization,
@@ -75,12 +88,23 @@ class ColorPolicy:
         return color_array
 
     def atomic_normalization(self, color_array, xc, yc, zc):
+        """
+        performs unit normalization on tiny arrays
+        :param xc: nodes in x direction
+        :param yc: nodes in y direction
+        :parac zc: nodes in z direction
+        """
         normalized_color_array = np.array([x/np.linalg.norm(x)
                         if x.any() else [0.0,0.0,0.0] for x in color_array])\
                             .reshape(xc*yc*zc, 3)
         return normalized_color_array
 
     def apply_vbo_format(self, color_array):
+        """
+        transforms a given numpy array matrix representing vecotrs in space
+        into linear vbo matrix - to fit vertex buffer object
+        :param color_array: to be transformed, numpy array
+        """
         pool = Pool()
         multiple_results = [pool.apply_async(self.color_matrix_flatten,
                                                 (p, 24)) for p in color_array]

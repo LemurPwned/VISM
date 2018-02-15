@@ -24,7 +24,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         self.vectors_list = getLayerOutline(self.omf_header)
-        
+
         custom_color_policy = ColorPolicy()
         xc = int(self.omf_header['xnodes'])
         yc = int(self.omf_header['ynodes'])
@@ -78,8 +78,6 @@ class ArrowGLContext(AbstractGLContext, QWidget):
     def draw_vbo(self):
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
         gl.glEnableClientState(gl.GL_COLOR_ARRAY)
-
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffer)
 
         # float32 is 4 bytes so 4*(3 for color + 3 for vertex) = 4*6 =24
         g = np.array(self.color_matrix[self.i], dtype='float32')

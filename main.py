@@ -31,7 +31,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.makeGrid()  # create grid (4 Widgets) and stores them in arrays
         self.make1WindowGrid()  # shows default 1 widget Window
         self.events()  # create event listeners
-        self.defaultOptionSet = ['Standard', 1]
+        self.defaultOptionSet = ['Standard', 1, 3]
         self._LOADED_FLAG_ = False
 
     def events(self):
@@ -64,7 +64,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.resize(self.width() + 1, self.height())
 
     def optionsChecker(self):
-        self.optionsMenu = PerfOptions()
+        if self._LOADED_FLAG_:
+            self.optionsMenu = PerfOptions(True, int(self.omf_header['znodes']))
+        else:
+            self.optionsMenu = PerfOptions(False)
 
     def resizeEvent(self, event):
         """What happens when window is resized"""
@@ -84,7 +87,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             # raise TypeError(msg)
             self._LOADED_FLAG_ = False
             PopUpWrapper("Invalid directory", msg, QtWidgets.QMessageBox.Yes,
-                            QtWidgets.QMessageBox.No, quit, self.loadDirectory)
+                            QtWidgets.QMessageBox.No, quit, None)
             return 0
         else:
             try:
