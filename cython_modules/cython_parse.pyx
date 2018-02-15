@@ -77,7 +77,7 @@ def getOdtData(filename):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def getRawVectors(filename, averaging=1, layer_num=3):
+def getRawVectors2(filename, averaging=1, layer_num=3):
     """
     processes a .omf filename into a numpy array of vectors
     @param .omf text file
@@ -97,6 +97,22 @@ def getRawVectors(filename, averaging=1, layer_num=3):
                         for row in raw_vectors[p:p+layer_skip]]
     return np.array(raw_vectors)[0::averaging]
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def getRawVectors(filename):
+    """
+    processes a .omf filename into a numpy array of vectors
+    @param .omf text file
+    @return returns raw_vectors from fortran lists
+    """
+    raw_vectors = []
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+    f.close()
+    raw_vectors = [g.strip().split(' ') for g in lines if '#' not in g]
+    raw_vectors = [[float(row[0]), float(row[1]), float(row[2])]
+                        for row in raw_vectors]
+    return np.array(raw_vectors)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -127,8 +143,7 @@ def getLayerOutline(omf_header, unit_scaler=1e9,
             for z in range(zc) for y in range(yc) for x in range(xc)]
     return layers_outline
 
-
-def getRawVectorsBinary(filename, averaging):
+def getRawVectorsBinary(filename, averaging=1):
     """
     @param .omf binary file
     @return returns raw_vectors from fortran lists
