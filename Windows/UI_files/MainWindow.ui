@@ -32,7 +32,7 @@
      <x>0</x>
      <y>0</y>
      <width>863</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -57,9 +57,16 @@
     <addaction name="action2_Windows_Grid"/>
     <addaction name="action4_Windows_Grid"/>
    </widget>
+   <widget class="QMenu" name="menuOptions">
+    <property name="title">
+     <string>Options</string>
+    </property>
+    <addaction name="actionPerformance"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
+   <addaction name="menuOptions"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionLoad_File">
@@ -95,6 +102,11 @@
   <action name="action4_Windows_Grid">
    <property name="text">
     <string>4 Windows Grid</string>
+   </property>
+  </action>
+  <action name="actionPerformance">
+   <property name="text">
+    <string>Performance</string>
    </property>
   </action>
  </widget>

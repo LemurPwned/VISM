@@ -78,7 +78,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
             self.comboBox3[self.GroupCounter].addItem(marker)
         for line in linestyleOptions:
             self.comboBox4[self.GroupCounter].addItem(line)
-        #radioButton = []
+
         self.radioButton.append(QRadioButton("Run synchronized with Animation",
                                                                         self))
         self.radioButton[self.GroupCounter*2].setChecked(True)

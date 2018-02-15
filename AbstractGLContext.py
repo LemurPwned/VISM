@@ -22,6 +22,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
         self.position = [10, 10, -50]  # xyz initial
 
+    def receivedOptions(self):
+        print(self.opt)
+        
     def initial_transformation(self):
         """
         resets the view to the initial one
@@ -108,6 +111,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
             self.position[0] = xpos
             self.position[2] = zpos
+
         elif event.buttons() & Qt.RightButton:
             self.position[0] += dx * 0.2
             self.position[1] += dy * 0.2

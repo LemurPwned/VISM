@@ -11,6 +11,8 @@ from arrowGLContex import ArrowGLContext
 from Windows.ChooseWidget import ChooseWidget
 from Windows.PlotSettings import PlotSettings
 from Windows.PlayerWindow import PlayerWindow
+from Windows.PerfOptions import PerfOptions
+
 from WidgetHandler import WidgetHandler
 
 from PopUp import PopUpWrapper
@@ -29,7 +31,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.makeGrid()  # create grid (4 Widgets) and stores them in arrays
         self.make1WindowGrid()  # shows default 1 widget Window
         self.events()  # create event listeners
-
+        self.defaultOptionSet = ['Standard', 1]
         self._LOADED_FLAG_ = False
 
     def events(self):
@@ -46,6 +48,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.action2_Windows_Grid.triggered.connect(self.make2WindowsGrid)
         self.action4_Windows_Grid.triggered.connect(self.make4WindowsGrid)
 
+        # OPTIONS SUBMENU
+        self.actionPerformance.triggered.connect(self.optionsChecker)
         # GRID BUTTONS
         # lambda required to pass parameter - which button was pressed
         self.panes[0].button.clicked.connect(lambda: self.showChooseWidgetSettings(0))
@@ -58,6 +62,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         resize i think this is a bug"""
         self.resize(self.width() - 1, self.height())
         self.resize(self.width() + 1, self.height())
+
+    def optionsChecker(self):
+        self.optionsMenu = PerfOptions()
 
     def resizeEvent(self, event):
         """What happens when window is resized"""
@@ -78,10 +85,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self._LOADED_FLAG_ = False
             PopUpWrapper("Invalid directory", msg, QtWidgets.QMessageBox.Yes,
                             QtWidgets.QMessageBox.No, quit, self.loadDirectory)
-
             return 0
         else:
-            # should be thrown into separate thread by pyqt
             try:
                 self.rawVectorData, self.omf_header, self.odt_data, \
                     self.stages = MultiprocessingParse.readFolder(directory)
@@ -118,7 +123,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def plotSettingsReceiver(self, value):
         # [string whatToPlot, synchronizedPlot, instantPlot]
         if not value:
-            print("No data to plot")
+            msg = "There is no data to display on the plot. Continue?"
+            PopUpWrapper("No data", msg, QtWidgets.QMessageBox.Yes,
+                            QtWidgets.QMessageBox.No, None, quit)
             return
 
         temp_val = 0  # fast_fix rethink it later
@@ -169,26 +176,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[value[0]].clearBox()
         if value[1] == 'OpenGLCubes':
             type_value = "OpenGL"
-            # CAN't be here!!!!
-            if not self._LOADED_FLAG_:
-                msg = "Data has not been uploaded before accessing GL"
-                raise ValueError(msg)
             gl_dict = self.compose_dict(type_value)
             self.panes[value[0]].addWidget(OpenGLContext(data_dict=gl_dict))
             self.refreshScreen()
         elif value[1] == 'OpenGLArrows':
-            # CAN't be here!!!!
             type_value = "OpenGL"
-            if not self._LOADED_FLAG_:
-                msg = "Data has not been uploaded before accessing GL"
-                raise ValueError(msg)
             gl_dict = self.compose_dict(type_value)
             self.panes[value[0]].addWidget(ArrowGLContext(data_dict=gl_dict))
             self.refreshScreen()
         elif value[1] == '2dPlot':
             self.panes[value[0]].addWidget(Canvas())
             self.refreshScreen()
-
         elif value[1] == '2dLayer':
             layer_dict = self.compose_dict(value[1])
             self.panes[value[0]].addWidget(CanvasLayer())
@@ -201,6 +199,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[-1].groupBox = QtWidgets.QGroupBox("Window " + \
                                                       str(len(self.panes)), self)
         self.panes[-1].layout = QtWidgets.QGridLayout()
+
+    def optionsParser(self):
+        try:
+            selectedOptionsSet = self.optionsMenu.getOptions()
+        except AttributeError as ae:
+            selectedOptionsSet = self.defaultOptionSet
+        return selectedOptionsSet
 
     def makeGrid(self):
         """Initialize all subwindows"""
@@ -235,7 +240,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 'omf_header': self.omf_header,
                 'color_list': self.rawVectorData,
                 'iterations': self.stages,
-                'i': current_state
+                'i': current_state,
+                'opt': self.optionsParser()
             }
         elif widgetType == '2dPlot':
             data_dict = {
@@ -255,7 +261,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             }
         else:
             msg = "Invalid argument {}".format(widgetType)
-
             raise ValueError(msg)
         return data_dict
 

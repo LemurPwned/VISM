@@ -24,7 +24,8 @@ class OpenGLContext(AbstractGLContext, QWidget):
         self.buffers = None
         self.buffer_len = 0
         self.shareData(**data_dict)
-
+        self.receivedOptions()
+        
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         if self.omf_header['binary']:
@@ -121,7 +122,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
     def draw_cube(self, vec):
         """
         draws basic cubes separated by spacer value
-        @param vec (x,y,z) coordinate specifying bottom left face corner
+        :param vec (x,y,z) coordinate specifying bottom left face corner
         """
         # TOP FACE
         gl.glBegin(gl.GL_QUADS)
