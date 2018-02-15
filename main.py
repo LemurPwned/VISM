@@ -13,6 +13,7 @@ from Windows.PlotSettings import PlotSettings
 from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
 
+from PopUp import PopUpWrapper
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
@@ -72,15 +73,26 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                                             "Select Directory"))
 
         if directory is None or directory == "":
-            msg = "Invalid directory: {}".format(directory)
+            msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
             # raise TypeError(msg)
             self._LOADED_FLAG_ = False
+            PopUpWrapper("Invalid directory", msg, QtWidgets.QMessageBox.Yes,
+                            QtWidgets.QMessageBox.No, quit, self.loadDirectory)
+
             return 0
         else:
             # should be thrown into separate thread by pyqt
-            self.rawVectorData, self.omf_header, self.odt_data, \
-            self.stages = MultiprocessingParse.readFolder(directory)
-            self._LOADED_FLAG_ = True
+            try:
+                self.rawVectorData, self.omf_header, self.odt_data, \
+                    self.stages = MultiprocessingParse.readFolder(directory)
+            except ValueError as e:
+                msg = "Invalid directory: {}. \
+                    Error Message {}\nDo you wish to reselect?".format(directory, str(e))
+                PopUpWrapper("Invalid directory", msg, QtWidgets.QMessageBox.Yes,
+                                QtWidgets.QMessageBox.No, self.loadDirectory, quit)
+            finally:
+                self._LOADED_FLAG_ = True
+            return 1
 
     def showAnimationSettings(self):
         """Shows window to change animations settings"""
@@ -243,6 +255,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             }
         else:
             msg = "Invalid argument {}".format(widgetType)
+
             raise ValueError(msg)
         return data_dict
 
