@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
 from PyQt5 import QtCore
 from Windows.PlotSettingsTemplate import Ui_PlotSettings
 
+
 class PlotSettings(QWidget, Ui_PlotSettings):
     def __init__(self, plotOptions=[None], gridSize=2):
         super(PlotSettings, self).__init__()
@@ -12,7 +13,6 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         if len(plotOptions) == 0:
             self.showMessage("There is no data to show. Load data with File > Load Directory")
         else:
-            #self.EventListeners()
             self.comboBox = []
             self.comboBox2 = []
             self.comboBox3 = []
