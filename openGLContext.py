@@ -38,49 +38,61 @@ class OpenGLContext(AbstractGLContext, QWidget):
         if self.omf_header['binary']:
             # change drawing function
             self.drawing_function = self.vbo_cubic_draw
-            if self.layer != 'all':
-                self.specificLayerDisplay(int(self.layer), xc, yc, zc,
-                                          custom_color_policy)
-            else:
-                self.fullLayerDisplay(xc, yc, zc, custom_color_policy)
-            # vertices = 3*vectors
-            self.generalPrep(custom_color_policy)
+            self.color_list = custom_color_policy.apply_vbo_format(self.color_list)
+            self.vectors_list, self.vertices = generate_cubes(self.omf_header,
+                                                    self.spacer, skip=self.averaging,
+                                                    layer=True)
+            self.color_list, self.vectors_list = \
+                                custom_color_policy.standard_procedure(self.vectors_list,
+                                                                       self.color_list,
+                                                                       self.iterations,
+                                                                       self.averaging,
+                                                                       xc, yc, zc, 3)
+            self.buffer_len = len(self.color_list[0])
+
+            # if self.layer != 'all':
+            #     self.specificLayerDisplay(int(self.layer), xc, yc, zc,
+            #                               custom_color_policy)
+            # else:
+            #     self.fullLayerDisplay(xc, yc, zc, custom_color_policy)
+            # # vertices = 3*vectors
+            # self.generalPrep(custom_color_policy)
         else:
             self.drawing_function = self.slower_cubic_draw
-            if self.layer != 'all':
-                # take only one layer
-                layer_size = xc*yc
-                sl = self.layer*layer_size # slice
-                self.color_list = [c[sl:sl+layer_size] for c in self.color_list]
-            self.color_list = np.array([c[::self.averaging] for c in self.color_list])
-            self.vectors_list = getLayerOutline(self.omf_header)[::self.averaging]
+            self.vectors_list = getLayerOutline(self.omf_header)
+            self.color_list, self.vectors_list = \
+                                custom_color_policy.standard_procedure(self.vectors_list,
+                                                                       self.color_list,
+                                                                       self.iterations,
+                                                                       self.averaging,
+                                                                       xc, yc, zc, 3)
 
-    def generalPrep(self, custom_color_policy):
-        self.color_list = \
-                        custom_color_policy.averaging_policy(self.color_list,
-                                                        None, self.averaging)
-
-        self.color_list = custom_color_policy.apply_vbo_format(self.color_list)
-        # buffer length is equal to just a single iteration matrix
-        self.buffer_len = len(self.color_list[0])
-        # fetch the cube outline
-        self.vectors_list, self.vertices = generate_cubes(self.omf_header,
-                                                self.spacer, skip=self.averaging,
-                                                layer=True)
-
-    def fullLayerDisplay(self, xc, yc, zc, custom_color_policy):
-        self.color_list = custom_color_policy.apply_normalization(self.color_list,
-                            xc, yc, zc)
-
-    def specificLayerDisplay(self, layer, xc, yc, zc, custom_color_policy):
-        # testing layer extraction
-        # extraction of layer means limiting vectors list
-        self.color_list = np.array([self.color_list[i].reshape(zc, xc*yc,3)[layer-1]
-                                for i in range(self.iterations)])
-
-        # zc is set to 1 because now only single layer is displayed
-        self.color_list = custom_color_policy.apply_normalization(self.color_list,
-                            xc, yc, zc=1)
+    # def generalPrep(self, custom_color_policy):
+    #     self.color_list = \
+    #                     custom_color_policy.averaging_policy(self.color_list,
+    #                                                     None, self.averaging)
+    #
+        # self.color_list = custom_color_policy.apply_vbo_format(self.color_list)
+    #     # buffer length is equal to just a single iteration matrix
+    #     self.buffer_len = len(self.color_list[0])
+    #     # fetch the cube outline
+    #     self.vectors_list, self.vertices = generate_cubes(self.omf_header,
+    #                                             self.spacer, skip=self.averaging,
+    #                                             layer=True)
+    #
+    # def fullLayerDisplay(self, xc, yc, zc, custom_color_policy):
+    #     self.color_list = custom_color_policy.apply_normalization(self.color_list,
+    #                         xc, yc, zc)
+    #
+    # def specificLayerDisplay(self, layer, xc, yc, zc, custom_color_policy):
+    #     # testing layer extraction
+    #     # extraction of layer means limiting vectors list
+    #     self.color_list = np.array([self.color_list[i].reshape(zc, xc*yc,3)[layer-1]
+    #                             for i in range(self.iterations)])
+    #
+    #     # zc is set to 1 because now only single layer is displayed
+    #     self.color_list = custom_color_policy.apply_normalization(self.color_list,
+    #                         xc, yc, zc=1)
 
     def paintGL(self):
         """
