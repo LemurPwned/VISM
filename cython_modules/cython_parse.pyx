@@ -201,6 +201,10 @@ def generate_cubes(omf_header, spacer, skip=None, layer=None):
                                     for x in layer_outline]).flatten()
     return layer_cubed, len(layer_cubed)/3
 
+def genCubes(layer_outline, spacer):
+    layer_cubed = np.array([cube(x, spacer)
+                                    for x in layer_outline]).flatten()
+    return layer_cubed, len(layer_cubed)/3
 
 def cube(vec, spacer=0.1):
     vertex_list =[

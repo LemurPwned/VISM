@@ -21,6 +21,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
         self.position = [10, 10, -50]  # xyz initial
+        self.drawing_function = None
 
     def receivedOptions(self):
         print(self.opt)
@@ -67,6 +68,19 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         glu.gluPerspective(85 * self.steps, aspectRatio, 1, 1000)
         gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glLoadIdentity()
+
+    def paintGL(self):
+        """
+        Clears the buffer and redraws the scene
+        """
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+        # Push Matrix onto stack
+        gl.glPushMatrix()
+        self.transformate()
+        self.drawing_function()
+        # Pop Matrix off stack
+        gl.glPopMatrix()
+        self.update()
 
     def set_i(self, value):
         self.i = value

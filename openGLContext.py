@@ -5,7 +5,7 @@ import numpy as np
 from PyQt5.QtWidgets import QWidget
 from PyQt5.Qt import Qt
 
-from cython_modules.cython_parse import generate_cubes, getLayerOutline
+from cython_modules.cython_parse import generate_cubes, getLayerOutline, genCubes
 from AbstractGLContext import AbstractGLContext
 from ColorPolicy import ColorPolicy
 from multiprocessing import Pool
@@ -35,77 +35,29 @@ class OpenGLContext(AbstractGLContext, QWidget):
         zc = int(self.omf_header['znodes'])
 
         custom_color_policy = ColorPolicy()
+        self.vectors_list = getLayerOutline(self.omf_header)
         if self.omf_header['binary']:
             # change drawing function
             self.drawing_function = self.vbo_cubic_draw
-            self.color_list = custom_color_policy.apply_vbo_format(self.color_list)
-            self.vectors_list, self.vertices = generate_cubes(self.omf_header,
-                                                    self.spacer, skip=self.averaging,
-                                                    layer=True)
             self.color_list, self.vectors_list = \
                                 custom_color_policy.standard_procedure(self.vectors_list,
                                                                        self.color_list,
                                                                        self.iterations,
                                                                        self.averaging,
                                                                        xc, yc, zc, 3)
+
+            self.color_list = custom_color_policy.apply_vbo_format(self.color_list)
+            self.vectors_list, self.vertices = genCubes(self.vectors_list, self.spacer)
             self.buffer_len = len(self.color_list[0])
 
-            # if self.layer != 'all':
-            #     self.specificLayerDisplay(int(self.layer), xc, yc, zc,
-            #                               custom_color_policy)
-            # else:
-            #     self.fullLayerDisplay(xc, yc, zc, custom_color_policy)
-            # # vertices = 3*vectors
-            # self.generalPrep(custom_color_policy)
         else:
             self.drawing_function = self.slower_cubic_draw
-            self.vectors_list = getLayerOutline(self.omf_header)
             self.color_list, self.vectors_list = \
                                 custom_color_policy.standard_procedure(self.vectors_list,
                                                                        self.color_list,
                                                                        self.iterations,
                                                                        self.averaging,
                                                                        xc, yc, zc, 3)
-
-    # def generalPrep(self, custom_color_policy):
-    #     self.color_list = \
-    #                     custom_color_policy.averaging_policy(self.color_list,
-    #                                                     None, self.averaging)
-    #
-        # self.color_list = custom_color_policy.apply_vbo_format(self.color_list)
-    #     # buffer length is equal to just a single iteration matrix
-    #     self.buffer_len = len(self.color_list[0])
-    #     # fetch the cube outline
-    #     self.vectors_list, self.vertices = generate_cubes(self.omf_header,
-    #                                             self.spacer, skip=self.averaging,
-    #                                             layer=True)
-    #
-    # def fullLayerDisplay(self, xc, yc, zc, custom_color_policy):
-    #     self.color_list = custom_color_policy.apply_normalization(self.color_list,
-    #                         xc, yc, zc)
-    #
-    # def specificLayerDisplay(self, layer, xc, yc, zc, custom_color_policy):
-    #     # testing layer extraction
-    #     # extraction of layer means limiting vectors list
-    #     self.color_list = np.array([self.color_list[i].reshape(zc, xc*yc,3)[layer-1]
-    #                             for i in range(self.iterations)])
-    #
-    #     # zc is set to 1 because now only single layer is displayed
-    #     self.color_list = custom_color_policy.apply_normalization(self.color_list,
-    #                         xc, yc, zc=1)
-
-    def paintGL(self):
-        """
-        Clears the buffer and redraws the scene
-        """
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        # Push Matrix onto stack
-        gl.glPushMatrix()
-        self.transformate()
-        self.drawing_function()
-        # Pop Matrix off stack
-        gl.glPopMatrix()
-        self.update()
 
     def create_vbo(self):
         buffers = gl.glGenBuffers(2)
