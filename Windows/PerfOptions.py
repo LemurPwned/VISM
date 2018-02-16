@@ -13,7 +13,6 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.show()
         self.options = None
 
-
     def basicOptions(self):
         self.horizontalSlider.setEnabled(True)
         self.horizontalSlider.setEnabled(True)

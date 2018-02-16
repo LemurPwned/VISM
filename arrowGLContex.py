@@ -13,6 +13,7 @@ import OpenGL.GL as gl
 import math as mt
 from multiprocessing import Pool
 
+
 class ArrowGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
         super().__init__()
@@ -23,25 +24,46 @@ class ArrowGLContext(AbstractGLContext, QWidget):
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
+        self.receivedOptions()
+
         self.vectors_list = getLayerOutline(self.omf_header)
 
         custom_color_policy = ColorPolicy()
         xc = int(self.omf_header['xnodes'])
         yc = int(self.omf_header['ynodes'])
         zc = int(self.omf_header['znodes'])
-        layer = 3
         # testing layer extraction
         # extarction of layer means limiting vectors list
-        self.vectors_list = self.vectors_list[:xc*yc]
-        self.color_list = np.array([self.color_list[i].reshape(zc, xc*yc,3)[layer-1]
+        if self.omf_header['binary']:
+            if self.layer != 'all':
+                self.specificLayerDisplay(self.layer, xc, yc, zc, custom_color_policy)
+            else:
+                self.color_list = custom_color_policy.apply_normalization(self.color_list,
+                                    xc, yc, zc)
+            self.color_list, self.vectors_list = \
+                            custom_color_policy.averaging_policy(self.color_list,
+                                                                 self.vectors_list,
+                                                                 self.averaging)
+        else:
+            # code for non-binary formats
+            if self.layer != 'all':
+                # take only one layer
+                layer_size = xc*yc
+                sl = self.layer*layer_size # slice
+                self.color_list = [c[sl:sl+layer_size] for c in self.color_list]
+            self.color_list = np.array([c[::self.averaging] for c in self.color_list])
+            self.vectors_list = getLayerOutline(self.omf_header)[::self.averaging]
+
+    def specificLayerDisplay(self, layer, xc, yc, zc, custom_color_policy):
+        # take only one layer so
+        layer_size = xc*yc
+        self.vectors_list = self.vectors_list[:layer_size]
+        # reshape to extract a single layer
+        self.color_list = np.array([self.color_list[i].reshape(zc, xc*yc, 3)[layer-1]
                                 for i in range(self.iterations)])
 
         self.color_list = custom_color_policy.apply_normalization(self.color_list,
                             xc, yc, zc=1)
-
-        self.color_list, self.vectors_list = \
-                        custom_color_policy.averaging_policy(self.color_list,
-                                                            self.vectors_list, 3)
 
     def paintGL(self):
         """

@@ -74,29 +74,6 @@ def getOdtData(filename):
         stages = len(lines) -1
         return df, stages
 
-
-@cython.boundscheck(False)
-@cython.wraparound(False)
-def getRawVectors2(filename, averaging=1, layer_num=3):
-    """
-    processes a .omf filename into a numpy array of vectors
-    @param .omf text file
-    @param averaging determines how many vectors to skip before taking the
-            next one. Must be alligned with other averaging parameters in
-            functions like getRawVectors
-    @return returns raw_vectors from fortran lists
-    """
-    raw_vectors = []
-    with open(filename, 'r') as f:
-        lines = f.readlines()
-    f.close()
-    layer_skip = 35*35
-    p = layer_num*layer_skip
-    raw_vectors = [g.strip().split(' ') for g in lines if '#' not in g]
-    raw_vectors = [[float(row[0]), float(row[1]), float(row[2])]
-                        for row in raw_vectors[p:p+layer_skip]]
-    return np.array(raw_vectors)[0::averaging]
-
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def getRawVectors(filename):

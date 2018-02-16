@@ -34,18 +34,19 @@ class OpenGLContext(AbstractGLContext, QWidget):
         yc = int(self.omf_header['ynodes'])
         zc = int(self.omf_header['znodes'])
 
+        custom_color_policy = ColorPolicy()
         if self.omf_header['binary']:
             # change drawing function
             self.drawing_function = self.vbo_cubic_draw
 
-            custom_color_policy = ColorPolicy()
 
             if self.layer != 'all':
-                self.specificLayerDisplay(int(self.layer), xc, yc, zc)
+                self.specificLayerDisplay(int(self.layer), xc, yc, zc,
+                                          custom_color_policy)
             else:
-                self.fullLayerDisplay(xc, yc, zc)
+                self.fullLayerDisplay(xc, yc, zc, custom_color_policy)
             # vertices = 3*vectors
-            self.generalPrep()
+            self.generalPrep(custom_color_policy)
         else:
             if self.layer != 'all':
                 # take only one layer
@@ -56,7 +57,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
             self.vectors_list = getLayerOutline(self.omf_header)[::self.averaging]
             self.drawing_function = self.slower_cubic_draw
 
-    def generalPrep(self):
+    def generalPrep(self, custom_color_policy):
         self.color_list = \
                         custom_color_policy.averaging_policy(self.color_list,
                                                         None, self.averaging)
@@ -68,11 +69,11 @@ class OpenGLContext(AbstractGLContext, QWidget):
                                                 self.spacer, skip=self.averaging,
                                                 layer=True)
 
-    def fullLayerDisplay(self, xc, yc, zc):
+    def fullLayerDisplay(self, xc, yc, zc, custom_color_policy):
         self.color_list = custom_color_policy.apply_normalization(self.color_list,
                             xc, yc, zc)
 
-    def specificLayerDisplay(self, layer, xc, yc, zc):
+    def specificLayerDisplay(self, layer, xc, yc, zc, custom_color_policy):
         # testing layer extraction
         # extraction of layer means limiting vectors list
         self.color_list = np.array([self.color_list[i].reshape(zc, xc*yc,3)[layer-1]
