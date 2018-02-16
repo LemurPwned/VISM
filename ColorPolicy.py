@@ -14,6 +14,12 @@ class ColorPolicy:
         self.kernel_size = self.set_kernel_size(3)
 
     def set_kernel_size(self, kernel_size):
+        """
+        adjusts the kernel size for a specific array
+        This function does not return anything, it sets kernels for
+        Color Policy object
+        :param kernel_size: is the target kernel size for an array
+        """
         self.kernel_size = kernel_size
         self.averaging_kernel = np.ones((self.kernel_size,
                                     self.kernel_size))*(1/(self.kernel_size**2))
@@ -30,6 +36,9 @@ class ColorPolicy:
         where N is number of iterations and (k,m) is vector matrix size
         :param vector_matrix: has shape (k,m) or linear m = 1
         :param av_scale: specifies how much averaging is done
+        :return color_matrix: returns averaged matrix
+        :return vector_matrix: if vector matrix is given, its size is adjusted
+        and new matrix is returned
         """
         self.kernel_size = self.set_kernel_size(av_scale)
         # firstly average the color matrix with kernel
@@ -50,6 +59,12 @@ class ColorPolicy:
                 p=[prob_x, 1-prob_x])
 
     def linear_convolution(self, matrix):
+        """
+        performs the linear convlolution on color data given the kernel
+        that is defaulted in a Color Policy object upon which the function calls
+        :param matrix: matrix to be convoluted
+        :return new_color_matrix: returns new color matrix
+        """
         pool = Pool()
         multiple_results = [pool.apply_async(self.composite_convolution,
                             (np.array(m), self.flat_av_kernel))
@@ -61,6 +76,14 @@ class ColorPolicy:
         return new_color_matrix
 
     def composite_convolution(self, composite_matrix, kernel):
+        """
+        performs composite convolution, uses atomic convolutions
+        on a composite matrix
+        Note that composite matrix is 2D matrix
+        :param composite_matrix: matrix to be convoluted
+        :param kernel: kernel that is used during convolution
+        :return resultant_matrix: returns convolved complex matrix
+        """
         resultant_matrix = np.zeros(composite_matrix.shape)
         for i in range(3):
             resultant_matrix[:, i] = self.atomic_convolution(
@@ -68,6 +91,12 @@ class ColorPolicy:
         return resultant_matrix
 
     def atomic_convolution(self, vecA, vecB):
+        """
+        convolves simply two vectors
+        :param vecA: vector 1
+        :param vecB: vector 2
+        :return convolution result
+        """
         return np.convolve(vecA, vecB, 'same')
 
     def apply_normalization(self, color_array, xc, yc, zc):
