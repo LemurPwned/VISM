@@ -27,6 +27,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.color_scheme = self.opt[0]
         self.averaging = int(self.opt[1])
         self.layer = self.opt[2]
+        self.scale = int(self.opt[3])
 
     def initial_transformation(self):
         """

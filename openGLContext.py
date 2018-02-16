@@ -29,7 +29,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         self.receivedOptions()
-
+        self.spacer = self.spacer*self.scale
         xc = int(self.omf_header['xnodes'])
         yc = int(self.omf_header['ynodes'])
         zc = int(self.omf_header['znodes'])
@@ -38,8 +38,6 @@ class OpenGLContext(AbstractGLContext, QWidget):
         if self.omf_header['binary']:
             # change drawing function
             self.drawing_function = self.vbo_cubic_draw
-
-
             if self.layer != 'all':
                 self.specificLayerDisplay(int(self.layer), xc, yc, zc,
                                           custom_color_policy)
@@ -48,6 +46,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
             # vertices = 3*vectors
             self.generalPrep(custom_color_policy)
         else:
+            self.drawing_function = self.slower_cubic_draw
             if self.layer != 'all':
                 # take only one layer
                 layer_size = xc*yc
@@ -55,7 +54,6 @@ class OpenGLContext(AbstractGLContext, QWidget):
                 self.color_list = [c[sl:sl+layer_size] for c in self.color_list]
             self.color_list = np.array([c[::self.averaging] for c in self.color_list])
             self.vectors_list = getLayerOutline(self.omf_header)[::self.averaging]
-            self.drawing_function = self.slower_cubic_draw
 
     def generalPrep(self, custom_color_policy):
         self.color_list = \
@@ -63,8 +61,9 @@ class OpenGLContext(AbstractGLContext, QWidget):
                                                         None, self.averaging)
 
         self.color_list = custom_color_policy.apply_vbo_format(self.color_list)
-
+        # buffer length is equal to just a single iteration matrix
         self.buffer_len = len(self.color_list[0])
+        # fetch the cube outline
         self.vectors_list, self.vertices = generate_cubes(self.omf_header,
                                                 self.spacer, skip=self.averaging,
                                                 layer=True)

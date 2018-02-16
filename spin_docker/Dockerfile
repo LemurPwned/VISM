@@ -4,7 +4,7 @@ FROM python:3.6.3-slim
 # Set container working dir to /app
 WORKDIR /spindocker
 
-# Copy current directory contents into the container at /app
+# Copy current directory contents into the container
 ADD . /spindocker
 ADD requirements.txt /spindocker/requirements.txt
 

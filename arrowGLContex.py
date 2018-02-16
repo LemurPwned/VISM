@@ -93,13 +93,13 @@ class ArrowGLContext(AbstractGLContext, QWidget):
 
     def base_arrow(self, vector, color):
         gl.glColor3f(*color)
-        gl.glLineWidth(2)
+        gl.glLineWidth(2*self.scale)
         gl.glBegin(gl.GL_LINES)
         gl.glVertex3f(*vector)
         gl.glVertex3f(vector[0]+color[0], vector[1]+color[1],
                         vector[2]+color[2])
         gl.glEnd()
-        gl.glPointSize(3)
+        gl.glPointSize(3*self.scale)
         gl.glBegin(gl.GL_POINTS)
         gl.glVertex3f(vector[0]+color[0], vector[1]+color[1],
                         vector[2]+color[2])

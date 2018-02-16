@@ -31,7 +31,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.makeGrid()  # create grid (4 Widgets) and stores them in arrays
         self.make1WindowGrid()  # shows default 1 widget Window
         self.events()  # create event listeners
-        self.defaultOptionSet = ['Standard', 1, 3]
+        self.defaultOptionSet = ['Standard', 1, 3, 1]
         self._LOADED_FLAG_ = False
 
     def events(self):

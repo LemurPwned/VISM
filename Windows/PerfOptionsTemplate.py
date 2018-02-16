@@ -11,14 +11,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(302, 322)
+        Dialog.resize(309, 448)
         self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
-        self.buttonBox.setGeometry(QtCore.QRect(-50, 280, 341, 32))
+        self.buttonBox.setGeometry(QtCore.QRect(-50, 400, 341, 32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.formLayoutWidget = QtWidgets.QWidget(Dialog)
-        self.formLayoutWidget.setGeometry(QtCore.QRect(30, 30, 251, 240))
+        self.formLayoutWidget.setGeometry(QtCore.QRect(30, 30, 251, 347))
         self.formLayoutWidget.setObjectName("formLayoutWidget")
         self.formLayout = QtWidgets.QFormLayout(self.formLayoutWidget)
         self.formLayout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
@@ -58,9 +58,20 @@ class Ui_Dialog(object):
         self.checkBox.setObjectName("checkBox")
         self.formLayout.setWidget(8, QtWidgets.QFormLayout.LabelRole, self.checkBox)
         self.horizontalSlider_2 = QtWidgets.QSlider(self.formLayoutWidget)
+        self.horizontalSlider_2.setEnabled(False)
         self.horizontalSlider_2.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider_2.setObjectName("horizontalSlider_2")
         self.formLayout.setWidget(8, QtWidgets.QFormLayout.FieldRole, self.horizontalSlider_2)
+        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.formLayout.setItem(10, QtWidgets.QFormLayout.SpanningRole, spacerItem3)
+        self.label_4 = QtWidgets.QLabel(self.formLayoutWidget)
+        self.label_4.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_4.setObjectName("label_4")
+        self.formLayout.setWidget(11, QtWidgets.QFormLayout.SpanningRole, self.label_4)
+        self.horizontalSlider_3 = QtWidgets.QSlider(self.formLayoutWidget)
+        self.horizontalSlider_3.setOrientation(QtCore.Qt.Horizontal)
+        self.horizontalSlider_3.setObjectName("horizontalSlider_3")
+        self.formLayout.setWidget(12, QtWidgets.QFormLayout.SpanningRole, self.horizontalSlider_3)
 
         self.retranslateUi(Dialog)
         self.buttonBox.accepted.connect(Dialog.accept)
@@ -70,12 +81,13 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.label.setText(_translate("Dialog", "AVERAGING"))
+        self.label.setText(_translate("Dialog", "Averaging"))
         self.label_2.setText(_translate("Dialog", "Color Policy"))
         self.comboBox.setItemText(0, _translate("Dialog", "Standard"))
         self.comboBox.setItemText(1, _translate("Dialog", "Reversed"))
         self.label_3.setText(_translate("Dialog", "Layers"))
         self.checkBox.setText(_translate("Dialog", "All"))
+        self.label_4.setText(_translate("Dialog", "Size"))
 
 
 if __name__ == "__main__":
