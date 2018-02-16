@@ -51,6 +51,11 @@ class ArrowGLContext(AbstractGLContext, QWidget):
                 layer_size = xc*yc
                 sl = self.layer*layer_size # slice
                 self.color_list = [c[sl:sl+layer_size] for c in self.color_list]
+                self.color_list = custom_color_policy.apply_normalization(self.color_list,
+                                                                        xc, yc, zc=1)
+            else:
+                self.color_list = custom_color_policy.apply_normalization(self.color_list,
+                                                                          xc, yc, zc)
             self.color_list = np.array([c[::self.averaging] for c in self.color_list])
             self.vectors_list = getLayerOutline(self.omf_header)[::self.averaging]
 
@@ -84,18 +89,21 @@ class ArrowGLContext(AbstractGLContext, QWidget):
                                     self.color_list[self.i]):
             if not color.any():
                 continue
-            gl.glColor3f(*color)
-            gl.glLineWidth(2)
-            gl.glBegin(gl.GL_LINES)
-            gl.glVertex3f(*vector)
-            gl.glVertex3f(vector[0]+color[0], vector[1]+color[1],
-                            vector[2]+color[2])
-            gl.glEnd()
-            gl.glPointSize(3)
-            gl.glBegin(gl.GL_POINTS)
-            gl.glVertex3f(vector[0]+color[0], vector[1]+color[1],
-                            vector[2]+color[2])
-            gl.glEnd()
+            self.base_arrow(vector, color)
+
+    def base_arrow(self, vector, color):
+        gl.glColor3f(*color)
+        gl.glLineWidth(2)
+        gl.glBegin(gl.GL_LINES)
+        gl.glVertex3f(*vector)
+        gl.glVertex3f(vector[0]+color[0], vector[1]+color[1],
+                        vector[2]+color[2])
+        gl.glEnd()
+        gl.glPointSize(3)
+        gl.glBegin(gl.GL_POINTS)
+        gl.glVertex3f(vector[0]+color[0], vector[1]+color[1],
+                        vector[2]+color[2])
+        gl.glEnd()
 
     def draw_vbo(self):
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
