@@ -9,7 +9,7 @@ ADD . /spindocker
 ADD requirements.txt /spindocker/requirements.txt
 
 # Download git
-RUN  apt-get update && apt-get install -y git
+RUN  apt-get update && apt-get install -y git libxext-dev libxrender-dev libxtst-dev
 
 # Install requirements from requirements.txt file
 RUN pip install -r /spindocker/requirements.txt

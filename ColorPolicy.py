@@ -149,18 +149,30 @@ class ColorPolicy:
     def normalize_flatten_dot_product(self, vector):
         pass
 
-    def apply_dot_product(self, color_array, omf_header):
-        layer_outline = getLayerOutline(omf_header)
+    def apply_dot_product(self, color_array):
         pool = Pool()
-        color_results = [pool.apply_async(
-                                ColorPolicy.compose_arrow_interleaved_array,
-                                          (color_iteration, layer_outline))
+        vector_set = [[1, 1, 0], [-1, 0, 1], [0, 1, 0]]
+        color_results = [pool.apply_async(self.unit_matrix_dot_product,
+                                          (color_iteration, vector_set))
                          for color_iteration in color_array]
         new_color_matrix = []
         for result in color_results:
             interleaved = result.get(timeout=20)
             new_color_matrix.append(interleaved)
         return new_color_matrix
+
+    def unit_matrix_dot_product(self, matrix, vector_set):
+        """
+        takes single iteration matrix and does dot product
+        """
+        final_matrix = []
+        for color in matrix:
+            if color.any():
+                final_matrix.append(ColorPolicy.atomic_dot_product(color,
+                                                                    vector_set))
+            else:
+                final_matrix.append([0,0,0])
+        return np.array(final_matrix)
 
     @staticmethod
     def atomic_dot_product(color_vector, relative_vector_set):
@@ -188,3 +200,53 @@ class ColorPolicy:
                 color_type = [0,0,0]
             interleaved_array.extend([*vector_begin, *vector_tip, *color_type])
         return interleaved_array
+
+
+    def convolutional_averaging(self, matrix, kernel_size):
+        self.kernel_size = self.set_kernel_size(kernel_size)
+        # firstly average the color matrix with kernel
+        color_matrix = self.linear_convolution(color_matrix)
+        return color_matrix
+
+    def matrix_selector(self, matrix, averaging=0.5):
+        if self.mask is None:
+            if (type(matrix) == np.array) and (matrix.shape[0] > 1):
+                self.compose_mask(matrix.shape, averaging)
+                return matrix*mask
+            else:
+                raise ValueError("Invalid matrix")
+        else:
+            return matrix*mask
+
+    def compose_mask(self, matrix_shape, averaging):
+        averaging_intesity = float(1/averaging)
+        mask = np.random.choice(2, size=matrix_shape, p=[1-averaging_intesity,
+                                                         averaging_intesity]))
+        return mask
+
+    def standard_procedure(self, outline_array, color_array,
+                                averaging, xc, yc, zc, picked_layer='all'):
+        # have these 1d arrays turned into proper layered ones
+        layered_outline = np.array(outline_array).reshape(zc, xc*yc, 3)
+        layered_color = np.array(outline_array).reshape(zc, xc*yc, 3)
+
+        if picked_layer == 'all':
+            # all layers are used
+            pass
+        else if type(picked_layer) == int:
+            # just one layer is considered
+            layered_outline = layered_outline[picked_layer]
+            layered_color = layered_color[picked_layer]
+            # perform averaging
+            # this does not change shape but averages vectors
+            layered_color = self.convolutional_averaging(layered_color, averaging)
+            # this does not change shape but zeroes the vectors
+            # remember to use the same mask for outline in order to match color
+            layered_color = self.matrix_selector(layered_color, averaging)
+            layered_outline = self.matrix_selector(layered_outline, averaging)
+            # normalize remaining vectors
+            layered_color = self.apply_normalization(layered_color, xc, yc, zc)
+            # apply dot product
+            layered_color = self.apply_dot_product(layered_color)
+            # return both
+            return layered_color, layered_outline

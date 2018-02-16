@@ -91,12 +91,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             return 0
         else:
             try:
+                x = PopUpWrapper("Loading", "Data is currently loading",
+                        more="Please Wait...")
                 self.rawVectorData, self.omf_header, self.odt_data, \
                     self.stages = MultiprocessingParse.readFolder(directory)
+                x.close()
             except ValueError as e:
                 msg = "Invalid directory: {}. \
                     Error Message {}\nDo you wish to reselect?".format(directory, str(e))
-                PopUpWrapper("Invalid directory", msg, QtWidgets.QMessageBox.Yes,
+                x = PopUpWrapper("Invalid directory", msg, QtWidgets.QMessageBox.Yes,
                                 QtWidgets.QMessageBox.No, self.loadDirectory, quit)
             finally:
                 self._LOADED_FLAG_ = True

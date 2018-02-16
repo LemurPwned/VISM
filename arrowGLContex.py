@@ -19,8 +19,8 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         super().__init__()
         self.shareData(**data_dict)
         self.buffer = None
-        self.steps = 1
         self.vertices = 0
+        self.steps = 1
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
@@ -44,6 +44,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
                             custom_color_policy.averaging_policy(self.color_list,
                                                                  self.vectors_list,
                                                                  self.averaging)
+            self.color_list = custom_color_policy.apply_dot_product(self.color_list)
         else:
             # code for non-binary formats
             if self.layer != 'all':

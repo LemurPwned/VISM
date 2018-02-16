@@ -22,13 +22,13 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.horizontalSlider.setEnabled(True)
         self.horizontalSlider.setMaximum(5)
         self.horizontalSlider.setMinimum(1)
-        self.horizontalSlider.setValue(3)
+        self.horizontalSlider.setValue(4)
         self.horizontalSlider.setSingleStep(1)
 
         self.horizontalSlider_3.setEnabled(True)
         self.horizontalSlider_3.setMaximum(5)
         self.horizontalSlider_3.setMinimum(1)
-        self.horizontalSlider_3.setValue(3)
+        self.horizontalSlider_3.setValue(1)
         self.horizontalSlider_3.setSingleStep(1)
 
         if not self.loaded:
