@@ -36,28 +36,24 @@ class OpenGLContext(AbstractGLContext, QWidget):
 
         custom_color_policy = ColorPolicy()
         self.vectors_list = getLayerOutline(self.omf_header)
-        if self.omf_header['binary']:
-            # change drawing function
-            self.drawing_function = self.vbo_cubic_draw
-            self.color_list, self.vectors_list = \
-                                custom_color_policy.standard_procedure(self.vectors_list,
-                                                                       self.color_list,
-                                                                       self.iterations,
-                                                                       self.averaging,
-                                                                       xc, yc, zc, 3)
+        # change drawing function
+        self.color_list, self.vectors_list, _ = \
+                            custom_color_policy.standard_procedure(self.vectors_list,
+                                                                   self.color_list,
+                                                                   self.iterations,
+                                                                   self.averaging,
+                                                                   xc, yc, zc, self.layer)
 
+        if self.function_select == 'fast':
+            self.drawing_function = self.vbo_cubic_draw
+            # if vbo drawing is selected, do additional processing
             self.color_list = custom_color_policy.apply_vbo_format(self.color_list)
             self.vectors_list, self.vertices = genCubes(self.vectors_list, self.spacer)
+            print(np.array(self.vectors_list).shape, self.vertices)            
+            print(np.array(self.color_list).shape)
             self.buffer_len = len(self.color_list[0])
-
-        else:
+        elif self.function_select == 'slow':
             self.drawing_function = self.slower_cubic_draw
-            self.color_list, self.vectors_list = \
-                                custom_color_policy.standard_procedure(self.vectors_list,
-                                                                       self.color_list,
-                                                                       self.iterations,
-                                                                       self.averaging,
-                                                                       xc, yc, zc, 3)
 
     def create_vbo(self):
         buffers = gl.glGenBuffers(2)
@@ -89,10 +85,10 @@ class OpenGLContext(AbstractGLContext, QWidget):
     def draw_vbo(self):
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
         gl.glEnableClientState(gl.GL_COLOR_ARRAY)
-
+        # bind vertex buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
         gl.glVertexPointer(3, gl.GL_FLOAT, 0, None)
-
+        # bind color buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
         gl.glColorPointer(3, gl.GL_FLOAT, 0, None)
 

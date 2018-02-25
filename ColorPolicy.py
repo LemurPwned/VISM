@@ -2,19 +2,17 @@ import numpy as np
 from cython_modules.cython_parse import getLayerOutline
 from multiprocessing import Pool
 import scipy.signal
+from copy import deepcopy
 
 class ColorPolicy:
     def __init__(self):
-        self.data_structure = 'flattened_array'
-        self._DATA_STRUCTURE_TYPES = ['flattened_array', 'interleaved_array',
-                                      'tensor_array']
         self.averaging_kernel = None
         self.flat_av_kernel = None
         self.mask = None
 
-        self.kernel_size = self.set_kernel_size(3)
+        self.kernel_size = self.set_kernel_size(3, 2)
 
-    def set_kernel_size(self, kernel_size):
+    def set_kernel_size(self, kernel_size, dim):
         """
         adjusts the kernel size for a specific array
         This function does not return anything, it sets kernels for
@@ -22,8 +20,14 @@ class ColorPolicy:
         :param kernel_size: is the target kernel size for an array
         """
         self.kernel_size = kernel_size
-        self.averaging_kernel = np.ones((self.kernel_size,
-                                    self.kernel_size))*(1/(self.kernel_size**2))
+        if dim == 2:
+            self.averaging_kernel = np.ones((self.kernel_size,
+                                        self.kernel_size))*(1/(self.kernel_size**2))
+        elif dim == 3:
+            self.averaging_kernel = np.ones((self.kernel_size, self.kernel_size,
+                                        self.kernel_size))*(1/(self.kernel_size**2))
+        else:
+            raise ValueError("Higher dimensional kernels are not supported")
         self.flat_av_kernel = np.ravel(
                             np.ones((self.kernel_size, 1))*(1/self.kernel_size))
 
@@ -135,15 +139,16 @@ class ColorPolicy:
                             .reshape(xc*yc*zc, 3)
         return normalized_color_array
 
-    def apply_vbo_format(self, color_array):
+    def apply_vbo_format(self, color_array, k=24):
         """
         transforms a given numpy array matrix representing vecotrs in space
         into linear vbo matrix - to fit vertex buffer object
         :param color_array: to be transformed, numpy array
+        :param k: indicates how many times should vertex be padded
         """
         pool = Pool()
         multiple_results = [pool.apply_async(self.color_matrix_flatten,
-                                                (p, 24)) for p in color_array]
+                                                (p, k)) for p in color_array]
         new_color_matrix = []
         for result in multiple_results:
             repeated_array = result.get(timeout=20)
@@ -152,9 +157,6 @@ class ColorPolicy:
 
     def color_matrix_flatten(self, vector, times):
         return np.repeat(vector, times, axis=0).flatten()
-
-    def normalize_flatten_dot_product(self, vector):
-        pass
 
     def apply_dot_product(self, color_array):
         pool = Pool()
@@ -209,8 +211,23 @@ class ColorPolicy:
         return interleaved_array
 
 
-    def convolutional_averaging(self, matrix, kernel_size):
-        self.kernel_size = self.set_kernel_size(kernel_size)
+    def apply_interleaved_format(self, outline_array, tip_array):
+        pool = Pool()
+        res = [pool.apply_async(ColorPolicy.atomic_interleave, (outline_array,
+                                                                tip_array[i]))
+                                        for i in range(tip_array.shape[0])]
+        results = [x.get(timeout=20) for x in res]
+        return results
+
+    @staticmethod
+    def atomic_interleave(outline, tips):
+        interleaved_array = []
+        for vector_base, vector_tip in zip(outline, tips):
+            interleaved_array.extend([*vector_base, *vector_tip])
+        return interleaved_array
+
+    def convolutional_averaging(self, matrix, kernel_size, dim=2):
+        self.kernel_size = self.set_kernel_size(kernel_size, dim)
         # firstly average the color matrix with kernel
         matrix = self.linear_convolution(matrix)
         return np.array(matrix)
@@ -247,6 +264,24 @@ class ColorPolicy:
                                                          averaging_intesity])
         self.mask = mask
 
+    @staticmethod
+    def test_available_layers(color_array, omf_header, iterations):
+        xc = int(omf_header['xnodes'])
+        yc = int(omf_header['ynodes'])
+        zc = int(omf_header['znodes'])
+
+        layered_color = np.array(color_array).reshape(iterations,
+                                                    zc, yc, xc, 3)
+        example = layered_color[3]
+        notable_layers = []
+        p = 0
+        for i in example:
+            p += 1
+            if i.any():
+                notable_layers.append(p)
+        print("GENERAL LAYERS {}".format(len(notable_layers)))
+        return notable_layers
+
     def standard_procedure(self, outline_array, color_array, iterations,
                                 averaging, xc, yc, zc, picked_layer='all'):
         # have these 1d arrays turned into proper layered ones
@@ -260,8 +295,10 @@ class ColorPolicy:
         print(layered_color.shape)
 
         if picked_layer == 'all':
-            # all layers are used
             pass
+            """
+            3D convolution needs to be written
+            """
         elif type(picked_layer) == int:
             # just one layer is considered
             layered_outline = layered_outline[picked_layer]
@@ -281,6 +318,7 @@ class ColorPolicy:
             print(layered_color.shape)
             # normalize remaining vectorsq
             layered_color = self.apply_normalization(layered_color, xc, yc, zc)
+            normalized = deepcopy(layered_color)
             # apply dot product
             layered_color = self.apply_dot_product(layered_color)
             # return both
@@ -288,4 +326,4 @@ class ColorPolicy:
                                                                 zc*yc*xc, 3)
             layered_outline = layered_outline.reshape(zc*yc*xc, 3)
             print(layered_color.shape, layered_outline.shape)
-            return layered_color, layered_outline
+            return layered_color, layered_outline, normalized

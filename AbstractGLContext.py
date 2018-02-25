@@ -22,7 +22,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
         self.position = [10, 10, -50]  # xyz initial
         self.drawing_function = None
-
+        self.function_select = 'fast'
+        
     def receivedOptions(self):
         print(self.opt)
         self.color_scheme = self.opt[0]

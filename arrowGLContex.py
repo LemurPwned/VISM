@@ -18,8 +18,8 @@ class ArrowGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
         super().__init__()
         self.shareData(**data_dict)
-        self.buffer = None
-        self.vertices = 0
+        self.buffers = None
+        self.vertices = 1
         self.steps = 1
 
     def shareData(self, **kwargs):
@@ -35,12 +35,34 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         zc = int(self.omf_header['znodes'])
         # testing layer extraction
         # extarction of layer means limiting vectors list
-        self.color_list, self.vectors_list = \
+        self.color_list, self.vectors_list, normalized = \
                             custom_color_policy.standard_procedure(self.vectors_list,
                                                                    self.color_list,
                                                                    self.iterations,
                                                                    self.averaging,
-                                                                   xc, yc, zc, 3)
+                                                                   xc, yc, zc,
+                                                                   self.layer)
+
+        if self.function_select == 'fast':
+            self.drawing_function = self.vbo_arrow_draw
+            # transform into interleaved vbo format
+            self.color_list = custom_color_policy.apply_vbo_format(self.color_list,
+                                                                    k=2)
+            self.vectors_list = \
+                custom_color_policy.apply_interleaved_format(self.vectors_list,
+                                                             normalized)
+            self.buffer_len = len(self.color_list[0])
+            self.vectors_list = np.array(self.vectors_list)
+            for x in self.vectors_list:
+                for y in x:
+                    print(y)
+            self.color_list = np.array(self.color_list)
+            print(self.color_list[0], self.color_list.any())
+            self.vertices = 1600/2
+            print("DRAWING SHAPES {}, {}".format(self.vectors_list.shape,
+                                                 self.color_list.shape))
+        elif self.function_select == 'slow':
+            self.drawing_function = self.slow_arrow_draw
 
     def slow_arrow_draw(self):
         for vector, color in zip(self.vectors_list,
@@ -63,14 +85,50 @@ class ArrowGLContext(AbstractGLContext, QWidget):
                         vector[2]+color[2])
         gl.glEnd()
 
-    def draw_vbo(self):
+    def standard_vbo_draw(self):
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
         gl.glEnableClientState(gl.GL_COLOR_ARRAY)
 
-        # float32 is 4 bytes so 4*(3 for color + 3 for vertex) = 4*6 =24
-        g = np.array(self.color_matrix[self.i], dtype='float32')
-        gl.glInterleavedArrays(gl.GL_C3F_V3F, 4*(3+3), g)
-        gl.glDrawArrays(gl.GL_LINE_STRIP, 0, int(self.vertices))
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
+        gl.glVertexPointer(3, gl.GL_FLOAT, 0, None)
+
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
+        gl.glColorPointer(3, gl.GL_FLOAT, 0, None)
+
+        gl.glDrawArrays(gl.GL_LINES, 0, self.vertices)
 
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
+
+    def vbo_arrow_draw(self):
+        if self.buffers is None:
+            self.buffers = self.create_vbo()
+        else:
+            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
+            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
+                               np.array(self.vectors_list[self.i],
+                               dtype='float32'))
+
+            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
+            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
+                               np.array(self.color_list[self.i],
+                               dtype='float32'))
+
+        self.standard_vbo_draw()
+
+    def create_vbo(self):
+        buffers = gl.glGenBuffers(2)
+        gl.glLineWidth(3)
+        # vertices buffer
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[0])
+        gl.glBufferData(gl.GL_ARRAY_BUFFER,
+                        np.array(self.vectors_list[self.i],
+                        dtype='float32'),
+                        gl.GL_DYNAMIC_DRAW)
+        # color buffer
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
+        gl.glBufferData(gl.GL_ARRAY_BUFFER,
+                        np.array(self.color_list[self.i],
+                        dtype='float32'),
+                        gl.GL_DYNAMIC_DRAW)
+        return buffers

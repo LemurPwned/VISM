@@ -31,7 +31,7 @@ class PopUpWrapper(QWidget):
         self.setGeometry(self.left, self.top, self.width, self.height)
 
         buttonReply = QMessageBox.question(self, self.title, self.msg,
-                                        self.yesMes | self.noMes, self.yesMes)
+                                            self.yesMes | self.noMes, self.yesMes)
         if buttonReply == self.yesMes:
             if self.actionWhenYes is not None:
                 self.actionWhenYes()

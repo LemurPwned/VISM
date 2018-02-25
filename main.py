@@ -16,6 +16,7 @@ from Windows.PerfOptions import PerfOptions
 from WidgetHandler import WidgetHandler
 
 from PopUp import PopUpWrapper
+from ColorPolicy import ColorPolicy
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
@@ -65,6 +66,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def optionsChecker(self):
         if self._LOADED_FLAG_:
+            # nl = ColorPolicy.test_available_layers(self.rawVectorData, self.omf_header,
+            #                                         self.stages)
+            # print(len(nl))
             self.optionsMenu = PerfOptions(True, int(self.omf_header['znodes']))
         else:
             self.optionsMenu = PerfOptions(False)
