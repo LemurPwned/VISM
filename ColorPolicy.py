@@ -119,13 +119,25 @@ class ColorPolicy:
         :parac zc: nodes in z direction
         """
         pool = Pool()
-        multiple_results = [pool.apply_async(
-                            self.atomic_normalization,
-                            (color_array[i], xc, yc, zc))
-                            for i in range(len(color_array))]
+        if zc > 1:
+            multiple_results = [pool.apply_async(
+                                self.multilayer_normalization,
+                                (color_array[i], xc, yc, zc))
+                                for i in range(len(color_array))]
+        else:
+            multiple_results = [pool.apply_async(
+                                self.atomic_normalization,
+                                (color_array[i], xc, yc, zc))
+                                for i in range(len(color_array))]
         color_array = [result.get(timeout=12) for result
                             in multiple_results]
         return np.array(color_array)
+
+    def multilayer_normalization(self, multilayer_matrix, xc, yc, zc):
+        layer_array = []
+        for layer in multilayer_matrix:
+            layer_array.append(self.atomic_normalization(layer, xc, yc, 1))
+        return np.array(layer_array)
 
     def atomic_normalization(self, color_array, xc, yc, zc):
         """
@@ -158,17 +170,30 @@ class ColorPolicy:
     def color_matrix_flatten(self, vector, times):
         return np.repeat(vector, times, axis=0).flatten()
 
-    def apply_dot_product(self, color_array):
+    def apply_dot_product(self, color_array, mode='single'):
         pool = Pool()
         vector_set = [[1, 1, 0], [-1, 0, 1], [0, 1, 0]]
-        color_results = [pool.apply_async(self.unit_matrix_dot_product,
-                                          (color_iteration, vector_set))
-                         for color_iteration in color_array]
+        print("LAYERS? SHAPE CHECK {}".format(color_array.shape))
+        if mode == 'multi':
+            # if there are mutlilayers
+            color_results = [pool.apply_async(self.multilayer_dot_product,
+                                              (color_iteration, vector_set))
+                             for color_iteration in color_array]
+        else:
+            color_results = [pool.apply_async(self.unit_matrix_dot_product,
+                                              (color_iteration, vector_set))
+                             for color_iteration in color_array]
         new_color_matrix = []
         for result in color_results:
             interleaved = result.get(timeout=20)
             new_color_matrix.append(interleaved)
-        return new_color_matrix
+        return np.array(new_color_matrix)
+
+    def multilayer_dot_product(self, multilayer_matrix, vector_set):
+        new_ms = []
+        for layer in multilayer_matrix:
+            new_ms.append(self.unit_matrix_dot_product(layer, vector_set))
+        return np.array(new_ms)
 
     def unit_matrix_dot_product(self, matrix, vector_set):
         """
@@ -227,6 +252,9 @@ class ColorPolicy:
         return interleaved_array
 
     def convolutional_averaging(self, matrix, kernel_size, dim=2):
+        """
+        averages using convolution
+        """
         self.kernel_size = self.set_kernel_size(kernel_size, dim)
         # firstly average the color matrix with kernel
         matrix = self.linear_convolution(matrix)
@@ -247,10 +275,18 @@ class ColorPolicy:
     def atomic_mask(matrix, mask):
         return matrix*mask
 
-    def mask_multilayer_matrix(self, multilayer_matrix, averaging):
+    def mask_multilayer_matrix(self, multilayer_matrix, averaging=0.5):
+        """
+        this function should take multidimensional array and averaging integer,
+        based on that it creates a binary matrix matching the dimension of
+        a given array and thus selecting a random sample from array. It does
+        return an array of the same dimension as input array but with
+        some entries zeroed
+        """
         if type(multilayer_matrix) is not np.ndarray:
             raise TypeError("Not a numpy array")
         if self.mask is None:
+            # [1:] skips the iteration dimension (time dimension)
             self.compose_mask(multilayer_matrix.shape[1:], averaging)
         pool = Pool()
         ps = [pool.apply_async(ColorPolicy.atomic_mask, (iteration, self.mask))
@@ -282,24 +318,47 @@ class ColorPolicy:
         print("GENERAL LAYERS {}".format(len(notable_layers)))
         return notable_layers
 
+    def dropped_masking(self, color_array, outline_array, averaging):
+        layered_color = self.mask_multilayer_matrix(color_array, averaging)
+        layered_outline = self.tiny_matrix_selector(outline_array, averaging)
+        return layered_color[np.nonzero(layered_color)], \
+                layered_outline[np.nonzero(layered_outline)]
+
     def standard_procedure(self, outline_array, color_array, iterations,
                                 averaging, xc, yc, zc, picked_layer='all'):
         # have these 1d arrays turned into proper layered ones
-        print(np.array(outline_array).shape)
-        print(np.array(color_array).shape)
-        layered_outline = np.array(outline_array).reshape(zc, yc, xc, 3)
-        layered_color = np.array(color_array).reshape(iterations,
-                                                        zc, yc, xc, 3)
-
-        print(layered_outline.shape)
-        print(layered_color.shape)
-
+        FULL_FLAG = True
+        picked_layer = 'all'
         if picked_layer == 'all':
-            pass
             """
-            3D convolution needs to be written
+            put down standard procedure, no convolutional masking
             """
+            # for purpose of decimation must change shape
+            layered_outline = np.array(outline_array).reshape(zc, yc, xc, 3)
+            layered_color = np.array(color_array).reshape(iterations,
+                                                            zc, yc, xc, 3)
+            # decimate
+            layered_color = self.mask_multilayer_matrix(layered_color, averaging).reshape(iterations,
+                                                                zc, yc*xc, 3)
+            layered_outline = self.tiny_matrix_selector(layered_outline, averaging).reshape(zc*yc*xc, 3)
+            # normalize
+            normalized = self.apply_normalization(layered_color, xc, yc, zc)
+            # dot product
+            layered_color = self.apply_dot_product(normalized, mode='multi').reshape(iterations,
+                                                                zc*yc*xc, 3)
+            print("COLOR FIN SHAPE {}".format(layered_color.shape))
+            print("OUTLINE FIN SHAPE {}".format(layered_outline.shape))
+            return layered_color, layered_outline, normalized
+
         elif type(picked_layer) == int:
+            print(np.array(outline_array).shape)
+            print(np.array(color_array).shape)
+            layered_outline = np.array(outline_array).reshape(zc, yc, xc, 3)
+            layered_color = np.array(color_array).reshape(iterations,
+                                                            zc, yc, xc, 3)
+
+            print(layered_outline.shape)
+            print(layered_color.shape)
             # just one layer is considered
             layered_outline = layered_outline[picked_layer]
             layered_color = layered_color[:, picked_layer, :, :, :]
@@ -316,7 +375,7 @@ class ColorPolicy:
             layered_outline = self.tiny_matrix_selector(layered_outline, averaging)
             print(layered_outline.shape)
             print(layered_color.shape)
-            # normalize remaining vectorsq
+            # normalize remaining vectors
             layered_color = self.apply_normalization(layered_color, xc, yc, zc)
             normalized = deepcopy(layered_color)
             # apply dot product
