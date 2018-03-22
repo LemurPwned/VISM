@@ -8,8 +8,8 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
             super(Canvas2Dupgraded, self).__init__()
             self.plotWidget = PlotWidget(self)
             self._i = 0
-            #self.testInitialConditions()
-            #self.createPlotCanvas()
+            # self.testInitialConditions()
+            # self.createPlotCanvas()
 
         def testInitialConditions(self):
             self.title = "Plot number 1"
@@ -19,7 +19,7 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
         def createPlotCanvas(self):
             #print("working")
             self.plotWidget.setTitle(self.title)
-            self.plotWidget.setGeometry(0, 0, 800, 600)
+            self.plotWidget.setGeometry(0, 0, 1000, 800)
             self.plotWidget.setXRange(0, self.iterations)
             self.plotWidget.setYRange(np.min(self.graph_data), np.max(self.graph_data))
             self.plotWidget.enableAutoRange('xy', False)
@@ -45,4 +45,3 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
                     'marker_color': 'blue',
                     'marker_size': 3
                 }
-
