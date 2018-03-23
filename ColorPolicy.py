@@ -4,6 +4,17 @@ from multiprocessing import Pool
 import scipy.signal
 from copy import deepcopy
 
+
+def asynchronous_pool_order(func, args, object_list):
+    pool = Pool()
+    output_list = []
+    multiple_results = [pool.apply_async(func, (object_list[i], *args))
+                        for i in range(len(object_list))]
+    for result in multiple_results:
+        value = result.get()
+        output_list.append(value)
+    return output_list
+
 class ColorPolicy:
     def __init__(self):
         self.averaging_kernel = None
@@ -31,37 +42,6 @@ class ColorPolicy:
         self.flat_av_kernel = np.ravel(
                             np.ones((self.kernel_size, 1))*(1/self.kernel_size))
 
-    def averaging_policy(self, color_matrix, vector_matrix=None, av_scale=3):
-        """
-        this function applies the averaging kernel and then samples
-        the matrices to return averaged vector
-        if no vector matrix is provided, only color_matrix is transformed as if
-        it was a vector_matrix
-        :param color_matrix: maps color on vector_matrix should be of size N*(k,m)
-        where N is number of iterations and (k,m) is vector matrix size
-        :param vector_matrix: has shape (k,m) or linear m = 1
-        :param av_scale: specifies how much averaging is done
-        :return color_matrix: returns averaged matrix
-        :return vector_matrix: if vector matrix is given, its size is adjusted
-        and new matrix is returned
-        """
-        self.kernel_size = self.set_kernel_size(av_scale)
-        # firstly average the color matrix with kernel
-        color_matrix = self.linear_convolution(color_matrix)
-        # now take every nth element from both
-        color_matrix = np.array([color[::av_scale] for color in color_matrix])
-        if vector_matrix:
-            vector_matrix = vector_matrix[::av_scale]
-            return color_matrix, vector_matrix
-        else:
-            return color_matrix
-
-    def sampling_policy(self, x_dim, y_dim, prob_x):
-        """
-        this function samples the array
-        """
-        return np.random.choice([True, False], (x_dim, y_dim),
-                p=[prob_x, 1-prob_x])
 
     def linear_convolution(self, matrix):
         """
@@ -92,7 +72,7 @@ class ColorPolicy:
         """
         resultant_matrix = np.zeros(composite_matrix.shape)
         for i in range(3):
-            resultant_matrix[:,:, i] = self.conv2d(composite_matrix[:,:, i], kernel)
+            resultant_matrix[1:-1,1:-1, i] = self.conv2d(composite_matrix[:,:, i], kernel)
         return resultant_matrix
 
     def atomic_convolution(self, vecA, vecB):
@@ -212,44 +192,6 @@ class ColorPolicy:
     def atomic_dot_product(color_vector, relative_vector_set):
         return [np.dot(color_vector, vector) for vector in relative_vector_set]
 
-    @staticmethod
-    def compose_arrow_interleaved_array(raw_vector_data, layer_outline):
-        """
-        this function would create the interleaved array for arrow objects i.e.
-        start_vertex, stop_vertex, colorR, colorG, colorB
-        :param raw_vector_data: is one iteration, matrix of colors
-        :param layer_outline: is layer outline for color mask
-        :return: interleaved array, array with vertices and colors interleaved
-        """
-        interleaved_array = []
-        # get start_vertex array
-        rel_set = [[1, 1, 0], [-1, 0, 1], [0, 1, 0]]
-        for vector_begin, vector_tip in zip(layer_outline, raw_vector_data):
-            if vector_tip.any():
-                vector_tip /= np.linalg.norm(vector_tip)
-                vector_begin /= np.linalg.norm(vector_begin)
-                color_type = ColorPolicy.atomic_dot_product(vector_tip,
-                                                relative_vector_set=rel_set)
-            else:
-                color_type = [0,0,0]
-            interleaved_array.extend([*vector_begin, *vector_tip, *color_type])
-        return interleaved_array
-
-
-    def apply_interleaved_format(self, outline_array, tip_array):
-        pool = Pool()
-        res = [pool.apply_async(ColorPolicy.atomic_interleave, (outline_array,
-                                                                tip_array[i]))
-                                        for i in range(tip_array.shape[0])]
-        results = [x.get(timeout=20) for x in res]
-        return results
-
-    @staticmethod
-    def atomic_interleave(outline, tips):
-        interleaved_array = []
-        for vector_base, vector_tip in zip(outline, tips):
-            interleaved_array.extend([*vector_base, *vector_tip])
-        return interleaved_array
 
     def convolutional_averaging(self, matrix, kernel_size, dim=2):
         """
@@ -301,34 +243,54 @@ class ColorPolicy:
         self.mask = mask
 
     @staticmethod
-    def test_available_layers(color_array, omf_header, iterations):
-        xc = int(omf_header['xnodes'])
-        yc = int(omf_header['ynodes'])
-        zc = int(omf_header['znodes'])
+    def multi_iteration_dot_product(color_iteration, vec_set):
+        for i in range(color_iteration.shape[0]):
+            color_iteration[i] = ColorPolicy.atomic_dot_product(color_iteration[i],
+                                                                vec_set)
+        return color_iteration
 
-        layered_color = np.array(color_array).reshape(iterations,
-                                                    zc, yc, xc, 3)
-        example = layered_color[3]
-        notable_layers = []
-        p = 0
-        for i in example:
-            p += 1
-            if i.any():
-                notable_layers.append(p)
-        print("GENERAL LAYERS {}".format(len(notable_layers)))
-        return notable_layers
+    def standard_procedure(self, outline, color, iterations, averaging, xc, yc, zc,
+                        picked_layer='all'):
+        picked_layer = 3
+        if picked_layer == 'all':
 
-    def dropped_masking(self, color_array, outline_array, averaging):
-        layered_color = self.mask_multilayer_matrix(color_array, averaging)
-        layered_outline = self.tiny_matrix_selector(outline_array, averaging)
-        return layered_color[np.nonzero(layered_color)], \
-                layered_outline[np.nonzero(layered_outline)]
+        if type(picked_layer) == int:
+            zc = 1
+            print("XC {}, YC {}, ZC {}, MUL {}".format(xc, yc, zc, xc*yc*zc))
+            layer_thickness = xc*yc
+            picked_layer = picked_layer*layer_thickness
+            color = color[:, picked_layer:picked_layer+layer_thickness, :]
+            outline = outline[picked_layer:picked_layer+layer_thickness]
+            print(color.shape)
+            # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
+            averaging_intensity = float(1/averaging)
+            # generate mask of shape (zc*yc*xc, 3)
+            # take n random numbers (1/averaging)*size
+            # step one: generate list of all indices
+            mask = np.arange(xc*yc*zc)
+            np.random.shuffle(mask)
+            mask = mask[:int(len(mask)*averaging_intensity)]
+            # now mask is a subset of unqiue, random indices
+            for i in range(iterations):
+                # zero these random indices for each iteration
+                color[i, mask, :] = 0
+            # at this point the shape should be conserved (iterations, zc*yc*xc, 3)
+            assert color.shape == (iterations, zc*yc*xc, 3)
+            vector_set = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+            dotted_color = asynchronous_pool_order(ColorPolicy.multi_iteration_dot_product,
+                                                    (vector_set,), color)
+            dotted_color = np.array(dotted_color)
+            outline = np.array(outline)
+            # this should have shape (iterations, zc*yc*xc, 3)
+            assert dotted_color.shape == (iterations, zc*yc*xc, 3)
+            assert outline.shape == (zc*yc*xc, 3)
+        return dotted_color, outline, mask
 
-    def standard_procedure(self, outline_array, color_array, iterations,
+    def standard_procedure2(self, outline_array, color_array, iterations,
                                 averaging, xc, yc, zc, picked_layer='all'):
         # have these 1d arrays turned into proper layered ones
         FULL_FLAG = True
-        picked_layer = 'all'
+        picked_layer = 3
         if picked_layer == 'all':
             """
             put down standard procedure, no convolutional masking

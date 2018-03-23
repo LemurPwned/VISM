@@ -29,6 +29,12 @@ def getOmfHeader(filename):
     f.close()
     return omf_header
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def normalized(array, axis=-1, order=2):
+    l2 = np.atleast_1d(np.linalg.norm(array, order, axis))
+    l2[l2==0] = 1
+    return array / np.expand_dims(l2, axis)
 
 def getOdtData(filename):
     """
@@ -145,10 +151,8 @@ def getRawVectorsBinary(filename, averaging=1):
         omf_header = process_header(headers)
         k = int(omf_header['xnodes']*omf_header['ynodes']*omf_header['znodes'])
         f.read(8)
-        layer_skip = int(omf_header['xnodes']*omf_header['ynodes'])
-        layer_num = 3
-        s = layer_num*layer_skip
         rawVectorDatavectors = standard_vertex_mode(f, k)
+        rawVectorData = normalized(rawVectorData)
     f.close()
 
     return omf_header, rawVectorDatavectors
