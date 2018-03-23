@@ -151,49 +151,6 @@ class ColorPolicy:
     def color_matrix_flatten(self, vector, times):
         return np.repeat(vector, times, axis=0).flatten()
 
-    def apply_dot_product(self, color_array, mode='single'):
-        pool = Pool()
-        vector_set = [[1, 1, 0], [-1, 0, 1], [0, 1, 0]]
-        print("LAYERS? SHAPE CHECK {}".format(color_array.shape))
-        if mode == 'multi':
-            # if there are mutlilayers
-            color_results = [pool.apply_async(self.multilayer_dot_product,
-                                              (color_iteration, vector_set))
-                             for color_iteration in color_array]
-        else:
-            color_results = [pool.apply_async(self.unit_matrix_dot_product,
-                                              (color_iteration, vector_set))
-                             for color_iteration in color_array]
-        new_color_matrix = []
-        for result in color_results:
-            interleaved = result.get(timeout=20)
-            new_color_matrix.append(interleaved)
-        return np.array(new_color_matrix)
-
-    def multilayer_dot_product(self, multilayer_matrix, vector_set):
-        new_ms = []
-        for layer in multilayer_matrix:
-            new_ms.append(self.unit_matrix_dot_product(layer, vector_set))
-        return np.array(new_ms)
-
-    def unit_matrix_dot_product(self, matrix, vector_set):
-        """
-        takes single iteration matrix and does dot product
-        """
-        final_matrix = []
-        for color in matrix:
-            if color.any():
-                final_matrix.append(ColorPolicy.atomic_dot_product(color,
-                                                                    vector_set))
-            else:
-                final_matrix.append([0,0,0])
-        return np.array(final_matrix)
-
-    # @staticmethod
-    # def atomic_dot_product(color_vector, relative_vector_set):
-    #     return [np.dot(color_vector, vector) for vector in relative_vector_set]
-
-
     def convolutional_averaging(self, matrix, kernel_size, dim=2):
         """
         averages using convolution
@@ -203,12 +160,6 @@ class ColorPolicy:
         matrix = self.linear_convolution(matrix)
         return np.array(matrix)
 
-    # @staticmethod
-    # def multi_iteration_dot_product(color_iteration, vec_set):
-    #     for i in range(color_iteration.shape[0]):
-    #         color_iteration[i] = ColorPolicy.atomic_dot_product(color_iteration[i],
-    #                                                             vec_set)
-    #     return color_iteration
 
     def standard_procedure(self, outline, color, iterations, averaging, xc, yc, zc,
                         picked_layer='all'):

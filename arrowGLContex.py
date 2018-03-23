@@ -34,8 +34,6 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         yc = int(self.omf_header['ynodes'])
         zc = int(self.omf_header['znodes'])
         self.function_select = 'slow'
-        # testing layer extraction
-        # extarction of layer means limiting vectors list
         self.color_list, self.vectors_list, normalized = \
                             custom_color_policy.standard_procedure(self.vectors_list,
                                                                    self.color_list,
