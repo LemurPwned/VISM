@@ -151,11 +151,11 @@ def getRawVectorsBinary(filename, averaging=1):
         omf_header = process_header(headers)
         k = int(omf_header['xnodes']*omf_header['ynodes']*omf_header['znodes'])
         f.read(8)
-        rawVectorDatavectors = standard_vertex_mode(f, k)
+        rawVectorData = standard_vertex_mode(f, k)
         rawVectorData = normalized(rawVectorData)
     f.close()
 
-    return omf_header, rawVectorDatavectors
+    return omf_header, rawVectorData
 
 def process_header(headers):
     """

@@ -1,5 +1,6 @@
 import numpy as np
 from cython_modules.cython_parse import getLayerOutline
+from cython_modules.color_policy import multi_iteration_dot_product
 from multiprocessing import Pool
 import scipy.signal
 from copy import deepcopy
@@ -188,9 +189,9 @@ class ColorPolicy:
                 final_matrix.append([0,0,0])
         return np.array(final_matrix)
 
-    @staticmethod
-    def atomic_dot_product(color_vector, relative_vector_set):
-        return [np.dot(color_vector, vector) for vector in relative_vector_set]
+    # @staticmethod
+    # def atomic_dot_product(color_vector, relative_vector_set):
+    #     return [np.dot(color_vector, vector) for vector in relative_vector_set]
 
 
     def convolutional_averaging(self, matrix, kernel_size, dim=2):
@@ -202,56 +203,17 @@ class ColorPolicy:
         matrix = self.linear_convolution(matrix)
         return np.array(matrix)
 
-    def tiny_matrix_selector(self, matrix, averaging=0.5):
-        if self.mask is None:
-            print(matrix.shape, type(matrix))
-            if (type(matrix) == np.ndarray) and (matrix.shape[0] > 1):
-                self.compose_mask(matrix.shape, averaging)
-                return matrix*self.mask
-            else:
-                raise ValueError("Invalid matrix")
-        else:
-            return matrix*self.mask
-
-    @staticmethod
-    def atomic_mask(matrix, mask):
-        return matrix*mask
-
-    def mask_multilayer_matrix(self, multilayer_matrix, averaging=0.5):
-        """
-        this function should take multidimensional array and averaging integer,
-        based on that it creates a binary matrix matching the dimension of
-        a given array and thus selecting a random sample from array. It does
-        return an array of the same dimension as input array but with
-        some entries zeroed
-        """
-        if type(multilayer_matrix) is not np.ndarray:
-            raise TypeError("Not a numpy array")
-        if self.mask is None:
-            # [1:] skips the iteration dimension (time dimension)
-            self.compose_mask(multilayer_matrix.shape[1:], averaging)
-        pool = Pool()
-        ps = [pool.apply_async(ColorPolicy.atomic_mask, (iteration, self.mask))
-                for iteration in multilayer_matrix]
-        res = [x.get(timeout=20) for x in ps]
-        return np.array(res)
-
-    def compose_mask(self, matrix_shape, averaging):
-        averaging_intesity = float(1/averaging)
-        mask = np.random.choice(2, size=matrix_shape, p=[1-averaging_intesity,
-                                                         averaging_intesity])
-        self.mask = mask
-
-    @staticmethod
-    def multi_iteration_dot_product(color_iteration, vec_set):
-        for i in range(color_iteration.shape[0]):
-            color_iteration[i] = ColorPolicy.atomic_dot_product(color_iteration[i],
-                                                                vec_set)
-        return color_iteration
+    # @staticmethod
+    # def multi_iteration_dot_product(color_iteration, vec_set):
+    #     for i in range(color_iteration.shape[0]):
+    #         color_iteration[i] = ColorPolicy.atomic_dot_product(color_iteration[i],
+    #                                                             vec_set)
+    #     return color_iteration
 
     def standard_procedure(self, outline, color, iterations, averaging, xc, yc, zc,
                         picked_layer='all'):
         if type(picked_layer) == int:
+            # if single layer is picked modify memory data
             zc = 1
             print("XC {}, YC {}, ZC {}, MUL {}".format(xc, yc, zc, xc*yc*zc))
             layer_thickness = xc*yc
@@ -273,8 +235,8 @@ class ColorPolicy:
             color[i, mask, :] = 0
         # at this point the shape should be conserved (iterations, zc*yc*xc, 3)
         assert color.shape == (iterations, zc*yc*xc, 3)
-        vector_set = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-        dotted_color = asynchronous_pool_order(ColorPolicy.multi_iteration_dot_product,
+        vector_set = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]).astype(np.float32)
+        dotted_color = asynchronous_pool_order(multi_iteration_dot_product,
                                                 (vector_set,), color)
         dotted_color = np.array(dotted_color)
         outline = np.array(outline)
@@ -282,66 +244,3 @@ class ColorPolicy:
         assert dotted_color.shape == (iterations, zc*yc*xc, 3)
         assert outline.shape == (zc*yc*xc, 3)
         return dotted_color, outline, mask
-
-    def standard_procedure2(self, outline_array, color_array, iterations,
-                                averaging, xc, yc, zc, picked_layer='all'):
-        # have these 1d arrays turned into proper layered ones
-        FULL_FLAG = True
-        picked_layer = 3
-        if picked_layer == 'all':
-            """
-            put down standard procedure, no convolutional masking
-            """
-            # for purpose of decimation must change shape
-            layered_outline = np.array(outline_array).reshape(zc, yc, xc, 3)
-            layered_color = np.array(color_array).reshape(iterations,
-                                                            zc, yc, xc, 3)
-            # decimate
-            layered_color = self.mask_multilayer_matrix(layered_color, averaging).reshape(iterations,
-                                                                zc, yc*xc, 3)
-            layered_outline = self.tiny_matrix_selector(layered_outline, averaging).reshape(zc*yc*xc, 3)
-            # normalize
-            normalized = self.apply_normalization(layered_color, xc, yc, zc)
-            # dot product
-            layered_color = self.apply_dot_product(normalized, mode='multi').reshape(iterations,
-                                                                zc*yc*xc, 3)
-            print("COLOR FIN SHAPE {}".format(layered_color.shape))
-            print("OUTLINE FIN SHAPE {}".format(layered_outline.shape))
-            return layered_color, layered_outline, normalized
-
-        elif type(picked_layer) == int:
-            print(np.array(outline_array).shape)
-            print(np.array(color_array).shape)
-            layered_outline = np.array(outline_array).reshape(zc, yc, xc, 3)
-            layered_color = np.array(color_array).reshape(iterations,
-                                                            zc, yc, xc, 3)
-
-            print(layered_outline.shape)
-            print(layered_color.shape)
-            # just one layer is considered
-            layered_outline = layered_outline[picked_layer]
-            layered_color = layered_color[:, picked_layer, :, :, :]
-            zc = 1
-            print(layered_outline.shape)
-            print(layered_color.shape)
-            print("LAYERS SELECTED")
-            # perform averaging
-            # this does not change shape but averages vectors
-            layered_color = self.convolutional_averaging(layered_color, averaging)
-            # this does not change shape but zeroes the vectors
-            # remember to use the same mask for outline in order to match color
-            layered_color = self.mask_multilayer_matrix(layered_color, averaging)
-            layered_outline = self.tiny_matrix_selector(layered_outline, averaging)
-            print(layered_outline.shape)
-            print(layered_color.shape)
-            # normalize remaining vectors
-            layered_color = self.apply_normalization(layered_color, xc, yc, zc)
-            normalized = deepcopy(layered_color)
-            # apply dot product
-            layered_color = self.apply_dot_product(layered_color)
-            # return both
-            layered_color = np.array(layered_color).reshape(iterations,
-                                                                zc*yc*xc, 3)
-            layered_outline = layered_outline.reshape(zc*yc*xc, 3)
-            print(layered_color.shape, layered_outline.shape)
-            return layered_color, layered_outline, normalized
