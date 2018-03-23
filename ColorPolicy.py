@@ -251,9 +251,6 @@ class ColorPolicy:
 
     def standard_procedure(self, outline, color, iterations, averaging, xc, yc, zc,
                         picked_layer='all'):
-        picked_layer = 3
-        if picked_layer == 'all':
-
         if type(picked_layer) == int:
             zc = 1
             print("XC {}, YC {}, ZC {}, MUL {}".format(xc, yc, zc, xc*yc*zc))
@@ -262,28 +259,28 @@ class ColorPolicy:
             color = color[:, picked_layer:picked_layer+layer_thickness, :]
             outline = outline[picked_layer:picked_layer+layer_thickness]
             print(color.shape)
-            # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
-            averaging_intensity = float(1/averaging)
-            # generate mask of shape (zc*yc*xc, 3)
-            # take n random numbers (1/averaging)*size
-            # step one: generate list of all indices
-            mask = np.arange(xc*yc*zc)
-            np.random.shuffle(mask)
-            mask = mask[:int(len(mask)*averaging_intensity)]
-            # now mask is a subset of unqiue, random indices
-            for i in range(iterations):
-                # zero these random indices for each iteration
-                color[i, mask, :] = 0
-            # at this point the shape should be conserved (iterations, zc*yc*xc, 3)
-            assert color.shape == (iterations, zc*yc*xc, 3)
-            vector_set = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-            dotted_color = asynchronous_pool_order(ColorPolicy.multi_iteration_dot_product,
-                                                    (vector_set,), color)
-            dotted_color = np.array(dotted_color)
-            outline = np.array(outline)
-            # this should have shape (iterations, zc*yc*xc, 3)
-            assert dotted_color.shape == (iterations, zc*yc*xc, 3)
-            assert outline.shape == (zc*yc*xc, 3)
+        # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
+        averaging_intensity = float(1/averaging)
+        # generate mask of shape (zc*yc*xc, 3)
+        # take n random numbers (1/averaging)*size
+        # step one: generate list of all indices
+        mask = np.arange(xc*yc*zc)
+        np.random.shuffle(mask)
+        mask = mask[:int(len(mask)*averaging_intensity)]
+        # now mask is a subset of unqiue, random indices
+        for i in range(iterations):
+            # zero these random indices for each iteration
+            color[i, mask, :] = 0
+        # at this point the shape should be conserved (iterations, zc*yc*xc, 3)
+        assert color.shape == (iterations, zc*yc*xc, 3)
+        vector_set = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        dotted_color = asynchronous_pool_order(ColorPolicy.multi_iteration_dot_product,
+                                                (vector_set,), color)
+        dotted_color = np.array(dotted_color)
+        outline = np.array(outline)
+        # this should have shape (iterations, zc*yc*xc, 3)
+        assert dotted_color.shape == (iterations, zc*yc*xc, 3)
+        assert outline.shape == (zc*yc*xc, 3)
         return dotted_color, outline, mask
 
     def standard_procedure2(self, outline_array, color_array, iterations,
