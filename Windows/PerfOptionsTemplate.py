@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'UI_files/PerfOptions.ui'
+# Form implementation generated from reading ui file 'Windows/UI_files/PerfOptions.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.1
+# Created by: PyQt5 UI code generator 5.9
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,14 +11,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(309, 448)
+        Dialog.resize(316, 435)
         self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
-        self.buttonBox.setGeometry(QtCore.QRect(-50, 400, 341, 32))
+        self.buttonBox.setGeometry(QtCore.QRect(-30, 390, 341, 32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.formLayoutWidget = QtWidgets.QWidget(Dialog)
-        self.formLayoutWidget.setGeometry(QtCore.QRect(30, 30, 251, 347))
+        self.formLayoutWidget.setGeometry(QtCore.QRect(40, 10, 251, 371))
         self.formLayoutWidget.setObjectName("formLayoutWidget")
         self.formLayout = QtWidgets.QFormLayout(self.formLayoutWidget)
         self.formLayout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
@@ -72,6 +72,8 @@ class Ui_Dialog(object):
         self.horizontalSlider_3.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider_3.setObjectName("horizontalSlider_3")
         self.formLayout.setWidget(12, QtWidgets.QFormLayout.SpanningRole, self.horizontalSlider_3)
+        spacerItem4 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.formLayout.setItem(13, QtWidgets.QFormLayout.SpanningRole, spacerItem4)
 
         self.retranslateUi(Dialog)
         self.buttonBox.accepted.connect(Dialog.accept)
