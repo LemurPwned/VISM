@@ -9,6 +9,7 @@ import re
 class vectorSettings(QWidget, Ui_Dialog):
     def __init__(self):
         super(vectorSettings, self).__init__()
+        self.setWindowTitle("Vector Selection")
         self.setupUi(self)
         self.show()
 
@@ -25,17 +26,18 @@ class vectorSettings(QWidget, Ui_Dialog):
         return result_group
 
     def isVectorEntryValid(self, entry):
-        match_string = '^\[([0-1])\s([0-1])\s([0-1])\]'
+        match_string = '^\[([0-1]),\s([0-1]),\s([0-1])\]'
         rg = re.compile(match_string)
         m = rg.search(entry)
         if m is not None:
-            return [m.group(1), m.group(2), m.group(3)]
+            return [int(m.group(1)), int(m.group(2)), int(m.group(3))]
         else:
             return False
 
     def accept(self):
         try:
             self.options = self.parseVectors()
+            print(self.options)
             self.close()
         except ValueError as ve:
             PopUpWrapper("Invalid vector format", str(ve), None,

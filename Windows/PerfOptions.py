@@ -42,7 +42,7 @@ class PerfOptions(QWidget, Ui_Dialog):
 
     def layerChange(self):
         val = self.horizontalSlider_2.value()
-        self.label_3.setText("LAYER: {}".format(val))
+        self.label_3.setText("Layer: {}".format(val))
 
     def averagingChange(self):
         val = self.horizontalSlider.value()

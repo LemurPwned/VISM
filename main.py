@@ -53,8 +53,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         # OPTIONS SUBMENU
         self.actionPerformance.triggered.connect(self.optionsChecker)
+
         # VECTORS SUBMENU
         self.actionVectors.triggered.connect(self.vectorsSelector)
+        
         # GRID BUTTONS
         # lambda required to pass parameter - which button was pressed
         self.panes[0].button.clicked.connect(lambda: self.showChooseWidgetSettings(0))
