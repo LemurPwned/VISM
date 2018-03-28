@@ -23,10 +23,23 @@ class PlotSettings(QWidget, Ui_PlotSettings):
             for i in range(gridSize):
                 self.additionalSetup(plotOptions)
 
-        self.setGeometry(10,10,600, 800)
+        self.setGeometry(10,10,750, 600)
         self.eventListeners()
         self.setWindowTitle("Plot Settings")
+        self.refreshScreen()
+        self.gridLayout_2.addWidget(self.buttonBox, 4, 0, 1, 2)
         self.show()
+
+    def refreshScreen(self):
+        #self.resize(self.width()-1, self.height()-1)
+        #self.resize(self.width()+1, self.height()+1) 
+        self.buttonBox.setGeometry(\
+        self.width() - 10, self.height() - 20, 200, 20)
+        self.gridLayoutWidget.setGeometry(10, 10, self.width()-10, self.height()-20)
+        print(self.width(), self.height())
+
+    def resizeEvent(self, event):
+        print("resized")
 
     def showMessage(self, msg):
         label = QLabel(msg, self)
@@ -44,14 +57,17 @@ class PlotSettings(QWidget, Ui_PlotSettings):
     def additionalSetup(self, plotOptions=[None]):
         #for i in range(gridSize-):
         groupBox = QGroupBox("Plot"+str(self.GroupCounter), self)
+        #groupBox.setBaseSize(400, 400)
         groupLayout = QVBoxLayout(self) #layout to put in group
-        self.comboBox.append(QComboBox(self))
-        for option in plotOptions:
-            self.comboBox[self.GroupCounter].addItem(option)
 
+        #for option in plotOptions:
+        #    self.comboBox[self.GroupCounter].addItem(option)
+        self.comboBox.append(QComboBox(self))
         self.comboBox2.append(QComboBox(self))
         self.comboBox3.append(QComboBox(self))
         self.comboBox4.append(QComboBox(self))
+        #self.comboBox[0].setBaseSize(400, 400)
+
 
         #set options
         colorOptions = ['blue', 'red', 'green', 'cyan', 'magenta','yellow',
@@ -71,30 +87,19 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.slider_markersize.setMinimum(1)
         self.slider_markersize.setValue(3)
         self.slider_markersize.setSingleStep(1)
-
+        for option in plotOptions:
+            self.comboBox[self.GroupCounter].addItem(option) 
         for color in colorOptions:
             self.comboBox2[self.GroupCounter].addItem(color)
         for marker in markerOptions:
             self.comboBox3[self.GroupCounter].addItem(marker)
         for line in linestyleOptions:
             self.comboBox4[self.GroupCounter].addItem(line)
-        #radioButton = []
+       #radioButton = []
         self.radioButton.append(QRadioButton("Run synchronized with Animation",
                                                                         self))
         self.radioButton[self.GroupCounter*2].setChecked(True)
         self.radioButton.append(QRadioButton("Show Plot", self))
-
-        if self.GroupCounter == 0:
-            self.gridLayout_2.addWidget(groupBox,0,0)
-
-        if self.GroupCounter == 1:
-            self.gridLayout_2.addWidget(groupBox,1,0)
-
-        if self.GroupCounter == 2:
-            self.gridLayout_2.addWidget(groupBox,0,1)
-
-        if self.GroupCounter == 3:
-            self.gridLayout_2.addWidget(groupBox,1,1)
 
         groupLayout.addWidget(self.comboBox[self.GroupCounter])
         groupLayout.addWidget(self.colorOptions_label)
@@ -112,8 +117,23 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         groupLayout.addWidget(self.radioButton[(self.GroupCounter*2)+1])
 
         groupBox.setLayout(groupLayout)
+        
+        if self.GroupCounter == 0:
+            self.gridLayout_2.addWidget(groupBox,0,0)
+                                                     
+        if self.GroupCounter == 1:
+            self.gridLayout_2.addWidget(groupBox,1,0)
+                                                     
+        if self.GroupCounter == 2:
+            self.gridLayout_2.addWidget(groupBox,0,1)
+                                                     
+        if self.GroupCounter == 3:
+            self.gridLayout_2.addWidget(groupBox,1,1)
+
+        #self.gridLayout_2.addWidget(groupBox)
         self.GroupCounter += 1
-        print("additionalSetup Done!")
+        self.refreshScreen()
+        #print("additionalSetup Done!")
 
     def markersizeEvent(self):
         self.slider_markersize.valueChanged.connect(self.sizeChange)

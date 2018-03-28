@@ -153,18 +153,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     @pyqtSlot(int)
     def onIteratorChange(self, value):
-        #threads = []
         for pane in self.panes:
             if pane.isVisible() and pane.widget:
                 value %= self.stages
                 pane.widget.set_i(value)
-                #t = Thread(target = pane.widget.set_i, args = (value,))
-                #t.start()
-                #threads.append(t)
-
-
-        #for t in threads:
-        #    t.join()
 
 
     def showChooseWidgetSettings(self, number):
@@ -200,7 +192,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes.append(WidgetHandler())
         self.panes[-1].button = QtWidgets.QPushButton("Add Widget", self)
         self.panes[-1].groupBox = QtWidgets.QGroupBox("Window " + \
-                                                    str(len(self.panes)), self)
+            str(len(self.panes)), self)
         self.panes[-1].layout = QtWidgets.QGridLayout()
 
     def makeGrid(self):

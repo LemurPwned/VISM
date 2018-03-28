@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'UI_files/PlotSettings.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.1
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -18,11 +18,16 @@ class Ui_PlotSettings(object):
         self.gridLayout_2 = QtWidgets.QGridLayout(self.gridLayoutWidget)
         self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.buttonBox = QtWidgets.QDialogButtonBox(self.gridLayoutWidget)
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.layoutWidget = QtWidgets.QWidget(PlotSettings)
+        self.layoutWidget.setGeometry(QtCore.QRect(270, 270, 228, 32))
+        self.layoutWidget.setObjectName("layoutWidget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.layoutWidget)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.buttonBox = QtWidgets.QDialogButtonBox(self.layoutWidget)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
-        self.gridLayout_2.addWidget(self.buttonBox, 0, 0, 10, 10)
+        self.horizontalLayout.addWidget(self.buttonBox)
 
         self.retranslateUi(PlotSettings)
         QtCore.QMetaObject.connectSlotsByName(PlotSettings)

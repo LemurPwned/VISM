@@ -107,6 +107,7 @@ ENV/
 
 #Pycharm
 .idea/
+*.swp
 
 #common virtualenv
 spintronics/
