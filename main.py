@@ -108,9 +108,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 x.close()
             except ValueError as e:
                 msg = "Invalid directory: {}. \
-                    Error Message {}\nDo you wish to reselect?".format(directory, str(e))
-                x = PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
-                                QtWidgets.QMessageBox.No, self.loadDirectory, quit)
+                    Error Message {}\nDo you wish to reselect?".format(directory,
+                                                                        str(e))
+                x = PopUpWrapper("Invalid directory", msg, None,
+                                QtWidgets.QMessageBox.Yes,
+                                QtWidgets.QMessageBox.No,
+                                self.loadDirectory, quit)
             finally:
                 self._LOADED_FLAG_ = True
             return 1
@@ -201,6 +204,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.refreshScreen()
         elif value[1] == '2dPlot':
             self.panes[value[0]].addWidget(Canvas())
+            self.showPlotSettings()
             self.refreshScreen()
         elif value[1] == '2dLayer':
             layer_dict = self.compose_dict(value[1])
