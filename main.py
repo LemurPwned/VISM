@@ -56,7 +56,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         # VECTORS SUBMENU
         self.actionVectors.triggered.connect(self.vectorsSelector)
-        
+
         # GRID BUTTONS
         # lambda required to pass parameter - which button was pressed
         self.panes[0].button.clicked.connect(lambda: self.showChooseWidgetSettings(0))
@@ -173,7 +173,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
             if data_dict != {}:
                 pane.widget.shareData(**data_dict)
-                # pane.widget.setPlotParameters(param_dict)
                 pane.widget.createPlotCanvas()
 
         self.refreshScreen()

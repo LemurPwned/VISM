@@ -36,6 +36,8 @@ class Canvas(AbstractCanvas):
         self._CANVAS_ALREADY_CREATED_ = True
 
     def replot(self):
+        self.loop_guard()
         self.plot_axis.hpl.set_ydata(np.lib.pad(self.graph_data[:self.i],
-                                                (0, self.iterations - self.i), mode='constant'))
+                                                (0, self.iterations - self.i),
+                                                mode='constant'))
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
