@@ -12,6 +12,7 @@ from Windows.ChooseWidget import ChooseWidget
 from Windows.PlotSettings import PlotSettings
 from Windows.PlayerWindow import PlayerWindow
 from Windows.PerfOptions import PerfOptions
+from Windows.vectorSettings import vectorSettings
 
 from WidgetHandler import WidgetHandler
 
@@ -33,6 +34,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.make1WindowGrid()  # shows default 1 widget Window
         self.events()  # create event listeners
         self.defaultOptionSet = ['Standard', 5, 3, 1]
+        self.defaultVectorSet = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
         self._LOADED_FLAG_ = False
 
     def events(self):
@@ -51,6 +53,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         # OPTIONS SUBMENU
         self.actionPerformance.triggered.connect(self.optionsChecker)
+        # VECTORS SUBMENU
+        self.actionVectors.triggered.connect(self.vectorsSelector)
         # GRID BUTTONS
         # lambda required to pass parameter - which button was pressed
         self.panes[0].button.clicked.connect(lambda: self.showChooseWidgetSettings(0))
@@ -66,12 +70,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def optionsChecker(self):
         if self._LOADED_FLAG_:
-            # nl = ColorPolicy.test_available_layers(self.rawVectorData, self.omf_header,
-            #                                         self.stages)
-            # print(len(nl))
+            # we can pick layer since data was loaded
             self.optionsMenu = PerfOptions(True, int(self.omf_header['znodes']))
         else:
             self.optionsMenu = PerfOptions(False)
+
+    def vectorsSelector(self):
+        self.vectorMenu = vectorSettings()
 
     def resizeEvent(self, event):
         """What happens when window is resized"""
@@ -88,9 +93,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         if directory is None or directory == "":
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
-            # raise TypeError(msg)
             self._LOADED_FLAG_ = False
-            PopUpWrapper("Invalid directory", msg, QtWidgets.QMessageBox.Yes,
+            PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
                             QtWidgets.QMessageBox.No, quit, None)
             return 0
         else:
@@ -103,7 +107,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             except ValueError as e:
                 msg = "Invalid directory: {}. \
                     Error Message {}\nDo you wish to reselect?".format(directory, str(e))
-                x = PopUpWrapper("Invalid directory", msg, QtWidgets.QMessageBox.Yes,
+                x = PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
                                 QtWidgets.QMessageBox.No, self.loadDirectory, quit)
             finally:
                 self._LOADED_FLAG_ = True
@@ -134,7 +138,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         # [string whatToPlot, synchronizedPlot, instantPlot]
         if not value:
             msg = "There is no data to display on the plot. Continue?"
-            PopUpWrapper("No data", msg, QtWidgets.QMessageBox.Yes,
+            PopUpWrapper("No data", msg, None, QtWidgets.QMessageBox.Yes,
                             QtWidgets.QMessageBox.No, None, quit)
             return
 
@@ -217,6 +221,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             selectedOptionsSet = self.defaultOptionSet
         return selectedOptionsSet
 
+    def vectorParser(self):
+        try:
+            selectedVectorSet = self.vectorMenu.getOptions()
+        except AttributeError as ae:
+            selectedVectorSet = self.defaultVectorSet
+        return selectedVectorSet
+
     def makeGrid(self):
         """Initialize all subwindows"""
         for i in range(4):
@@ -251,7 +262,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 'color_list': self.rawVectorData,
                 'iterations': self.stages,
                 'i': current_state,
-                'opt': self.optionsParser()
+                'opt': self.optionsParser(),
+                'vector_set' : self.vectorParser()
             }
         elif widgetType == '2dPlot':
             data_dict = {

@@ -38,18 +38,21 @@ class OpenGLContext(AbstractGLContext, QWidget):
         self.vectors_list = getLayerOutline(self.omf_header)
         # change drawing function
         self.color_list, self.vectors_list, _ = \
-                            custom_color_policy.standard_procedure(self.vectors_list,
-                                                                   self.color_list,
-                                                                   self.iterations,
-                                                                   self.averaging,
-                                                                   xc, yc, zc, self.layer)
+                    custom_color_policy.standard_procedure(self.vectors_list,
+                                                           self.color_list,
+                                                           self.iterations,
+                                                           self.averaging,
+                                                           xc, yc, zc,
+                                                           self.layer,
+                                                           self.vector_set)
 
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw
             # if vbo drawing is selected, do additional processing
             self.color_list = custom_color_policy.apply_vbo_format(self.color_list)
-            self.vectors_list, self.vertices = genCubes(self.vectors_list, self.spacer)
-            print(np.array(self.vectors_list).shape, self.vertices)            
+            self.vectors_list, self.vertices = genCubes(self.vectors_list,
+                                                                    self.spacer)
+            print(np.array(self.vectors_list).shape, self.vertices)
             print(np.array(self.color_list).shape)
             self.buffer_len = len(self.color_list[0])
         elif self.function_select == 'slow':
@@ -112,14 +115,16 @@ class OpenGLContext(AbstractGLContext, QWidget):
         gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2] + self.spacer)
         gl.glVertex3f(vec[0], vec[1], vec[2] + self.spacer)
         gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2] + self.spacer)
-        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2] + self.spacer)
+        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2] + \
+                    self.spacer)
         # BOTTOM FACE
         gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2])
         gl.glVertex3f(vec[0], vec[1], vec[2])
         gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2])
         gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2])
         # FRONT FACE
-        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2] + self.spacer)
+        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2] + \
+                    self.spacer)
         gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2] + self.spacer)
         gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2])
         gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2])
@@ -130,7 +135,8 @@ class OpenGLContext(AbstractGLContext, QWidget):
         gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2])
         # RIGHT FACE
         gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2] + self.spacer)
-        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2] + self.spacer)
+        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2] + \
+                    self.spacer)
         gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2])
         gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2])
         # LEFT FACE

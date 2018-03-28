@@ -162,7 +162,8 @@ class ColorPolicy:
 
 
     def standard_procedure(self, outline, color, iterations, averaging, xc, yc, zc,
-                        picked_layer='all'):
+                        picked_layer='all',
+                        vector_set=[[1, 0, 0], [0, 1, 0], [0, 0, 1]]):
         if type(picked_layer) == int:
             # if single layer is picked modify memory data
             zc = 1
@@ -186,7 +187,7 @@ class ColorPolicy:
             color[i, mask, :] = 0
         # at this point the shape should be conserved (iterations, zc*yc*xc, 3)
         assert color.shape == (iterations, zc*yc*xc, 3)
-        vector_set = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]).astype(np.float32)
+        vector_set = np.array(vector_set).astype(np.float32)
         dotted_color = asynchronous_pool_order(multi_iteration_dot_product,
                                                 (vector_set,), color)
         dotted_color = np.array(dotted_color)

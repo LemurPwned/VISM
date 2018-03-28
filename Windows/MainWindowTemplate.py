@@ -52,6 +52,8 @@ class Ui_MainWindow(object):
         self.action4_Windows_Grid.setObjectName("action4_Windows_Grid")
         self.actionPerformance = QtWidgets.QAction(MainWindow)
         self.actionPerformance.setObjectName("actionPerformance")
+        self.actionVectors = QtWidgets.QAction(MainWindow)
+        self.actionVectors.setObjectName("actionVectors")
         self.menuFile.addAction(self.actionLoad_File)
         self.menuFile.addAction(self.actionLoad_Directory)
         self.menuEdit.addAction(self.actionPlot)
@@ -60,6 +62,7 @@ class Ui_MainWindow(object):
         self.menuView.addAction(self.action2_Windows_Grid)
         self.menuView.addAction(self.action4_Windows_Grid)
         self.menuOptions.addAction(self.actionPerformance)
+        self.menuOptions.addAction(self.actionVectors)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
@@ -83,6 +86,7 @@ class Ui_MainWindow(object):
         self.actionAnimation.setText(_translate("MainWindow", "Animation"))
         self.action4_Windows_Grid.setText(_translate("MainWindow", "4 Windows Grid"))
         self.actionPerformance.setText(_translate("MainWindow", "Performance"))
+        self.actionVectors.setText(_translate("MainWindow", "Vectors"))
 
 
 if __name__ == "__main__":

@@ -35,12 +35,13 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         zc = int(self.omf_header['znodes'])
         self.function_select = 'slow'
         self.color_list, self.vectors_list, normalized = \
-                            custom_color_policy.standard_procedure(self.vectors_list,
-                                                                   self.color_list,
-                                                                   self.iterations,
-                                                                   self.averaging,
-                                                                   xc, yc, zc,
-                                                                   self.layer)
+                    custom_color_policy.standard_procedure(self.vectors_list,
+                                                           self.color_list,
+                                                           self.iterations,
+                                                           self.averaging,
+                                                           xc, yc, zc,
+                                                           self.layer,
+                                                           self.vector_set)
 
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_arrow_draw

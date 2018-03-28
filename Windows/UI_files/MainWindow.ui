@@ -62,6 +62,7 @@
      <string>Options</string>
     </property>
     <addaction name="actionPerformance"/>
+    <addaction name="actionVectors"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -107,6 +108,11 @@
   <action name="actionPerformance">
    <property name="text">
     <string>Performance</string>
+   </property>
+  </action>
+  <action name="actionVectors">
+   <property name="text">
+    <string>Vectors</string>
    </property>
   </action>
  </widget>
