@@ -1,5 +1,6 @@
 import sys
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import pyqtSlot
 from Windows.MainWindowTemplate import Ui_MainWindow
 
 from Canvas import Canvas

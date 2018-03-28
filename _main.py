@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from main import MainWindow
-from Parser import Parser
+from multiprocessing_parse import MultiprocessingParse
 from Canvas import Canvas
 from CanvasLayer import CanvasLayer
 from openGLContext import OpenGLContext
@@ -21,7 +21,7 @@ class _MainTester(unittest.TestCase):
 
     def initializeData(self, dataNumber):
         test_folder = testData[dataNumber]
-        self.rawVectorData, self.omf_header, self.odtData, self.stages = Parser.readFolder(test_folder)
+        self.rawVectorData, self.omf_header, self.odtData, self.stages = MultiprocessingParse.readFolder(test_folder)
 
     def test_initialGui(self):
         self.assertEqual(self.mainGui.windowTitle(), "ESE - Early Spins Enviroment")

@@ -2,11 +2,7 @@
 
 # Form implementation generated from reading ui file 'Windows/UI_files/PlotSettings.ui'
 #
-<<<<<<< HEAD
 # Created by: PyQt5 UI code generator 5.9.2
-=======
-# Created by: PyQt5 UI code generator 5.9
->>>>>>> master
 #
 # WARNING! All changes made in this file will be lost!
 
