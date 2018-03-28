@@ -22,7 +22,7 @@ class PlayerWindow(QtCore.QObject):
         self.worker.moveToThread(self.worker_thread)
         self.worker_thread.start()
 
-        #self._connectSignals()
+        self._connectSignals()
         self.gui.show()
 
 
@@ -63,11 +63,14 @@ class PlayerWindow(QtCore.QObject):
 
         self._connectSignals()
 
+    def setIterators(self, iterators):
+        self.worker.widgetIterators = iterators
+
     def _connectSignals(self):
         self.gui.button_start.clicked.connect(self.PlayPauseClicked)
         self.gui.button_start.clicked.connect(self.worker.startWork)
         self.gui.button_stop.clicked.connect(lambda: self.forceWorkerReset(True))
-        self.worker.signalStatus.connect(self.handler)
+        #self.worker.signalStatus.connect(self.handler)
         self.gui.button_nextFrame.clicked.connect(lambda: self.worker.moveFrame(1))
         self.gui.button_prevFrame.clicked.connect(lambda: self.worker.moveFrame(-1))
         self.gui.slider_speed.valueChanged.connect(self.speedChange)
@@ -110,6 +113,7 @@ class WorkerObject(QtCore.QObject):
         self.running = False
         self._speed = 10
         self.handler = None
+        self.widgetIterators = None
 
     def setSpeed(self, speed):
         self._speed = speed
@@ -127,7 +131,9 @@ class WorkerObject(QtCore.QObject):
         while(True):
             if self.running:
                 self._iterator = self._iterator + 1
-                self.signalStatus.emit(self._iterator)
+                for i in self.widgetIterators:
+                    i(self._iterator)
+                #self.signalStatus.emit(self._iterator)
 
             if not self.running:
                 tm.sleep(1)
@@ -138,11 +144,9 @@ class WorkerObject(QtCore.QObject):
     def moveFrame(self, howMany):
         print(self._iterator, howMany)
         if ((self._iterator + howMany) >= 0):
-            print("not reseting")
             self._iterator = (self._iterator + howMany)
             self.signalStatus.emit(self._iterator)
         else:
-            print("reseting")
             self._iterator = 0
             self.signalStatus.emit(self._iterator)
 

@@ -15,6 +15,7 @@ PyOpenGL==3.1.0
 pyparsing==2.2.0
 PyQt5==5.9.1
 pyqtgraph==0.10.0
+Cython==0.27.3
 python-dateutil==2.6.1
 pytz==2017.2
 sip==4.19.4

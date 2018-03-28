@@ -5,6 +5,7 @@ from PyQt5 import QtCore, Qt
 from PyQt5.QtCore import pyqtSlot
 from Windows.PlotSettingsTemplate import Ui_PlotSettings
 
+
 class PlotSettings(QWidget, Ui_PlotSettings):
     def __init__(self, plotOptions=[None], gridSize=2):
         super(PlotSettings, self).__init__()
