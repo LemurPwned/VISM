@@ -7,6 +7,10 @@ To use this software, in form as for now, you need:
 - installed Python modules from requirements.txt file (to automate this use: **pip install -r requirements.txt**)
 - Qt 5 or newer
 
+**Building Cython**
+cd cython_modules
+Python3 setup.py build_ext --inplace
+
 Run application by typing
 
 **python3 main.py** in a main repository directory
