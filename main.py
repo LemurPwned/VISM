@@ -65,6 +65,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def resizeEvent(self, event):
         '''What happens when window is resized'''
+        print("window resized")
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height()-25)
         self.panes[0].groupBox.setMinimumWidth(self.width() / 2 - 20)
         self.panes[1].groupBox.setMinimumWidth(self.width() / 2 - 20)

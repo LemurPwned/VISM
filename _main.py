@@ -3,6 +3,7 @@ import sys
 from PyQt5 import QtWidgets#.QtWidgets import QApplication
 from PyQt5.QtTest import QTest
 from PyQt5.QtCore import Qt
+from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from main import MainWindow
 from Parser import Parser
@@ -67,9 +68,17 @@ class _MainTester(unittest.TestCase):
 
     def test_PlotSettingsNoData(self):
         self.mainGui.actionPlot.trigger()
-        self.assertEqual(self.mainGui.plotSettingsWindow.children()[0].children()[2].text(), "There is no data to show. Load data with File > Load Directory")
+        label = self.mainGui.plotSettingsWindow.findChild(QtWidgets.QLabel,"textLabel" )
+        self.assertEqual(label.text(), "There is no data to show. Load data with File > Load Directory")
         accept = self.mainGui.plotSettingsWindow.buttonBox.children()[1]
-        print(accept.text())
+        QTest.mouseClick(accept, Qt.LeftButton)
+
+    def test_PlotSettingsDataLoaded(self):
+        self.initializeData(0)
+        self.mainGui.actionPlot.trigger()
+        label = self.mainGui.plotSettingsWindow.findChild(QtWidgets.QLabel,"textLabel" )
+        self.assertEqual(label.text(), "There is no data to show. Load data with File > Load Directory")
+        accept = self.mainGui.plotSettingsWindow.buttonBox.children()[1]
         QTest.mouseClick(accept, Qt.LeftButton)
 
     def test_Widgets(self):
@@ -151,7 +160,7 @@ class _MainTester(unittest.TestCase):
         x.setValue(x.minimum())
         self.assertEqual(self.mainGui.playerWindow.gui.speedLabel.text(), "Animation Speed: 0.1")
         x.setValue(x.maximum())
-        self.assertEqual(self.mainGui.playerWindow.gui.speedLabel.text(), "Animation Speed: 5.0")
+        self.assertEqual(self.mainGui.playerWindow.gui.speedLabel.text(), "Animation Speed: 10.0")
 
 
 #checking how many plot options are there
