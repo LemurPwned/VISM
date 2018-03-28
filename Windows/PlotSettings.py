@@ -12,7 +12,8 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.GroupCounter = 0
         if len(plotOptions) == 0:
             self.showMessage("There is no data to show. Load data with File > Load Directory")
-
+        elif gridSize<1:
+            self.showMessage("No plot pane selected, Go to MainWindow and select pane type meant to show plot.")
         else:
             self.comboBox = []
             self.comboBox2 = []

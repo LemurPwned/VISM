@@ -74,10 +74,16 @@ class _MainTester(unittest.TestCase):
         QTest.mouseClick(accept, Qt.LeftButton)
 
     def test_PlotSettingsDataLoaded(self):
+        '''tests scenario when data is selected and plot settings clicked. There should be message that no plot has been selected'''
         self.initializeData(0)
+        self.mainGui.rawVectorData = self.rawVectorData 
+        self.mainGui.omf_header = self.omf_header
+        self.mainGui.odt_data = self.odtData
+        self.mainGui.stages = self.stages
+
         self.mainGui.actionPlot.trigger()
         label = self.mainGui.plotSettingsWindow.findChild(QtWidgets.QLabel,"textLabel" )
-        self.assertEqual(label.text(), "There is no data to show. Load data with File > Load Directory")
+        self.assertEqual(label.text(), "No plot pane selected, Go to MainWindow and select pane type meant to show plot.")
         accept = self.mainGui.plotSettingsWindow.buttonBox.children()[1]
         QTest.mouseClick(accept, Qt.LeftButton)
 
