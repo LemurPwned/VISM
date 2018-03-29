@@ -4,27 +4,23 @@ from buildVerifier import BuildVerifier
 from PyQt5 import QtWidgets
 from Windows.MainWindowTemplate import Ui_MainWindow
 
-from Canvas import Canvas
-from CanvasLayer import CanvasLayer
 from multiprocessing_parse import MultiprocessingParse
-from openGLContext import OpenGLContext
-from arrowGLContex import ArrowGLContext
 
 from Windows.ChooseWidget import ChooseWidget
-from Windows.PlotSettings import PlotSettings
 from Windows.PlayerWindow import PlayerWindow
-from Windows.PerfOptions import PerfOptions
-from Windows.vectorSettings import vectorSettings
 
 from WidgetHandler import WidgetHandler
 
-from Widgets.Canvas2Dupgraded import Canvas2Dupgraded
 from PopUp import PopUpWrapper
-from ColorPolicy import ColorPolicy
+
+from settingsMediator.settingsPrompter import SettingsPrompter
+from settingsMediator.settingsLoader import DataObjectHolder
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
+        self.doh = DataObjectHolder()
+
         self.odt_data = ""
         self.setupUi(self)
         self.setWindowTitle("ESE - Early Spins Environment")
@@ -36,8 +32,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.makeGrid()  # create grid (4 Widgets) and stores them in arrays
         self.make1WindowGrid()  # shows default 1 widget Window
         self.events()  # create event listeners
-        self.defaultOptionSet = ['Standard', 5, 3, 1]
-        self.defaultVectorSet = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
         self._LOADED_FLAG_ = False
 
     def events(self):
@@ -46,19 +40,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionLoad_Directory.triggered.connect(self.loadDirectory)
 
         # EDIT SUBMENU
-        self.actionPlot.triggered.connect(self.showPlotSettings)
         self.actionAnimation.triggered.connect(self.showAnimationSettings)
 
         # VIEW SUBMENU
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
         self.action2_Windows_Grid.triggered.connect(self.make2WindowsGrid)
         self.action4_Windows_Grid.triggered.connect(self.make4WindowsGrid)
-
-        # OPTIONS SUBMENU
-        self.actionPerformance.triggered.connect(self.optionsChecker)
-
-        # VECTORS SUBMENU
-        self.actionVectors.triggered.connect(self.vectorsSelector)
 
         # GRID BUTTONS
         # lambda required to pass parameter - which button was pressed
@@ -73,15 +60,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.resize(self.width() - 1, self.height())
         self.resize(self.width() + 1, self.height())
 
-    def optionsChecker(self):
-        if self._LOADED_FLAG_:
-            # we can pick layer since data was loaded
-            self.optionsMenu = PerfOptions(True, int(self.omf_header['znodes']))
-        else:
-            self.optionsMenu = PerfOptions(False)
-
-    def vectorsSelector(self):
-        self.vectorMenu = vectorSettings()
 
     def resizeEvent(self, event):
         """What happens when window is resized"""
@@ -106,8 +84,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             try:
                 x = PopUpWrapper("Loading", "Data is currently loading",
                         more="Please Wait...")
-                self.rawVectorData, self.omf_header, self.odt_data, \
-                    self.stages = MultiprocessingParse.readFolder(directory)
+                self.doh.passListObject(('color_vectors', 'omf_header',
+                                        'odt_data', 'iterations'),
+                                        *MultiprocessingParse.readFolder(directory))
+                print(self.doh.contains_lookup)
                 x.close()
             except ValueError as e:
                 msg = "Invalid directory: {}. \
@@ -131,64 +111,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         self.playerWindow.setIterators(self.properPanesIterators)
 
-    def showPlotSettings(self):
-        """Spawns window for plot settings"""
-        counter = 0
-        # to know how many plots are there to show correct plotMenu
-        for _, pane in enumerate(self.panes):
-            if type(pane.widget) is Canvas or \
-                    type(pane.widget) is Canvas2Dupgraded \
-                    and pane.isVisible():
-                counter = counter + 1
-
-        #print(counter)
-
-        self.plotSettingsWindow = PlotSettings(list(self.odt_data), counter)
-        self.plotSettingsWindow.setEventHandler(self.plotSettingsReceiver)
-
-
-    def plotSettingsReceiver(self, value):
-        # [string whatToPlot, synchronizedPlot, instantPlot]
-        if not value:
-            msg = "There is no data to display on the plot. Continue?"
-            PopUpWrapper("No data", msg, None, QtWidgets.QMessageBox.Yes,
-                            QtWidgets.QMessageBox.No, None, quit)
-            return
-
-        temp_val = 0  # fast_fix rethink it later
-
-        for i, pane in enumerate(self.panes):
-            if not pane.isVisible():
-                continue
-            data_dict = {}
-            param_dict = {}
-            if type(pane.widget) is CanvasLayer:
-                data_dict = self.compose_dict('2dLayer')
-            # separated both classes, type is uniqe now
-            if type(pane.widget) is Canvas \
-                    or type(pane.widget) is Canvas2Dupgraded:
-                picked_column = value[temp_val][0]
-                param_dict = {
-                    'color': value[temp_val][3],
-                    'line_style': value[temp_val][5],
-                    'marker': value[temp_val][4],
-                    'marker_size': value[temp_val][6],
-                    'marker_color': value[temp_val][3]
-                }
-                # check if we want synchronizedPlot
-                counter = 0
-                if value[temp_val][2]:
-                    counter = self.stages
-                data_dict = self.compose_dict('2dPlot', current_state=counter,
-                                              column=picked_column)
-                temp_val = temp_val + 1
-
-            if data_dict != {}:
-                pane.widget.shareData(**data_dict)
-                pane.widget.createPlotCanvas()
-
-        self.refreshScreen()
-
     def showChooseWidgetSettings(self, number):
         """Spawns Window for choosing widget for this pane"""
         if not self._LOADED_FLAG_:
@@ -200,28 +122,27 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def choosingWidgetReceiver(self, value):
         """Data receiver for choosingWidget action"""
+
         self.panes[value[0]].clearBox()
-        if value[1] == 'OpenGLCubes':
-            type_value = "OpenGL"
-            gl_dict = self.compose_dict(type_value)
-            self.panes[value[0]].addWidget(OpenGLContext(data_dict=gl_dict))
-            self.refreshScreen()
-        elif value[1] == 'OpenGLArrows':
-            type_value = "OpenGL"
-            gl_dict = self.compose_dict(type_value)
-            self.panes[value[0]].addWidget(ArrowGLContext(data_dict=gl_dict))
-            self.refreshScreen()
-        elif value[1] == '2dPlot':
-            self.panes[value[0]].addWidget(Canvas())
-            self.showPlotSettings()
-            self.refreshScreen()
-        elif value[1] == '2dLayer':
-            layer_dict = self.compose_dict(value[1])
-            self.panes[value[0]].addWidget(CanvasLayer())
+        # deduce object type based on passed string
+        self.type, self.subtype = value[1].split('_')
+        self.sp = SettingsPrompter(self.subtype)
+        self.window = self.sp.prompt_settings_window(self.doh)
+        self.window.setEventHandler(self.generalReceiver)
+        self.current_pane = value[0]
+        self.refreshScreen()
 
-        if value[1] == "better2dPlot":
-            self.panes[value[0]].addWidget(Canvas2Dupgraded(self))
-
+    def generalReceiver(self, options):
+        """
+        this allows to receive general type option structure that is passed
+        on to the DataObjectHolder object that sends it to the right final object
+        """
+        # fix that later in settings where it can be changed or not
+        self.doh.setDataObject(0, 'current_state')
+        self.doh.setDataObject(options, 'options')
+        self.panes[self.current_pane].addWidget(\
+                self.sp.invoke_object_build_chain(self.type,
+                                                    self.subtype, self.doh))
         self.refreshScreen()
 
     def createNewSubWindow(self):
@@ -231,20 +152,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[-1].groupBox = QtWidgets.QGroupBox("Window " + \
                                                       str(len(self.panes)), self)
         self.panes[-1].layout = QtWidgets.QGridLayout()
-
-    def optionsParser(self):
-        try:
-            selectedOptionsSet = self.optionsMenu.getOptions()
-        except AttributeError as ae:
-            selectedOptionsSet = self.defaultOptionSet
-        return selectedOptionsSet
-
-    def vectorParser(self):
-        try:
-            selectedVectorSet = self.vectorMenu.getOptions()
-        except AttributeError as ae:
-            selectedVectorSet = self.defaultVectorSet
-        return selectedVectorSet
 
     def makeGrid(self):
         """Initialize all subwindows"""
@@ -273,43 +180,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[2].show()
         self.panes[3].show()
 
-    def compose_dict(self, widgetType, column=None, current_state=0):
-        if widgetType == 'OpenGL':
-            data_dict = {
-                'omf_header': self.omf_header,
-                'color_list': self.rawVectorData,
-                'iterations': self.stages,
-                'i': current_state,
-                'opt': self.optionsParser(),
-                'vector_set' : self.vectorParser()
-            }
-        elif widgetType == '2dPlot':
-            data_dict = {
-                'i': current_state,
-                'iterations': self.stages,
-                'graph_data': self.odt_data[column].tolist(),
-                'title': column
-            }
-        elif widgetType == '2dLayer':
-            data_dict = {
-                'omf_header': self.omf_header,
-                'multiple_data': self.rawVectorData,
-                'iterations': self.stages,
-                'current_layer': 0,
-                'title': '3dgraph',
-                'i': current_state
-            }
-        else:
-            msg = "Invalid argument {}".format(widgetType)
-            raise ValueError(msg)
-        return data_dict
-
-
 if __name__ == "__main__":
     # verify build
     # execute makefile
     bv = BuildVerifier()
-    
+
     app = QtWidgets.QApplication(sys.argv)
 
     main_window = MainWindow()

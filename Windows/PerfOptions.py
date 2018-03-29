@@ -1,15 +1,15 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
                 QVBoxLayout, QRadioButton, QLabel, QSlider
 from Windows.PerfOptionsTemplate import Ui_Dialog
-
+import re
 
 class PerfOptions(QWidget, Ui_Dialog):
-    def __init__(self, loaded, layer_size=None):
+    def __init__(self, layer_size=None):
         super(PerfOptions, self).__init__()
         self.setWindowTitle("Perfomance Options")
         self.setupUi(self)
-        self.loaded = loaded
-        self.layer_size = layer_size
+        self.loaded = True
+        self.layer_size = layer_size['znodes']
         self.basicOptions()
         self.show()
         self.options = None
@@ -58,21 +58,50 @@ class PerfOptions(QWidget, Ui_Dialog):
                 optionsList = [self.comboBox.currentText(),
                                 self.horizontalSlider.value(),
                                 'all',
-                                self.horizontalSlider_3.value()]
+                                self.horizontalSlider_3.value(),
+                                self.parseVectors()]
         else:
             optionsList = [self.comboBox.currentText(),
                             self.horizontalSlider.value(),
                             self.horizontalSlider_2.value(),
-                            self.horizontalSlider_3.value()]
+                            self.horizontalSlider_3.value(),
+                            self.parseVectors()]
         return optionsList
+
+
+    def parseVectors(self):
+        vector1 = self.lineEdit.text()
+        vector2 = self.lineEdit_2.text()
+        vector3 = self.lineEdit_3.text()
+        result_group = []
+        for v in [vector1, vector2, vector3]:
+            p = self.isVectorEntryValid(v)
+            if not p:
+                raise ValueError("Invalid entry in vector specification")
+            result_group.append(p)
+        return result_group
+
+    def isVectorEntryValid(self, entry):
+        match_string = '^\[([0-1]),\s([0-1]),\s([0-1])\]'
+        rg = re.compile(match_string)
+        m = rg.search(entry)
+        if m is not None:
+            return [int(m.group(1)), int(m.group(2)), int(m.group(3))]
+        else:
+            return False
 
     def setEventHandler(self, handler):
         self.eventHandler = handler
 
     def accept(self):
-        self.options = self.optionsVerifier()
-        self.close()
-
+        try:
+            self.options = self.optionsVerifier()
+            self.eventHandler(self.options)
+            self.close()
+        except ValueError as ve:
+            PopUpWrapper("Invalid vector format", str(ve), None,
+                            QtWidgets.QMessageBox.Yes,
+                            QtWidgets.QMessageBox.No, None, quit)
     def reject(self):
         self.close()
 
