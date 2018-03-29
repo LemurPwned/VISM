@@ -1,6 +1,9 @@
 from PyQt5.QtWidgets import QWidget
-from AbstractGLContext import AbstractGLContext
+
+from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
+
 from ColorPolicy import ColorPolicy
+
 from ctypes import c_void_p
 from PyQt5.Qt import Qt
 from PyQt5.QtCore import QPoint
@@ -29,14 +32,17 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         self.drawing_function = self.slow_arrow_draw
         self.vectors_list = getLayerOutline(self.omf_header)
 
+        # remap
+        self.i = self.current_state
+
         custom_color_policy = ColorPolicy()
         xc = int(self.omf_header['xnodes'])
         yc = int(self.omf_header['ynodes'])
         zc = int(self.omf_header['znodes'])
         self.function_select = 'slow'
-        self.color_list, self.vectors_list, normalized = \
+        self.color_vectors, self.vectors_list, normalized = \
                     custom_color_policy.standard_procedure(self.vectors_list,
-                                                           self.color_list,
+                                                           self.color_vectors,
                                                            self.iterations,
                                                            self.averaging,
                                                            xc, yc, zc,
@@ -44,29 +50,28 @@ class ArrowGLContext(AbstractGLContext, QWidget):
                                                            self.vector_set)
 
         if self.function_select == 'fast':
+            # doesnt work yet
             self.drawing_function = self.vbo_arrow_draw
             # transform into interleaved vbo format
-            self.color_list = custom_color_policy.apply_vbo_format(self.color_list,
+            self.color_vectors = custom_color_policy.apply_vbo_format(self.color_vectors,
                                                                     k=2)
             self.vectors_list = \
                 custom_color_policy.apply_interleaved_format(self.vectors_list,
                                                              normalized)
-            self.buffer_len = len(self.color_list[0])
+            self.buffer_len = len(self.color_vectors[0])
             self.vectors_list = np.array(self.vectors_list)
-            for x in self.vectors_list:
-                for y in x:
-                    print(y)
-            self.color_list = np.array(self.color_list)
-            print(self.color_list[0], self.color_list.any())
+
+            self.color_vectors = np.array(self.color_vectors)
+            print(self.color_vectors[0], self.color_vectors.any())
             self.vertices = 1600/2
             print("DRAWING SHAPES {}, {}".format(self.vectors_list.shape,
-                                                 self.color_list.shape))
+                                                 self.color_vectors.shape))
         elif self.function_select == 'slow':
             self.drawing_function = self.slow_arrow_draw
 
     def slow_arrow_draw(self):
         for vector, color in zip(self.vectors_list,
-                                    self.color_list[self.i]):
+                                    self.color_vectors[self.i]):
             if not color.any():
                 continue
             self.base_arrow(vector, color)
@@ -111,7 +116,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
 
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
             gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
-                               np.array(self.color_list[self.i],
+                               np.array(self.color_vectors[self.i],
                                dtype='float32'))
 
         self.standard_vbo_draw()
@@ -128,7 +133,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         # color buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                        np.array(self.color_list[self.i],
+                        np.array(self.color_vectors[self.i],
                         dtype='float32'),
                         gl.GL_DYNAMIC_DRAW)
         return buffers

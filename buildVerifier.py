@@ -13,7 +13,6 @@ class BuildVerifier:
         else:
             return os_string
 
-
 	# python3 cython_modules/ex_setup.py build_ext --build-lib cython_modules/build --inplace
 
     def cython_builds(self):

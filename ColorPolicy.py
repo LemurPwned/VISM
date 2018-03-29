@@ -73,7 +73,8 @@ class ColorPolicy:
         """
         resultant_matrix = np.zeros(composite_matrix.shape)
         for i in range(3):
-            resultant_matrix[1:-1,1:-1, i] = self.conv2d(composite_matrix[:,:, i], kernel)
+            resultant_matrix[1:-1,1:-1, i] = self.conv2d(composite_matrix[:,:, i],
+            kernel)
         return resultant_matrix
 
     def atomic_convolution(self, vecA, vecB):
@@ -167,7 +168,6 @@ class ColorPolicy:
         if type(picked_layer) == int:
             # if single layer is picked modify memory data
             zc = 1
-            print("XC {}, YC {}, ZC {}, MUL {}".format(xc, yc, zc, xc*yc*zc))
             layer_thickness = xc*yc
             picked_layer = picked_layer*layer_thickness
             color = color[:, picked_layer:picked_layer+layer_thickness, :]
