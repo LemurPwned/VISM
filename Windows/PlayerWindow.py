@@ -20,10 +20,16 @@ class PlayerWindow(QtCore.QObject):
             self.worker_thread = QtCore.QThread()
             self.worker.moveToThread(self.worker_thread)
             self.worker_thread.start()
+        else:
+            #worker already exists, load it's data
+            if self.worker.running:
+                self.gui.button_start.setText("Pause")
+
+            self.gui.slider_speed.setValue(self.worker.getSpeed())
+            self.gui.speedLabel.setText("Animation Speed: " + str(self.worker.getSpeed()/10))
 
         self._connectSignals()
         self.gui.show()
-
 
     def checkForErrors(self):
         if self.parent == None:
@@ -55,7 +61,6 @@ class PlayerWindow(QtCore.QObject):
             for element in self.gui.elements:
                 element.setEnabled(True)
 
-
     def setHandler(self, handler):
         self.handler = handler
         self.worker.handler = handler
@@ -83,10 +88,10 @@ class PlayerWindow(QtCore.QObject):
             self.gui.button_start.setText("Play")
 
     def forceWorkerReset(self):
-        if self.worker_thread.isRunning():
-            self.worker.running = False
-            self.gui.button_start.setText("Play")
-            self.worker.resetIterator()
+        # if self.worker_thread.isRunning():
+        self.worker.running = False
+        self.gui.button_start.setText("Play")
+        self.worker.resetIterator()
 
     def forceWorkerQuit(self):
         if self.worker_thread.isRunning():
@@ -114,6 +119,9 @@ class WorkerObject:
 
         def setSpeed(self, speed):
             self._speed = speed
+
+        def getSpeed(self):
+            return self._speed
 
         def resetIterator(self):
             self._iterator = 0
