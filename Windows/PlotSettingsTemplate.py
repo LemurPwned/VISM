@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'Windows/UI_files/PlotSettings.ui'
 #
-# Created by: PyQt5 UI code generator 5.9
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,17 +12,22 @@ class Ui_PlotSettings(object):
     def setupUi(self, PlotSettings):
         PlotSettings.setObjectName("PlotSettings")
         PlotSettings.resize(400, 300)
-        self.verticalLayoutWidget = QtWidgets.QWidget(PlotSettings)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(9, 9, 381, 281))
-        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.buttonBox = QtWidgets.QDialogButtonBox(self.verticalLayoutWidget)
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.gridLayoutWidget = QtWidgets.QWidget(PlotSettings)
+        self.gridLayoutWidget.setGeometry(QtCore.QRect(9, 9, 381, 281))
+        self.gridLayoutWidget.setObjectName("gridLayoutWidget")
+        self.gridLayout_2 = QtWidgets.QGridLayout(self.gridLayoutWidget)
+        self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.layoutWidget = QtWidgets.QWidget(PlotSettings)
+        self.layoutWidget.setGeometry(QtCore.QRect(270, 270, 228, 32))
+        self.layoutWidget.setObjectName("layoutWidget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.layoutWidget)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.buttonBox = QtWidgets.QDialogButtonBox(self.layoutWidget)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
-        self.verticalLayout.addWidget(self.buttonBox)
+        self.horizontalLayout.addWidget(self.buttonBox)
 
         self.retranslateUi(PlotSettings)
         QtCore.QMetaObject.connectSlotsByName(PlotSettings)
