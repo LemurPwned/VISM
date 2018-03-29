@@ -29,6 +29,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         # keeps all widgets in list of library object that handles Widgets
         self.panes = []
+        self.playerWindow = None
         self.makeGrid()  # create grid (4 Widgets) and stores them in arrays
         self.make1WindowGrid()  # shows default 1 widget Window
         self.events()  # create event listeners
@@ -108,12 +109,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def showAnimationSettings(self):
         """Shows window to change animations settings"""
         self.playerWindow = PlayerWindow(self)
-        self.properPanesIterators = []
         self.refreshIterators()
 
-    def refreshIterators(self):
+    def refreshIterators(self, toDelete=None):
+        self.properPanesIterators = []
         for i, pane in enumerate(self.panes):
             if pane.isVisible() and pane.widget:
+                if i == toDelete:
+                    continue
                 self.properPanesIterators.insert(i, pane.widget.set_i)
 
         self.playerWindow.setIterators(self.properPanesIterators)
@@ -153,6 +156,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.refreshScreen()
 
     def deleteWidget(self, number):
+        # delete iterator from iterator list to avoid crash
+        if self.playerWindow:
+            #maybe prompt here?
+            self.playerWindow.forceWorkerReset()
+            self.playerWindow.closeMe()
+
+        # self.refreshIterators(number)
         self.panes[number].clearBox()
         self.panes[number].setUpDefaultBox()
         self.panes[number].button.clicked.connect(\
