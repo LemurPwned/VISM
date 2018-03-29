@@ -8,19 +8,18 @@ class PlayerWindow(QtCore.QObject):
 
     def __init__(self, parent=None):
         super(self.__class__, self).__init__(parent)
-
-
-        # Create a gui object.
         self.gui = Window()
         self.parent = parent
 
         self.checkForErrors()
 
         # Setup the worker object and the worker_thread.
-        self.worker = WorkerObject()
-        self.worker_thread = QtCore.QThread()
-        self.worker.moveToThread(self.worker_thread)
-        self.worker_thread.start()
+        self.worker = WorkerObject().getInstance()
+        if WorkerObject().getNumbers() == 2: #funny, fact of watching changes value,\
+            #like in Heisenberg rule :P
+            self.worker_thread = QtCore.QThread()
+            self.worker.moveToThread(self.worker_thread)
+            self.worker_thread.start()
 
         self._connectSignals()
         self.gui.show()
@@ -69,8 +68,7 @@ class PlayerWindow(QtCore.QObject):
     def _connectSignals(self):
         self.gui.button_start.clicked.connect(self.PlayPauseClicked)
         self.gui.button_start.clicked.connect(self.worker.startWork)
-        self.gui.button_stop.clicked.connect(lambda: self.forceWorkerReset(True))
-        #self.worker.signalStatus.connect(self.handler)
+        self.gui.button_stop.clicked.connect(self.forceWorkerReset)
         self.gui.button_nextFrame.clicked.connect(lambda: self.worker.moveFrame(1))
         self.gui.button_prevFrame.clicked.connect(lambda: self.worker.moveFrame(-1))
         self.gui.slider_speed.valueChanged.connect(self.speedChange)
@@ -82,17 +80,13 @@ class PlayerWindow(QtCore.QObject):
         if self.worker.running:
             self.gui.button_start.setText("Pause")
         else:
-            self.forceWorkerReset(False)
             self.gui.button_start.setText("Play")
 
-    def forceWorkerReset(self, reset=True):
+    def forceWorkerReset(self):
         if self.worker_thread.isRunning():
-            self.worker_thread.terminate()
-            self.worker_thread.wait()
-            if reset:
-                self.worker.resetIterator()
             self.worker.running = False
-            self.worker_thread.start()
+            self.gui.button_start.setText("Play")
+            self.worker.resetIterator()
 
     def forceWorkerQuit(self):
         if self.worker_thread.isRunning():
@@ -104,52 +98,64 @@ class PlayerWindow(QtCore.QObject):
                                     str(self.gui.slider_speed.value()/10))
         self.worker.setSpeed(self.gui.slider_speed.value())
 
-class WorkerObject(QtCore.QObject):
-    signalStatus = QtCore.pyqtSignal(int)
+#SINGLETON
 
-    def __init__(self, parent=None):
-        super(self.__class__, self).__init__(parent)
-        self._iterator = 0
-        self.running = False
-        self._speed = 10
-        self.handler = None
-        self.widgetIterators = None
+#reset while playing weird stuff
+class WorkerObject:
+    class __WorkerObject(QtCore.QObject):
 
-    def setSpeed(self, speed):
-        self._speed = speed
+        def __init__(self, parent=None):
+            super(self.__class__, self).__init__(parent)
+            self._iterator = 0
+            self.running = False
+            self._speed = 10
+            self.handler = None
+            self.widgetIterators = None
 
-    def resetIterator(self):
-        self._iterator = 0
+        def setSpeed(self, speed):
+            self._speed = speed
 
-    def startWork(self):
-        if self.running:
+        def resetIterator(self):
+            self._iterator = 0
+
+        def startWork(self):
             self.play()
 
+        def play(self):
+            while(True):
+                if self.running:
 
-    @QtCore.pyqtSlot()
-    def play(self):
-        while(True):
-            if self.running:
-                self._iterator = self._iterator + 1
-                for i in self.widgetIterators:
-                    i(self._iterator)
-                #self.signalStatus.emit(self._iterator)
+                    self._iterator = self._iterator + 1
+                    for i in self.widgetIterators:
+                        i(self._iterator)
 
-            if not self.running:
-                tm.sleep(1)
+                if not self.running:
+                    break
 
-            tm.sleep(1/self._speed)
+                tm.sleep(1/self._speed)
 
-    @QtCore.pyqtSlot()
-    def moveFrame(self, howMany):
-        print(self._iterator, howMany)
-        if ((self._iterator + howMany) >= 0):
-            self._iterator = (self._iterator + howMany)
-            self.signalStatus.emit(self._iterator)
+        def moveFrame(self, howMany):
+            self._iterator += howMany
+            for i in self.widgetIterators:
+                i(self._iterator)
+
+    numbers = 0  # fast_fix
+    instance = None
+    def __init__(self, parent=None):
+        if not WorkerObject.instance:
+            WorkerObject.instance = WorkerObject.__WorkerObject(parent)
+
         else:
-            self._iterator = 0
-            self.signalStatus.emit(self._iterator)
+            WorkerObject.instance.parent = parent
+        WorkerObject.numbers += 1
 
+    @staticmethod
+    def getInstance():
+        return WorkerObject.instance
+
+    @staticmethod
+    def getNumbers():
+        return WorkerObject.numbers
 
 class Window(QtWidgets.QWidget):
 
