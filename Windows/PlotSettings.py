@@ -12,6 +12,8 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.GroupCounter = 0
         if len(plotOptions) == 0:
             self.showMessage("There is no data to show. Load data with File > Load Directory")
+        elif gridSize<1:
+            self.showMessage("No plot pane selected, Go to MainWindow and select pane type meant to show plot.")
         else:
             self.comboBox = []
             self.comboBox2 = []
@@ -23,16 +25,27 @@ class PlotSettings(QWidget, Ui_PlotSettings):
             for i in range(gridSize):
                 self.additionalSetup(plotOptions)
 
-        self.setGeometry(10,10,300, 800)
+        self.setGeometry(10,10,750, 600)
         self.eventListeners()
         self.setWindowTitle("Plot Settings")
+        self.gridLayout_2.addWidget(self.buttonBox, 4, 0, 1, 2)
+        self.refreshScreen()
         self.show()
+
+    def refreshScreen(self):
+       self.resize(self.width(), self.height()-1)
+       self.resize(self.width(), self.height()+1)
+       
+    def resizeEvent(self, event):
+        self.buttonBox.setGeometry(\
+        self.width() - 10, self.height() - 20, 200, 20)
+        self.gridLayoutWidget.setGeometry(10, 10, self.width()-10, self.height()-20)
 
     def showMessage(self, msg):
         label = QLabel(msg, self)
-        #groupLayout = QVBoxLayout(self)
-        self.verticalLayout.insertWidget(0, label)
+        self.gridLayout_2.addWidget(label)
         label.setWordWrap(True)
+        label.setObjectName("textLabel")
 
     def setEventHandler(self, handler):
         self.eventHandler = handler
@@ -42,16 +55,14 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.buttonBox.rejected.connect(self.reject)
 
     def additionalSetup(self, plotOptions=[None]):
-        #for i in range(gridSize-1):
         groupBox = QGroupBox("Plot"+str(self.GroupCounter), self)
         groupLayout = QVBoxLayout(self) #layout to put in group
-        self.comboBox.append(QComboBox(self))
-        for option in plotOptions:
-            self.comboBox[self.GroupCounter].addItem(option)
 
+        self.comboBox.append(QComboBox(self))
         self.comboBox2.append(QComboBox(self))
         self.comboBox3.append(QComboBox(self))
         self.comboBox4.append(QComboBox(self))
+
 
         #set options
         colorOptions = ['blue', 'red', 'green', 'cyan', 'magenta','yellow',
@@ -59,6 +70,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         markerOptions = ['*', 'p', 's', 'h', 'H', 'x', '+', 'D',
                          'd', '|', '_', 'o',  'v', '^']
         linestyleOptions = ['-', '--', ':', '-.']
+
         #define label
         self.markersize_label = QLabel("Marker Size: 1", self)
         self.markerOptions_label = QLabel("Marker type", self)
@@ -71,7 +83,8 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.slider_markersize.setMinimum(1)
         self.slider_markersize.setValue(3)
         self.slider_markersize.setSingleStep(1)
-
+        for option in plotOptions:
+            self.comboBox[self.GroupCounter].addItem(option) 
         for color in colorOptions:
             self.comboBox2[self.GroupCounter].addItem(color)
         for marker in markerOptions:
@@ -83,8 +96,6 @@ class PlotSettings(QWidget, Ui_PlotSettings):
                                                                         self))
         self.radioButton[self.GroupCounter*2].setChecked(True)
         self.radioButton.append(QRadioButton("Show Plot", self))
-
-        self.verticalLayout.insertWidget(self.GroupCounter, groupBox)
 
         groupLayout.addWidget(self.comboBox[self.GroupCounter])
         groupLayout.addWidget(self.colorOptions_label)
@@ -102,19 +113,29 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         groupLayout.addWidget(self.radioButton[(self.GroupCounter*2)+1])
 
         groupBox.setLayout(groupLayout)
+        
+        if self.GroupCounter == 0:
+            self.gridLayout_2.addWidget(groupBox,0,0)
+                                                     
+        if self.GroupCounter == 1:
+            self.gridLayout_2.addWidget(groupBox,1,0)
+                                                     
+        if self.GroupCounter == 2:
+            self.gridLayout_2.addWidget(groupBox,0,1)
+                                                     
+        if self.GroupCounter == 3:
+            self.gridLayout_2.addWidget(groupBox,1,1)
+
         self.GroupCounter += 1
+        self.refreshScreen()
 
     def markersizeEvent(self):
         self.slider_markersize.valueChanged.connect(self.sizeChange)
 
     def sizeChange(self):
         self.markersize_label.setText("Marker Size: " + \
-                                    str(self.slider_markersize.value()))
-
-    def resizeEvent(self, event):
-        self.verticalLayoutWidget.setGeometry(9,9, self.width()-18,
-                                                            self.height()-80)
-
+                                    str(self.slider_markersize.value())) 
+    
     def accept(self):
         ret = []
         for i in range(self.GroupCounter):
@@ -137,12 +158,9 @@ class PlotSettings(QWidget, Ui_PlotSettings):
 our class without using signals we can create function which we pass to o
 class and then we can execute some code after window closes'''
 
-def hand(x):
-    print("hand: ", x)
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    settings = PlotSettings("", 3)
+    settings = PlotSettings(["black", "red"], 3)
     settings.setEventHandler(hand)
     # we pass handler function to execute code after closing Window
     sys.exit(app.exec_())

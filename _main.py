@@ -3,9 +3,10 @@ import sys
 from PyQt5 import QtWidgets#.QtWidgets import QApplication
 from PyQt5.QtTest import QTest
 from PyQt5.QtCore import Qt
+from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from main import MainWindow
-from Parser import Parser
+from multiprocessing_parse import MultiprocessingParse
 from Canvas import Canvas
 from CanvasLayer import CanvasLayer
 from openGLContext import OpenGLContext
@@ -20,7 +21,7 @@ class _MainTester(unittest.TestCase):
 
     def initializeData(self, dataNumber):
         test_folder = testData[dataNumber]
-        self.rawVectorData, self.omf_header, self.odtData, self.stages = Parser.readFolder(test_folder)
+        self.rawVectorData, self.omf_header, self.odtData, self.stages = MultiprocessingParse.readFolder(test_folder)
 
     def test_initialGui(self):
         self.assertEqual(self.mainGui.windowTitle(), "ESE - Early Spins Enviroment")
@@ -67,9 +68,23 @@ class _MainTester(unittest.TestCase):
 
     def test_PlotSettingsNoData(self):
         self.mainGui.actionPlot.trigger()
-        self.assertEqual(self.mainGui.plotSettingsWindow.children()[0].children()[2].text(), "There is no data to show. Load data with File > Load Directory")
+        label = self.mainGui.plotSettingsWindow.findChild(QtWidgets.QLabel,"textLabel" )
+        self.assertEqual(label.text(), "There is no data to show. Load data with File > Load Directory")
         accept = self.mainGui.plotSettingsWindow.buttonBox.children()[1]
-        print(accept.text())
+        QTest.mouseClick(accept, Qt.LeftButton)
+
+    def test_PlotSettingsDataLoaded(self):
+        '''tests scenario when data is selected and plot settings clicked. There should be message that no plot has been selected'''
+        self.initializeData(0)
+        self.mainGui.rawVectorData = self.rawVectorData 
+        self.mainGui.omf_header = self.omf_header
+        self.mainGui.odt_data = self.odtData
+        self.mainGui.stages = self.stages
+
+        self.mainGui.actionPlot.trigger()
+        label = self.mainGui.plotSettingsWindow.findChild(QtWidgets.QLabel,"textLabel" )
+        self.assertEqual(label.text(), "No plot pane selected, Go to MainWindow and select pane type meant to show plot.")
+        accept = self.mainGui.plotSettingsWindow.buttonBox.children()[1]
         QTest.mouseClick(accept, Qt.LeftButton)
 
     def test_Widgets(self):
@@ -151,8 +166,10 @@ class _MainTester(unittest.TestCase):
         x.setValue(x.minimum())
         self.assertEqual(self.mainGui.playerWindow.gui.speedLabel.text(), "Animation Speed: 0.1")
         x.setValue(x.maximum())
-        self.assertEqual(self.mainGui.playerWindow.gui.speedLabel.text(), "Animation Speed: 5.0")
+        self.assertEqual(self.mainGui.playerWindow.gui.speedLabel.text(), "Animation Speed: 10.0")
 
+
+#checking how many plot options are there
 
 if __name__ == "__main__":
     unittest.main()

@@ -16,6 +16,7 @@ from Windows.vectorSettings import vectorSettings
 
 from WidgetHandler import WidgetHandler
 
+from Widgets.Canvas2Dupgraded import Canvas2Dupgraded
 from PopUp import PopUpWrapper
 from ColorPolicy import ColorPolicy
 
@@ -133,11 +134,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         counter = 0
         # to know how many plots are there to show correct plotMenu
         for _, pane in enumerate(self.panes):
-            if type(pane.widget) is Canvas:
+            if type(pane.widget) is Canvas or \
+                    type(pane.widget) is Canvas2Dupgraded \
+                    and pane.isVisible():
                 counter = counter + 1
+
+        #print(counter)
 
         self.plotSettingsWindow = PlotSettings(list(self.odt_data), counter)
         self.plotSettingsWindow.setEventHandler(self.plotSettingsReceiver)
+
 
     def plotSettingsReceiver(self, value):
         # [string whatToPlot, synchronizedPlot, instantPlot]
@@ -156,8 +162,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             param_dict = {}
             if type(pane.widget) is CanvasLayer:
                 data_dict = self.compose_dict('2dLayer')
-            # separated both classes, type is unique now
-            if type(pane.widget) is Canvas:
+            # separated both classes, type is uniqe now
+            if type(pane.widget) is Canvas \
+                    or type(pane.widget) is Canvas2Dupgraded:
                 picked_column = value[temp_val][0]
                 param_dict = {
                     'color': value[temp_val][3],
@@ -209,7 +216,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         elif value[1] == '2dLayer':
             layer_dict = self.compose_dict(value[1])
             self.panes[value[0]].addWidget(CanvasLayer())
-            self.refreshScreen()
+
+        if value[1] == "better2dPlot":
+            self.panes[value[0]].addWidget(Canvas2Dupgraded(self))
+
+        self.refreshScreen()
 
     def createNewSubWindow(self):
         """Helper function creates layout and button for widget selection"""

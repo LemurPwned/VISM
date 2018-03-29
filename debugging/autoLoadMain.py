@@ -12,11 +12,12 @@ from CanvasLayer import CanvasLayer
 
 class Debugger:
     def __init__(self):
-        self.path = "../data/firstData/"
+        self.path = "data/firstData/"
         self.mainGui = MainWindow()
 
     def loadData(self):
-        self.rawVectorData, self.omf_header, self.odtData, self.stages = Parser.readFolder(self.path)
+        self.rawVectorData, self.omf_header, self.odtData, \
+                self.stages = Parser.readFolder(self.path)
         self.mainGui.rawVectorData = self.rawVectorData
         self.mainGui.omf_header = self.omf_header
         self.mainGui.odt_data = self.odtData
@@ -37,7 +38,7 @@ class Debugger:
     def makeAllPanes2DPlot(self):
         for i in range(self.count):
             QTest.mouseClick(self.mainGui.panes[i].button, Qt.LeftButton)
-            self.mainGui.new.list.setCurrentRow(1)  # Plot2D
+            self.mainGui.new.list.setCurrentRow(3)  # Plot2D
             QTest.mouseClick(self.mainGui.new.addButton, Qt.LeftButton)
 
 if __name__ == "__main__":
