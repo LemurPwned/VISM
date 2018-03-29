@@ -1,5 +1,6 @@
 import numpy as np
 from pyqtgraph import PlotWidget
+import pyqtgraph as pg
 from AnimatedWidget import AnimatedWidget #can inherit but \
 # have to overwrite anyway
 
@@ -19,14 +20,15 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
             self.graph_data = np.random.random(self.iterations)
 
         def createPlotCanvas(self):
-            #print("working")
-            print(self.graph_data)
             self.plotWidget.setTitle(self.title)
             self.plotWidget.setGeometry(0, 0, 1000, 800)
             self.plotWidget.setXRange(0, self.iterations)
             self.plotWidget.setYRange(np.min(self.graph_data), np.max(self.graph_data))
             self.plotWidget.enableAutoRange('xy', False)
-            self.plotWidget.plot(self.graph_data[:self._i], pen="r", name="data1")
+            self.plotWidget.plot(self.graph_data[:self._i],
+                                 pen=pg.mkPen(color=self.options['color'][0],
+                                          width=self.options['marker_size']),
+                                          name="data1")
 
         def set_i(self, value):
             self._i = value
@@ -34,4 +36,6 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
                 self.plotWidget.clear()
             else:
                 self.plotWidget.plot(self.graph_data[:self._i],
-                                        pen="r", name="data1") #TODO
+                                     pen=pg.mkPen(color=self.options['color'][0],
+                                              width=self.options['marker_size']),
+                                              name="data1")
