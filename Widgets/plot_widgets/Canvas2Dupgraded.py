@@ -14,28 +14,20 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
             self.graph_data = self.odt_data[self.title].tolist()
             self.createPlotCanvas()
 
-        def testInitialConditions(self):
-            self.title = "Plot number 1"
-            self.iterations = 544
-            self.graph_data = np.random.random(self.iterations)
-
         def createPlotCanvas(self):
+            self.null_data = np.array([i for i in range(self.iterations)])
             self.plotWidget.setTitle(self.title)
             self.plotWidget.setGeometry(0, 0, 1000, 800)
             self.plotWidget.setXRange(0, self.iterations)
             self.plotWidget.setYRange(np.min(self.graph_data), np.max(self.graph_data))
             self.plotWidget.enableAutoRange('xy', False)
-            self.plotWidget.plot(self.graph_data[:self._i],
+            self.plotData = self.plotWidget.plot(self.graph_data[:self._i],
                                  pen=pg.mkPen(color=self.options['color'][0],
                                           width=self.options['marker_size']),
-                                          name="data1")
+                                          name="data1", clear=True)
 
         def set_i(self, value):
             self._i = value
-            if self._i == 0:
-                self.plotWidget.clear()
-            else:
-                self.plotWidget.plot(self.graph_data[:self._i],
-                                     pen=pg.mkPen(color=self.options['color'][0],
-                                              width=self.options['marker_size']),
-                                              name="data1")
+            self._i %= self.iterations
+            self.plotData.setData(self.null_data[:self._i], self.graph_data[:self._i])
+            pg.QtGui.QApplication.processEvents()
