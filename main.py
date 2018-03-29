@@ -158,7 +158,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[0].button.clicked.connect(\
             lambda: self.showChooseWidgetSettings(0))
 
-
     def deleteWidget1(self):
         self.panes[1].clearBox()
         self.panes[1].setUpDefaultBox()
@@ -176,14 +175,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[3].setUpDefaultBox()
         self.panes[3].button.clicked.connect( \
             lambda: self.showChooseWidgetSettings(3))
-
-    def createNewSubWindow(self):
-        """Helper function creates layout and button for widget selection"""
-        self.panes.append(WidgetHandler())
-        self.panes[-1].button = QtWidgets.QPushButton("Add Widget", self)
-        self.panes[-1].groupBox = QtWidgets.QGroupBox("Window " + \
-                                                      str(len(self.panes)), self)
-        self.panes[-1].layout = QtWidgets.QGridLayout()
 
     def makeGrid(self):
         """Initialize all subwindows"""

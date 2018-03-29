@@ -74,8 +74,6 @@ class WidgetHandler:
         if self._groupBox == None:
             raise ValueError('groupBox must be initialized')
 
-        # for child in self._groupBox.children():
-        #     child.deleteLater()
         for i in range(len(self._groupBox.children())):
             print("deleting children", self._groupBox.children()[-1])
             self._groupBox.children()[-1].deleteLater()
