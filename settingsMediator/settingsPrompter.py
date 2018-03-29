@@ -5,6 +5,8 @@ from Windows.PerfOptions import PerfOptions
 from Windows.vectorSettings import vectorSettings
 
 from settingsMediator.settingsLoader import SettingsInterface
+from settingsMediator.settingsLoader import DataObjectHolder
+
 """
 available settings:
 3D - 3D layers - both
@@ -12,7 +14,6 @@ BP - "Better 2d Plot"
 MPL - Matplotlib 2d Plot
 LP - Layer 2d Plot
 """
-from settingsMediator.settingsLoader import DataObjectHolder
 
 class SettingsPrompter(SettingsInterface):
     def __init__(self, settingsType):

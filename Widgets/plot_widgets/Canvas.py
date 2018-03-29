@@ -1,5 +1,5 @@
 import numpy as np
-from AbstractCanvas import AbstractCanvas
+from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
 
 
 class Canvas(AbstractCanvas):

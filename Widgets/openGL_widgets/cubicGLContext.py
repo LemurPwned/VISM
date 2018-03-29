@@ -6,7 +6,10 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.Qt import Qt
 
 from cython_modules.cython_parse import generate_cubes, getLayerOutline, genCubes
-from AbstractGLContext import AbstractGLContext
+
+from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
+
+
 from ColorPolicy import ColorPolicy
 from multiprocessing import Pool
 
@@ -36,7 +39,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
 
         # remap
         self.i = self.current_state
-        
+
         custom_color_policy = ColorPolicy()
         self.vectors_list = getLayerOutline(self.omf_header)
         # change drawing function

@@ -1,6 +1,9 @@
 from PyQt5.QtWidgets import QWidget
-from AbstractGLContext import AbstractGLContext
+
+from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
+
 from ColorPolicy import ColorPolicy
+
 from ctypes import c_void_p
 from PyQt5.Qt import Qt
 from PyQt5.QtCore import QPoint

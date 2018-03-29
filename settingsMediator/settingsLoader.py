@@ -1,10 +1,13 @@
 import json
-from Canvas import Canvas
-from CanvasLayer import CanvasLayer
+
+from Widgets.openGL_widgets.cubicGLContext import OpenGLContext
+from Widgets.openGL_widgets.vectorGLContex import ArrowGLContext
+from Widgets.plot_widgets.Canvas2Dupgraded import Canvas2Dupgraded
+
+from Widgets.plot_widgets.Canvas import Canvas
+from Widgets.plot_widgets.CanvasLayer import CanvasLayer
+
 from multiprocessing_parse import MultiprocessingParse
-from openGLContext import OpenGLContext
-from arrowGLContex import ArrowGLContext
-from Widgets.Canvas2Dupgraded import Canvas2Dupgraded
 
 
 class DataObjectHolder:
@@ -79,10 +82,8 @@ class SettingsInterface:
 
     def verify_class_parameters(self, class_name, doh):
         parameter_list = json.load(open('settingsMediator/spec.json'))
-        print(class_name.__name__)
         shared_dictionary = {}
         for param in parameter_list[class_name.__name__]:
             shared_dictionary[param] = self.request_parameter(doh, param)
 
-        print(shared_dictionary.keys())
         return shared_dictionary
