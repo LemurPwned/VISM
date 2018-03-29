@@ -32,7 +32,7 @@
      <x>0</x>
      <y>0</y>
      <width>863</width>
-     <height>26</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -48,6 +48,11 @@
     </property>
     <addaction name="actionPlot"/>
     <addaction name="actionAnimation"/>
+    <addaction name="separator"/>
+    <addaction name="actionWindow0Delete"/>
+    <addaction name="actionWindow1Delete"/>
+    <addaction name="actionWindow2Delete"/>
+    <addaction name="actionWindow3Delete"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -113,6 +118,26 @@
   <action name="actionVectors">
    <property name="text">
     <string>Vectors</string>
+   </property>
+  </action>
+  <action name="actionWindow0Delete">
+   <property name="text">
+    <string>Window0 delete</string>
+   </property>
+  </action>
+  <action name="actionWindow1Delete">
+   <property name="text">
+    <string>Window1 delete</string>
+   </property>
+  </action>
+  <action name="actionWindow2Delete">
+   <property name="text">
+    <string>Window2 delete</string>
+   </property>
+  </action>
+  <action name="actionWindow3Delete">
+   <property name="text">
+    <string>Window3 delete</string>
    </property>
   </action>
  </widget>

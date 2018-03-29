@@ -1,12 +1,18 @@
 from PyQt5 import QtWidgets
 
 class WidgetHandler:
-    def __init__(self):
-        self._groupBox = None
+    def __init__(self, number=0, parent=None):
+        self._number = number
+        self._parent = parent
         self._button = None
+        self._groupBox = None
         self._layout = None
         self._widget = None
         self._visible = True
+        self.groupBox = QtWidgets.QGroupBox( \
+            "Window " + str(self._number), self._parent)
+        self.layout = QtWidgets.QGridLayout()
+        self.setUpDefaultBox()
 
     @property
     def groupBox(self):
@@ -24,7 +30,6 @@ class WidgetHandler:
     def layout(self, value):
         self._layout = value
         self._groupBox.setLayout(self._layout)
-        self._layout.addWidget(self._button)
 
     @property
     def button(self):
@@ -34,6 +39,7 @@ class WidgetHandler:
     def button(self, value):
         self._button = value
         self._button.setFixedSize(150, 50)
+        self._layout.addWidget(self._button)
 
     @property
     def widget(self):
@@ -42,6 +48,9 @@ class WidgetHandler:
     @widget.setter
     def widget(self, value):
         self._widget = value
+
+    def deleteWidget(self):
+        del(self._widget)
 
     def hide(self):
         self._groupBox.hide()
@@ -55,13 +64,20 @@ class WidgetHandler:
         """Checks if Widget is visible"""
         return self._visible
 
+    def setUpDefaultBox(self):
+        self.button = QtWidgets.QPushButton("Add Widget", self._parent)
+        self._visible = True
+
 
     def clearBox(self):
         """Clears whole Widget and leaves just groupBox with layout"""
         if self._groupBox == None:
             raise ValueError('groupBox must be initialized')
 
+        # for child in self._groupBox.children():
+        #     child.deleteLater()
         for i in range(len(self._groupBox.children())):
+            print("deleting children", self._groupBox.children()[-1])
             self._groupBox.children()[-1].deleteLater()
 
     def addWidget(self, widget):

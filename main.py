@@ -48,6 +48,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         # EDIT SUBMENU
         self.actionPlot.triggered.connect(self.showPlotSettings)
         self.actionAnimation.triggered.connect(self.showAnimationSettings)
+        self.actionWindow0Delete.triggered.connect(self.deleteWidget0)
+        self.actionWindow1Delete.triggered.connect(self.deleteWidget1)
+        self.actionWindow2Delete.triggered.connect(self.deleteWidget2)
+        self.actionWindow3Delete.triggered.connect(self.deleteWidget3)
 
         # VIEW SUBMENU
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
@@ -125,9 +129,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         """Shows window to change animations settings"""
         self.playerWindow = PlayerWindow(self)
         self.properPanesIterators = []
-        for pane in self.panes:
+        self.refreshIterators()
+
+    def refreshIterators(self):
+        for i, pane in enumerate(self.panes):
             if pane.isVisible() and pane.widget:
-                self.properPanesIterators.append(pane.widget.set_i)
+                self.properPanesIterators.insert(i, pane.widget.set_i)
 
         self.playerWindow.setIterators(self.properPanesIterators)
 
@@ -224,14 +231,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         self.refreshScreen()
 
-    def createNewSubWindow(self):
-        """Helper function creates layout and button for widget selection"""
-        self.panes.append(WidgetHandler())
-        self.panes[-1].button = QtWidgets.QPushButton("Add Widget", self)
-        self.panes[-1].groupBox = QtWidgets.QGroupBox("Window " + \
-                                                      str(len(self.panes)), self)
-        self.panes[-1].layout = QtWidgets.QGridLayout()
-
     def optionsParser(self):
         try:
             selectedOptionsSet = self.optionsMenu.getOptions()
@@ -246,10 +245,37 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             selectedVectorSet = self.defaultVectorSet
         return selectedVectorSet
 
+    def deleteWidget0(self):
+        self.panes[0].clearBox()
+        self.panes[0].setUpDefaultBox()
+        self.panes[0].button.clicked.connect(\
+            lambda: self.showChooseWidgetSettings(0))
+
+
+    def deleteWidget1(self):
+        self.panes[1].clearBox()
+        self.panes[1].setUpDefaultBox()
+        self.panes[1].button.clicked.connect( \
+            lambda: self.showChooseWidgetSettings(1))
+
+    def deleteWidget2(self):
+        self.panes[2].clearBox()
+        self.panes[2].setUpDefaultBox()
+        self.panes[2].button.clicked.connect( \
+            lambda: self.showChooseWidgetSettings(2))
+
+    def deleteWidget3(self):
+        self.panes[3].clearBox()
+        self.panes[3].setUpDefaultBox()
+        self.panes[3].button.clicked.connect( \
+            lambda: self.showChooseWidgetSettings(3))
+
+
     def makeGrid(self):
         """Initialize all subwindows"""
         for i in range(4):
-            self.createNewSubWindow()
+            self.panes.append(WidgetHandler(i, self))
+
         self.gridLayout.addWidget(self.panes[0].groupBox, 0, 0)
         self.gridLayout.addWidget(self.panes[1].groupBox, 0, 1)
         self.gridLayout.addWidget(self.panes[2].groupBox, 1, 0)
@@ -260,18 +286,27 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[1].hide()
         self.panes[2].hide()
         self.panes[3].hide()
+        self.actionWindow1Delete.setDisabled(True)
+        self.actionWindow2Delete.setDisabled(True)
+        self.actionWindow3Delete.setDisabled(True)
 
     def make2WindowsGrid(self):
         """Splits window in 2 panes."""
         self.panes[1].show()
         self.panes[2].hide()
         self.panes[3].hide()
+        self.actionWindow1Delete.setDisabled(False)
+        self.actionWindow2Delete.setDisabled(True)
+        self.actionWindow3Delete.setDisabled(True)
 
     def make4WindowsGrid(self):
         """Splits window in 4 panes."""
         self.panes[1].show()
         self.panes[2].show()
         self.panes[3].show()
+        self.actionWindow1Delete.setDisabled(False)
+        self.actionWindow2Delete.setDisabled(False)
+        self.actionWindow3Delete.setDisabled(False)
 
     def compose_dict(self, widgetType, column=None, current_state=0):
         if widgetType == 'OpenGL':
