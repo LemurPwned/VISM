@@ -1,4 +1,6 @@
 import sys
+from buildVerifier import BuildVerifier
+
 from PyQt5 import QtWidgets
 from Windows.MainWindowTemplate import Ui_MainWindow
 
@@ -293,6 +295,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
 
 if __name__ == "__main__":
+    # verify build
+    # execute makefile
+    bv = BuildVerifier()
+    
     app = QtWidgets.QApplication(sys.argv)
 
     main_window = MainWindow()
