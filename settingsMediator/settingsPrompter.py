@@ -19,10 +19,10 @@ class SettingsPrompter(SettingsInterface):
         super().__init__()
         # settings_dict associates settings windows with classType
         self.settings_dict = {
-                                "CUBIC": PerfOptions,
-                                "ARROW": PerfOptions,
-                                "BP": PlotSettings,
-                                "MLP": PlotSettings,
+                                "CUBIC": (PerfOptions, 'omf_header'),
+                                "ARROW": (PerfOptions, 'omf_header'),
+                                "BP": (PlotSettings, 'odt_data'),
+                                "MLP": (PlotSettings, 'odt_data'),
                                 "LP": None,
                                 }
         self.required_params = {
@@ -58,9 +58,14 @@ class SettingsPrompter(SettingsInterface):
 
     def prompt_settings_window(self, DataObjectHolder=None):
         # call the settings menu first
-        p = DataObjectHolder.retrieveDataObject('odt_data')
-        p = list(p)
-        return self.settings_dict[self.settingsType](p,1)
+        if type(self.settings_dict[self.settingsType]) == tuple:
+            if type(self.settings_dict[self.settingsType][1]) is bool:
+                return self.settings_dict[self.settingsType][0](self.settings_dict\
+                                                        [self.settingsType][1])
+            return self.settings_dict[self.settingsType][0](DataObjectHolder.\
+                    retrieveDataObject(self.settings_dict[self.settingsType][1]))
+        else:
+            return self.settings_dict[self.settingsType]()
         # print(options)
         # if options is None:
         #     pass

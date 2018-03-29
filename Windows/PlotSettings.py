@@ -6,7 +6,7 @@ from Windows.PlotSettingsTemplate import Ui_PlotSettings
 
 
 class PlotSettings(QWidget, Ui_PlotSettings):
-    def __init__(self, plotOptions=[None], gridSize=2):
+    def __init__(self, plotOptions=[None], gridSize=1):
         super(PlotSettings, self).__init__()
         self.setupUi(self)
         self.GroupCounter = 0
@@ -29,13 +29,14 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.eventListeners()
         self.setWindowTitle("Plot Settings")
         self.gridLayout_2.addWidget(self.buttonBox, 4, 0, 1, 2)
+        self.ret = []
         self.refreshScreen()
         self.show()
 
     def refreshScreen(self):
        self.resize(self.width(), self.height()-1)
        self.resize(self.width(), self.height()+1)
-       
+
     def resizeEvent(self, event):
         self.buttonBox.setGeometry(\
         self.width() - 10, self.height() - 20, 200, 20)
@@ -84,7 +85,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.slider_markersize.setValue(3)
         self.slider_markersize.setSingleStep(1)
         for option in plotOptions:
-            self.comboBox[self.GroupCounter].addItem(option) 
+            self.comboBox[self.GroupCounter].addItem(option)
         for color in colorOptions:
             self.comboBox2[self.GroupCounter].addItem(color)
         for marker in markerOptions:
@@ -113,16 +114,16 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         groupLayout.addWidget(self.radioButton[(self.GroupCounter*2)+1])
 
         groupBox.setLayout(groupLayout)
-        
+
         if self.GroupCounter == 0:
             self.gridLayout_2.addWidget(groupBox,0,0)
-                                                     
+
         if self.GroupCounter == 1:
             self.gridLayout_2.addWidget(groupBox,1,0)
-                                                     
+
         if self.GroupCounter == 2:
             self.gridLayout_2.addWidget(groupBox,0,1)
-                                                     
+
         if self.GroupCounter == 3:
             self.gridLayout_2.addWidget(groupBox,1,1)
 
@@ -134,12 +135,11 @@ class PlotSettings(QWidget, Ui_PlotSettings):
 
     def sizeChange(self):
         self.markersize_label.setText("Marker Size: " + \
-                                    str(self.slider_markersize.value())) 
-    
+                                    str(self.slider_markersize.value()))
+
     def accept(self):
-        ret = []
         for i in range(self.GroupCounter):
-            ret.append([self.comboBox[i].currentText(),
+            self.ret.append([self.comboBox[i].currentText(),
                         self.radioButton[i*2].isChecked(),
                         self.radioButton[(i*2)+1].isChecked(),
                         self.comboBox2[i].currentText(),
@@ -147,12 +147,14 @@ class PlotSettings(QWidget, Ui_PlotSettings):
                         self.comboBox4[i].currentText(),
                         self.slider_markersize.value()])
 
-        self.eventHandler(ret)
+        self.eventHandler(self.ret)
         self.close()
 
     def reject(self):
         self.close()
 
+    def getOptions(self):
+        return self.ret
 
 '''maybe it's stupid but it works if, we want to return some value from
 our class without using signals we can create function which we pass to o
