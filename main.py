@@ -60,7 +60,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.resize(self.width() - 1, self.height())
         self.resize(self.width() + 1, self.height())
 
-
     def resizeEvent(self, event):
         """What happens when window is resized"""
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height() - 25)
@@ -138,6 +137,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         on to the DataObjectHolder object that sends it to the right final object
         """
         # fix that later in settings where it can be changed or not
+        geom = (self.panes[self.current_pane].groupBox.minimumWidth(),
+                self.panes[self.current_pane].groupBox.minimumHeight())
+        self.doh.setDataObject(geom, 'geom')
         self.doh.setDataObject(0, 'current_state')
         self.doh.setDataObject(options, 'options')
         self.panes[self.current_pane].addWidget(\

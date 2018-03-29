@@ -15,11 +15,13 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
             self.createPlotCanvas()
 
         def createPlotCanvas(self):
+            print(self.geom)
             self.null_data = np.array([i for i in range(self.iterations)])
             self.plotWidget.setTitle(self.title)
-            self.plotWidget.setGeometry(0, 0, 1000, 800)
+            self.plotWidget.setGeometry(10, 10, self.geom[0]-20, self.geom[1]-20)
             self.plotWidget.setXRange(0, self.iterations)
-            self.plotWidget.setYRange(np.min(self.graph_data), np.max(self.graph_data))
+            self.plotWidget.setYRange(np.min(self.graph_data), np.max(self.graph_data),
+                                      padding=0.1)
             self.plotWidget.enableAutoRange('xy', False)
             self.plotData = self.plotWidget.plot(self.graph_data[:self._i],
                                  pen=pg.mkPen(color=self.options['color'][0],
