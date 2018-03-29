@@ -13,10 +13,10 @@ class PlayerWindow(QtCore.QObject):
 
         self.checkForErrors()
 
+
         # Setup the worker object and the worker_thread.
         self.worker = WorkerObject().getInstance()
-        if WorkerObject().getNumbers() == 2: #funny, fact of watching changes value,\
-            #like in Heisenberg rule :P
+        if WorkerObject().getNumbers() == 2:
             self.worker_thread = QtCore.QThread()
             self.worker.moveToThread(self.worker_thread)
             self.worker_thread.start()
