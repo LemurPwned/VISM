@@ -4,12 +4,14 @@ from AnimatedWidget import AnimatedWidget #can inherit but \
 # have to overwrite anyway
 
 class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
-        def __init__(self, parent=None):
+        def __init__(self, parent=None, data_dict=None):
             super(Canvas2Dupgraded, self).__init__()
+            self.shareData(**data_dict)
             self.plotWidget = PlotWidget(self)
-            self._i = 0
-            # self.testInitialConditions()
-            # self.createPlotCanvas()
+            self._i = self.current_state
+            self.title = self.options['column']
+            self.graph_data = self.odt_data[self.title].tolist()
+            self.createPlotCanvas()
 
         def testInitialConditions(self):
             self.title = "Plot number 1"
@@ -18,6 +20,7 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
 
         def createPlotCanvas(self):
             #print("working")
+            print(self.graph_data)
             self.plotWidget.setTitle(self.title)
             self.plotWidget.setGeometry(0, 0, 1000, 800)
             self.plotWidget.setXRange(0, self.iterations)
@@ -30,7 +33,8 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
             if self._i == 0:
                 self.plotWidget.clear()
             else:
-                self.plotWidget.plot(self.graph_data[:self._i], pen="r", name="data1") #TODO
+                self.plotWidget.plot(self.graph_data[:self._i],
+                                        pen="r", name="data1") #TODO
 
 
         def setPlotParameters(self, param_dict):

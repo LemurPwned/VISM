@@ -21,7 +21,7 @@ class ChooseWidget(QtWidgets.QWidget):
         if self.list.currentItem().text() == "3D structure Widget - cubes":
             self.handler([self.number, "3D_CUBIC"])
         elif self.list.currentItem().text() == "2D plot Widget":
-            self.handler([self.number, "2D_BP"])
+            self.handler([self.number, "2D_MPL"])
         if self.list.currentItem().text() == "2D layer plot Widget":
             self.handler([self.number, "2D_LAYER"])
         if self.list.currentItem().text() == "Better 2D plot Widget":

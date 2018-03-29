@@ -3,31 +3,28 @@ from AbstractCanvas import AbstractCanvas
 
 
 class Canvas(AbstractCanvas):
-    def __init__(self):
+    def __init__(self, data_dict):
         super().__init__(self)
+        self.shareData(**data_dict)
         self._MINIMUM_PARAMS_ = ['i', 'iterations', 'graph_data', 'title']
+        self.i = self.current_state
+        self.title = self.options['column']
+        self.graph_data = self.odt_data[self.title].tolist()
+        self.createPlotCanvas()
 
     def createPlotCanvas(self):
-        if self.parameter_check():
-            msg = "Cannot create canvas"
-            raise ValueError(msg)
-
-        p_dict = {
-            'color': 'green',
-            'line_style': 'dashed',
-            'marker': '*',
-            'marker_color': 'blue',
-            'marker_size': 3
-        }
         self.canvas_type = 'panel'
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
         self.null_data = [x for x in range(self.iterations)]
         a_handler = self.plot_axis.plot(self.null_data,
-                                        self.graph_data[0:self.i] + self.null_data[self.i:],
-                                        color=p_dict['color'], linestyle=p_dict['line_style'],
-                                        marker=p_dict['marker'], markerfacecolor=p_dict['marker_color'],
-                                        markersize=p_dict['marker_size'])[0]
+                                        self.graph_data[0:self.i] + \
+                                        self.null_data[self.i:],
+                                        color=self.options['color'],
+                                        linestyle=self.options['line_style'],
+                                        marker=self.options['marker'],
+                                        markerfacecolor=self.options['marker_color'],
+                                        markersize=self.options['marker_size'])[0]
         self.plot_axis.hpl = a_handler
         self.plot_axis.axis([0, self.iterations, np.min(self.graph_data),
                              np.max(self.graph_data)])

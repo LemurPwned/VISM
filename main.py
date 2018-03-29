@@ -196,11 +196,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         """Data receiver for choosingWidget action"""
 
         self.panes[value[0]].clearBox()
-
-        self.sp = SettingsPrompter(value[1].split('_')[1])
+        # deduce object type based on passed string
+        self.type, self.subtype = value[1].split('_')
+        print(value[1])
+        self.sp = SettingsPrompter(self.subtype)
         self.window = self.sp.prompt_settings_window(self.doh)
-        self.window.setEventHandler(self.plotSettingsReceiver)
+        self.window.setEventHandler(self.generalReceiver)
+        self.current_pane = value[0]
         self.refreshScreen()
+
+    def generalReceiver(self, options):
+        print(options)
+        # fix that later in settings where it can be changed or not
+        self.doh.setDataObject(0, 'current_state')
+        self.doh.setDataObject(options, 'options')
+        self.panes[self.current_pane].addWidget(\
+                self.sp.invoke_object_build_chain(self.type,
+                                                    self.subtype, self.doh))
 
     def createNewSubWindow(self):
         """Helper function creates layout and button for widget selection"""
@@ -209,20 +221,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[-1].groupBox = QtWidgets.QGroupBox("Window " + \
                                                       str(len(self.panes)), self)
         self.panes[-1].layout = QtWidgets.QGridLayout()
-
-    def optionsParser(self):
-        try:
-            selectedOptionsSet = self.optionsMenu.getOptions()
-        except AttributeError as ae:
-            selectedOptionsSet = self.defaultOptionSet
-        return selectedOptionsSet
-
-    def vectorParser(self):
-        try:
-            selectedVectorSet = self.vectorMenu.getOptions()
-        except AttributeError as ae:
-            selectedVectorSet = self.defaultVectorSet
-        return selectedVectorSet
 
     def makeGrid(self):
         """Initialize all subwindows"""

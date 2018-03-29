@@ -13,8 +13,8 @@ import math as mt
 class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     def __init__(self, parent=None):
         super(AbstractGLContext, self).__init__(parent)
-        self._MINIMUM_PARAMS_ = ['i', 'iterations', 'v1',
-                                 'color_list', 'omf_header']
+        self._MINIMUM_PARAMS_ = ['i', 'iterations', 'color_list',
+                                'omf_header']
 
         self.lastPos = QPoint()
         self.setFocusPolicy(Qt.StrongFocus)  # needed if keyboard to be active
@@ -23,13 +23,14 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.position = [10, 10, -50]  # xyz initial
         self.drawing_function = None
         self.function_select = 'fast'
-        
+
     def receivedOptions(self):
         print(self.opt)
         self.color_scheme = self.opt[0]
         self.averaging = int(self.opt[1])
         self.layer = self.opt[2]
         self.scale = int(self.opt[3])
+        self.vector_set = self.opt[4]
 
     def initial_transformation(self):
         """

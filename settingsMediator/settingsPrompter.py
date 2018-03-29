@@ -9,7 +9,7 @@ from settingsMediator.settingsLoader import SettingsInterface
 available settings:
 3D - 3D layers - both
 BP - "Better 2d Plot"
-MP - Matplotlib 2d Plot
+MPL - Matplotlib 2d Plot
 LP - Layer 2d Plot
 """
 from settingsMediator.settingsLoader import DataObjectHolder
@@ -22,7 +22,7 @@ class SettingsPrompter(SettingsInterface):
                                 "CUBIC": (PerfOptions, 'omf_header'),
                                 "ARROW": (PerfOptions, 'omf_header'),
                                 "BP": (PlotSettings, 'odt_data'),
-                                "MLP": (PlotSettings, 'odt_data'),
+                                "MPL": (PlotSettings, 'odt_data'),
                                 "LP": None,
                                 }
         self.required_params = {
@@ -59,21 +59,7 @@ class SettingsPrompter(SettingsInterface):
     def prompt_settings_window(self, DataObjectHolder=None):
         # call the settings menu first
         if type(self.settings_dict[self.settingsType]) == tuple:
-            if type(self.settings_dict[self.settingsType][1]) is bool:
-                return self.settings_dict[self.settingsType][0](self.settings_dict\
-                                                        [self.settingsType][1])
             return self.settings_dict[self.settingsType][0](DataObjectHolder.\
                     retrieveDataObject(self.settings_dict[self.settingsType][1]))
         else:
             return self.settings_dict[self.settingsType]()
-        # print(options)
-        # if options is None:
-        #     pass
-        # else:
-        #     pass
-            # compose parameter passing
-        # retrieve options from menu
-        # pass it to the required class, keep the handler
-
-    def loadDefaults(self):
-        pass
