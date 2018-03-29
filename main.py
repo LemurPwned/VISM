@@ -41,10 +41,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         # EDIT SUBMENU
         self.actionAnimation.triggered.connect(self.showAnimationSettings)
-        self.actionWindow0Delete.triggered.connect(self.deleteWidget0)
-        self.actionWindow1Delete.triggered.connect(self.deleteWidget1)
-        self.actionWindow2Delete.triggered.connect(self.deleteWidget2)
-        self.actionWindow3Delete.triggered.connect(self.deleteWidget3)
+        self.actionWindow0Delete.triggered.connect(lambda: self.deleteWidget(0))
+        self.actionWindow1Delete.triggered.connect(lambda: self.deleteWidget(1))
+        self.actionWindow2Delete.triggered.connect(lambda: self.deleteWidget(2))
+        self.actionWindow3Delete.triggered.connect(lambda: self.deleteWidget(3))
 
         # VIEW SUBMENU
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
@@ -152,29 +152,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                                     self.subtype, self.doh))
         self.refreshScreen()
 
-    def deleteWidget0(self):
-        self.panes[0].clearBox()
-        self.panes[0].setUpDefaultBox()
-        self.panes[0].button.clicked.connect(\
-            lambda: self.showChooseWidgetSettings(0))
-
-    def deleteWidget1(self):
-        self.panes[1].clearBox()
-        self.panes[1].setUpDefaultBox()
-        self.panes[1].button.clicked.connect( \
-            lambda: self.showChooseWidgetSettings(1))
-
-    def deleteWidget2(self):
-        self.panes[2].clearBox()
-        self.panes[2].setUpDefaultBox()
-        self.panes[2].button.clicked.connect( \
-            lambda: self.showChooseWidgetSettings(2))
-
-    def deleteWidget3(self):
-        self.panes[3].clearBox()
-        self.panes[3].setUpDefaultBox()
-        self.panes[3].button.clicked.connect( \
-            lambda: self.showChooseWidgetSettings(3))
+    def deleteWidget(self, number):
+        self.panes[number].clearBox()
+        self.panes[number].setUpDefaultBox()
+        self.panes[number].button.clicked.connect(\
+            lambda: self.showChooseWidgetSettings(number))
 
     def makeGrid(self):
         """Initialize all subwindows"""
