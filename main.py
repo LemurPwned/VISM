@@ -4,23 +4,14 @@ from buildVerifier import BuildVerifier
 from PyQt5 import QtWidgets
 from Windows.MainWindowTemplate import Ui_MainWindow
 
-from Canvas import Canvas
-from CanvasLayer import CanvasLayer
 from multiprocessing_parse import MultiprocessingParse
-from openGLContext import OpenGLContext
-from arrowGLContex import ArrowGLContext
 
 from Windows.ChooseWidget import ChooseWidget
-from Windows.PlotSettings import PlotSettings
 from Windows.PlayerWindow import PlayerWindow
-from Windows.PerfOptions import PerfOptions
-from Windows.vectorSettings import vectorSettings
 
 from WidgetHandler import WidgetHandler
 
-from Widgets.Canvas2Dupgraded import Canvas2Dupgraded
 from PopUp import PopUpWrapper
-from ColorPolicy import ColorPolicy
 
 from settingsMediator.settingsPrompter import SettingsPrompter
 from settingsMediator.settingsLoader import DataObjectHolder
@@ -41,8 +32,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.makeGrid()  # create grid (4 Widgets) and stores them in arrays
         self.make1WindowGrid()  # shows default 1 widget Window
         self.events()  # create event listeners
-        # self.defaultOptionSet = ['Standard', 5, 3, 1]
-        # self.defaultVectorSet = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
         self._LOADED_FLAG_ = False
 
     def events(self):
@@ -137,7 +126,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[value[0]].clearBox()
         # deduce object type based on passed string
         self.type, self.subtype = value[1].split('_')
-        print(value[1])
         self.sp = SettingsPrompter(self.subtype)
         self.window = self.sp.prompt_settings_window(self.doh)
         self.window.setEventHandler(self.generalReceiver)
@@ -145,7 +133,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.refreshScreen()
 
     def generalReceiver(self, options):
-        print(options)
+        """
+        this allows to receive general type option structure that is passed
+        on to the DataObjectHolder object that sends it to the right final object
+        """
         # fix that later in settings where it can be changed or not
         self.doh.setDataObject(0, 'current_state')
         self.doh.setDataObject(options, 'options')

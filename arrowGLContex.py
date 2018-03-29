@@ -47,6 +47,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
                                                            self.vector_set)
 
         if self.function_select == 'fast':
+            # doesnt work yet
             self.drawing_function = self.vbo_arrow_draw
             # transform into interleaved vbo format
             self.color_vectors = custom_color_policy.apply_vbo_format(self.color_vectors,
@@ -56,9 +57,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
                                                              normalized)
             self.buffer_len = len(self.color_vectors[0])
             self.vectors_list = np.array(self.vectors_list)
-            for x in self.vectors_list:
-                for y in x:
-                    print(y)
+
             self.color_vectors = np.array(self.color_vectors)
             print(self.color_vectors[0], self.color_vectors.any())
             self.vertices = 1600/2
