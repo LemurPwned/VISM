@@ -23,7 +23,7 @@ class ChooseWidget(QtWidgets.QWidget):
         elif self.list.currentItem().text() == "2D plot Widget":
             self.handler([self.number, "2D_MPL"])
         if self.list.currentItem().text() == "2D layer plot Widget":
-            self.handler([self.number, "2D_LAYER"])
+            self.handler([self.number, "2D_MPL"])
         if self.list.currentItem().text() == "Better 2D plot Widget":
             self.handler([self.number, "2D_BP"])
 

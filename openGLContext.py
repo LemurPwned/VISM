@@ -34,12 +34,15 @@ class OpenGLContext(AbstractGLContext, QWidget):
         yc = int(self.omf_header['ynodes'])
         zc = int(self.omf_header['znodes'])
 
+        # remap
+        self.i = self.current_state
+        
         custom_color_policy = ColorPolicy()
         self.vectors_list = getLayerOutline(self.omf_header)
         # change drawing function
-        self.color_list, self.vectors_list, _ = \
+        self.color_vectors, self.vectors_list, _ = \
                     custom_color_policy.standard_procedure(self.vectors_list,
-                                                           self.color_list,
+                                                           self.color_vectors,
                                                            self.iterations,
                                                            self.averaging,
                                                            xc, yc, zc,
@@ -49,12 +52,12 @@ class OpenGLContext(AbstractGLContext, QWidget):
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw
             # if vbo drawing is selected, do additional processing
-            self.color_list = custom_color_policy.apply_vbo_format(self.color_list)
+            self.color_vectors = custom_color_policy.apply_vbo_format(self.color_vectors)
             self.vectors_list, self.vertices = genCubes(self.vectors_list,
                                                                     self.spacer)
             print(np.array(self.vectors_list).shape, self.vertices)
-            print(np.array(self.color_list).shape)
-            self.buffer_len = len(self.color_list[0])
+            print(np.array(self.color_vectors).shape)
+            self.buffer_len = len(self.color_vectors[0])
         elif self.function_select == 'slow':
             self.drawing_function = self.slower_cubic_draw
 
@@ -68,7 +71,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
         # color buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                        np.array(self.color_list[self.i],
+                        np.array(self.color_vectors[self.i],
                         dtype='float32').flatten(),
                         gl.GL_DYNAMIC_DRAW)
         return buffers
@@ -81,7 +84,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
             # later move to set_i function so that reference changes
             # does not cause buffer rebinding
             gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
-                               np.array(self.color_list[self.i],
+                               np.array(self.color_vectors[self.i],
                                dtype='float32').flatten())
         self.draw_vbo()
 
@@ -101,7 +104,7 @@ class OpenGLContext(AbstractGLContext, QWidget):
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
     def slower_cubic_draw(self):
-        for vector, color in zip(self.vectors_list, self.color_list[self.i]):
+        for vector, color in zip(self.vectors_list, self.color_vectors[self.i]):
             gl.glColor3f(*color)
             self.draw_cube(vector)
 

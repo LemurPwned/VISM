@@ -7,11 +7,6 @@ from arrowGLContex import ArrowGLContext
 from Widgets.Canvas2Dupgraded import Canvas2Dupgraded
 
 
-class SettingsReader:
-    def __init__(self):
-        pass
-
-
 class DataObjectHolder:
     def __init__(self):
         self.contains_lookup = []
@@ -41,6 +36,7 @@ class DataObjectHolder:
         for dataObj, alias in zip(dataObjList, aliasList):
             self.setDataObject(dataObj, alias)
 
+
 class SettingsInterface:
     def __init__(self):
         self.associated_widgets = {
@@ -52,7 +48,7 @@ class SettingsInterface:
                                         "2D": {
                                                 "MPL": Canvas,
                                                 "BP" : Canvas2Dupgraded,
-                                                "LAYER": CanvasLayer
+                                                "LP": CanvasLayer
                                                 }
                                     }
 

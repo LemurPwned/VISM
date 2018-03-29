@@ -35,17 +35,3 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
             else:
                 self.plotWidget.plot(self.graph_data[:self._i],
                                         pen="r", name="data1") #TODO
-
-
-        def setPlotParameters(self, param_dict):
-            if param_dict != {}:
-                self.p_dict = param_dict
-            else:
-                # set default if not specified
-                self.p_dict = {
-                    'color': 'green',
-                    'line_style': 'dashed',
-                    'marker': '*',
-                    'marker_color': 'blue',
-                    'marker_size': 3
-                }

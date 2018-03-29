@@ -41,8 +41,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.makeGrid()  # create grid (4 Widgets) and stores them in arrays
         self.make1WindowGrid()  # shows default 1 widget Window
         self.events()  # create event listeners
-        self.defaultOptionSet = ['Standard', 5, 3, 1]
-        self.defaultVectorSet = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        # self.defaultOptionSet = ['Standard', 5, 3, 1]
+        # self.defaultVectorSet = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
         self._LOADED_FLAG_ = False
 
     def events(self):
@@ -57,10 +57,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
         self.action2_Windows_Grid.triggered.connect(self.make2WindowsGrid)
         self.action4_Windows_Grid.triggered.connect(self.make4WindowsGrid)
-
-        # OPTIONS SUBMENU
-
-        # VECTORS SUBMENU
 
         # GRID BUTTONS
         # lambda required to pass parameter - which button was pressed
@@ -126,63 +122,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         self.playerWindow.setIterators(self.properPanesIterators)
 
-    def showPlotSettings(self):
-        """Spawns window for plot settings"""
-        counter = 0
-        # to know how many plots are there to show correct plotMenu
-        for _, pane in enumerate(self.panes):
-            if type(pane.widget) is Canvas or \
-                    type(pane.widget) is Canvas2Dupgraded \
-                    and pane.isVisible():
-                counter = counter + 1
-
-        self.odt_data = self.doh.retrieveDataObject('odt_data')
-        self.plotSettingsWindow = PlotSettings(list(self.odt_data), counter)
-        self.plotSettingsWindow.setEventHandler(self.plotSettingsReceiver)
-
-
-    def plotSettingsReceiver(self, value):
-        # [string whatToPlot, synchronizedPlot, instantPlot]
-        if not value:
-            msg = "There is no data to display on the plot. Continue?"
-            PopUpWrapper("No data", msg, None, QtWidgets.QMessageBox.Yes,
-                            QtWidgets.QMessageBox.No, None, quit)
-            return
-
-        temp_val = 0  # fast_fix rethink it later
-
-        for i, pane in enumerate(self.panes):
-            if not pane.isVisible():
-                continue
-            data_dict = {}
-            param_dict = {}
-            if type(pane.widget) is CanvasLayer:
-                data_dict = self.compose_dict('2dLayer')
-            # separated both classes, type is uniqe now
-            if type(pane.widget) is Canvas \
-                    or type(pane.widget) is Canvas2Dupgraded:
-                picked_column = value[temp_val][0]
-                param_dict = {
-                    'color': value[temp_val][3],
-                    'line_style': value[temp_val][5],
-                    'marker': value[temp_val][4],
-                    'marker_size': value[temp_val][6],
-                    'marker_color': value[temp_val][3]
-                }
-                # check if we want synchronizedPlot
-                counter = 0
-                if value[temp_val][2]:
-                    counter = self.stages
-                data_dict = self.compose_dict('2dPlot', current_state=counter,
-                                              column=picked_column)
-                temp_val = temp_val + 1
-
-            if data_dict != {}:
-                pane.widget.shareData(**data_dict)
-                pane.widget.createPlotCanvas()
-
-        self.refreshScreen()
-
     def showChooseWidgetSettings(self, number):
         """Spawns Window for choosing widget for this pane"""
         if not self._LOADED_FLAG_:
@@ -213,6 +152,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[self.current_pane].addWidget(\
                 self.sp.invoke_object_build_chain(self.type,
                                                     self.subtype, self.doh))
+        self.refreshScreen()
 
     def createNewSubWindow(self):
         """Helper function creates layout and button for widget selection"""

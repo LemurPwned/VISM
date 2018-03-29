@@ -25,12 +25,12 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.function_select = 'fast'
 
     def receivedOptions(self):
-        print(self.opt)
-        self.color_scheme = self.opt[0]
-        self.averaging = int(self.opt[1])
-        self.layer = self.opt[2]
-        self.scale = int(self.opt[3])
-        self.vector_set = self.opt[4]
+        print(self.options)
+        self.color_scheme = self.options[0]
+        self.averaging = int(self.options[1])
+        self.layer = self.options[2]
+        self.scale = int(self.options[3])
+        self.vector_set = self.options[4]
 
     def initial_transformation(self):
         """

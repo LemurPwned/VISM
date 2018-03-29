@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
                 QVBoxLayout, QRadioButton, QLabel, QSlider
 from Windows.PerfOptionsTemplate import Ui_Dialog
-
+import re
 
 class PerfOptions(QWidget, Ui_Dialog):
     def __init__(self, layer_size=None):
@@ -96,12 +96,12 @@ class PerfOptions(QWidget, Ui_Dialog):
     def accept(self):
         try:
             self.options = self.optionsVerifier()
+            self.eventHandler(self.options)
             self.close()
         except ValueError as ve:
             PopUpWrapper("Invalid vector format", str(ve), None,
                             QtWidgets.QMessageBox.Yes,
                             QtWidgets.QMessageBox.No, None, quit)
-
     def reject(self):
         self.close()
 

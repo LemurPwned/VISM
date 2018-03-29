@@ -20,7 +20,7 @@ class SettingsPrompter(SettingsInterface):
         # settings_dict associates settings windows with classType
         self.settings_dict = {
                                 "CUBIC": (PerfOptions, 'omf_header'),
-                                "ARROW": (PerfOptions, 'omf_header'),
+                                "VECTOR": (PerfOptions, 'omf_header'),
                                 "BP": (PlotSettings, 'odt_data'),
                                 "MPL": (PlotSettings, 'odt_data'),
                                 "LP": None,
