@@ -1,8 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
                 QVBoxLayout, QRadioButton, QLabel, QSlider
-from PyQt5 import QtCore, Qt
-from PyQt5.QtCore import pyqtSlot
+from PyQt5 import QtCore
 from Windows.PlotSettingsTemplate import Ui_PlotSettings
 
 

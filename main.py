@@ -182,22 +182,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                               column=picked_column)
                 temp_val = temp_val + 1
 
-
-
-
             if data_dict != {}:
                 pane.widget.shareData(**data_dict)
                 pane.widget.createPlotCanvas()
 
         self.refreshScreen()
-
-    @pyqtSlot(int)
-    def onIteratorChange(self, value):
-        for pane in self.panes:
-            if pane.isVisible() and pane.widget:
-                value %= self.stages
-                pane.widget.set_i(value)
-
 
     def showChooseWidgetSettings(self, number):
         """Spawns Window for choosing widget for this pane"""
