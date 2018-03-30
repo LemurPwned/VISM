@@ -148,12 +148,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.refreshScreen()
 
     def propagate_resize(self):
+        print("Called")
         for i in range(4):
             try:
                 self.panes[i].widget.on_resize_geometry_reset()
-            except AttributeError:
-                pass
+            except AttributeError as ae:
+                print("AttributeError {}".format(ae))
         self.refreshScreen()
+
     def createNewSubWindow(self):
         """Helper function creates layout and button for widget selection"""
         self.panes.append(WidgetHandler())
@@ -173,18 +175,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def make1WindowGrid(self):
         """Splits window in 1 pane."""
+        self.propagate_resize()
         self.panes[1].hide()
         self.panes[2].hide()
         self.panes[3].hide()
 
     def make2WindowsGrid(self):
         """Splits window in 2 panes."""
+        self.propagate_resize()
         self.panes[1].show()
         self.panes[2].hide()
         self.panes[3].hide()
 
     def make4WindowsGrid(self):
         """Splits window in 4 panes."""
+        self.propagate_resize()
         self.panes[1].show()
         self.panes[2].show()
         self.panes[3].show()
