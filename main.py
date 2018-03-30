@@ -147,6 +147,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                                     self.subtype, self.doh))
         self.refreshScreen()
 
+    def propagate_resize(self):
+        for i in range(4):
+            try:
+                self.panes[i].widget.on_resize_geometry_reset()
+            except AttributeError:
+                pass
+        self.refreshScreen()
     def createNewSubWindow(self):
         """Helper function creates layout and button for widget selection"""
         self.panes.append(WidgetHandler())
