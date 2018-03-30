@@ -145,18 +145,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                                     self.subtype, self.doh))
         self.refreshScreen()
 
-    def propagate_resize(self):		
-        for i in range(4):		
-            if self.panes[i] is not None:		
-                try:		
-                    geom = (self.panes[i].groupBox.width(),		
-                            self.panes[i].groupBox.height())		
-                    self.panes[i].widget.on_resize_geometry_reset(geom)		
-                except AttributeError as ae:		
-                    print("AttributeError {}".format(ae))		
-       self.refreshScreen()
-        
-        
+    def propagate_resize(self):
+        for i in range(4):
+            if self.panes[i] is not None:
+                try:
+                    geom = (self.panes[i].groupBox.width(),
+                            self.panes[i].groupBox.height())
+                    self.panes[i].widget.on_resize_geometry_reset(geom)
+                except AttributeError as ae:
+                    print("AttributeError {}".format(ae))
+        self.refreshScreen()
+
     def makeGrid(self):
         """Initialize all subwindows"""
         for i in range(4):
