@@ -156,9 +156,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.refreshScreen()
 
     def deleteWidget(self, number):
-        # delete iterator from iterator list to avoid crash
+
         if self.playerWindow:
-            #maybe prompt here?
+            PopUpWrapper("Alert",
+                "You may loose calculation!", \
+                "If you proceed animation will be restarted and widget \
+                will be deleted!", \
+                QtWidgets.QMessageBox.Yes, \
+                QtWidgets.QMessageBox.No, \
+                None, \
+                self.refreshScreen())
             self.playerWindow.forceWorkerReset()
             self.playerWindow.closeMe()
 
