@@ -1,6 +1,5 @@
 import numpy as np
 from pyqtgraph import PlotWidget
-import pyqtgraph as pg
 from AnimatedWidget import AnimatedWidget #can inherit but \
 # have to overwrite anyway
 
@@ -14,29 +13,25 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
             self.graph_data = self.odt_data[self.title].tolist()
             self.createPlotCanvas()
 
-        def createPlotCanvas(self):
-            print(self.geom)
-            self.null_data = np.array([i for i in range(self.iterations)])
-            self.plotWidget.setTitle(self.title)
-            self.plotWidget.setGeometry(0, 0, self.geom[0]-60, self.geom[1]-60)
-            self.plotWidget.setXRange(0, self.iterations)
-            self.plotWidget.setYRange(np.min(self.graph_data), np.max(self.graph_data),
-                                      padding=0.1)
-            self.plotWidget.enableAutoRange('xy', False)
-            self.plotData = self.plotWidget.plot(self.graph_data[:self._i],
-                                 pen=pg.mkPen(color=self.options['color'][0],
-                                          width=self.options['marker_size']),
-                                          name="data1", clear=True)
+        def testInitialConditions(self):
+            self.title = "Plot number 1"
+            self.iterations = 544
+            self.graph_data = np.random.random(self.iterations)
 
-        def on_resize_geometry_reset(self, geom):
-            """
-            when another widget is promoted, this window must resize too
-            this means resetting the graph unfortunately
-            """
-            self.plotWidget.setGeometry(0, 0, geom[0]-60, geom[1]-60)
+        def createPlotCanvas(self):
+            #print("working")
+            print(self.graph_data)
+            self.plotWidget.setTitle(self.title)
+            self.plotWidget.setGeometry(0, 0, 1000, 800)
+            self.plotWidget.setXRange(0, self.iterations)
+            self.plotWidget.setYRange(np.min(self.graph_data), np.max(self.graph_data))
+            self.plotWidget.enableAutoRange('xy', False)
+            self.plotWidget.plot(self.graph_data[:self._i], pen="r", name="data1")
 
         def set_i(self, value):
             self._i = value
-            self._i %= self.iterations
-            self.plotData.setData(self.null_data[:self._i], self.graph_data[:self._i])
-            pg.QtGui.QApplication.processEvents()
+            if self._i == 0:
+                self.plotWidget.clear()
+            else:
+                self.plotWidget.plot(self.graph_data[:self._i],
+                                        pen="r", name="data1") #TODO

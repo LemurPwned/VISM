@@ -60,6 +60,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.resize(self.width() - 1, self.height())
         self.resize(self.width() + 1, self.height())
 
+
     def resizeEvent(self, event):
         """What happens when window is resized"""
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height() - 25)
@@ -137,26 +138,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         on to the DataObjectHolder object that sends it to the right final object
         """
         # fix that later in settings where it can be changed or not
-        geom = (self.panes[self.current_pane].groupBox.width(),
-                self.panes[self.current_pane].groupBox.height())
-        self.doh.setDataObject(geom, 'geom')
         self.doh.setDataObject(0, 'current_state')
         self.doh.setDataObject(options, 'options')
         self.panes[self.current_pane].addWidget(\
                 self.sp.invoke_object_build_chain(self.type,
                                                     self.subtype, self.doh))
-        self.propagate_resize()
-        self.refreshScreen()
-
-    def propagate_resize(self):
-        for i in range(4):
-            if self.panes[i] is not None:
-                try:
-                    geom = (self.panes[i].groupBox.width(),
-                            self.panes[i].groupBox.height())
-                    self.panes[i].widget.on_resize_geometry_reset(geom)
-                except AttributeError as ae:
-                    print("AttributeError {}".format(ae))
         self.refreshScreen()
 
     def createNewSubWindow(self):
@@ -181,21 +167,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[1].hide()
         self.panes[2].hide()
         self.panes[3].hide()
-        self.propagate_resize()
 
     def make2WindowsGrid(self):
         """Splits window in 2 panes."""
         self.panes[1].show()
         self.panes[2].hide()
         self.panes[3].hide()
-        self.propagate_resize()
 
     def make4WindowsGrid(self):
         """Splits window in 4 panes."""
         self.panes[1].show()
         self.panes[2].show()
         self.panes[3].show()
-        self.propagate_resize()
 
 if __name__ == "__main__":
     # verify build
