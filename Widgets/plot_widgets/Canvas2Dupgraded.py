@@ -18,8 +18,7 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
             print(self.geom)
             self.null_data = np.array([i for i in range(self.iterations)])
             self.plotWidget.setTitle(self.title)
-            # self.plotWidget.setGeometry(0, 0, self.geom[0]-60, self.geom[1]-60)
-            self.on_resize_geometry_reset()
+            self.plotWidget.setGeometry(0, 0, self.geom[0]-60, self.geom[1]-60)
             self.plotWidget.setXRange(0, self.iterations)
             self.plotWidget.setYRange(np.min(self.graph_data), np.max(self.graph_data),
                                       padding=0.1)
@@ -29,11 +28,12 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
                                           width=self.options['marker_size']),
                                           name="data1", clear=True)
 
-        def on_resize_geometry_reset(self):
+        def on_resize_geometry_reset(self, geom):
             """
             when another widget is promoted, this window must resize too
+            this means resetting the graph unfortunately
             """
-            self.plotWidget.setGeometry(0, 0, self.geom[0]-60, self.geom[1]-60)
+            self.plotWidget.setGeometry(0, 0, geom[0]-60, geom[1]-60)
 
         def set_i(self, value):
             self._i = value

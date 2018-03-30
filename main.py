@@ -145,15 +145,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[self.current_pane].addWidget(\
                 self.sp.invoke_object_build_chain(self.type,
                                                     self.subtype, self.doh))
+        self.propagate_resize()
         self.refreshScreen()
 
     def propagate_resize(self):
-        print("Called")
         for i in range(4):
-            try:
-                self.panes[i].widget.on_resize_geometry_reset()
-            except AttributeError as ae:
-                print("AttributeError {}".format(ae))
+            if self.panes[i] is not None:
+                try:
+                    geom = (self.panes[i].groupBox.width(),
+                            self.panes[i].groupBox.height())
+                    self.panes[i].widget.on_resize_geometry_reset(geom)
+                except AttributeError as ae:
+                    print("AttributeError {}".format(ae))
         self.refreshScreen()
 
     def createNewSubWindow(self):
@@ -175,24 +178,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def make1WindowGrid(self):
         """Splits window in 1 pane."""
-        self.propagate_resize()
         self.panes[1].hide()
         self.panes[2].hide()
         self.panes[3].hide()
+        self.propagate_resize()
 
     def make2WindowsGrid(self):
         """Splits window in 2 panes."""
-        self.propagate_resize()
         self.panes[1].show()
         self.panes[2].hide()
         self.panes[3].hide()
+        self.propagate_resize()
 
     def make4WindowsGrid(self):
         """Splits window in 4 panes."""
-        self.propagate_resize()
         self.panes[1].show()
         self.panes[2].show()
         self.panes[3].show()
+        self.propagate_resize()
 
 if __name__ == "__main__":
     # verify build
