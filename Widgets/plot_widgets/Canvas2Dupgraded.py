@@ -18,7 +18,7 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
             print(self.geom)
             self.null_data = np.array([i for i in range(self.iterations)])
             self.plotWidget.setTitle(self.title)
-            self.plotWidget.setGeometry(10, 10, self.geom[0]-20, self.geom[1]-20)
+            self.plotWidget.setGeometry(0, 0, self.geom[0]-60, self.geom[1]-60)
             self.plotWidget.setXRange(0, self.iterations)
             self.plotWidget.setYRange(np.min(self.graph_data), np.max(self.graph_data),
                                       padding=0.1)
