@@ -138,15 +138,27 @@ class PlotSettings(QWidget, Ui_PlotSettings):
                                     str(self.slider_markersize.value()))
 
     def accept(self):
-        self.ret = {
-                        'column': self.comboBox[0].currentText(),
-                        'synchronizedPlot': self.radioButton[0].isChecked(),
-                        'color': self.comboBox2[0].currentText(),
-                        'line_style': self.comboBox4[0].currentText(),
-                        'marker': self.comboBox3[0].currentText(),
+        i = 0
+        param_dict = {
+                        'column': self.comboBox[i].currentText(),
+                        'synchronizedPlot': self.radioButton[i*2].isChecked(),
+                        'color': self.comboBox2[i].currentText(),
+                        'line_style': self.comboBox4[i].currentText(),
+                        'marker': self.comboBox3[i].currentText(),
                         'marker_color': 'blue',
                         'marker_size': self.slider_markersize.value()
                      }
+        self.ret = param_dict
+
+        # for i in range(self.GroupCounter):
+        #     self.ret.append([self.comboBox[i].currentText(),
+        #                 self.radioButton[i*2].isChecked(),
+        #                 self.radioButton[(i*2)+1].isChecked(),
+        #                 self.comboBox2[i].currentText(),
+        #                 self.comboBox3[i].currentText(),
+        #                 self.comboBox4[i].currentText(),
+        #                 self.slider_markersize.value()])
+
         self.eventHandler(self.ret)
         self.close()
 
