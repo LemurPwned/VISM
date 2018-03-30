@@ -29,6 +29,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         # keeps all widgets in list of library object that handles Widgets
         self.panes = []
+        self.playerWindow = None
         self.makeGrid()  # create grid (4 Widgets) and stores them in arrays
         self.make1WindowGrid()  # shows default 1 widget Window
         self.events()  # create event listeners
@@ -41,6 +42,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         # EDIT SUBMENU
         self.actionAnimation.triggered.connect(self.showAnimationSettings)
+        self.actionWindow0Delete.triggered.connect(lambda: self.deleteWidget(0))
+        self.actionWindow1Delete.triggered.connect(lambda: self.deleteWidget(1))
+        self.actionWindow2Delete.triggered.connect(lambda: self.deleteWidget(2))
+        self.actionWindow3Delete.triggered.connect(lambda: self.deleteWidget(3))
 
         # VIEW SUBMENU
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
@@ -104,10 +109,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def showAnimationSettings(self):
         """Shows window to change animations settings"""
         self.playerWindow = PlayerWindow(self)
+        self.refreshIterators()
+
+    def refreshIterators(self, toDelete=None):
         self.properPanesIterators = []
-        for pane in self.panes:
+        for i, pane in enumerate(self.panes):
             if pane.isVisible() and pane.widget:
-                self.properPanesIterators.append(pane.widget.set_i)
+                if i == toDelete:
+                    continue
+                self.properPanesIterators.insert(i, pane.widget.set_i)
 
         self.playerWindow.setIterators(self.properPanesIterators)
 
@@ -145,6 +155,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                                     self.subtype, self.doh))
         self.refreshScreen()
 
+    def deleteWidget(self, number):
+        # delete iterator from iterator list to avoid crash
+        if self.playerWindow:
+            #maybe prompt here?
+            self.playerWindow.forceWorkerReset()
+            self.playerWindow.closeMe()
+
+        # self.refreshIterators(number)
+        self.panes[number].clearBox()
+        self.panes[number].setUpDefaultBox()
+        self.panes[number].button.clicked.connect(\
+            lambda: self.showChooseWidgetSettings(number))
+
     def propagate_resize(self):
         for i in range(4):
             if self.panes[i] is not None:
@@ -159,7 +182,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def makeGrid(self):
         """Initialize all subwindows"""
         for i in range(4):
-            self.createNewSubWindow()
+            self.panes.append(WidgetHandler(i, self))
+
         self.gridLayout.addWidget(self.panes[0].groupBox, 0, 0)
         self.gridLayout.addWidget(self.panes[1].groupBox, 0, 1)
         self.gridLayout.addWidget(self.panes[2].groupBox, 1, 0)
@@ -170,18 +194,27 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[1].hide()
         self.panes[2].hide()
         self.panes[3].hide()
+        self.actionWindow1Delete.setDisabled(True)
+        self.actionWindow2Delete.setDisabled(True)
+        self.actionWindow3Delete.setDisabled(True)
 
     def make2WindowsGrid(self):
         """Splits window in 2 panes."""
         self.panes[1].show()
         self.panes[2].hide()
         self.panes[3].hide()
+        self.actionWindow1Delete.setDisabled(False)
+        self.actionWindow2Delete.setDisabled(True)
+        self.actionWindow3Delete.setDisabled(True)
 
     def make4WindowsGrid(self):
         """Splits window in 4 panes."""
         self.panes[1].show()
         self.panes[2].show()
         self.panes[3].show()
+        self.actionWindow1Delete.setDisabled(False)
+        self.actionWindow2Delete.setDisabled(False)
+        self.actionWindow3Delete.setDisabled(False)
 
 if __name__ == "__main__":
     # verify build

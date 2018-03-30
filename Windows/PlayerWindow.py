@@ -103,6 +103,9 @@ class PlayerWindow(QtCore.QObject):
                                     str(self.gui.slider_speed.value()/10))
         self.worker.setSpeed(self.gui.slider_speed.value())
 
+    def closeMe(self):
+        self.gui.close()
+
 #SINGLETON
 
 #reset while playing weird stuff
