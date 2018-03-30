@@ -159,14 +159,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                     print("AttributeError {}".format(ae))
         self.refreshScreen()
 
-    def createNewSubWindow(self):
-        """Helper function creates layout and button for widget selection"""
-        self.panes.append(WidgetHandler())
-        self.panes[-1].button = QtWidgets.QPushButton("Add Widget", self)
-        self.panes[-1].groupBox = QtWidgets.QGroupBox("Window " + \
-                                                      str(len(self.panes)), self)
-        self.panes[-1].layout = QtWidgets.QGridLayout()
-
     def makeGrid(self):
         """Initialize all subwindows"""
         for i in range(4):
