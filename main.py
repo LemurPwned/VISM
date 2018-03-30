@@ -148,11 +148,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         on to the DataObjectHolder object that sends it to the right final object
         """
         # fix that later in settings where it can be changed or not
+        geom = (self.panes[self.current_pane].groupBox.width(),
+                self.panes[self.current_pane].groupBox.height())
+        self.doh.setDataObject(geom, 'geom')
         self.doh.setDataObject(0, 'current_state')
         self.doh.setDataObject(options, 'options')
         self.panes[self.current_pane].addWidget(\
                 self.sp.invoke_object_build_chain(self.type,
                                                     self.subtype, self.doh))
+        # that fixes the problem of having not all slots filled in groupBox
+        self.propagate_resize()
         self.refreshScreen()
 
     def deleteWidget(self, number):
@@ -162,7 +167,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.playerWindow.forceWorkerReset()
             self.playerWindow.closeMe()
 
-        # self.refreshIterators(number)
         self.panes[number].clearBox()
         self.panes[number].setUpDefaultBox()
         self.panes[number].button.clicked.connect(\
@@ -175,8 +179,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                     geom = (self.panes[i].groupBox.width(),
                             self.panes[i].groupBox.height())
                     self.panes[i].widget.on_resize_geometry_reset(geom)
-                except AttributeError as ae:
-                    print("AttributeError {}".format(ae))
+                except (AttributeError, RuntimeError) as ae:
+                    print("AttributeError/RuntimeError {}".format(ae))
         self.refreshScreen()
 
     def makeGrid(self):
@@ -194,6 +198,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[1].hide()
         self.panes[2].hide()
         self.panes[3].hide()
+
+        self.propagate_resize()
+
         self.actionWindow1Delete.setDisabled(True)
         self.actionWindow2Delete.setDisabled(True)
         self.actionWindow3Delete.setDisabled(True)
@@ -203,6 +210,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[1].show()
         self.panes[2].hide()
         self.panes[3].hide()
+
+        self.propagate_resize()
+
         self.actionWindow1Delete.setDisabled(False)
         self.actionWindow2Delete.setDisabled(True)
         self.actionWindow3Delete.setDisabled(True)
@@ -212,6 +222,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[1].show()
         self.panes[2].show()
         self.panes[3].show()
+
+        self.propagate_resize()
+
         self.actionWindow1Delete.setDisabled(False)
         self.actionWindow2Delete.setDisabled(False)
         self.actionWindow3Delete.setDisabled(False)
