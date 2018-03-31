@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog, QProgressBar, QLabel, QHBoxLayout, QApplication
+from PyQt5.QtWidgets import QDialog, QProgressBar, QLabel, QVBoxLayout, QApplication
 from PyQt5 import QtCore
 import sys
 import time
@@ -13,7 +13,6 @@ class ProgressBar_Dialog(QDialog, QtCore.QObject):
     def init_ui(self):
         # Creating a label
         self.progressLabel = QLabel('Initialization...', self)
-        self.progressLabel.setFixedWidth(100)
 
         # Creating a progress bar and setting the value limits
         self.progressBar = QProgressBar(self)
@@ -21,15 +20,16 @@ class ProgressBar_Dialog(QDialog, QtCore.QObject):
         self.progressBar.setMinimum(0)
 
         # Creating a Horizontal Layout to add all the widgets
-        self.hboxLayout = QHBoxLayout(self)
+        self.vboxLayout = QVBoxLayout(self)
 
         # Adding the widgets
-        self.hboxLayout.addWidget(self.progressLabel)
-        self.hboxLayout.addWidget(self.progressBar)
+        self.vboxLayout.addWidget(self.progressBar)
+        self.vboxLayout.addWidget(self.progressLabel)
+
 
         # Setting the hBoxLayout as the main layout
-        self.setLayout(self.hboxLayout)
-        self.setWindowTitle('Dialog with Progressbar')
+        self.setLayout(self.vboxLayout)
+        self.setWindowTitle('Action Progress...')
 
         self.show()
 
@@ -38,7 +38,6 @@ class ProgressBar_Dialog(QDialog, QtCore.QObject):
             # self.timer.stop()
             # time.sleep(self.breakPoints[self.i][1])
             if self.counter < self.breakPoints[self.i][1] / 50:
-                print("here:", self.counter, self.breakPoints[self.i][1])
                 self.i -= 1
                 self.counter += 1
                 return
@@ -78,37 +77,20 @@ class ProgressBar_Dialog(QDialog, QtCore.QObject):
 
 
     def close(self):
+        self.counter = 1000
+        self.i = 99
         self.timer.stop()
-
-# class Worker(QtCore.QObject):
-#     def __init__(self, parent=None):
-#         super(self.__class__, self).__init__()
-#         self.progress = 0
-#         self.stillDumbing = True
-#         self.parent = parent
-#         print("init")
-#
-#     def work(self):
-#         if self.parent == None:
-#             raise EnvironmentError("No parent provided!")
-#         while True:
-#             for i in range(101): #to get too 100%
-#                 if not self.stillDumbing:
-#                     break
-#                 self.parent.changeProgress(i)
-#                 print("progress to: ", i)
-#                 time.sleep(0.1)
 
 if __name__=="__main__":
     app = QApplication(sys.argv)
 
     main_window = ProgressBar_Dialog()
     main_window.show()
-    main_window.smartDumbProgress({25: ["test25", 1000],\
-                                   50:["test50", 1000],\
-                                   75:["test75", 1000]})
-    # time.sleep(5)
+    main_window.smartDumbProgress({25: ["task25...", 1000],\
+                                   50:["task50...", 1000],\
+                                   75:["task75...", 1000]})
+    time.sleep(2)
     # main_window.close()
-    # main_window.close()
+
 
     sys.exit(app.exec_())
