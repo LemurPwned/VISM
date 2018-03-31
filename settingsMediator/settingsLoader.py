@@ -76,7 +76,8 @@ class SettingsInterface:
                                             obj_str, '.pyc'))
             else:
                 # if not, then fetch .py file
-                module = imp.load_source(obj_str + 'py', module_path)
+                module = imp.load_source(obj_str, os.path.join(module_path,
+                                                    obj_str + '.py'))
 
             if module is None:
                 raise ValueError("Module not found: module is None")
