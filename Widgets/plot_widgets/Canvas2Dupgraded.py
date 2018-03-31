@@ -15,7 +15,6 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
             self.createPlotCanvas()
 
         def createPlotCanvas(self):
-            print(self.geom)
             self.null_data = np.array([i for i in range(self.iterations)])
             self.plotWidget.setTitle(self.title)
             self.plotWidget.setGeometry(0, 0, self.geom[0]-60, self.geom[1]-60)

@@ -17,7 +17,7 @@ import math as mt
 from multiprocessing import Pool
 
 
-class ArrowGLContext(AbstractGLContext, QWidget):
+class VectorGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
         super().__init__()
         self.shareData(**data_dict)

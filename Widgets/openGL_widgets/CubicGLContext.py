@@ -14,7 +14,7 @@ from ColorPolicy import ColorPolicy
 from multiprocessing import Pool
 
 
-class OpenGLContext(AbstractGLContext, QWidget):
+class CubicGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
         super().__init__()
         self.drawing_function = None

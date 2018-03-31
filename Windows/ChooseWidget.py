@@ -28,8 +28,7 @@ class ChooseWidget(QtWidgets.QWidget):
             for widget_key in self.json_file_handler.keys():
                 if self.list.currentItem().text() == \
                                     self.json_file_handler[widget_key]['alias']:
-                    self.handler([self.number,
-                                  self.json_file_handler[widget_key]['alias']])
+                    self.handler([self.number, widget_key])
                     self.close()
                     return
         else:

@@ -1,8 +1,0 @@
-{
-  "OpenGLContext": ["iterations", "current_state", "options",
-                    "omf_header","color_vectors"],
-  "ArrowGLContext": ["iterations", "current_state", "options",
-                     "omf_header","color_vectors"],
-  "Canvas": ["iterations", "current_state", "options", "odt_data"],
-  "Canvas2Dupgraded": ["iterations", "current_state", "options", "odt_data", "geom"]
-}

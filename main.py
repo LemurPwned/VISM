@@ -20,6 +20,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.doh = DataObjectHolder()
+        self.sp = SettingsPrompter(None)
 
         self.odt_data = ""
         self.setupUi(self)
@@ -134,12 +135,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         """Data receiver for choosingWidget action"""
 
         self.panes[value[0]].clearBox()
+
+        # value[0] stores widget number
+        # value[1] stores widget name
+        self.sp.swap_settings_type(value[1])
         # deduce object type based on passed string
-        self.type, self.subtype = value[1].split('_')
-        self.sp = SettingsPrompter(self.subtype)
-        self.window = self.sp.prompt_settings_window(self.doh)
+        self.window = self.sp.\
+            get_settings_window_constructor_from_file(self.doh)
+        print(type(self.window))
+        # all widgets get generalReceiver handler
         self.window.setEventHandler(self.generalReceiver)
-        self.current_pane = value[0]
+
+        self.current_pane, self.current_widget_alias = value
         self.refreshScreen()
 
     def generalReceiver(self, options):
@@ -150,14 +157,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         # fix that later in settings where it can be changed or not
         geom = (self.panes[self.current_pane].groupBox.width(),
                 self.panes[self.current_pane].groupBox.height())
-                
+
         self.doh.setDataObject(geom, 'geom')
         self.doh.setDataObject(0, 'current_state')
         self.doh.setDataObject(options, 'options')
 
         self.panes[self.current_pane].addWidget(\
-                self.sp.invoke_object_build_chain(self.type,
-                                                    self.subtype, self.doh))
+                self.sp.build_chain(self.current_widget_alias, self.doh))
+        print(type(self.panes[self.current_pane]))
         # that fixes the problem of having not all slots filled in groupBox
         self.propagate_resize()
         self.refreshScreen()
