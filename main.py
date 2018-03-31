@@ -150,9 +150,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         # fix that later in settings where it can be changed or not
         geom = (self.panes[self.current_pane].groupBox.width(),
                 self.panes[self.current_pane].groupBox.height())
+                
         self.doh.setDataObject(geom, 'geom')
         self.doh.setDataObject(0, 'current_state')
         self.doh.setDataObject(options, 'options')
+
         self.panes[self.current_pane].addWidget(\
                 self.sp.invoke_object_build_chain(self.type,
                                                     self.subtype, self.doh))
