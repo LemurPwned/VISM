@@ -43,14 +43,19 @@ class CubicGLContext(AbstractGLContext, QWidget):
         custom_color_policy = ColorPolicy()
         self.vectors_list = getLayerOutline(self.omf_header)
         # change drawing function
-        self.color_vectors, self.vectors_list, _ = \
+
+        self.color_vectors, self.vectors_list, decimate = \
                     custom_color_policy.standard_procedure(self.vectors_list,
                                                            self.color_vectors,
                                                            self.iterations,
                                                            self.averaging,
                                                            xc, yc, zc,
                                                            self.layer,
-                                                           self.vector_set)
+                                                           self.vector_set,
+                                                           self.decimate)
+        if decimate is not None:
+            # this is arbitrary
+            self.spacer *= decimate*3
 
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw
