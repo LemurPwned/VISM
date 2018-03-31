@@ -1,0 +1,34 @@
+{
+    "CubicGLContext": {
+                      "alias": "3D_CUBIC",
+                      "object": "CubicGLContext",
+                      "object_type": "3d_object",
+                      "settings": ["PerfOptions", "omf_header"],
+                      "required": ["iterations", "current_state", "options",
+                                   "omf_header","color_vectors"]
+                      },
+    "VectorGLContext": {
+                      "alias": "3D_VECTOR",
+                      "object": "VectorGLContext",
+                      "object_type": "3d_object",
+                      "settings": ["PerfOptions", "omf_header"],
+                      "required": ["iterations", "current_state", "options",
+                                   "omf_header","color_vectors"]
+                      },
+    "Canvas":         {
+                        "alias": "2D_MPL",
+                        "object": "Canvas",
+                        "object_type": "2d_object",
+                        "settings": ["PlotSettings", "odt_data"],
+                        "required": ["iterations", "current_state", "options",
+                                     "odt_data"]
+                        },
+    "Canvas2Dupgraded": {
+                        "alias": "2D_BP",
+                        "object": "Canvas2Dupgraded",
+                        "object_type": "2d_object",
+                        "settings": ["PlotSettings", "odt_data"],
+                        "required": ["iterations", "current_state", "options",
+                                     "odt_data", "geom"]
+                      }
+}
