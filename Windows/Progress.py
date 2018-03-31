@@ -35,8 +35,6 @@ class ProgressBar_Dialog(QDialog, QtCore.QObject):
 
     def changeProgress(self):
         if self.i in self.breakPoints.keys():
-            # self.timer.stop()
-            # time.sleep(self.breakPoints[self.i][1])
             if self.counter < self.breakPoints[self.i][1] / 50:
                 self.i -= 1
                 self.counter += 1
@@ -89,8 +87,4 @@ if __name__=="__main__":
     main_window.smartDumbProgress({25: ["task25...", 1000],\
                                    50:["task50...", 1000],\
                                    75:["task75...", 1000]})
-    time.sleep(2)
-    # main_window.close()
-
-
     sys.exit(app.exec_())
