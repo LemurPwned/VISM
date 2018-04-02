@@ -19,28 +19,24 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.options = None
 
     def disableDecimate(self):
-        print("DISABLING DECIMATE")
-        self.checkBox_2.setChecked(False)
         self.horizontalSlider_4.setEnabled(False)
-
         # enable averaging
-        # self.checkBox_3.setChecked(True)
         self.horizontalSlider.setEnabled(True)
 
         self.decimate = 1
+        self.averaging = self.horizontalSlider.value()
         self.label.setText("Averaging: {}".format(self.averaging))
+        self.label_8.setText("Decimate: {}".format(self.decimate))
 
     def disableAveraging(self):
-        print("DISABLING Averaging")
-        self.checkBox_3.setChecked(False)
         self.horizontalSlider.setEnabled(False)
-
         # enable decimate
-        # self.checkBox_2.setChecked(True)
         self.horizontalSlider_4.setEnabled(True)
 
         self.averaging = 1
+        self.decimate = self.horizontalSlider_4.value()
         self.label_8.setText("Decimate: {}".format(self.decimate))
+        self.label.setText("Averaging: {}".format(self.averaging))
 
     def basicOptions(self):
 
