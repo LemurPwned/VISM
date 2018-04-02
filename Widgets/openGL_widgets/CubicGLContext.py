@@ -23,7 +23,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
         self.vectors_list = None
         self.vertices = 0
 
-        self.modified_animation = True
         self.buffers = None
         self.buffer_len = 0
 

@@ -88,12 +88,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             return 0
         else:
             try:
-                x = PopUpWrapper("Loading", "Data is currently loading",
+                x = PopUpWrapper("Loading", "Data will be loaded",
                         more="Please Wait...")
                 self.doh.passListObject(('color_vectors', 'omf_header',
                                         'odt_data', 'iterations'),
                                         *MultiprocessingParse.readFolder(directory))
-                print(self.doh.contains_lookup)
                 x.close()
             except ValueError as e:
                 msg = "Invalid directory: {}. \
@@ -142,7 +141,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         # deduce object type based on passed string
         self.window = self.sp.\
             get_settings_window_constructor_from_file(self.doh)
-        print(type(self.window))
         # all widgets get generalReceiver handler
         self.window.setEventHandler(self.generalReceiver)
 
@@ -164,7 +162,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         self.panes[self.current_pane].addWidget(\
                 self.sp.build_chain(self.current_widget_alias, self.doh))
-        print(type(self.panes[self.current_pane]))
         # that fixes the problem of having not all slots filled in groupBox
         self.propagate_resize()
         self.refreshScreen()
@@ -172,7 +169,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def deleteWidget(self, number):
         # delete iterator from iterator list to avoid crash
         if self.playerWindow:
-            #maybe prompt here?
+            # maybe prompt here?
             self.playerWindow.forceWorkerReset()
             self.playerWindow.closeMe()
 
@@ -189,7 +186,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             self.panes[i].groupBox.height())
                     self.panes[i].widget.on_resize_geometry_reset(geom)
                 except (AttributeError, RuntimeError) as ae:
-                    print("AttributeError/RuntimeError {}".format(ae))
+                    pass
+                    # allow this, should implement this function but pass anyway
+                    #  print("AttributeError/RuntimeError {}".format(ae))
         self.refreshScreen()
 
     def makeGrid(self):
