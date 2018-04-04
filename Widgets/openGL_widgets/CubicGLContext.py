@@ -14,7 +14,7 @@ from ColorPolicy import ColorPolicy
 from multiprocessing import Pool
 
 
-class OpenGLContext(AbstractGLContext, QWidget):
+class CubicGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
         super().__init__()
         self.drawing_function = None
@@ -23,7 +23,6 @@ class OpenGLContext(AbstractGLContext, QWidget):
         self.vectors_list = None
         self.vertices = 0
 
-        self.modified_animation = True
         self.buffers = None
         self.buffer_len = 0
 
@@ -43,14 +42,19 @@ class OpenGLContext(AbstractGLContext, QWidget):
         custom_color_policy = ColorPolicy()
         self.vectors_list = getLayerOutline(self.omf_header)
         # change drawing function
-        self.color_vectors, self.vectors_list, _ = \
+
+        self.color_vectors, self.vectors_list, decimate = \
                     custom_color_policy.standard_procedure(self.vectors_list,
                                                            self.color_vectors,
                                                            self.iterations,
                                                            self.averaging,
                                                            xc, yc, zc,
                                                            self.layer,
-                                                           self.vector_set)
+                                                           self.vector_set,
+                                                           self.decimate)
+        if decimate is not None:
+            # this is arbitrary
+            self.spacer *= decimate*3
 
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw

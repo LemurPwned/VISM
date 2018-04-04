@@ -10,19 +10,50 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.setupUi(self)
         self.loaded = True
         self.layer_size = layer_size['znodes']
+
+        self.decimate = 1
+        self.averaging = 1
+
         self.basicOptions()
         self.show()
         self.options = None
 
+    def disableDecimate(self):
+        self.horizontalSlider_4.setEnabled(False)
+        # enable averaging
+        self.horizontalSlider.setEnabled(True)
+
+        self.decimate = 1
+        self.averaging = self.horizontalSlider.value()
+        self.label.setText("Averaging: {}".format(self.averaging))
+        self.label_8.setText("Decimate: {}".format(self.decimate))
+
+    def disableAveraging(self):
+        self.horizontalSlider.setEnabled(False)
+        # enable decimate
+        self.horizontalSlider_4.setEnabled(True)
+
+        self.averaging = 1
+        self.decimate = self.horizontalSlider_4.value()
+        self.label_8.setText("Decimate: {}".format(self.decimate))
+        self.label.setText("Averaging: {}".format(self.averaging))
+
     def basicOptions(self):
+
+        self.checkBox_3.stateChanged.connect(self.disableDecimate)
+        self.checkBox_2.stateChanged.connect(self.disableAveraging)
+
+        # check decimate: decimate is checkbox 2 and slider 4
+        self.checkBox_2.setChecked(True)
+
         self.horizontalSlider.valueChanged.connect(self.averagingChange)
         self.horizontalSlider_2.valueChanged.connect(self.layerChange)
         self.horizontalSlider_3.valueChanged.connect(self.sizeChange)
+        self.horizontalSlider_4.valueChanged.connect(self.decimateChange)
 
-        self.horizontalSlider.setEnabled(True)
         self.horizontalSlider.setMaximum(5)
         self.horizontalSlider.setMinimum(1)
-        self.horizontalSlider.setValue(4)
+        self.horizontalSlider.setValue(1)
         self.horizontalSlider.setSingleStep(1)
 
         self.horizontalSlider_3.setEnabled(True)
@@ -30,6 +61,12 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.horizontalSlider_3.setMinimum(1)
         self.horizontalSlider_3.setValue(1)
         self.horizontalSlider_3.setSingleStep(1)
+
+        self.horizontalSlider_4.setEnabled(True)
+        self.horizontalSlider_4.setMaximum(5)
+        self.horizontalSlider_4.setMinimum(1)
+        self.horizontalSlider_4.setValue(1)
+        self.horizontalSlider_4.setSingleStep(1)
 
         if not self.loaded:
             self.horizontalSlider_2.setEnabled(False)
@@ -45,8 +82,14 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.label_3.setText("Layer: {}".format(val))
 
     def averagingChange(self):
-        val = self.horizontalSlider.value()
-        self.label.setText("Averaging: {}".format(val))
+        self.averaging = self.horizontalSlider.value()
+        self.label.setText("Averaging: {}".format(self.averaging))
+        # self.disableDecimate()
+
+    def decimateChange(self):
+        self.decimate = self.horizontalSlider_4.value()
+        self.label_8.setText("Decimate: {}".format(self.decimate))
+        # self.disableAveraging()
 
     def sizeChange(self):
         val = self.horizontalSlider_3.value()
@@ -56,16 +99,18 @@ class PerfOptions(QWidget, Ui_Dialog):
         # order as follows: color scheme, averaging, layer
         if self.checkBox.isChecked():
                 optionsList = [self.comboBox.currentText(),
-                                self.horizontalSlider.value(),
+                                self.averaging,
                                 'all',
                                 self.horizontalSlider_3.value(),
-                                self.parseVectors()]
+                                self.parseVectors(),
+                                self.decimate]
         else:
             optionsList = [self.comboBox.currentText(),
-                            self.horizontalSlider.value(),
+                            self.averaging,
                             self.horizontalSlider_2.value(),
                             self.horizontalSlider_3.value(),
-                            self.parseVectors()]
+                            self.parseVectors(),
+                            self.decimate]
         return optionsList
 
 

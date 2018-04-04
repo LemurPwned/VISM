@@ -31,6 +31,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.layer = self.options[2]
         self.scale = int(self.options[3])
         self.vector_set = self.options[4]
+        self.decimate = int(self.options[5])
 
     def initial_transformation(self):
         """

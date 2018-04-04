@@ -23,23 +23,19 @@ class MultiprocessingParse:
         odt_file = glob.glob(os.path.join(directory, '*.odt'))
         # look for .odt in current directory
         if len(odt_file) > 1:
-            msg = ".odt file extension conflict (too many)"
-            raise ValueError(msg)
+            raise ValueError(".odt file extension conflict (too many)")
         elif not odt_file:
-            msg = "None .odt"
-            raise ValueError(msg)
+            raise ValueError("None .odt")
         odt_data, stages = getOdtData(odt_file[0])
         stages = glob.glob(os.path.join(directory, '*.omf'))
-        test_file = os.path.join(directory,
-                                 stages[0])
+        test_file = os.path.join(directory, stages[0])
         stages = len(stages)
         if not is_binary(test_file):
             rawVectorData = MultiprocessingParse.readText(files_in_directory)
             omf_file_for_header = glob.glob(os.path.join(directory, '*.omf'))
             # virtually any will do
             if not omf_file_for_header:
-                msg = "no .omf file has been found"
-                raise ValueError(msg)
+                raise ValueError("no .omf file has been found")
             omf_header = getOmfHeader(omf_file_for_header[0])
             omf_header['binary'] = False
         else:
@@ -49,8 +45,7 @@ class MultiprocessingParse:
             omf_header = omf_headers[0]
             omf_header['binary'] = True
             if not omf_header:
-                msg = "no .omf file has been found"
-                raise ValueError(msg)
+                raise ValueError("no .omf file has been found")
         omf_header['averaging'] = 1
         return rawVectorData, omf_header, odt_data, stages
 
@@ -72,11 +67,9 @@ class MultiprocessingParse:
             omf_headers.append(omf_header_data)
         # catch errors, replace with custom exceptions
         if not rawVectorData:
-            print("\nNo vectors created")
-            raise TypeError
+            raise TypeError("\nNo vectors created")
         if not omf_headers:
-            print("\nNo vectors created")
-            raise TypeError
+            raise TypeError("\nNo vectors created")
         return omf_headers, np.array(rawVectorData)
 
     @staticmethod
@@ -96,7 +89,6 @@ class MultiprocessingParse:
             rawVectorData.append(data)
         # catch errors, replace with custom exceptions
         if not rawVectorData:
-            print("\nNo vectors created")
-            raise TypeError
+            raise TypeError("\nNo vectors created")
 
         return np.array(rawVectorData)
