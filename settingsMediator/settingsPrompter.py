@@ -27,6 +27,11 @@ class SettingsPrompter(SettingsInterface):
         self.settingsType = settingsType
 
     def get_settings_window_constructor_from_file(self, DataObjectHolder=None):
+        """
+        :param DataObjectHolder: object holder instance
+        this function extracts the settings window object from file specified
+        in __WIDGET_LOC__. Returns created object window.
+        """
         if self.widget_pane_handler is None:
             self.widget_pane_handler = json.load(open(self.__WIDGET_LOC__))
         # required parameters follow after class name

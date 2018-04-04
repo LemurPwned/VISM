@@ -40,6 +40,10 @@ class SettingsInterface:
 
     def evaluate_string_as_class_object(self, obj_str, object_type):
         """
+        :param obj_str: object name specifed in the file
+        :param object_type: type of object to be created, needed to set the
+                            correct path
+        :return object constructor of type obj_str
         WARNING: class name must match file name in case of widgets
         """
         try:
@@ -80,11 +84,26 @@ class SettingsInterface:
 
 
     def search_obj_file(self, path, filename, ext):
+        """
+        Attempts to find module path of a given extension
+        in a specified location
+        :param path: path to module
+        :param filename: filename of a module file (without extension)
+        :param ext: extension of module i.e. .pyc or .py. Note the dot
+        :return module file
+        """
         file_list_in_dir = glob.glob(os.path.join(path, filename) + '*' + ext)
         if file_list_in_dir is not None:
             return file_list_in_dir[-1]
 
     def build_chain(self, object_alias, doh):
+        """
+        Returns the Widget object (not the constructor!) created by
+        evaluating the file in __WIDGET_LOC__.
+        :param object_alias: object to created
+        :param doh: DataObjectHolder object with necessary arguemnts inside
+        :return object of object_alias type
+        """
         if type(doh) != DataObjectHolder:
             print(type(doh))
             raise ValueError("Passed invalid data object, cannot request parameter")
@@ -114,6 +133,11 @@ class SettingsInterface:
             return doh.retrieveDataObject(parameter_alias)
 
     def get_and_verify_class_parameters(self, parameter_list, doh):
+        """
+        Verifies if all parameters are contains in DataObjectHolder instance
+        :param parameter_list: list of parameters
+        :param doh: DataObjectHolder instance
+        """
         shared_dictionary = {}
         for param in parameter_list:
             shared_dictionary[param] = self.request_parameter(doh, param)

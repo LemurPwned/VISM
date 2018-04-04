@@ -165,7 +165,8 @@ class ColorPolicy:
     def standard_procedure(self, outline, color, iterations, averaging, xc, yc, zc,
                             picked_layer='all',
                             vector_set=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-                            decimate=1):
+                            decimate=1,
+                            disableDot=True):
         color = np.array(color)
         outline = np.array(outline)
         if decimate != 1:
@@ -195,9 +196,12 @@ class ColorPolicy:
         if not decimate:
             assert color.shape == (iterations, zc*yc*xc, 3)
         vector_set = np.array(vector_set).astype(np.float32)
-        dotted_color = asynchronous_pool_order(multi_iteration_dot_product,
-                                                (vector_set,), color)
-        dotted_color = np.array(dotted_color)
+        if not disableDot:
+            dotted_color = asynchronous_pool_order(multi_iteration_dot_product,
+                                                    (vector_set,), color)
+        else:
+            dotted_color = color
+            dotted_color = np.array(dotted_color)
         outline = np.array(outline)
         # this should have shape (iterations, zc*yc*xc, 3)
         if not decimate:
