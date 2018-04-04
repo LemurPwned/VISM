@@ -13,7 +13,6 @@ from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
 
 from PopUp import PopUpWrapper
-from Windows.Progress import ProgressBar
 
 from settingsMediator.settingsPrompter import SettingsPrompter
 from settingsMediator.settingsLoader import DataObjectHolder
@@ -116,7 +115,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                 self.loadDirectory, quit)
             finally:
                 self._LOADED_FLAG_ = True
-                # self.x.close()
+                self.x.close()
             return 1
 
     def showAnimationSettings(self):
@@ -135,6 +134,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.playerWindow.setIterators(self.properPanesIterators)
 
     def showChooseWidgetSettings(self, number):
+        if self.playerWindow != None:
+            #animation is running and this is may be not first window
+            if self.playerWindow.worker.running:
+                PopUpWrapper("Alert",
+                             "You may loose calculation!" +
+                             " If you proceed animation will be restarted!", \
+                             None,
+                             QtWidgets.QMessageBox.Yes, \
+                             QtWidgets.QMessageBox.No, \
+                             None, \
+                             self.refreshScreen())
+
+                self.playerWindow.forceWorkerReset()
+                self.playerWindow.closeMe()
+
+
         """Spawns Window for choosing widget for this pane"""
         if not self._LOADED_FLAG_:
             # spawn directory picker again

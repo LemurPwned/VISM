@@ -119,6 +119,10 @@ class WorkerObject:
             self.handler = None
             self.widgetIterators = None
 
+
+        def getIterator(self):
+            return self._iterator
+
         def setSpeed(self, speed):
             self._speed = speed
 

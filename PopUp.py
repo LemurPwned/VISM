@@ -23,10 +23,7 @@ class PopUpWrapper(QWidget):
         self.more = more
         self.loaded = False
 
-        print("test:", title, msg, more, yesMes)
-        if self.more is None and self.yesMes is None:
-            self.infoWindowNotWaiting()
-        elif self.more is not None and self.yesMes is None:
+        if self.more is not None and self.yesMes is None:
             self.infoWindow()
         else:
             self.questionWindow()
