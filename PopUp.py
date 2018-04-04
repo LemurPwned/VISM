@@ -3,10 +3,12 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QMessageBox
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 
+
 class PopUpWrapper(QWidget):
     def __init__(self, title, msg, more=None, yesMes=None, noMes=None,
                     actionWhenYes=None, actionWhenNo=None):
         super().__init__()
+
         self.left = 10
         self.top = 10
         self.width = 320
@@ -21,7 +23,10 @@ class PopUpWrapper(QWidget):
         self.more = more
         self.loaded = False
 
-        if self.more is not None and self.yesMes is None:
+        print("test:", title, msg, more, yesMes)
+        if self.more is None and self.yesMes is None:
+            self.infoWindowNotWaiting()
+        elif self.more is not None and self.yesMes is None:
             self.infoWindow()
         else:
             self.questionWindow()

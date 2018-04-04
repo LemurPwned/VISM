@@ -7,10 +7,7 @@ from Widgets.plot_widgets.Canvas2Dupgraded import Canvas2Dupgraded
 from Widgets.plot_widgets.Canvas import Canvas
 from Widgets.plot_widgets.CanvasLayer import CanvasLayer
 
-from multiprocessing_parse import MultiprocessingParse
-
-
-class DataObjectHolder:
+class DataObjectHolder():
     def __init__(self):
         self.contains_lookup = []
 

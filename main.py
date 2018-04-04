@@ -1,7 +1,8 @@
 import sys
+import time
 from buildVerifier import BuildVerifier
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from Windows.MainWindowTemplate import Ui_MainWindow
 
 from multiprocessing_parse import MultiprocessingParse
@@ -12,6 +13,7 @@ from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
 
 from PopUp import PopUpWrapper
+from Windows.Progress import ProgressBar
 
 from settingsMediator.settingsPrompter import SettingsPrompter
 from settingsMediator.settingsLoader import DataObjectHolder
@@ -76,24 +78,34 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def loadDirectory(self):
         """Loads whole directory based on Parse class as simple as BHP"""
-        directory = str(QtWidgets.QFileDialog.getExistingDirectory(self,
-                                                            "Select Directory"))
+        # self.thread2 = QtCore.QThread()
+        fileDialog = QtWidgets.QFileDialog()
+        # fileDialog.moveToThread(self.thread2)
+        # self.thread2.start()
+
+        directory = str(
+            fileDialog.getExistingDirectory(
+                self,
+                "Select Directory",
+                options = QtWidgets.QFileDialog.ShowDirsOnly))
+        fileDialog.close()
 
         if directory is None or directory == "":
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
             self._LOADED_FLAG_ = False
             PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
-                            QtWidgets.QMessageBox.No, quit, None)
+                            QtWidgets.QMessageBox.No, self.close(), None)
             return 0
         else:
             try:
-                x = PopUpWrapper("Loading", "Data is currently loading",
-                        more="Please Wait...")
+                sub = "Data is currently being loaded using all cpu power, app may stop responding for a while."
+                self.x = PopUpWrapper("Loading", sub, "Please Wait...")
+
                 self.doh.passListObject(('color_vectors', 'omf_header',
                                         'odt_data', 'iterations'),
                                         *MultiprocessingParse.readFolder(directory))
                 print(self.doh.contains_lookup)
-                x.close()
+
             except ValueError as e:
                 msg = "Invalid directory: {}. \
                     Error Message {}\nDo you wish to reselect?".format(directory,
@@ -104,6 +116,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                 self.loadDirectory, quit)
             finally:
                 self._LOADED_FLAG_ = True
+                # self.x.close()
             return 1
 
     def showAnimationSettings(self):

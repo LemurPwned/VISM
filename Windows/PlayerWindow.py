@@ -13,7 +13,6 @@ class PlayerWindow(QtCore.QObject):
 
         self.checkForErrors()
 
-
         # Setup the worker object and the worker_thread.
         self.worker = WorkerObject().getInstance()
         if WorkerObject().getNumbers() == 2:
