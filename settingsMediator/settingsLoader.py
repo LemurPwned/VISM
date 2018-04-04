@@ -3,17 +3,6 @@ import imp
 import glob
 import json
 
-from Widgets.openGL_widgets.CubicGLContext import CubicGLContext
-from Widgets.openGL_widgets.VectorGLContext import VectorGLContext
-from Widgets.plot_widgets.Canvas2Dupgraded import Canvas2Dupgraded
-
-from Widgets.plot_widgets.Canvas import Canvas
-from Widgets.plot_widgets.CanvasLayer import CanvasLayer
-
-from multiprocessing_parse import MultiprocessingParse
-from functools import reduce
-
-
 class DataObjectHolder:
     def __init__(self):
         self.contains_lookup = []

@@ -13,7 +13,6 @@ class PlayerWindow(QtCore.QObject):
 
         self.checkForErrors()
 
-
         # Setup the worker object and the worker_thread.
         self.worker = WorkerObject().getInstance()
         if WorkerObject().getNumbers() == 2:
@@ -119,6 +118,12 @@ class WorkerObject:
             self._speed = 10
             self.handler = None
             self.widgetIterators = None
+
+        def clearWidgetIterators(self):
+            self.widgetIterators = None
+
+        def getIterator(self):
+            return self._iterator
 
         def setSpeed(self, speed):
             self._speed = speed

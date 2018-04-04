@@ -1,7 +1,8 @@
 import sys
+import time
 from buildVerifier import BuildVerifier
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from Windows.MainWindowTemplate import Ui_MainWindow
 
 from multiprocessing_parse import MultiprocessingParse
@@ -77,22 +78,34 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def loadDirectory(self):
         """Loads whole directory based on Parse class as simple as BHP"""
-        directory = str(QtWidgets.QFileDialog.getExistingDirectory(self,
-                                                            "Select Directory"))
+        # self.thread2 = QtCore.QThread()
+        fileDialog = QtWidgets.QFileDialog()
+        # fileDialog.moveToThread(self.thread2)
+        # self.thread2.start()
+
+        directory = str(
+            fileDialog.getExistingDirectory(
+                self,
+                "Select Directory",
+                options = QtWidgets.QFileDialog.ShowDirsOnly))
+        fileDialog.close()
 
         if directory is None or directory == "":
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
             self._LOADED_FLAG_ = False
             PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
-                            QtWidgets.QMessageBox.No, quit, None)
+                            QtWidgets.QMessageBox.No, self.close(), None)
             return 0
         else:
             try:
-                x = PopUpWrapper("Loading", "Data will be loaded",
-                        more="Please Wait...")
+                sub = "Data is currently being loaded using all cpu power, app may stop responding for a while."
+                x = PopUpWrapper("Loading", sub, "Please Wait...")
+
                 self.doh.passListObject(('color_vectors', 'omf_header',
                                         'odt_data', 'iterations'),
                                         *MultiprocessingParse.readFolder(directory))
+                print(self.doh.contains_lookup)
+
                 x.close()
             except ValueError as e:
                 msg = "Invalid directory: {}. \
@@ -122,6 +135,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.playerWindow.setIterators(self.properPanesIterators)
 
     def showChooseWidgetSettings(self, number):
+        if self.playerWindow != None:
+            #animation is running and this is may be not first window
+            if self.playerWindow.worker.running:
+                PopUpWrapper("Alert",
+                             "You may loose calculation!" +
+                             " If you proceed animation will be restarted!", \
+                             None,
+                             QtWidgets.QMessageBox.Yes, \
+                             QtWidgets.QMessageBox.No, \
+                             None, \
+                             self.refreshScreen())
+
+                self.playerWindow.forceWorkerReset()
+                self.playerWindow.closeMe()
+
+
         """Spawns Window for choosing widget for this pane"""
         if not self._LOADED_FLAG_:
             # spawn directory picker again
@@ -167,9 +196,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.refreshScreen()
 
     def deleteWidget(self, number):
-        # delete iterator from iterator list to avoid crash
+
         if self.playerWindow:
-            # maybe prompt here?
+            PopUpWrapper("Alert",
+                "You may loose calculation!", \
+                "If you proceed animation will be restarted and widget \
+                will be deleted!", \
+                QtWidgets.QMessageBox.Yes, \
+                QtWidgets.QMessageBox.No, \
+                None, \
+                self.refreshScreen())
+
             self.playerWindow.forceWorkerReset()
             self.playerWindow.closeMe()
 
@@ -177,6 +214,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[number].setUpDefaultBox()
         self.panes[number].button.clicked.connect(\
             lambda: self.showChooseWidgetSettings(number))
+        self.playerWindow.worker.clearWidgetIterators()
 
     def propagate_resize(self):
         for i in range(4):

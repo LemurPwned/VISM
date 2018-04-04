@@ -25,7 +25,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
             for i in range(gridSize):
                 self.additionalSetup(plotOptions)
 
-        self.setGeometry(10,10,750, 600)
+        self.setGeometry(10,10,300, 400)
         self.eventListeners()
         self.setWindowTitle("Plot Settings")
         self.gridLayout_2.addWidget(self.buttonBox, 4, 0, 1, 2)
