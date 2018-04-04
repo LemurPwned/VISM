@@ -31,6 +31,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         self.receivedOptions()
+
         self.spacer = self.spacer*self.scale
         xc = int(self.omf_header['xnodes'])
         yc = int(self.omf_header['ynodes'])
@@ -42,7 +43,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
         custom_color_policy = ColorPolicy()
         self.vectors_list = getLayerOutline(self.omf_header)
         # change drawing function
-
         self.color_vectors, self.vectors_list, decimate = \
                     custom_color_policy.standard_procedure(self.vectors_list,
                                                            self.color_vectors,
@@ -51,7 +51,8 @@ class CubicGLContext(AbstractGLContext, QWidget):
                                                            xc, yc, zc,
                                                            self.layer,
                                                            self.vector_set,
-                                                           self.decimate)
+                                                           self.decimate,
+                                                           disableDot=self.disableDot)
         if decimate is not None:
             # this is arbitrary
             self.spacer *= decimate*3

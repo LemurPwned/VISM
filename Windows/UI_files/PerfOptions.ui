@@ -35,13 +35,26 @@
      <x>30</x>
      <y>20</y>
      <width>251</width>
-     <height>565</height>
+     <height>576</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
     <property name="fieldGrowthPolicy">
      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
     </property>
+    <item row="0" column="0" colspan="2">
+     <spacer name="horizontalSpacer_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
     <item row="1" column="0">
      <widget class="QLabel" name="label">
       <property name="text">
@@ -177,6 +190,33 @@
       </property>
      </spacer>
     </item>
+    <item row="10" column="0">
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>Layers</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="1">
+     <widget class="QCheckBox" name="checkBox">
+      <property name="text">
+       <string>All</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="0" colspan="2">
+     <widget class="QSlider" name="horizontalSlider_2">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
     <item row="13" column="0" colspan="2">
      <spacer name="horizontalSpacer_4">
       <property name="orientation">
@@ -269,43 +309,10 @@
       </item>
      </layout>
     </item>
-    <item row="0" column="0" colspan="2">
-     <spacer name="horizontalSpacer_2">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="10" column="0">
-     <widget class="QLabel" name="label_3">
+    <item row="17" column="1">
+     <widget class="QCheckBox" name="checkBox_4">
       <property name="text">
-       <string>Layers</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="10" column="1">
-     <widget class="QCheckBox" name="checkBox">
-      <property name="text">
-       <string>All</string>
-      </property>
-     </widget>
-    </item>
-    <item row="11" column="0" colspan="2">
-     <widget class="QSlider" name="horizontalSlider_2">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <string>Disable</string>
       </property>
      </widget>
     </item>

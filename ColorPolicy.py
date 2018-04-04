@@ -52,7 +52,6 @@ class ColorPolicy:
         :return new_color_matrix: returns new color matrix
         """
         pool = Pool()
-        print("CONVOLUTION SHAPE {}".format(matrix.shape))
         multiple_results = [pool.apply_async(self.composite_convolution,
                             (np.array(m), self.averaging_kernel))
                             for m in matrix]
@@ -160,7 +159,6 @@ class ColorPolicy:
         # firstly average the color matrix with kernel
         matrix = self.linear_convolution(matrix)
         return np.array(matrix)
-
 
     def standard_procedure(self, outline, color, iterations, averaging, xc, yc, zc,
                             picked_layer='all',

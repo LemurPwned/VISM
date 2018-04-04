@@ -18,6 +18,8 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.show()
         self.options = None
 
+        self.color_disable = False
+
     def disableDecimate(self):
         self.horizontalSlider_4.setEnabled(False)
         # enable averaging
@@ -38,8 +40,16 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.label_8.setText("Decimate: {}".format(self.decimate))
         self.label.setText("Averaging: {}".format(self.averaging))
 
-    def basicOptions(self):
+    def disableDot(self):
+        self.lineEdit.setEnabled(self.color_disable)
+        self.lineEdit_2.setEnabled(self.color_disable)
+        self.lineEdit_3.setEnabled(self.color_disable)
+        self.color_disable = not self.color_disable
 
+    def basicOptions(self):
+        # disable coloring
+        self.checkBox_4.stateChanged.connect(self.disableDot)
+        # these are averagnin and decimate
         self.checkBox_3.stateChanged.connect(self.disableDecimate)
         self.checkBox_2.stateChanged.connect(self.disableAveraging)
 
@@ -84,12 +94,10 @@ class PerfOptions(QWidget, Ui_Dialog):
     def averagingChange(self):
         self.averaging = self.horizontalSlider.value()
         self.label.setText("Averaging: {}".format(self.averaging))
-        # self.disableDecimate()
 
     def decimateChange(self):
         self.decimate = self.horizontalSlider_4.value()
         self.label_8.setText("Decimate: {}".format(self.decimate))
-        # self.disableAveraging()
 
     def sizeChange(self):
         val = self.horizontalSlider_3.value()
@@ -103,16 +111,17 @@ class PerfOptions(QWidget, Ui_Dialog):
                                 'all',
                                 self.horizontalSlider_3.value(),
                                 self.parseVectors(),
-                                self.decimate]
+                                self.decimate,
+                                self.color_disable]
         else:
             optionsList = [self.comboBox.currentText(),
                             self.averaging,
                             self.horizontalSlider_2.value(),
                             self.horizontalSlider_3.value(),
                             self.parseVectors(),
-                            self.decimate]
+                            self.decimate,
+                            self.color_disable]
         return optionsList
-
 
     def parseVectors(self):
         vector1 = self.lineEdit.text()

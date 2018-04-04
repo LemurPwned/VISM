@@ -48,8 +48,11 @@ class VectorGLContext(AbstractGLContext, QWidget):
                                                            xc, yc, zc,
                                                            self.layer,
                                                            self.vector_set,
-                                                           self.decimate)
-        self.spacer *= decimate*3
+                                                           self.decimate,
+                                                           self.disableDot)
+        if decimate is not None:
+            # this is arbitrary
+            self.spacer *= decimate*3
 
         if self.function_select == 'fast':
             # doesnt work yet

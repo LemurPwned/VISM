@@ -38,7 +38,8 @@ class SettingsInterface:
         self.__WIDGET_LOC__ = "Windows/widget_pane.json"
         self.widget_pane_handler = json.load(open(self.__WIDGET_LOC__))
 
-    def evaluate_string_as_class_object(self, obj_str, object_type):
+    def evaluate_string_as_class_object(self, obj_str, object_type,
+                                        debug=True):
         """
         :param obj_str: object name specifed in the file
         :param object_type: type of object to be created, needed to set the
@@ -63,14 +64,20 @@ class SettingsInterface:
 
             module = None
             # if there is a build, prefer .pyc files
-            if os.path.isdir(os.path.join(module_path, '__pycache__')):
-                module_path = os.path.join(module_path, '__pycache__')
-                module = imp.load_compiled(obj_str, self.search_obj_file(module_path,
-                                            obj_str, '.pyc'))
-            else:
-                # if not, then fetch .py file
+            # actually do not if this is debug, won't see changes
+            # otherwise
+            if debug:
                 module = imp.load_source(obj_str, os.path.join(module_path,
-                                                    obj_str + '.py'))
+                                                        obj_str + '.py'))
+            else:
+                if os.path.isdir(os.path.join(module_path, '__pycache__')):
+                    module_path = os.path.join(module_path, '__pycache__')
+                    module = imp.load_compiled(obj_str, self.search_obj_file(module_path,
+                                                obj_str, '.pyc'))
+                else:
+                    # if not, then fetch .py file
+                    module = imp.load_source(obj_str, os.path.join(module_path,
+                                                        obj_str + '.py'))
 
             if module is None:
                 raise ValueError("Module not found: module is None")
