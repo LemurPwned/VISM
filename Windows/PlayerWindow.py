@@ -119,6 +119,8 @@ class WorkerObject:
             self.handler = None
             self.widgetIterators = None
 
+        def clearWidgetIterators(self):
+            self.widgetIterators = None
 
         def getIterator(self):
             return self._iterator

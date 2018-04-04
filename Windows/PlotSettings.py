@@ -25,7 +25,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
             for i in range(gridSize):
                 self.additionalSetup(plotOptions)
 
-        self.setGeometry(10,10,750, 600)
+        self.setGeometry(10,10,300, 400)
         self.eventListeners()
         self.setWindowTitle("Plot Settings")
         self.gridLayout_2.addWidget(self.buttonBox, 4, 0, 1, 2)
@@ -149,16 +149,6 @@ class PlotSettings(QWidget, Ui_PlotSettings):
                         'marker_size': self.slider_markersize.value()
                      }
         self.ret = param_dict
-
-        # for i in range(self.GroupCounter):
-        #     self.ret.append([self.comboBox[i].currentText(),
-        #                 self.radioButton[i*2].isChecked(),
-        #                 self.radioButton[(i*2)+1].isChecked(),
-        #                 self.comboBox2[i].currentText(),
-        #                 self.comboBox3[i].currentText(),
-        #                 self.comboBox4[i].currentText(),
-        #                 self.slider_markersize.value()])
-
         self.eventHandler(self.ret)
         self.close()
 

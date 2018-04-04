@@ -163,8 +163,14 @@ class ColorPolicy:
 
 
     def standard_procedure(self, outline, color, iterations, averaging, xc, yc, zc,
-                        picked_layer='all',
-                        vector_set=[[1, 0, 0], [0, 1, 0], [0, 0, 1]]):
+                            picked_layer='all',
+                            vector_set=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                            decimate=1):
+        color = np.array(color)
+        outline = np.array(outline)
+        if decimate != 1:
+            color = color[:,::decimate,:]
+            outline = outline[::decimate, :]
         if type(picked_layer) == int:
             # if single layer is picked modify memory data
             zc = 1
@@ -172,27 +178,29 @@ class ColorPolicy:
             picked_layer = picked_layer*layer_thickness
             color = color[:, picked_layer:picked_layer+layer_thickness, :]
             outline = outline[picked_layer:picked_layer+layer_thickness]
-            print(color.shape)
         # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
-        averaging_intensity = float(1/averaging)
-        # generate mask of shape (zc*yc*xc, 3)
-        # take n random numbers (1/averaging)*size
-        # step one: generate list of all indices
-        mask = np.arange(xc*yc*zc)
-        np.random.shuffle(mask)
-        mask = mask[:int(len(mask)*averaging_intensity)]
-        # now mask is a subset of unqiue, random indices
-        for i in range(iterations):
-            # zero these random indices for each iteration
-            color[i, mask, :] = 0
-        # at this point the shape should be conserved (iterations, zc*yc*xc, 3)
-        assert color.shape == (iterations, zc*yc*xc, 3)
+        if averaging != 1:
+            averaging_intensity = float(1/averaging)
+            # generate mask of shape (zc*yc*xc, 3)
+            # take n random numbers (1/averaging)*size
+            # step one: generate list of all indices
+            mask = np.arange(xc*yc*zc)
+            np.random.shuffle(mask)
+            mask = mask[:int(len(mask)*averaging_intensity)]
+            # now mask is a subset of unqiue, random indices
+            for i in range(iterations):
+                # zero these random indices for each iteration
+                color[i, mask, :] = 0
+            # at this point the shape should be conserved (iterations, zc*yc*xc, 3)
+        if not decimate:
+            assert color.shape == (iterations, zc*yc*xc, 3)
         vector_set = np.array(vector_set).astype(np.float32)
         dotted_color = asynchronous_pool_order(multi_iteration_dot_product,
                                                 (vector_set,), color)
         dotted_color = np.array(dotted_color)
         outline = np.array(outline)
         # this should have shape (iterations, zc*yc*xc, 3)
-        assert dotted_color.shape == (iterations, zc*yc*xc, 3)
-        assert outline.shape == (zc*yc*xc, 3)
-        return dotted_color, outline, mask
+        if not decimate:
+            assert dotted_color.shape == (iterations, zc*yc*xc, 3)
+            assert outline.shape == (zc*yc*xc, 3)
+        return dotted_color, outline, decimate

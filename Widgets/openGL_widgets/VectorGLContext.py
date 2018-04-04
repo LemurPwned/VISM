@@ -17,7 +17,7 @@ import math as mt
 from multiprocessing import Pool
 
 
-class ArrowGLContext(AbstractGLContext, QWidget):
+class VectorGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
         super().__init__()
         self.shareData(**data_dict)
@@ -40,17 +40,20 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         yc = int(self.omf_header['ynodes'])
         zc = int(self.omf_header['znodes'])
         self.function_select = 'slow'
-        self.color_vectors, self.vectors_list, normalized = \
+        self.color_vectors, self.vectors_list, decimate = \
                     custom_color_policy.standard_procedure(self.vectors_list,
                                                            self.color_vectors,
                                                            self.iterations,
                                                            self.averaging,
                                                            xc, yc, zc,
                                                            self.layer,
-                                                           self.vector_set)
+                                                           self.vector_set,
+                                                           self.decimate)
+        self.spacer *= decimate*3
 
         if self.function_select == 'fast':
             # doesnt work yet
+            normalized = [[0,0,0]]
             self.drawing_function = self.vbo_arrow_draw
             # transform into interleaved vbo format
             self.color_vectors = custom_color_policy.apply_vbo_format(self.color_vectors,
