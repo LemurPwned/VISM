@@ -1,9 +1,18 @@
+import numpy as np
 import os
 import glob
 from multiprocessing import Pool
 from cython_modules.cython_parse import *
 from binaryornot.check import is_binary
 
+def asynchronous_pool_order(func, args, object_list, timeout=20):
+    pool = Pool()
+    output_list = []
+    multiple_results = [pool.apply_async(func, (object_list[i], *args))
+                        for i in range(len(object_list))]
+    for result in multiple_results:
+        output_list.append(result.get(timeout=timeout))
+    return output_list
 
 class MultiprocessingParse:
     @staticmethod
@@ -26,10 +35,13 @@ class MultiprocessingParse:
             raise ValueError(".odt file extension conflict (too many)")
         elif not odt_file:
             raise ValueError("None .odt")
+
         odt_data, stages = getOdtData(odt_file[0])
         stages = glob.glob(os.path.join(directory, '*.omf'))
         test_file = os.path.join(directory, stages[0])
+
         stages = len(stages)
+
         if not is_binary(test_file):
             rawVectorData = MultiprocessingParse.readText(files_in_directory)
             omf_file_for_header = glob.glob(os.path.join(directory, '*.omf'))
@@ -37,16 +49,12 @@ class MultiprocessingParse:
             if not omf_file_for_header:
                 raise ValueError("no .omf file has been found")
             omf_header = getOmfHeader(omf_file_for_header[0])
-            omf_header['binary'] = False
         else:
-            print("Detected binary")
             omf_headers, rawVectorData = MultiprocessingParse.readBinary(
                                                             files_in_directory)
             omf_header = omf_headers[0]
-            omf_header['binary'] = True
             if not omf_header:
                 raise ValueError("no .omf file has been found")
-        omf_header['averaging'] = 1
         return rawVectorData, omf_header, odt_data, stages
 
     @staticmethod
@@ -58,19 +66,21 @@ class MultiprocessingParse:
         text_pool = Pool()
         rawVectorData = []
         omf_headers = []
-        text_file_results = [text_pool.apply_async(getRawVectorsBinary,
-                                                   (filename, ))
-                             for filename in files_in_directory]
-        for i, result in enumerate(text_file_results):
-            omf_header_data, vector_data = result.get(timeout=20)
-            rawVectorData.append(vector_data)
-            omf_headers.append(omf_header_data)
-        # catch errors, replace with custom exceptions
-        if not rawVectorData:
+
+        output = asynchronous_pool_order(getRawVectorsBinary, (),
+                                                            files_in_directory)
+        output = np.array(output)
+        omf_headers = output[:, 0]
+        rawVectorData = output[:, 1]
+        # test this solution, turn dtype object to float 54
+        rawVectorData = np.array([x for x in rawVectorData], dtype=np.float64)
+
+        if rawVectorData is None or omf_headers is None:
             raise TypeError("\nNo vectors created")
-        if not omf_headers:
-            raise TypeError("\nNo vectors created")
-        return omf_headers, np.array(rawVectorData)
+
+        assert rawVectorData.dtype == np.float64
+
+        return omf_headers, rawVectorData
 
     @staticmethod
     def readText(files_in_directory):
@@ -81,14 +91,11 @@ class MultiprocessingParse:
         # use multiprocessing
         text_pool = Pool()
         rawVectorData = []
-        text_file_results = [text_pool.apply_async(getRawVectors,
-                                                   (filename, ))
-                             for filename in files_in_directory]
-        for i, result in enumerate(text_file_results):
-            data = result.get(timeout=20)
-            rawVectorData.append(data)
-        # catch errors, replace with custom exceptions
+        rawVectorData = asynchronous_pool_order(getRawVectors, (),
+                                                            files_in_directory,
+                                                            timeout=20)
         if not rawVectorData:
             raise TypeError("\nNo vectors created")
+        assert rawVectorData.dtype == np.float64
 
         return np.array(rawVectorData)

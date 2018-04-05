@@ -78,10 +78,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def loadDirectory(self):
         """Loads whole directory based on Parse class as simple as BHP"""
-        # self.thread2 = QtCore.QThread()
         fileDialog = QtWidgets.QFileDialog()
-        # fileDialog.moveToThread(self.thread2)
-        # self.thread2.start()
 
         directory = str(
             fileDialog.getExistingDirectory(
@@ -98,16 +95,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             return 0
         else:
             try:
-                sub = "Data is currently being loaded using all cpu power, app may stop responding for a while."
+                sub = "Data is currently being loaded using all cpu power, \
+                        app may stop responding for a while."
                 x = PopUpWrapper("Loading", sub, "Please Wait...")
 
                 self.doh.passListObject(('color_vectors', 'omf_header',
                                         'odt_data', 'iterations'),
                                         *MultiprocessingParse.readFolder(directory))
-                print(self.doh.contains_lookup)
-
                 x.close()
             except ValueError as e:
+                raise Exception("fubar occurred").with_traceback(e)
                 msg = "Invalid directory: {}. \
                     Error Message {}\nDo you wish to reselect?".format(directory,
                                                                         str(e))
@@ -163,7 +160,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         """Data receiver for choosingWidget action"""
 
         self.panes[value[0]].clearBox()
-
         # value[0] stores widget number
         # value[1] stores widget name
         self.sp.swap_settings_type(value[1])
@@ -226,7 +222,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 except (AttributeError, RuntimeError) as ae:
                     pass
                     # allow this, should implement this function but pass anyway
-                    #  print("AttributeError/RuntimeError {}".format(ae))
         self.refreshScreen()
 
     def makeGrid(self):

@@ -2,19 +2,10 @@ import numpy as np
 from cython_modules.cython_parse import getLayerOutline
 from cython_modules.color_policy import multi_iteration_dot_product
 from multiprocessing import Pool
+from multiprocessing_parse import asynchronous_pool_order
 import scipy.signal
 from copy import deepcopy
 
-
-def asynchronous_pool_order(func, args, object_list):
-    pool = Pool()
-    output_list = []
-    multiple_results = [pool.apply_async(func, (object_list[i], *args))
-                        for i in range(len(object_list))]
-    for result in multiple_results:
-        value = result.get()
-        output_list.append(value)
-    return output_list
 
 class ColorPolicy:
     def __init__(self):
