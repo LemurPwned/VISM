@@ -71,21 +71,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def resizeEvent(self, event):
         """What happens when window is resized"""
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height() - 25)
-        self.panes[0].groupBox.setMinimumWidth(self.width() / 2 - 20)
-        self.panes[1].groupBox.setMinimumWidth(self.width() / 2 - 20)
-        self.panes[2].groupBox.setMinimumWidth(self.width() / 2 - 20)
-        self.panes[3].groupBox.setMinimumWidth(self.width() / 2 - 20)
-        # print("panes counter: ", self.panes[0].counter)
-        if WidgetHandler.visibleCounter > 2:
-            self.panes[0].groupBox.setMaximumHeight(self.height() / 2 - 10)
-            self.panes[0].groupBox.setMaximumHeight(self.height() / 2 - 10)
-            self.panes[0].groupBox.setMaximumHeight(self.height() / 2 - 10)
-            self.panes[0].groupBox.setMaximumHeight(self.height() / 2 - 10)
-        else:
-            self.panes[0].groupBox.setMaximumHeight(self.height() - 10)
-            self.panes[0].groupBox.setMaximumHeight(self.height() - 10)
-            self.panes[0].groupBox.setMaximumHeight(self.height() - 10)
-            self.panes[0].groupBox.setMaximumHeight(self.height() - 10)
+        for i in range(4):
+            self.panes[i].groupBox.setMinimumWidth(self.width() / 2 - 20)
+            if WidgetHandler.visibleCounter > 2:
+                self.panes[i].groupBox.setMaximumHeight(self.height() / 2 - 10)
+            else:
+                self.panes[i].groupBox.setMaximumHeight(self.height() - 10)
 
 
     def loadDirectory(self):
