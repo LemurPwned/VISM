@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import struct
-import re
 cimport cython
 
 def getOmfHeader(filename):
@@ -144,7 +143,7 @@ def getRawVectorsBinary(filename, averaging=1):
         last = f.read(constant)
         print(last)
         while last != validation:
-            guard += 1
+            guard += getRawVectorsBinary
             f.seek(constant+guard)
             last = struct.unpack('d', f.read(readout))[0]
             f.seek(0)
@@ -162,27 +161,29 @@ def getRawVectorsBinary(filename, averaging=1):
     return omf_header, rawVectorData
 
 def process_header(headers):
-    """
-    processes the header of each .omf file and return base_data dict
-    """
-    final_header = {}
-    disallowed = '[\\ |\'b\']'
-    headers = re.sub(disallowed, '', headers)
-    headers = headers.replace('\\n', "")
-    headers = headers.split('#')
-    for header_ in headers:
-        if ':' in header_:
-            components = header_.split(':')
-            try:
-                final_header[components[0]] = float(components[1])
-            except:
-                final_header[components[0]] = components[1]
-    return final_header
+  """
+  processes the header of each .omf file and return base_data dict
+  """
+  final_header = {}
+  headers = headers.replace(' ', "")
+  headers = headers.replace('\\n', "")
+  headers = headers.replace('\'b\'', "")
+  headers = headers.split('#')
+  for header_ in headers:
+      if ':' in header_:
+          components = header_.split(':')
+          try:
+              final_header[components[0]] = float(components[1])
+          except:
+              final_header[components[0]] = components[1]
+  return final_header
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def binary_format_reader(filename):
   header_part = ""
+  rawVectorData = None
+  header = None
   with open(filename, 'rb') as f:
       x = f.readline()
       while x != b'# End: Header\n':
@@ -205,8 +206,10 @@ def binary_format_reader(filename):
       k = int(header['xnodes']*header['ynodes']*header['znodes'])
       rawVectorData = standard_vertex_mode(f, k, struct_object, buff_size)
       f.close()
-      rawVectorData = normalized(rawVectorData)
-      return header, rawVectorData
+  assert rawVectorData is not None
+  assert header is not None
+  rawVectorData = normalized(rawVectorData)
+  return header, rawVectorData
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -219,11 +222,6 @@ def vbo_vertex_mode(f, k, a= [1,0,1], b =[-1,-1,0]):
       p.append([np.dot(x, a), np.dot(x, b), 0])
     return np.repeat(p, 24, axis=0).flatten()
 
-
-def standard_vertex_mode(f, k, readout):
-    return np.array([(struct.unpack('d', f.read(readout))[0],
-            struct.unpack('d', f.read(readout))[0],
-            struct.unpack('d', f.read(readout))[0]) for i in range(int(k))])
 
 def standard_vertex_mode(f, k, struct_object, buff):
     return np.array([(struct_object.unpack(f.read(buff))[0],

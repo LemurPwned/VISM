@@ -57,6 +57,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
             # this is arbitrary
             self.spacer *= decimate*3
 
+        print("VECTOR SIZE {}".format(self.vectors_list))
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw
             # if vbo drawing is selected, do additional processing

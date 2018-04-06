@@ -27,6 +27,7 @@ class VectorGLContext(AbstractGLContext, QWidget):
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
+        self.spacer = 0.2
         self.receivedOptions()
 
         self.drawing_function = self.slow_arrow_draw

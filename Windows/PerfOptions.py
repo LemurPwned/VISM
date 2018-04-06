@@ -10,6 +10,9 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.setupUi(self)
         self.loaded = True
         self.layer_size = layer_size['znodes']
+        if self.layer_size == 1:
+            self.checkBox.setEnabled(False)
+            self.checkBox.setChecked(True)
 
         self.decimate = 1
         self.averaging = 1

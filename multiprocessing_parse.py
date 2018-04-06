@@ -15,7 +15,6 @@ def asynchronous_pool_order(func, args, object_list, timeout=20):
     return output_list
 
 class MultiprocessingParse:
-
     @staticmethod
     def guess_file_type(directory):
         supported_extensions = ['.omf', '.ovf']
@@ -47,7 +46,8 @@ class MultiprocessingParse:
         :param directory
         :return rawVectorData, omf_headers, getOdtData
         """
-        files_in_directory, ext = MultiprocessingParse.guess_file_type(directory)
+        files_in_directory, ext = MultiprocessingParse.guess_file_type(
+                                                                    directory)
 
         odt_file = glob.glob(os.path.join(directory, '*.odt'))
         # look for .odt in current directory
@@ -72,7 +72,7 @@ class MultiprocessingParse:
             header = getOmfHeader(file_for_header[0])
         else:
             headers, rawVectorData = MultiprocessingParse.readBinary(
-                                                            files_in_directory)
+                                                        files_in_directory)
             header = headers[0]
             if not header:
                 raise ValueError("no .omf or .ovf file has been found")
@@ -81,27 +81,25 @@ class MultiprocessingParse:
     @staticmethod
     def readBinary(files_in_directory):
         """
-        :param files_in_directory: is a list of binary filenames in a directory
+        :param files_in_directory: is a list of binary filenames
+                                   in a directory
         :return numpy array of vectors form .omf files
         """
         text_pool = Pool()
-        rawVectorData = []
-        omf_headers = []
 
-        output = asynchronous_pool_order(getRawVectorsBinary, (),
-                                                            files_in_directory)
+        output = asynchronous_pool_order(binary_format_reader, (),
+                                                        files_in_directory)
         output = np.array(output)
-        omf_headers = output[:, 0]
+        headers = output[:, 0]
         rawVectorData = output[:, 1]
         # test this solution, turn dtype object to float64
         rawVectorData = np.array([x for x in rawVectorData], dtype=np.float64)
 
-        if rawVectorData is None or omf_headers is None:
+        if rawVectorData is None or headers is None:
             raise TypeError("\nNo vectors created")
 
         assert rawVectorData.dtype == np.float64
-
-        return omf_headers, rawVectorData
+        return headers, rawVectorData
 
     @staticmethod
     def readText(files_in_directory):
@@ -113,8 +111,8 @@ class MultiprocessingParse:
         text_pool = Pool()
         rawVectorData = []
         rawVectorData = asynchronous_pool_order(getRawVectors, (),
-                                                            files_in_directory,
-                                                            timeout=20)
+                                                        files_in_directory,
+                                                        timeout=20)
         if not rawVectorData:
             raise TypeError("\nNo vectors created")
         assert rawVectorData.dtype == np.float64
