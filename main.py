@@ -1,6 +1,10 @@
+from buildVerifier import BuildVerifier
+# verify build
+# execute makefile
+bv = BuildVerifier()
+
 import sys
 import time
-from buildVerifier import BuildVerifier
 
 from PyQt5 import QtWidgets, QtCore
 from Windows.MainWindowTemplate import Ui_MainWindow
@@ -271,9 +275,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionWindow3Delete.setDisabled(False)
 
 if __name__ == "__main__":
-    # verify build
-    # execute makefile
-    bv = BuildVerifier()
 
     app = QtWidgets.QApplication(sys.argv)
 
