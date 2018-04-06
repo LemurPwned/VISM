@@ -71,17 +71,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def resizeEvent(self, event):
         """What happens when window is resized"""
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height() - 25)
-        self.panes[0].groupBox.setMinimumWidth(self.width() / 2 - 20)
-        self.panes[1].groupBox.setMinimumWidth(self.width() / 2 - 20)
-        self.panes[2].groupBox.setMinimumWidth(self.width() / 2 - 20)
-        self.panes[3].groupBox.setMinimumWidth(self.width() / 2 - 20)
+        for i in range(4):
+            self.panes[i].groupBox.setMinimumWidth(self.width() / 2 - 20)
+            if WidgetHandler.visibleCounter > 2:
+                self.panes[i].groupBox.setMaximumHeight(self.height() / 2 - 10)
+            else:
+                self.panes[i].groupBox.setMaximumHeight(self.height() - 10)
+
 
     def loadDirectory(self):
         """Loads whole directory based on Parse class as simple as BHP"""
-        # self.thread2 = QtCore.QThread()
         fileDialog = QtWidgets.QFileDialog()
-        # fileDialog.moveToThread(self.thread2)
-        # self.thread2.start()
 
         directory = str(
             fileDialog.getExistingDirectory(
@@ -244,8 +244,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[1].hide()
         self.panes[2].hide()
         self.panes[3].hide()
+        WidgetHandler.visibleCounter = 1
 
         self.propagate_resize()
+        self.refreshScreen()
 
         self.actionWindow1Delete.setDisabled(True)
         self.actionWindow2Delete.setDisabled(True)
@@ -256,8 +258,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[1].show()
         self.panes[2].hide()
         self.panes[3].hide()
+        WidgetHandler.visibleCounter = 2
 
         self.propagate_resize()
+        self.refreshScreen()
 
         self.actionWindow1Delete.setDisabled(False)
         self.actionWindow2Delete.setDisabled(True)
@@ -268,9 +272,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[1].show()
         self.panes[2].show()
         self.panes[3].show()
+        WidgetHandler.visibleCounter = 4
 
         self.propagate_resize()
-
+        self.refreshScreen()
         self.actionWindow1Delete.setDisabled(False)
         self.actionWindow2Delete.setDisabled(False)
         self.actionWindow3Delete.setDisabled(False)
