@@ -15,6 +15,29 @@ def asynchronous_pool_order(func, args, object_list, timeout=20):
     return output_list
 
 class MultiprocessingParse:
+
+    @staticmethod
+    def guess_file_type(directory):
+        supported_extensions = ['.omf', '.ovf']
+        voted_extension = None
+        files_in_directory = os.listdir(directory)
+        # NOTE: decide what extension is found in directory
+        # could be both .omf or .ovf but not mixed
+        # omit .odt files if not really specified
+        for filename in files_in_directory:
+            for file_ext in supported_extensions:
+                if filename.endswith(file_ext):
+                    voted_extension = file_ext
+                    break
+            if voted_extension is not None:
+                break
+
+        print("SUPPORTED EXTESNION DETECTED {}".format(voted_extension))
+        files_in_directory = [os.path.join(directory, filename)
+                              for filename in files_in_directory
+                              if filename.endswith(voted_extension)]
+        return files_in_directory, voted_extension
+
     @staticmethod
     def readFolder(directory, multipleOmfHeaders=False):
         """
@@ -24,10 +47,7 @@ class MultiprocessingParse:
         :param directory
         :return rawVectorData, omf_headers, getOdtData
         """
-        files_in_directory = os.listdir(directory)
-        files_in_directory = [os.path.join(directory, filename)
-                              for filename in files_in_directory
-                              if filename.endswith('.omf')]
+        files_in_directory, ext = MultiprocessingParse.guess_file_type(directory)
 
         odt_file = glob.glob(os.path.join(directory, '*.odt'))
         # look for .odt in current directory
@@ -36,26 +56,27 @@ class MultiprocessingParse:
         elif not odt_file:
             raise ValueError("None .odt")
 
+        # NOTE: this should recognize both .omf and .ovf files
         odt_data, stages = getOdtData(odt_file[0])
-        stages = glob.glob(os.path.join(directory, '*.omf'))
+        stages = glob.glob(os.path.join(directory, '*' + ext))
         test_file = os.path.join(directory, stages[0])
 
         stages = len(stages)
 
         if not is_binary(test_file):
             rawVectorData = MultiprocessingParse.readText(files_in_directory)
-            omf_file_for_header = glob.glob(os.path.join(directory, '*.omf'))
+            file_for_header = glob.glob(os.path.join(directory, '*' + ext))
             # virtually any will do
-            if not omf_file_for_header:
-                raise ValueError("no .omf file has been found")
-            omf_header = getOmfHeader(omf_file_for_header[0])
+            if not file_for_header:
+                raise ValueError("no .omf  or .ovf file has been found")
+            header = getOmfHeader(file_for_header[0])
         else:
-            omf_headers, rawVectorData = MultiprocessingParse.readBinary(
+            headers, rawVectorData = MultiprocessingParse.readBinary(
                                                             files_in_directory)
-            omf_header = omf_headers[0]
-            if not omf_header:
-                raise ValueError("no .omf file has been found")
-        return rawVectorData, omf_header, odt_data, stages
+            header = headers[0]
+            if not header:
+                raise ValueError("no .omf or .ovf file has been found")
+        return rawVectorData, header, odt_data, stages
 
     @staticmethod
     def readBinary(files_in_directory):
@@ -72,7 +93,7 @@ class MultiprocessingParse:
         output = np.array(output)
         omf_headers = output[:, 0]
         rawVectorData = output[:, 1]
-        # test this solution, turn dtype object to float 54
+        # test this solution, turn dtype object to float64
         rawVectorData = np.array([x for x in rawVectorData], dtype=np.float64)
 
         if rawVectorData is None or omf_headers is None:

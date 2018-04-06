@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import struct
+import re
 cimport cython
 
 def getOmfHeader(filename):
@@ -138,20 +139,23 @@ def getRawVectorsBinary(filename, averaging=1):
     validation = 123456789012345.0  # this is IEEE validation value
     guard = 0
     constant = 900
+    readout = 4
     with open(filename, 'rb') as f:
         last = f.read(constant)
+        print(last)
         while last != validation:
             guard += 1
             f.seek(constant+guard)
-            last = struct.unpack('d', f.read(8))[0]
+            last = struct.unpack('d', f.read(readout))[0]
             f.seek(0)
             if guard > 250:
+                print(("Guard value exceeded {} (allowed 250)".format(guard)))
                 raise struct.error
         headers = str(f.read(constant+guard))
         omf_header = process_header(headers)
         k = int(omf_header['xnodes']*omf_header['ynodes']*omf_header['znodes'])
-        f.read(8)
-        rawVectorData = standard_vertex_mode(f, k)
+        f.read(readout)
+        rawVectorData = standard_vertex_mode(f, k, readout)
         rawVectorData = normalized(rawVectorData)
     f.close()
 
@@ -161,20 +165,48 @@ def process_header(headers):
     """
     processes the header of each .omf file and return base_data dict
     """
-    omf_header = {}
-    headers = headers.replace('\'', "")
-    headers = headers.replace(' ', "")
+    final_header = {}
+    disallowed = '[\\ |\'b\']'
+    headers = re.sub(disallowed, '', headers)
     headers = headers.replace('\\n', "")
     headers = headers.split('#')
-    for header in headers:
-        if ':' in header:
-            components = header.split(':')
+    for header_ in headers:
+        if ':' in header_:
+            components = header_.split(':')
             try:
-                omf_header[components[0]] = float(components[1])
+                final_header[components[0]] = float(components[1])
             except:
-                omf_header[components[0]] = components[1]
-    return omf_header
+                final_header[components[0]] = components[1]
+    return final_header
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def binary_format_reader(filename):
+  header_part = ""
+  with open(filename, 'rb') as f:
+      x = f.readline()
+      while x != b'# End: Header\n':
+          header_part += str(x)
+          x = f.readline()
+
+      header = process_header(header_part)
+
+      byte_type = f.readline()
+      while byte_type == b'#\n':
+          byte_type = f.readline()
+      # compile struct byte type
+      fmt, buff_size, val = decode_byte_size(byte_type)
+      struct_object = struct.Struct(fmt)
+      test_val = struct_object.unpack(f.read(buff_size))[0]
+      if  test_val != val:
+          raise ValueError("Invalid file format with validation {} value, \
+                              should be {}".format(test_val, val))
+
+      k = int(header['xnodes']*header['ynodes']*header['znodes'])
+      rawVectorData = standard_vertex_mode(f, k, struct_object, buff_size)
+      f.close()
+      rawVectorData = normalized(rawVectorData)
+      return header, rawVectorData
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -188,11 +220,32 @@ def vbo_vertex_mode(f, k, a= [1,0,1], b =[-1,-1,0]):
     return np.repeat(p, 24, axis=0).flatten()
 
 
-def standard_vertex_mode(f, k):
-    return np.array([(struct.unpack('d', f.read(8))[0],
-            struct.unpack('d', f.read(8))[0],
-            struct.unpack('d', f.read(8))[0]) for i in range(int(k))])
+def standard_vertex_mode(f, k, readout):
+    return np.array([(struct.unpack('d', f.read(readout))[0],
+            struct.unpack('d', f.read(readout))[0],
+            struct.unpack('d', f.read(readout))[0]) for i in range(int(k))])
 
+def standard_vertex_mode(f, k, struct_object, buff):
+    return np.array([(struct_object.unpack(f.read(buff))[0],
+            struct_object.unpack(f.read(buff))[0],
+            struct_object.unpack(f.read(buff))[0]) for i in range(int(k))])
+
+def decode_byte_size(byte_format_specification):
+    if byte_format_specification == b'# Begin: Data Binary 4\n':
+        # float precision - 4 bytes
+        fmt = 'f'
+        buffer_size = struct.calcsize(fmt)
+        four_byte_validation =  1234567.0
+        return fmt, buffer_size, four_byte_validation
+    elif byte_format_specification == b'# Begin: Data Binary 8\n':
+        # double precision - 8 bytes
+        fmt = 'd'
+        buffer_size = struct.calcsize(fmt)
+        eight_byte_validation = 123456789012345.0
+        return fmt, buffer_size, eight_byte_validation
+    else:
+        raise TypeError("Unknown byte specification {}".format(
+                                            str(byte_format_specification)))
 
 def generate_cubes(omf_header, spacer, skip=None, layer=None):
     layer_outline = getLayerOutline(omf_header)
