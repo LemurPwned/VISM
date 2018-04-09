@@ -133,13 +133,9 @@ class ColorPolicy:
         :param k: indicates how many times should vertex be padded
         """
         pool = Pool()
-        multiple_results = [pool.apply_async(self.color_matrix_flatten,
-                                                (p, k)) for p in color_array]
-        new_color_matrix = []
-        for result in multiple_results:
-            repeated_array = result.get(timeout=20)
-            new_color_matrix.append(repeated_array)
-        return new_color_matrix
+        output = asynchronous_pool_order(self.color_matrix_flatten, (k, ),
+                                            color_array)
+        return np.array(output, dtype='float32')
 
     def color_matrix_flatten(self, vector, times):
         return np.repeat(vector, times, axis=0).flatten()

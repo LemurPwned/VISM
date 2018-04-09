@@ -99,8 +99,7 @@ def getRawVectors(filename):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def getLayerOutline(omf_header, unit_scaler=1e9,
-                        layer_skip=False):
+def getLayerOutline(omf_header, unit_scaler=1e9):
     """
     constructs the vector outline of each layer, this is a shell that
     colors function operate on (masking)
@@ -120,8 +119,6 @@ def getLayerOutline(omf_header, unit_scaler=1e9,
     xb = float(omf_header['xbase']) * unit_scaler
     yb = float(omf_header['ybase']) * unit_scaler
     zb = float(omf_header['zbase']) * unit_scaler
-    if layer_skip:
-        zc = 1 #generate just one layer
     layers_outline = [[xb * (x%xc), yb * (y%yc), zb * (z%zc)]
             for z in range(zc) for y in range(yc) for x in range(xc)]
     return layers_outline
