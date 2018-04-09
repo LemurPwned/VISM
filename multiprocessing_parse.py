@@ -115,6 +115,5 @@ class MultiprocessingParse:
                                                         timeout=20)
         if not rawVectorData:
             raise TypeError("\nNo vectors created")
-        assert rawVectorData.dtype == np.float64
-
+        
         return np.array(rawVectorData)

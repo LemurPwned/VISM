@@ -24,9 +24,13 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.drawing_function = None
         self.function_select = 'fast'
 
+    def shareData(self, **kwargs):
+        super().shareData(**kwargs)
+        self.receivedOptions()
+
     def receivedOptions(self):
         print(self.options)
-        self.color_scheme = self.options[0]
+        self.normalize = self.options[0]
         self.averaging = int(self.options[1])
         self.layer = self.options[2]
         self.scale = int(self.options[3])

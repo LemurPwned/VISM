@@ -9,13 +9,13 @@ from PyQt5.Qt import Qt
 from PyQt5.QtCore import QPoint
 
 from cython_modules.cython_parse import generate_cubes, getLayerOutline
+from cython_modules.color_policy import multi_iteration_normalize
 
 import numpy as np
 import OpenGL.GLU as glu
 import OpenGL.GL as gl
 import math as mt
 from multiprocessing import Pool
-
 
 class VectorGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
@@ -28,7 +28,6 @@ class VectorGLContext(AbstractGLContext, QWidget):
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         self.spacer = 0.2
-        self.receivedOptions()
 
         self.drawing_function = self.slow_arrow_draw
         self.vectors_list = getLayerOutline(self.omf_header)
@@ -51,30 +50,15 @@ class VectorGLContext(AbstractGLContext, QWidget):
                                                            self.vector_set,
                                                            self.decimate,
                                                            self.disableDot)
+
+        if self.normalize:
+            multi_iteration_normalize(self.color_vectors)
+
         if decimate is not None:
             # this is arbitrary
             self.spacer *= decimate*3
 
-        if self.function_select == 'fast':
-            # doesnt work yet
-            normalized = [[0,0,0]]
-            self.drawing_function = self.vbo_arrow_draw
-            # transform into interleaved vbo format
-            self.color_vectors = custom_color_policy.apply_vbo_format(self.color_vectors,
-                                                                    k=2)
-            self.vectors_list = \
-                custom_color_policy.apply_interleaved_format(self.vectors_list,
-                                                             normalized)
-            self.buffer_len = len(self.color_vectors[0])
-            self.vectors_list = np.array(self.vectors_list)
-
-            self.color_vectors = np.array(self.color_vectors)
-            print(self.color_vectors[0], self.color_vectors.any())
-            self.vertices = 1600/2
-            print("DRAWING SHAPES {}, {}".format(self.vectors_list.shape,
-                                                 self.color_vectors.shape))
-        elif self.function_select == 'slow':
-            self.drawing_function = self.slow_arrow_draw
+        self.drawing_function = self.slow_arrow_draw
 
     def slow_arrow_draw(self):
         for vector, color in zip(self.vectors_list,

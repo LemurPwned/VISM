@@ -126,40 +126,6 @@ def getLayerOutline(omf_header, unit_scaler=1e9,
             for z in range(zc) for y in range(yc) for x in range(xc)]
     return layers_outline
 
-def getRawVectorsBinary(filename, averaging=1):
-    """
-    @param .omf binary file
-    @return returns raw_vectors from fortran lists
-    use this as it is the fastest way of reading binary files, however,
-    this has little error handling
-    """
-    vectors = []
-    base_data = {}
-    validation = 123456789012345.0  # this is IEEE validation value
-    guard = 0
-    constant = 900
-    readout = 4
-    with open(filename, 'rb') as f:
-        last = f.read(constant)
-        print(last)
-        while last != validation:
-            guard += getRawVectorsBinary
-            f.seek(constant+guard)
-            last = struct.unpack('d', f.read(readout))[0]
-            f.seek(0)
-            if guard > 250:
-                print(("Guard value exceeded {} (allowed 250)".format(guard)))
-                raise struct.error
-        headers = str(f.read(constant+guard))
-        omf_header = process_header(headers)
-        k = int(omf_header['xnodes']*omf_header['ynodes']*omf_header['znodes'])
-        f.read(readout)
-        rawVectorData = standard_vertex_mode(f, k, readout)
-        rawVectorData = normalized(rawVectorData)
-    f.close()
-
-    return omf_header, rawVectorData
-
 def process_header(headers):
   """
   processes the header of each .omf file and return base_data dict
@@ -208,7 +174,6 @@ def binary_format_reader(filename):
       f.close()
   assert rawVectorData is not None
   assert header is not None
-  rawVectorData = normalized(rawVectorData)
   return header, rawVectorData
 
 @cython.boundscheck(False)

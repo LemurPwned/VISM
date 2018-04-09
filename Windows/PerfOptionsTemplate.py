@@ -18,7 +18,7 @@ class Ui_Dialog(object):
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.formLayoutWidget = QtWidgets.QWidget(Dialog)
-        self.formLayoutWidget.setGeometry(QtCore.QRect(30, 20, 251, 576))
+        self.formLayoutWidget.setGeometry(QtCore.QRect(30, 20, 251, 580))
         self.formLayoutWidget.setObjectName("formLayoutWidget")
         self.formLayout = QtWidgets.QFormLayout(self.formLayoutWidget)
         self.formLayout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
@@ -66,11 +66,6 @@ class Ui_Dialog(object):
         self.label_2.setAlignment(QtCore.Qt.AlignCenter)
         self.label_2.setObjectName("label_2")
         self.formLayout.setWidget(7, QtWidgets.QFormLayout.SpanningRole, self.label_2)
-        self.comboBox = QtWidgets.QComboBox(self.formLayoutWidget)
-        self.comboBox.setObjectName("comboBox")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.formLayout.setWidget(8, QtWidgets.QFormLayout.SpanningRole, self.comboBox)
         spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.formLayout.setItem(9, QtWidgets.QFormLayout.SpanningRole, spacerItem3)
         self.label_3 = QtWidgets.QLabel(self.formLayoutWidget)
@@ -122,6 +117,10 @@ class Ui_Dialog(object):
         self.checkBox_4 = QtWidgets.QCheckBox(self.formLayoutWidget)
         self.checkBox_4.setObjectName("checkBox_4")
         self.formLayout.setWidget(17, QtWidgets.QFormLayout.FieldRole, self.checkBox_4)
+        self.checkBox_5 = QtWidgets.QCheckBox(self.formLayoutWidget)
+        self.checkBox_5.setChecked(True)
+        self.checkBox_5.setObjectName("checkBox_5")
+        self.formLayout.setWidget(8, QtWidgets.QFormLayout.SpanningRole, self.checkBox_5)
 
         self.retranslateUi(Dialog)
         self.buttonBox.accepted.connect(Dialog.accept)
@@ -136,8 +135,6 @@ class Ui_Dialog(object):
         self.label_8.setText(_translate("Dialog", "Decimation"))
         self.checkBox_2.setText(_translate("Dialog", "On"))
         self.label_2.setText(_translate("Dialog", "Color Policy"))
-        self.comboBox.setItemText(0, _translate("Dialog", "Standard"))
-        self.comboBox.setItemText(1, _translate("Dialog", "Reversed"))
         self.label_3.setText(_translate("Dialog", "Layers"))
         self.checkBox.setText(_translate("Dialog", "All"))
         self.label_4.setText(_translate("Dialog", "Size"))
@@ -148,6 +145,7 @@ class Ui_Dialog(object):
         self.lineEdit_3.setText(_translate("Dialog", "[0, 0, 1]"))
         self.label_7.setText(_translate("Dialog", "B"))
         self.checkBox_4.setText(_translate("Dialog", "Disable"))
+        self.checkBox_5.setText(_translate("Dialog", "Normalize all vectors?"))
 
 
 if __name__ == "__main__":

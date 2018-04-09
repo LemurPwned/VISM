@@ -6,9 +6,9 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.Qt import Qt
 
 from cython_modules.cython_parse import generate_cubes, getLayerOutline, genCubes
+from cython_modules.color_policy import multi_iteration_normalize
 
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
-
 
 from ColorPolicy import ColorPolicy
 from multiprocessing import Pool
@@ -30,7 +30,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
-        self.receivedOptions()
 
         self.spacer = self.spacer*self.scale
         xc = int(self.omf_header['xnodes'])
@@ -57,7 +56,9 @@ class CubicGLContext(AbstractGLContext, QWidget):
             # this is arbitrary
             self.spacer *= decimate*3
 
-        print("VECTOR SIZE {}".format(self.vectors_list))
+        if self.normalize:
+            multi_iteration_normalize(self.color_vectors)
+
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw
             # if vbo drawing is selected, do additional processing
