@@ -111,7 +111,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                         *MultiprocessingParse.readFolder(directory))
                 x.close()
             except ValueError as e:
-                raise Exception("fubar occurred").with_traceback(e)
                 msg = "Invalid directory: {}. \
                     Error Message {}\nDo you wish to reselect?".format(directory,
                                                                         str(e))

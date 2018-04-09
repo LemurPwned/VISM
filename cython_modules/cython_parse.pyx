@@ -173,22 +173,12 @@ def binary_format_reader(filename):
   assert header is not None
   return header, rawVectorData
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-def vbo_vertex_mode(f, k, a= [1,0,1], b =[-1,-1,0]):
-    p = []
-    for i in range(k):
-      x = [struct.unpack('d', f.read(8))[0],
-              struct.unpack('d', f.read(8))[0],
-              struct.unpack('d', f.read(8))[0]]
-      p.append([np.dot(x, a), np.dot(x, b), 0])
-    return np.repeat(p, 24, axis=0).flatten()
-
 
 def standard_vertex_mode(f, k, struct_object, buff):
     return np.array([(struct_object.unpack(f.read(buff))[0],
             struct_object.unpack(f.read(buff))[0],
             struct_object.unpack(f.read(buff))[0]) for i in range(int(k))])
+
 
 def decode_byte_size(byte_format_specification):
     if byte_format_specification == b'# Begin: Data Binary 4\n':
@@ -206,17 +196,6 @@ def decode_byte_size(byte_format_specification):
     else:
         raise TypeError("Unknown byte specification {}".format(
                                             str(byte_format_specification)))
-
-def generate_cubes(omf_header, spacer, skip=None, layer=None):
-    layer_outline = getLayerOutline(omf_header)
-    if layer:
-      layer_outline = layer_outline[:int(omf_header['xnodes'])*\
-                                    int(omf_header['ynodes'])]
-      layer_outline = layer_outline[::skip]
-
-    layer_cubed = np.array([cube(x, spacer)
-                                    for x in layer_outline]).flatten()
-    return layer_cubed, len(layer_cubed)/3
 
 def genCubes(layer_outline, spacer):
     layer_cubed = np.array([cube(x, spacer)

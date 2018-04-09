@@ -82,49 +82,6 @@ class ColorPolicy:
         subM = strd(a, shape = s, strides = a.strides * 2)
         return np.einsum('ij,ijkl->kl', f, subM)
 
-    def apply_normalization(self, color_array):
-        """
-        normalizes a large input color_array to unit vectors
-        :param color_array: to be normalized, numpy array
-        :param xc: nodes in x direction
-        :param yc: nodes in y direction
-        :parac zc: nodes in z direction
-        """
-        pool = Pool()
-        zc = 1
-        xc = 1
-        yc = 1
-        if zc > 1:
-            multiple_results = [pool.apply_async(
-                                self.multilayer_normalization,
-                                (color_array[i], xc, yc, zc))
-                                for i in range(len(color_array))]
-        else:
-            multiple_results = [pool.apply_async(
-                                self.atomic_normalization,
-                                (color_array[i],))
-                                for i in range(len(color_array))]
-        color_array = [result.get(timeout=12) for result
-                            in multiple_results]
-        return np.array(color_array)
-
-    def multilayer_normalization(self, multilayer_matrix, xc, yc, zc):
-        layer_array = []
-        for layer in multilayer_matrix:
-            layer_array.append(self.atomic_normalization(layer, xc, yc, 1))
-        return np.array(layer_array)
-
-    def atomic_normalization(self, color_array):
-        """
-        performs unit normalization on tiny arrays
-        :param xc: nodes in x direction
-        :param yc: nodes in y direction
-        :parac zc: nodes in z direction
-        """
-        normalized_color_array = np.array([x/np.linalg.norm(x)
-                        if x.any() else [0.0,0.0,0.0] for x in color_array])
-        return normalized_color_array
-
     def apply_vbo_format(self, color_array, k=24):
         """
         transforms a given numpy array matrix representing vecotrs in space
@@ -156,7 +113,6 @@ class ColorPolicy:
                             disableDot=True):
         color = np.array(color)
         outline = np.array(outline)
-        # color = self.apply_normalization(color)
         if type(picked_layer) == int:
             # if single layer is picked modify memory data
             zc = 1
@@ -167,11 +123,9 @@ class ColorPolicy:
 
         # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
         if decimate != 1:
-            print("DECIMATING")
             color = color[:,::decimate,:]
             outline = outline[::decimate, :]
         if averaging != 1:
-            print("AVERAGING")
             averaging_intensity = float(1/averaging)
             # generate mask of shape (zc*yc*xc, 3)
             # take n random numbers (1/averaging)*size
@@ -188,7 +142,6 @@ class ColorPolicy:
             assert color.shape == (iterations, zc*yc*xc, 3)
         vector_set = np.array(vector_set).astype(np.float32)
         if not disableDot:
-            print("DOT PRODUCT")
             dotted_color = asynchronous_pool_order(multi_iteration_dot_product,
                                                     (vector_set,), color)
         else:
