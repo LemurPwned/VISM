@@ -1,6 +1,8 @@
 from PyQt5 import QtWidgets
 
 class WidgetHandler:
+    visibleCounter = 0
+
     def __init__(self, number=0, parent=None):
         self._number = number
         self._parent = parent
