@@ -4,8 +4,10 @@ import numpy as np
 
 from PyQt5.QtWidgets import QWidget
 from PyQt5.Qt import Qt
+from PyQt5.QtCore import QPoint, QThread
 
-from cython_modules.cython_parse import generate_cubes, getLayerOutline, genCubes
+
+from cython_modules.cython_parse import getLayerOutline, genCubes
 from cython_modules.color_policy import multi_iteration_normalize
 
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
@@ -28,10 +30,11 @@ class CubicGLContext(AbstractGLContext, QWidget):
 
         self.shareData(**data_dict)
 
+
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
 
-        # self.spacer = self.spacer*self.scale
+        self.spacer = self.spacer*self.scale
         xc = int(self.omf_header['xnodes'])
         yc = int(self.omf_header['ynodes'])
         zc = int(self.omf_header['znodes'])
@@ -97,6 +100,8 @@ class CubicGLContext(AbstractGLContext, QWidget):
         if self.buffers is None:
             self.buffers = self.create_vbo()
         else:
+            if self.grabFramebuffer().save(str(self.i), 'JPG'):
+                print("successfull saving")
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
             # later move to set_i function so that reference changes
             # does not cause buffer rebinding

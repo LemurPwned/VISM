@@ -48,11 +48,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         # EDIT SUBMENU
         self.actionAnimation.triggered.connect(self.showAnimationSettings)
+
         self.actionWindow0Delete.triggered.connect(lambda: self.deleteWidget(0))
         self.actionWindow1Delete.triggered.connect(lambda: self.deleteWidget(1))
         self.actionWindow2Delete.triggered.connect(lambda: self.deleteWidget(2))
         self.actionWindow3Delete.triggered.connect(lambda: self.deleteWidget(3))
 
+        # OPTIONS SUBMENU
+        self.actionPerformance.triggered.connect(self.promptDirectory)
         # VIEW SUBMENU
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
         self.action2_Windows_Grid.triggered.connect(self.make2WindowsGrid)
@@ -83,6 +86,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self.panes[i].groupBox.setMaximumHeight(self.height() - 10)
 
 
+    def promptDirectory(self):
+        fileDialog = QtWidgets.QFileDialog()
+
+        directory = str(
+            fileDialog.getExistingDirectory(
+                self,
+                "Select Directory",
+                options = QtWidgets.QFileDialog.ShowDirsOnly))
+        fileDialog.close()
+        return directory
+    
     def loadDirectory(self):
         """Loads whole directory based on Parse class as simple as BHP"""
         fileDialog = QtWidgets.QFileDialog()

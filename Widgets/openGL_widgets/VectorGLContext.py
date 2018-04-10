@@ -6,9 +6,9 @@ from ColorPolicy import ColorPolicy
 
 from ctypes import c_void_p
 from PyQt5.Qt import Qt
-from PyQt5.QtCore import QPoint
+from PyQt5.QtCore import QPoint, QThread
 
-from cython_modules.cython_parse import generate_cubes, getLayerOutline
+from cython_modules.cython_parse import getLayerOutline
 from cython_modules.color_policy import multi_iteration_normalize
 
 import numpy as np

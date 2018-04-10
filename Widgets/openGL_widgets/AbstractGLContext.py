@@ -7,6 +7,7 @@ import OpenGL.GLU as glu
 from PyQt5.Qt import Qt
 from PyQt5.QtCore import QPoint
 
+# from PyQt5.QPixMap import grabWidget
 import math as mt
 
 
@@ -59,6 +60,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         Initializes openGL context and scenery
         """
+
         gl.glClearColor(0.0, 0.0, 0.0, 1.0)
         gl.glEnable(gl.GL_DEPTH_TEST)
 

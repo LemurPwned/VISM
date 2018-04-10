@@ -146,7 +146,7 @@ class ColorPolicy:
                                                     (vector_set,), color)
         else:
             dotted_color = color
-            dotted_color = np.array(dotted_color)
+        dotted_color = np.array(dotted_color)
         outline = np.array(outline)
         # this should have shape (iterations, zc*yc*xc, 3)
         if not decimate:
