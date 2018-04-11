@@ -2,26 +2,23 @@ import sys
 from PyQt5 import QtWidgets#.QtWidgets import QApplication
 from PyQt5.QtTest import QTest
 from PyQt5.QtCore import Qt
-from PyQt5 import QtCore
 from main import MainWindow
-from Parser import Parser
-from Canvas import Canvas
-from CanvasLayer import CanvasLayer
-
+from multiprocessing_parse import MultiprocessingParse
 
 
 class Debugger:
     def __init__(self):
         self.path = "data/firstData/"
         self.mainGui = MainWindow()
+        self.doh = self.mainGui.doh
+        self.sp = self.mainGui.sp
+
 
     def loadData(self):
-        self.rawVectorData, self.omf_header, self.odtData, \
-                self.stages = Parser.readFolder(self.path)
-        self.mainGui.rawVectorData = self.rawVectorData
-        self.mainGui.omf_header = self.omf_header
-        self.mainGui.odt_data = self.odtData
-        self.mainGui.stages = self.stages
+        # self.sp.swap_settings_type(value[1])
+        self.doh.passListObject(('color_vectors', 'omf_header',
+                                 'odt_data', 'iterations'),
+                                *MultiprocessingParse.readFolder("data/firstData/"))
         self.mainGui._LOADED_FLAG_ = True
 
 
@@ -47,5 +44,5 @@ if __name__ == "__main__":
     debugger.mainGui.show()
     debugger.loadData()
     debugger.setupPanes(1)
-    debugger.makeAllPanes2DPlot()
+    # debugger.makeAllPanes2DPlot()
     sys.exit(app.exec_())
