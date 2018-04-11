@@ -35,6 +35,7 @@ class MultiprocessingParse:
         files_in_directory = [os.path.join(directory, filename)
                               for filename in files_in_directory
                               if filename.endswith(voted_extension)]
+        files_in_directory = sorted(files_in_directory)
         return files_in_directory, voted_extension
 
     @staticmethod
@@ -115,5 +116,5 @@ class MultiprocessingParse:
                                                         timeout=20)
         if not rawVectorData:
             raise TypeError("\nNo vectors created")
-        
+
         return np.array(rawVectorData)
