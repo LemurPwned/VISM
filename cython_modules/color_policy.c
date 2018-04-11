@@ -1289,6 +1289,14 @@ static int __Pyx_SetItemInt_Generic(PyObject *o, PyObject *j, PyObject *v);
 static CYTHON_INLINE int __Pyx_SetItemInt_Fast(PyObject *o, Py_ssize_t i, PyObject *v,
                                                int is_list, int wraparound, int boundscheck);
 
+/* PyObjectCallMethO.proto */
+#if CYTHON_COMPILING_IN_CPYTHON
+static CYTHON_INLINE PyObject* __Pyx_PyObject_CallMethO(PyObject *func, PyObject *arg);
+#endif
+
+/* PyObjectCallOneArg.proto */
+static CYTHON_INLINE PyObject* __Pyx_PyObject_CallOneArg(PyObject *func, PyObject *arg);
+
 /* RaiseException.proto */
 static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb, PyObject *cause);
 
@@ -1597,24 +1605,30 @@ static PyObject *__pyx_builtin_ImportError;
 static const char __pyx_k_i[] = "i";
 static const char __pyx_k_ci[] = "ci";
 static const char __pyx_k_np[] = "np";
-static const char __pyx_k_sd[] = "sd";
 static const char __pyx_k_dot[] = "dot";
+static const char __pyx_k_axis[] = "axis";
 static const char __pyx_k_main[] = "__main__";
+static const char __pyx_k_norm[] = "norm";
 static const char __pyx_k_test[] = "__test__";
 static const char __pyx_k_numpy[] = "numpy";
 static const char __pyx_k_range[] = "range";
 static const char __pyx_k_import[] = "__import__";
+static const char __pyx_k_linalg[] = "linalg";
 static const char __pyx_k_vector[] = "vector";
 static const char __pyx_k_vec_set[] = "vec_set";
+static const char __pyx_k_keepdims[] = "keepdims";
 static const char __pyx_k_ValueError[] = "ValueError";
 static const char __pyx_k_ImportError[] = "ImportError";
 static const char __pyx_k_RuntimeError[] = "RuntimeError";
 static const char __pyx_k_color_policy[] = "color_policy";
 static const char __pyx_k_color_vector[] = "color_vector";
 static const char __pyx_k_color_iteration[] = "color_iteration";
+static const char __pyx_k_color_iterations[] = "color_iterations";
 static const char __pyx_k_atomic_dot_product[] = "atomic_dot_product";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
 static const char __pyx_k_relative_vector_set[] = "relative_vector_set";
+static const char __pyx_k_atomic_normalization[] = "atomic_normalization";
+static const char __pyx_k_multi_iteration_normalize[] = "multi_iteration_normalize";
 static const char __pyx_k_multi_iteration_dot_product[] = "multi_iteration_dot_product";
 static const char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
 static const char __pyx_k_cython_modules_color_policy_pyx[] = "cython_modules/color_policy.pyx";
@@ -1632,34 +1646,43 @@ static PyObject *__pyx_kp_u_Non_native_byte_order_not_suppor;
 static PyObject *__pyx_n_s_RuntimeError;
 static PyObject *__pyx_n_s_ValueError;
 static PyObject *__pyx_n_s_atomic_dot_product;
+static PyObject *__pyx_n_s_atomic_normalization;
+static PyObject *__pyx_n_s_axis;
 static PyObject *__pyx_n_s_ci;
 static PyObject *__pyx_n_s_cline_in_traceback;
 static PyObject *__pyx_n_s_color_iteration;
+static PyObject *__pyx_n_s_color_iterations;
 static PyObject *__pyx_n_s_color_policy;
 static PyObject *__pyx_n_s_color_vector;
 static PyObject *__pyx_kp_s_cython_modules_color_policy_pyx;
 static PyObject *__pyx_n_s_dot;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_import;
+static PyObject *__pyx_n_s_keepdims;
+static PyObject *__pyx_n_s_linalg;
 static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_n_s_multi_iteration_dot_product;
+static PyObject *__pyx_n_s_multi_iteration_normalize;
 static PyObject *__pyx_kp_u_ndarray_is_not_C_contiguous;
 static PyObject *__pyx_kp_u_ndarray_is_not_Fortran_contiguou;
+static PyObject *__pyx_n_s_norm;
 static PyObject *__pyx_n_s_np;
 static PyObject *__pyx_n_s_numpy;
 static PyObject *__pyx_kp_s_numpy_core_multiarray_failed_to;
 static PyObject *__pyx_kp_s_numpy_core_umath_failed_to_impor;
 static PyObject *__pyx_n_s_range;
 static PyObject *__pyx_n_s_relative_vector_set;
-static PyObject *__pyx_n_s_sd;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_vec_set;
 static PyObject *__pyx_n_s_vector;
 static PyObject *__pyx_pf_12color_policy_atomic_dot_product(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_color_vector, PyArrayObject *__pyx_v_relative_vector_set); /* proto */
 static PyObject *__pyx_pf_12color_policy_2multi_iteration_dot_product(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_color_iteration, PyArrayObject *__pyx_v_vec_set); /* proto */
+static PyObject *__pyx_pf_12color_policy_4atomic_normalization(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_color_vector); /* proto */
+static PyObject *__pyx_pf_12color_policy_6multi_iteration_normalize(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_color_iterations); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
+static PyObject *__pyx_int_1;
 static PyObject *__pyx_tuple_;
 static PyObject *__pyx_tuple__2;
 static PyObject *__pyx_tuple__3;
@@ -1671,8 +1694,12 @@ static PyObject *__pyx_tuple__8;
 static PyObject *__pyx_tuple__9;
 static PyObject *__pyx_tuple__10;
 static PyObject *__pyx_tuple__12;
+static PyObject *__pyx_tuple__14;
+static PyObject *__pyx_tuple__16;
 static PyObject *__pyx_codeobj__11;
 static PyObject *__pyx_codeobj__13;
+static PyObject *__pyx_codeobj__15;
+static PyObject *__pyx_codeobj__17;
 
 /* "color_policy.pyx":7
  * @cython.boundscheck(False)
@@ -2011,7 +2038,6 @@ static PyObject *__pyx_pw_12color_policy_3multi_iteration_dot_product(PyObject *
 static PyObject *__pyx_pf_12color_policy_2multi_iteration_dot_product(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_color_iteration, PyArrayObject *__pyx_v_vec_set) {
   int __pyx_v_i;
   int __pyx_v_ci;
-  CYTHON_UNUSED int __pyx_v_sd;
   __Pyx_LocalBuf_ND __pyx_pybuffernd_color_iteration;
   __Pyx_Buffer __pyx_pybuffer_color_iteration;
   __Pyx_LocalBuf_ND __pyx_pybuffernd_vec_set;
@@ -2050,23 +2076,14 @@ static PyObject *__pyx_pf_12color_policy_2multi_iteration_dot_product(CYTHON_UNU
  *     cdef:
  *         int i
  *         int ci = color_iteration.shape[0]             # <<<<<<<<<<<<<<
- *         int sd = color_iteration.shape[1]
  *     for i in range(0, ci):
+ *         color_iteration[i] = atomic_dot_product(color_iteration[i], vec_set)
  */
   __pyx_v_ci = (__pyx_v_color_iteration->dimensions[0]);
 
   /* "color_policy.pyx":18
  *         int i
  *         int ci = color_iteration.shape[0]
- *         int sd = color_iteration.shape[1]             # <<<<<<<<<<<<<<
- *     for i in range(0, ci):
- *         color_iteration[i] = atomic_dot_product(color_iteration[i], vec_set)
- */
-  __pyx_v_sd = (__pyx_v_color_iteration->dimensions[1]);
-
-  /* "color_policy.pyx":19
- *         int ci = color_iteration.shape[0]
- *         int sd = color_iteration.shape[1]
  *     for i in range(0, ci):             # <<<<<<<<<<<<<<
  *         color_iteration[i] = atomic_dot_product(color_iteration[i], vec_set)
  *     return color_iteration
@@ -2075,15 +2092,16 @@ static PyObject *__pyx_pf_12color_policy_2multi_iteration_dot_product(CYTHON_UNU
   for (__pyx_t_2 = 0; __pyx_t_2 < __pyx_t_1; __pyx_t_2+=1) {
     __pyx_v_i = __pyx_t_2;
 
-    /* "color_policy.pyx":20
- *         int sd = color_iteration.shape[1]
+    /* "color_policy.pyx":19
+ *         int ci = color_iteration.shape[0]
  *     for i in range(0, ci):
  *         color_iteration[i] = atomic_dot_product(color_iteration[i], vec_set)             # <<<<<<<<<<<<<<
  *     return color_iteration
+ * 
  */
-    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_atomic_dot_product); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 20, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_atomic_dot_product); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 19, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = __Pyx_GetItemInt(((PyObject *)__pyx_v_color_iteration), __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 0, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 20, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_GetItemInt(((PyObject *)__pyx_v_color_iteration), __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 0, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 19, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __pyx_t_6 = NULL;
     __pyx_t_7 = 0;
@@ -2100,7 +2118,7 @@ static PyObject *__pyx_pf_12color_policy_2multi_iteration_dot_product(CYTHON_UNU
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_4)) {
       PyObject *__pyx_temp[3] = {__pyx_t_6, __pyx_t_5, ((PyObject *)__pyx_v_vec_set)};
-      __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_7, 2+__pyx_t_7); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 20, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_7, 2+__pyx_t_7); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 19, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -2109,14 +2127,14 @@ static PyObject *__pyx_pf_12color_policy_2multi_iteration_dot_product(CYTHON_UNU
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
       PyObject *__pyx_temp[3] = {__pyx_t_6, __pyx_t_5, ((PyObject *)__pyx_v_vec_set)};
-      __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_7, 2+__pyx_t_7); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 20, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_7, 2+__pyx_t_7); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 19, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     } else
     #endif
     {
-      __pyx_t_8 = PyTuple_New(2+__pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 20, __pyx_L1_error)
+      __pyx_t_8 = PyTuple_New(2+__pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 19, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       if (__pyx_t_6) {
         __Pyx_GIVEREF(__pyx_t_6); PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_6); __pyx_t_6 = NULL;
@@ -2127,19 +2145,21 @@ static PyObject *__pyx_pf_12color_policy_2multi_iteration_dot_product(CYTHON_UNU
       __Pyx_GIVEREF(((PyObject *)__pyx_v_vec_set));
       PyTuple_SET_ITEM(__pyx_t_8, 1+__pyx_t_7, ((PyObject *)__pyx_v_vec_set));
       __pyx_t_5 = 0;
-      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_8, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 20, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_8, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 19, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     }
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(__Pyx_SetItemInt(((PyObject *)__pyx_v_color_iteration), __pyx_v_i, __pyx_t_3, int, 1, __Pyx_PyInt_From_int, 0, 0, 0) < 0)) __PYX_ERR(0, 20, __pyx_L1_error)
+    if (unlikely(__Pyx_SetItemInt(((PyObject *)__pyx_v_color_iteration), __pyx_v_i, __pyx_t_3, int, 1, __Pyx_PyInt_From_int, 0, 0, 0) < 0)) __PYX_ERR(0, 19, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
 
-  /* "color_policy.pyx":21
+  /* "color_policy.pyx":20
  *     for i in range(0, ci):
  *         color_iteration[i] = atomic_dot_product(color_iteration[i], vec_set)
  *     return color_iteration             # <<<<<<<<<<<<<<
+ * 
+ * 
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_INCREF(((PyObject *)__pyx_v_color_iteration));
@@ -2174,6 +2194,295 @@ static PyObject *__pyx_pf_12color_policy_2multi_iteration_dot_product(CYTHON_UNU
   __pyx_L0:;
   __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_color_iteration.rcbuffer->pybuffer);
   __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_vec_set.rcbuffer->pybuffer);
+  __pyx_L2:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "color_policy.pyx":25
+ * @cython.boundscheck(False)
+ * @cython.wraparound(False)
+ * def atomic_normalization(np.ndarray[np.float64_t, ndim=2] color_vector):             # <<<<<<<<<<<<<<
+ *     return color_vector/np.linalg.norm(color_vector, axis=1, keepdims=True)
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_12color_policy_5atomic_normalization(PyObject *__pyx_self, PyObject *__pyx_v_color_vector); /*proto*/
+static PyMethodDef __pyx_mdef_12color_policy_5atomic_normalization = {"atomic_normalization", (PyCFunction)__pyx_pw_12color_policy_5atomic_normalization, METH_O, 0};
+static PyObject *__pyx_pw_12color_policy_5atomic_normalization(PyObject *__pyx_self, PyObject *__pyx_v_color_vector) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("atomic_normalization (wrapper)", 0);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_color_vector), __pyx_ptype_5numpy_ndarray, 1, "color_vector", 0))) __PYX_ERR(0, 25, __pyx_L1_error)
+  __pyx_r = __pyx_pf_12color_policy_4atomic_normalization(__pyx_self, ((PyArrayObject *)__pyx_v_color_vector));
+
+  /* function exit code */
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_12color_policy_4atomic_normalization(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_color_vector) {
+  __Pyx_LocalBuf_ND __pyx_pybuffernd_color_vector;
+  __Pyx_Buffer __pyx_pybuffer_color_vector;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  __Pyx_RefNannySetupContext("atomic_normalization", 0);
+  __pyx_pybuffer_color_vector.pybuffer.buf = NULL;
+  __pyx_pybuffer_color_vector.refcount = 0;
+  __pyx_pybuffernd_color_vector.data = NULL;
+  __pyx_pybuffernd_color_vector.rcbuffer = &__pyx_pybuffer_color_vector;
+  {
+    __Pyx_BufFmt_StackElem __pyx_stack[1];
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_color_vector.rcbuffer->pybuffer, (PyObject*)__pyx_v_color_vector, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 2, 0, __pyx_stack) == -1)) __PYX_ERR(0, 25, __pyx_L1_error)
+  }
+  __pyx_pybuffernd_color_vector.diminfo[0].strides = __pyx_pybuffernd_color_vector.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_color_vector.diminfo[0].shape = __pyx_pybuffernd_color_vector.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_color_vector.diminfo[1].strides = __pyx_pybuffernd_color_vector.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_color_vector.diminfo[1].shape = __pyx_pybuffernd_color_vector.rcbuffer->pybuffer.shape[1];
+
+  /* "color_policy.pyx":26
+ * @cython.wraparound(False)
+ * def atomic_normalization(np.ndarray[np.float64_t, ndim=2] color_vector):
+ *     return color_vector/np.linalg.norm(color_vector, axis=1, keepdims=True)             # <<<<<<<<<<<<<<
+ * 
+ * @cython.boundscheck(False)
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 26, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_linalg); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 26, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_norm); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 26, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 26, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_INCREF(((PyObject *)__pyx_v_color_vector));
+  __Pyx_GIVEREF(((PyObject *)__pyx_v_color_vector));
+  PyTuple_SET_ITEM(__pyx_t_2, 0, ((PyObject *)__pyx_v_color_vector));
+  __pyx_t_3 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 26, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_axis, __pyx_int_1) < 0) __PYX_ERR(0, 26, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_keepdims, Py_True) < 0) __PYX_ERR(0, 26, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 26, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = __Pyx_PyNumber_Divide(((PyObject *)__pyx_v_color_vector), __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 26, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_r = __pyx_t_3;
+  __pyx_t_3 = 0;
+  goto __pyx_L0;
+
+  /* "color_policy.pyx":25
+ * @cython.boundscheck(False)
+ * @cython.wraparound(False)
+ * def atomic_normalization(np.ndarray[np.float64_t, ndim=2] color_vector):             # <<<<<<<<<<<<<<
+ *     return color_vector/np.linalg.norm(color_vector, axis=1, keepdims=True)
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  { PyObject *__pyx_type, *__pyx_value, *__pyx_tb;
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
+    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_color_vector.rcbuffer->pybuffer);
+  __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
+  __Pyx_AddTraceback("color_policy.atomic_normalization", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  goto __pyx_L2;
+  __pyx_L0:;
+  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_color_vector.rcbuffer->pybuffer);
+  __pyx_L2:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "color_policy.pyx":30
+ * @cython.boundscheck(False)
+ * @cython.wraparound(False)
+ * def multi_iteration_normalize(np.ndarray[np.float64_t, ndim=3] color_iterations):             # <<<<<<<<<<<<<<
+ *     cdef:
+ *         int i
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_12color_policy_7multi_iteration_normalize(PyObject *__pyx_self, PyObject *__pyx_v_color_iterations); /*proto*/
+static PyMethodDef __pyx_mdef_12color_policy_7multi_iteration_normalize = {"multi_iteration_normalize", (PyCFunction)__pyx_pw_12color_policy_7multi_iteration_normalize, METH_O, 0};
+static PyObject *__pyx_pw_12color_policy_7multi_iteration_normalize(PyObject *__pyx_self, PyObject *__pyx_v_color_iterations) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("multi_iteration_normalize (wrapper)", 0);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_color_iterations), __pyx_ptype_5numpy_ndarray, 1, "color_iterations", 0))) __PYX_ERR(0, 30, __pyx_L1_error)
+  __pyx_r = __pyx_pf_12color_policy_6multi_iteration_normalize(__pyx_self, ((PyArrayObject *)__pyx_v_color_iterations));
+
+  /* function exit code */
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_12color_policy_6multi_iteration_normalize(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_color_iterations) {
+  int __pyx_v_i;
+  int __pyx_v_ci;
+  __Pyx_LocalBuf_ND __pyx_pybuffernd_color_iterations;
+  __Pyx_Buffer __pyx_pybuffer_color_iterations;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  int __pyx_t_1;
+  int __pyx_t_2;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  PyObject *__pyx_t_6 = NULL;
+  PyObject *__pyx_t_7 = NULL;
+  __Pyx_RefNannySetupContext("multi_iteration_normalize", 0);
+  __pyx_pybuffer_color_iterations.pybuffer.buf = NULL;
+  __pyx_pybuffer_color_iterations.refcount = 0;
+  __pyx_pybuffernd_color_iterations.data = NULL;
+  __pyx_pybuffernd_color_iterations.rcbuffer = &__pyx_pybuffer_color_iterations;
+  {
+    __Pyx_BufFmt_StackElem __pyx_stack[1];
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_color_iterations.rcbuffer->pybuffer, (PyObject*)__pyx_v_color_iterations, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 3, 0, __pyx_stack) == -1)) __PYX_ERR(0, 30, __pyx_L1_error)
+  }
+  __pyx_pybuffernd_color_iterations.diminfo[0].strides = __pyx_pybuffernd_color_iterations.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_color_iterations.diminfo[0].shape = __pyx_pybuffernd_color_iterations.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_color_iterations.diminfo[1].strides = __pyx_pybuffernd_color_iterations.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_color_iterations.diminfo[1].shape = __pyx_pybuffernd_color_iterations.rcbuffer->pybuffer.shape[1]; __pyx_pybuffernd_color_iterations.diminfo[2].strides = __pyx_pybuffernd_color_iterations.rcbuffer->pybuffer.strides[2]; __pyx_pybuffernd_color_iterations.diminfo[2].shape = __pyx_pybuffernd_color_iterations.rcbuffer->pybuffer.shape[2];
+
+  /* "color_policy.pyx":33
+ *     cdef:
+ *         int i
+ *         int ci = color_iterations.shape[0]             # <<<<<<<<<<<<<<
+ *     for i in range(0, ci):
+ *         color_iterations[i] = atomic_normalization(color_iterations[i])
+ */
+  __pyx_v_ci = (__pyx_v_color_iterations->dimensions[0]);
+
+  /* "color_policy.pyx":34
+ *         int i
+ *         int ci = color_iterations.shape[0]
+ *     for i in range(0, ci):             # <<<<<<<<<<<<<<
+ *         color_iterations[i] = atomic_normalization(color_iterations[i])
+ *     return color_iterations
+ */
+  __pyx_t_1 = __pyx_v_ci;
+  for (__pyx_t_2 = 0; __pyx_t_2 < __pyx_t_1; __pyx_t_2+=1) {
+    __pyx_v_i = __pyx_t_2;
+
+    /* "color_policy.pyx":35
+ *         int ci = color_iterations.shape[0]
+ *     for i in range(0, ci):
+ *         color_iterations[i] = atomic_normalization(color_iterations[i])             # <<<<<<<<<<<<<<
+ *     return color_iterations
+ */
+    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_atomic_normalization); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 35, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __pyx_t_5 = __Pyx_GetItemInt(((PyObject *)__pyx_v_color_iterations), __pyx_v_i, int, 1, __Pyx_PyInt_From_int, 0, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 35, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_6 = NULL;
+    if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_4))) {
+      __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_4);
+      if (likely(__pyx_t_6)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+        __Pyx_INCREF(__pyx_t_6);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_4, function);
+      }
+    }
+    if (!__pyx_t_6) {
+      __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 35, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_GOTREF(__pyx_t_3);
+    } else {
+      #if CYTHON_FAST_PYCALL
+      if (PyFunction_Check(__pyx_t_4)) {
+        PyObject *__pyx_temp[2] = {__pyx_t_6, __pyx_t_5};
+        __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 35, __pyx_L1_error)
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __Pyx_GOTREF(__pyx_t_3);
+        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      } else
+      #endif
+      #if CYTHON_FAST_PYCCALL
+      if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
+        PyObject *__pyx_temp[2] = {__pyx_t_6, __pyx_t_5};
+        __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 35, __pyx_L1_error)
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __Pyx_GOTREF(__pyx_t_3);
+        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      } else
+      #endif
+      {
+        __pyx_t_7 = PyTuple_New(1+1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 35, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        __Pyx_GIVEREF(__pyx_t_6); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_6); __pyx_t_6 = NULL;
+        __Pyx_GIVEREF(__pyx_t_5);
+        PyTuple_SET_ITEM(__pyx_t_7, 0+1, __pyx_t_5);
+        __pyx_t_5 = 0;
+        __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 35, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      }
+    }
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    if (unlikely(__Pyx_SetItemInt(((PyObject *)__pyx_v_color_iterations), __pyx_v_i, __pyx_t_3, int, 1, __Pyx_PyInt_From_int, 0, 0, 0) < 0)) __PYX_ERR(0, 35, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  }
+
+  /* "color_policy.pyx":36
+ *     for i in range(0, ci):
+ *         color_iterations[i] = atomic_normalization(color_iterations[i])
+ *     return color_iterations             # <<<<<<<<<<<<<<
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __Pyx_INCREF(((PyObject *)__pyx_v_color_iterations));
+  __pyx_r = ((PyObject *)__pyx_v_color_iterations);
+  goto __pyx_L0;
+
+  /* "color_policy.pyx":30
+ * @cython.boundscheck(False)
+ * @cython.wraparound(False)
+ * def multi_iteration_normalize(np.ndarray[np.float64_t, ndim=3] color_iterations):             # <<<<<<<<<<<<<<
+ *     cdef:
+ *         int i
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_XDECREF(__pyx_t_7);
+  { PyObject *__pyx_type, *__pyx_value, *__pyx_tb;
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
+    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_color_iterations.rcbuffer->pybuffer);
+  __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
+  __Pyx_AddTraceback("color_policy.multi_iteration_normalize", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  goto __pyx_L2;
+  __pyx_L0:;
+  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_color_iterations.rcbuffer->pybuffer);
   __pyx_L2:;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
@@ -4806,26 +5115,32 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_RuntimeError, __pyx_k_RuntimeError, sizeof(__pyx_k_RuntimeError), 0, 0, 1, 1},
   {&__pyx_n_s_ValueError, __pyx_k_ValueError, sizeof(__pyx_k_ValueError), 0, 0, 1, 1},
   {&__pyx_n_s_atomic_dot_product, __pyx_k_atomic_dot_product, sizeof(__pyx_k_atomic_dot_product), 0, 0, 1, 1},
+  {&__pyx_n_s_atomic_normalization, __pyx_k_atomic_normalization, sizeof(__pyx_k_atomic_normalization), 0, 0, 1, 1},
+  {&__pyx_n_s_axis, __pyx_k_axis, sizeof(__pyx_k_axis), 0, 0, 1, 1},
   {&__pyx_n_s_ci, __pyx_k_ci, sizeof(__pyx_k_ci), 0, 0, 1, 1},
   {&__pyx_n_s_cline_in_traceback, __pyx_k_cline_in_traceback, sizeof(__pyx_k_cline_in_traceback), 0, 0, 1, 1},
   {&__pyx_n_s_color_iteration, __pyx_k_color_iteration, sizeof(__pyx_k_color_iteration), 0, 0, 1, 1},
+  {&__pyx_n_s_color_iterations, __pyx_k_color_iterations, sizeof(__pyx_k_color_iterations), 0, 0, 1, 1},
   {&__pyx_n_s_color_policy, __pyx_k_color_policy, sizeof(__pyx_k_color_policy), 0, 0, 1, 1},
   {&__pyx_n_s_color_vector, __pyx_k_color_vector, sizeof(__pyx_k_color_vector), 0, 0, 1, 1},
   {&__pyx_kp_s_cython_modules_color_policy_pyx, __pyx_k_cython_modules_color_policy_pyx, sizeof(__pyx_k_cython_modules_color_policy_pyx), 0, 0, 1, 0},
   {&__pyx_n_s_dot, __pyx_k_dot, sizeof(__pyx_k_dot), 0, 0, 1, 1},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
+  {&__pyx_n_s_keepdims, __pyx_k_keepdims, sizeof(__pyx_k_keepdims), 0, 0, 1, 1},
+  {&__pyx_n_s_linalg, __pyx_k_linalg, sizeof(__pyx_k_linalg), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
   {&__pyx_n_s_multi_iteration_dot_product, __pyx_k_multi_iteration_dot_product, sizeof(__pyx_k_multi_iteration_dot_product), 0, 0, 1, 1},
+  {&__pyx_n_s_multi_iteration_normalize, __pyx_k_multi_iteration_normalize, sizeof(__pyx_k_multi_iteration_normalize), 0, 0, 1, 1},
   {&__pyx_kp_u_ndarray_is_not_C_contiguous, __pyx_k_ndarray_is_not_C_contiguous, sizeof(__pyx_k_ndarray_is_not_C_contiguous), 0, 1, 0, 0},
   {&__pyx_kp_u_ndarray_is_not_Fortran_contiguou, __pyx_k_ndarray_is_not_Fortran_contiguou, sizeof(__pyx_k_ndarray_is_not_Fortran_contiguou), 0, 1, 0, 0},
+  {&__pyx_n_s_norm, __pyx_k_norm, sizeof(__pyx_k_norm), 0, 0, 1, 1},
   {&__pyx_n_s_np, __pyx_k_np, sizeof(__pyx_k_np), 0, 0, 1, 1},
   {&__pyx_n_s_numpy, __pyx_k_numpy, sizeof(__pyx_k_numpy), 0, 0, 1, 1},
   {&__pyx_kp_s_numpy_core_multiarray_failed_to, __pyx_k_numpy_core_multiarray_failed_to, sizeof(__pyx_k_numpy_core_multiarray_failed_to), 0, 0, 1, 0},
   {&__pyx_kp_s_numpy_core_umath_failed_to_impor, __pyx_k_numpy_core_umath_failed_to_impor, sizeof(__pyx_k_numpy_core_umath_failed_to_impor), 0, 0, 1, 0},
   {&__pyx_n_s_range, __pyx_k_range, sizeof(__pyx_k_range), 0, 0, 1, 1},
   {&__pyx_n_s_relative_vector_set, __pyx_k_relative_vector_set, sizeof(__pyx_k_relative_vector_set), 0, 0, 1, 1},
-  {&__pyx_n_s_sd, __pyx_k_sd, sizeof(__pyx_k_sd), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
   {&__pyx_kp_u_unknown_dtype_code_in_numpy_pxd, __pyx_k_unknown_dtype_code_in_numpy_pxd, sizeof(__pyx_k_unknown_dtype_code_in_numpy_pxd), 0, 1, 0, 0},
   {&__pyx_n_s_vec_set, __pyx_k_vec_set, sizeof(__pyx_k_vec_set), 0, 0, 1, 1},
@@ -4833,7 +5148,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 19, __pyx_L1_error)
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 18, __pyx_L1_error)
   __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(1, 235, __pyx_L1_error)
   __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s_RuntimeError); if (!__pyx_builtin_RuntimeError) __PYX_ERR(1, 823, __pyx_L1_error)
   __pyx_builtin_ImportError = __Pyx_GetBuiltinName(__pyx_n_s_ImportError); if (!__pyx_builtin_ImportError) __PYX_ERR(1, 1013, __pyx_L1_error)
@@ -4962,10 +5277,34 @@ static int __Pyx_InitCachedConstants(void) {
  *                                 np.ndarray[np.float32_t, ndim=2] vec_set):
  *     cdef:
  */
-  __pyx_tuple__12 = PyTuple_Pack(5, __pyx_n_s_color_iteration, __pyx_n_s_vec_set, __pyx_n_s_i, __pyx_n_s_ci, __pyx_n_s_sd); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 13, __pyx_L1_error)
+  __pyx_tuple__12 = PyTuple_Pack(4, __pyx_n_s_color_iteration, __pyx_n_s_vec_set, __pyx_n_s_i, __pyx_n_s_ci); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 13, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__12);
   __Pyx_GIVEREF(__pyx_tuple__12);
-  __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(2, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_modules_color_policy_pyx, __pyx_n_s_multi_iteration_dot_product, 13, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 13, __pyx_L1_error)
+  __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(2, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_modules_color_policy_pyx, __pyx_n_s_multi_iteration_dot_product, 13, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 13, __pyx_L1_error)
+
+  /* "color_policy.pyx":25
+ * @cython.boundscheck(False)
+ * @cython.wraparound(False)
+ * def atomic_normalization(np.ndarray[np.float64_t, ndim=2] color_vector):             # <<<<<<<<<<<<<<
+ *     return color_vector/np.linalg.norm(color_vector, axis=1, keepdims=True)
+ * 
+ */
+  __pyx_tuple__14 = PyTuple_Pack(1, __pyx_n_s_color_vector); if (unlikely(!__pyx_tuple__14)) __PYX_ERR(0, 25, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__14);
+  __Pyx_GIVEREF(__pyx_tuple__14);
+  __pyx_codeobj__15 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__14, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_modules_color_policy_pyx, __pyx_n_s_atomic_normalization, 25, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__15)) __PYX_ERR(0, 25, __pyx_L1_error)
+
+  /* "color_policy.pyx":30
+ * @cython.boundscheck(False)
+ * @cython.wraparound(False)
+ * def multi_iteration_normalize(np.ndarray[np.float64_t, ndim=3] color_iterations):             # <<<<<<<<<<<<<<
+ *     cdef:
+ *         int i
+ */
+  __pyx_tuple__16 = PyTuple_Pack(3, __pyx_n_s_color_iterations, __pyx_n_s_i, __pyx_n_s_ci); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 30, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__16);
+  __Pyx_GIVEREF(__pyx_tuple__16);
+  __pyx_codeobj__17 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__16, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cython_modules_color_policy_pyx, __pyx_n_s_multi_iteration_normalize, 30, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__17)) __PYX_ERR(0, 30, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -4975,6 +5314,7 @@ static int __Pyx_InitCachedConstants(void) {
 
 static int __Pyx_InitGlobals(void) {
   if (__Pyx_InitStrings(__pyx_string_tab) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
+  __pyx_int_1 = PyInt_FromLong(1); if (unlikely(!__pyx_int_1)) __PYX_ERR(0, 1, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -5169,6 +5509,30 @@ static int __pyx_pymod_exec_color_policy(PyObject *__pyx_pyinit_module)
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_12color_policy_3multi_iteration_dot_product, NULL, __pyx_n_s_color_policy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 13, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_multi_iteration_dot_product, __pyx_t_1) < 0) __PYX_ERR(0, 13, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "color_policy.pyx":25
+ * @cython.boundscheck(False)
+ * @cython.wraparound(False)
+ * def atomic_normalization(np.ndarray[np.float64_t, ndim=2] color_vector):             # <<<<<<<<<<<<<<
+ *     return color_vector/np.linalg.norm(color_vector, axis=1, keepdims=True)
+ * 
+ */
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_12color_policy_5atomic_normalization, NULL, __pyx_n_s_color_policy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 25, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_atomic_normalization, __pyx_t_1) < 0) __PYX_ERR(0, 25, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "color_policy.pyx":30
+ * @cython.boundscheck(False)
+ * @cython.wraparound(False)
+ * def multi_iteration_normalize(np.ndarray[np.float64_t, ndim=3] color_iterations):             # <<<<<<<<<<<<<<
+ *     cdef:
+ *         int i
+ */
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_12color_policy_7multi_iteration_normalize, NULL, __pyx_n_s_color_policy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 30, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_multi_iteration_normalize, __pyx_t_1) < 0) __PYX_ERR(0, 30, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "color_policy.pyx":1
@@ -6305,6 +6669,66 @@ static CYTHON_INLINE int __Pyx_SetItemInt_Fast(PyObject *o, Py_ssize_t i, PyObje
 #endif
     return __Pyx_SetItemInt_Generic(o, PyInt_FromSsize_t(i), v);
 }
+
+/* PyObjectCallMethO */
+      #if CYTHON_COMPILING_IN_CPYTHON
+static CYTHON_INLINE PyObject* __Pyx_PyObject_CallMethO(PyObject *func, PyObject *arg) {
+    PyObject *self, *result;
+    PyCFunction cfunc;
+    cfunc = PyCFunction_GET_FUNCTION(func);
+    self = PyCFunction_GET_SELF(func);
+    if (unlikely(Py_EnterRecursiveCall((char*)" while calling a Python object")))
+        return NULL;
+    result = cfunc(self, arg);
+    Py_LeaveRecursiveCall();
+    if (unlikely(!result) && unlikely(!PyErr_Occurred())) {
+        PyErr_SetString(
+            PyExc_SystemError,
+            "NULL result without error in PyObject_Call");
+    }
+    return result;
+}
+#endif
+
+/* PyObjectCallOneArg */
+      #if CYTHON_COMPILING_IN_CPYTHON
+static PyObject* __Pyx__PyObject_CallOneArg(PyObject *func, PyObject *arg) {
+    PyObject *result;
+    PyObject *args = PyTuple_New(1);
+    if (unlikely(!args)) return NULL;
+    Py_INCREF(arg);
+    PyTuple_SET_ITEM(args, 0, arg);
+    result = __Pyx_PyObject_Call(func, args, NULL);
+    Py_DECREF(args);
+    return result;
+}
+static CYTHON_INLINE PyObject* __Pyx_PyObject_CallOneArg(PyObject *func, PyObject *arg) {
+#if CYTHON_FAST_PYCALL
+    if (PyFunction_Check(func)) {
+        return __Pyx_PyFunction_FastCall(func, &arg, 1);
+    }
+#endif
+    if (likely(PyCFunction_Check(func))) {
+        if (likely(PyCFunction_GET_FLAGS(func) & METH_O)) {
+            return __Pyx_PyObject_CallMethO(func, arg);
+#if CYTHON_FAST_PYCCALL
+        } else if (PyCFunction_GET_FLAGS(func) & METH_FASTCALL) {
+            return __Pyx_PyCFunction_FastCall(func, &arg, 1);
+#endif
+        }
+    }
+    return __Pyx__PyObject_CallOneArg(func, arg);
+}
+#else
+static CYTHON_INLINE PyObject* __Pyx_PyObject_CallOneArg(PyObject *func, PyObject *arg) {
+    PyObject *result;
+    PyObject *args = PyTuple_Pack(1, arg);
+    if (unlikely(!args)) return NULL;
+    result = __Pyx_PyObject_Call(func, args, NULL);
+    Py_DECREF(args);
+    return result;
+}
+#endif
 
 /* RaiseException */
       #if PY_MAJOR_VERSION < 3

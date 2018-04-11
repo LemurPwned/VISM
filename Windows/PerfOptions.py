@@ -10,6 +10,9 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.setupUi(self)
         self.loaded = True
         self.layer_size = layer_size['znodes']
+        if self.layer_size == 1:
+            self.checkBox.setEnabled(False)
+            self.checkBox.setChecked(True)
 
         self.decimate = 1
         self.averaging = 1
@@ -105,8 +108,9 @@ class PerfOptions(QWidget, Ui_Dialog):
 
     def optionsVerifier(self):
         # order as follows: color scheme, averaging, layer
+        # checkBox_5 is normalize
         if self.checkBox.isChecked():
-                optionsList = [self.comboBox.currentText(),
+                optionsList = [ self.checkBox_5.isChecked(),
                                 self.averaging,
                                 'all',
                                 self.horizontalSlider_3.value(),
@@ -114,7 +118,7 @@ class PerfOptions(QWidget, Ui_Dialog):
                                 self.decimate,
                                 self.color_disable]
         else:
-            optionsList = [self.comboBox.currentText(),
+            optionsList = [ self.checkBox_5.isChecked(),
                             self.averaging,
                             self.horizontalSlider_2.value(),
                             self.horizontalSlider_3.value(),
@@ -148,6 +152,7 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.eventHandler = handler
 
     def accept(self):
+        self.hide()
         try:
             self.options = self.optionsVerifier()
             self.eventHandler(self.options)

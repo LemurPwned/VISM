@@ -5,4 +5,7 @@ convert:
 	pyuic5 -x Windows/UI_files/PerfOptions.ui -o Windows/PerfOptionsTemplate.py
 	pyuic5 -x Windows/UI_files/vectorSettings.ui -o Windows/vectorSettingsTemplate.py
 cython:
-	python3 cython_modules/ex_setup.py build_ext --build-lib cython_modules/build --inplace
+	python3 cython_modules/ex_setup.py build_ext --build-lib cython_modules/ --inplace
+del:
+	rm -rf build
+	rm -rf cython_modules/build

@@ -32,7 +32,7 @@
      <x>0</x>
      <y>0</y>
      <width>863</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -46,7 +46,6 @@
     <property name="title">
      <string>Edit</string>
     </property>
-    <addaction name="actionPlot"/>
     <addaction name="actionAnimation"/>
     <addaction name="separator"/>
     <addaction name="actionWindow0Delete"/>
@@ -67,7 +66,6 @@
      <string>Options</string>
     </property>
     <addaction name="actionPerformance"/>
-    <addaction name="actionVectors"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -112,12 +110,12 @@
   </action>
   <action name="actionPerformance">
    <property name="text">
-    <string>Performance</string>
+    <string>Frame directory</string>
    </property>
   </action>
   <action name="actionVectors">
    <property name="text">
-    <string>Vectors</string>
+    <string>Save</string>
    </property>
   </action>
   <action name="actionWindow0Delete">
