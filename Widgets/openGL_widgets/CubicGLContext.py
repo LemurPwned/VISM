@@ -113,8 +113,8 @@ class CubicGLContext(AbstractGLContext, QWidget):
                                np.array(self.color_vectors[self.i],
                                dtype='float32').flatten())
 
-            if self.grabFramebuffer().save('./SCR/'+str(self.i), 'JPG'):
-                print("successfull saving")
+            # if self.grabFramebuffer().save('./SCR/'+str(self.i), 'JPG'):
+            #     print("successfull saving")
         self.draw_vbo()
 
     def draw_vbo(self):
