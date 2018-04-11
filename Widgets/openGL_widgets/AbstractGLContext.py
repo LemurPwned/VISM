@@ -7,7 +7,6 @@ import OpenGL.GLU as glu
 from PyQt5.Qt import Qt
 from PyQt5.QtCore import QPoint
 
-# from PyQt5.QPixMap import grabWidget
 import math as mt
 
 

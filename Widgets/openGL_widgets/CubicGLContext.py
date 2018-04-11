@@ -26,6 +26,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
         self.vertices = 0
 
         self.buffers = None
+        self.fbo = None
         self.buffer_len = 0
 
         self.shareData(**data_dict)
@@ -99,15 +100,21 @@ class CubicGLContext(AbstractGLContext, QWidget):
     def vbo_cubic_draw(self):
         if self.buffers is None:
             self.buffers = self.create_vbo()
+            if self.fbo is None:
+                fbo_handler = self.defaultFramebufferObject()
+                # self.fbo = gl.glGenFramebuffers(1)
+                gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo_handler)
+                self.fbo = 1
         else:
-            if self.grabFramebuffer().save(str(self.i), 'JPG'):
-                print("successfull saving")
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
             # later move to set_i function so that reference changes
             # does not cause buffer rebinding
             gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
                                np.array(self.color_vectors[self.i],
                                dtype='float32').flatten())
+
+            if self.grabFramebuffer().save('./SCR/'+str(self.i), 'JPG'):
+                print("successfull saving")
         self.draw_vbo()
 
     def draw_vbo(self):

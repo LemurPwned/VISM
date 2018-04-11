@@ -152,6 +152,7 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.eventHandler = handler
 
     def accept(self):
+        self.hide()
         try:
             self.options = self.optionsVerifier()
             self.eventHandler(self.options)
