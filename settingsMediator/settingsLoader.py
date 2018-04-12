@@ -2,32 +2,20 @@ import os
 import imp
 import glob
 import json
-from pattern_types.Singleton import Singleton, Proxy
+from pattern_types.Patterns import Singleton, DataObjectHolderProxy
+
 
 class DataObjectHolder(metaclass=Singleton):
     def __init__(self):
         self.contains_lookup = []
 
+    @DataObjectHolderProxy.lookup
     def setDataObject(self, data, alias):
-        if self.isAllowed():
-            if type(alias) == str:
-                setattr(self, alias, data)
-                self.contains_lookup.append(alias)
-            else:
-                raise ValueError("Alias is not a string")
-        else:
-            raise ValueError("Data type not allowed {} as {}".\
-                                format(data, alias))
+        setattr(self, alias, data)
 
+    @DataObjectHolderProxy.get_lookup
     def retrieveDataObject(self, alias):
-        if alias in self.contains_lookup:
-            if self.isAllowed():
-                return getattr(self, alias)
-        else:
-            raise ValueError("No attribute {}".format(alias))
-
-    def isAllowed(self):
-        return True
+        return getattr(self, alias)
 
     def passListObject(self, aliasList, *dataObjList, ):
         for dataObj, alias in zip(dataObjList, aliasList):
