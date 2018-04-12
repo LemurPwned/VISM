@@ -2,8 +2,9 @@ import os
 import imp
 import glob
 import json
+from pattern_types.Singleton import Singleton, Proxy
 
-class DataObjectHolder:
+class DataObjectHolder(metaclass=Singleton):
     def __init__(self):
         self.contains_lookup = []
 

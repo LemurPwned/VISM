@@ -96,7 +96,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 options = QtWidgets.QFileDialog.ShowDirsOnly))
         fileDialog.close()
         return directory
-    
+
     def loadDirectory(self):
         """Loads whole directory based on Parse class as simple as BHP"""
         fileDialog = QtWidgets.QFileDialog()
