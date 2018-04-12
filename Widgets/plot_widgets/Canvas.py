@@ -10,7 +10,9 @@ class Canvas(AbstractCanvas):
         self.i = self.current_state
         self.title = self.options['column']
         self.graph_data = self.odt_data[self.title].tolist()
+        self.synchronizedPlot = self.options['synchronizedPlot']
         self.createPlotCanvas()
+
 
     def createPlotCanvas(self):
         self.canvas_type = 'panel'
@@ -31,8 +33,14 @@ class Canvas(AbstractCanvas):
         self.plot_axis.set_autoscale_on(False)
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
         self._CANVAS_ALREADY_CREATED_ = True
+        if self.synchronizedPlot == False:
+            self.plot_axis.plot(self.graph_data)
+
 
     def replot(self):
+        if self.synchronizedPlot == False:
+            return
+
         self.loop_guard()
         self.plot_axis.hpl.set_ydata(np.lib.pad(self.graph_data[:self.i],
                                                 (0, self.iterations - self.i),
