@@ -16,7 +16,7 @@
                                    "omf_header","color_vectors"]
                       },
     "Canvas":         {
-                        "alias": "2D_MPL",
+                        "alias": "2D_Matplotlib",
                         "object": "Canvas",
                         "object_type": "2d_object",
                         "settings": ["PlotSettings", "odt_data"],
@@ -24,7 +24,7 @@
                                      "odt_data"]
                         },
     "Canvas2Dupgraded": {
-                        "alias": "2D_BP",
+                        "alias": "2D_BetterPlot",
                         "object": "Canvas2Dupgraded",
                         "object_type": "2d_object",
                         "settings": ["PlotSettings", "odt_data"],

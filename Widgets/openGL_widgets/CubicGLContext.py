@@ -4,11 +4,13 @@ import numpy as np
 
 from PyQt5.QtWidgets import QWidget
 from PyQt5.Qt import Qt
+from PyQt5.QtCore import QPoint, QThread
 
-from cython_modules.cython_parse import generate_cubes, getLayerOutline, genCubes
+
+from cython_modules.cython_parse import getLayerOutline, genCubes
+from cython_modules.color_policy import multi_iteration_normalize
 
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
-
 
 from ColorPolicy import ColorPolicy
 from multiprocessing import Pool
@@ -24,13 +26,14 @@ class CubicGLContext(AbstractGLContext, QWidget):
         self.vertices = 0
 
         self.buffers = None
+        self.fbo = None
         self.buffer_len = 0
 
         self.shareData(**data_dict)
 
+
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
-        self.receivedOptions()
 
         self.spacer = self.spacer*self.scale
         xc = int(self.omf_header['xnodes'])
@@ -57,15 +60,24 @@ class CubicGLContext(AbstractGLContext, QWidget):
             # this is arbitrary
             self.spacer *= decimate*3
 
+        if self.normalize:
+            multi_iteration_normalize(self.color_vectors)
+
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw
+            self.buffers = None
             # if vbo drawing is selected, do additional processing
             self.color_vectors = custom_color_policy.apply_vbo_format(self.color_vectors)
             self.vectors_list, self.vertices = genCubes(self.vectors_list,
                                                                     self.spacer)
             print(np.array(self.vectors_list).shape, self.vertices)
             print(np.array(self.color_vectors).shape)
-            self.buffer_len = len(self.color_vectors[0])
+
+            # TODO: temporary fix, dont know why x4, should not be multiplied
+            # at all!
+            self.buffer_len = len(self.color_vectors[0])*4
+            print("BUFFER LEN" , self.buffer_len)
+
         elif self.function_select == 'slow':
             self.drawing_function = self.slower_cubic_draw
 
@@ -74,7 +86,8 @@ class CubicGLContext(AbstractGLContext, QWidget):
         # vertices buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[0])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                        np.array(self.vectors_list, dtype='float32'),
+                        np.array(self.vectors_list,
+                        dtype='float32').flatten(),
                         gl.GL_STATIC_DRAW)
         # color buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
@@ -87,6 +100,11 @@ class CubicGLContext(AbstractGLContext, QWidget):
     def vbo_cubic_draw(self):
         if self.buffers is None:
             self.buffers = self.create_vbo()
+            if self.fbo is None:
+                fbo_handler = self.defaultFramebufferObject()
+                # self.fbo = gl.glGenFramebuffers(1)
+                gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo_handler)
+                self.fbo = 1
         else:
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
             # later move to set_i function so that reference changes
@@ -94,6 +112,9 @@ class CubicGLContext(AbstractGLContext, QWidget):
             gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
                                np.array(self.color_vectors[self.i],
                                dtype='float32').flatten())
+
+            # if self.grabFramebuffer().save('./SCR/'+str(self.i), 'JPG'):
+            #     print("successfull saving")
         self.draw_vbo()
 
     def draw_vbo(self):

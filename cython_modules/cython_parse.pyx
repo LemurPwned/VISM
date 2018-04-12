@@ -99,8 +99,7 @@ def getRawVectors(filename):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def getLayerOutline(omf_header, unit_scaler=1e9,
-                        layer_skip=False):
+def getLayerOutline(omf_header, unit_scaler=1e9):
     """
     constructs the vector outline of each layer, this is a shell that
     colors function operate on (masking)
@@ -120,90 +119,83 @@ def getLayerOutline(omf_header, unit_scaler=1e9,
     xb = float(omf_header['xbase']) * unit_scaler
     yb = float(omf_header['ybase']) * unit_scaler
     zb = float(omf_header['zbase']) * unit_scaler
-    if layer_skip:
-        zc = 1 #generate just one layer
     layers_outline = [[xb * (x%xc), yb * (y%yc), zb * (z%zc)]
             for z in range(zc) for y in range(yc) for x in range(xc)]
     return layers_outline
 
-def getRawVectorsBinary(filename, averaging=1):
-    """
-    @param .omf binary file
-    @return returns raw_vectors from fortran lists
-    use this as it is the fastest way of reading binary files, however,
-    this has little error handling
-    """
-    vectors = []
-    base_data = {}
-    validation = 123456789012345.0  # this is IEEE validation value
-    guard = 0
-    constant = 900
-    with open(filename, 'rb') as f:
-        last = f.read(constant)
-        while last != validation:
-            guard += 1
-            f.seek(constant+guard)
-            last = struct.unpack('d', f.read(8))[0]
-            f.seek(0)
-            if guard > 250:
-                raise struct.error
-        headers = str(f.read(constant+guard))
-        omf_header = process_header(headers)
-        k = int(omf_header['xnodes']*omf_header['ynodes']*omf_header['znodes'])
-        f.read(8)
-        rawVectorData = standard_vertex_mode(f, k)
-        rawVectorData = normalized(rawVectorData)
-    f.close()
-
-    return omf_header, rawVectorData
-
 def process_header(headers):
-    """
-    processes the header of each .omf file and return base_data dict
-    """
-    omf_header = {}
-    headers = headers.replace('\'', "")
-    headers = headers.replace(' ', "")
-    headers = headers.replace('\\n', "")
-    headers = headers.split('#')
-    for header in headers:
-        if ':' in header:
-            components = header.split(':')
-            try:
-                omf_header[components[0]] = float(components[1])
-            except:
-                omf_header[components[0]] = components[1]
-    return omf_header
-
+  """
+  processes the header of each .omf file and return base_data dict
+  """
+  final_header = {}
+  headers = headers.replace(' ', "")
+  headers = headers.replace('\\n', "")
+  headers = headers.replace('\'b\'', "")
+  headers = headers.split('#')
+  for header_ in headers:
+      if ':' in header_:
+          components = header_.split(':')
+          try:
+              final_header[components[0]] = float(components[1])
+          except:
+              final_header[components[0]] = components[1]
+  return final_header
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def vbo_vertex_mode(f, k, a= [1,0,1], b =[-1,-1,0]):
-    p = []
-    for i in range(k):
-      x = [struct.unpack('d', f.read(8))[0],
-              struct.unpack('d', f.read(8))[0],
-              struct.unpack('d', f.read(8))[0]]
-      p.append([np.dot(x, a), np.dot(x, b), 0])
-    return np.repeat(p, 24, axis=0).flatten()
+def binary_format_reader(filename):
+  header_part = ""
+  rawVectorData = None
+  header = None
+  with open(filename, 'rb') as f:
+      x = f.readline()
+      while x != b'# End: Header\n':
+          header_part += str(x)
+          x = f.readline()
+
+      header = process_header(header_part)
+
+      byte_type = f.readline()
+      while byte_type == b'#\n':
+          byte_type = f.readline()
+      # compile struct byte type
+      fmt, buff_size, val = decode_byte_size(byte_type)
+      struct_object = struct.Struct(fmt)
+      test_val = struct_object.unpack(f.read(buff_size))[0]
+      if  test_val != val:
+          raise ValueError("Invalid file format with validation {} value, \
+                              should be {}".format(test_val, val))
+
+      k = int(header['xnodes']*header['ynodes']*header['znodes'])
+      rawVectorData = standard_vertex_mode(f, k, struct_object, buff_size)
+      f.close()
+  assert rawVectorData is not None
+  assert header is not None
+  return header, rawVectorData
 
 
-def standard_vertex_mode(f, k):
-    return np.array([(struct.unpack('d', f.read(8))[0],
-            struct.unpack('d', f.read(8))[0],
-            struct.unpack('d', f.read(8))[0]) for i in range(int(k))])
+def standard_vertex_mode(f, k, struct_object, buff):
+    return np.array([(struct_object.unpack(f.read(buff))[0],
+            struct_object.unpack(f.read(buff))[0],
+            struct_object.unpack(f.read(buff))[0]) for i in range(int(k))])
 
 
-def generate_cubes(omf_header, spacer, skip=None, layer=None):
-    layer_outline = getLayerOutline(omf_header)
-    if layer:
-      layer_outline = layer_outline[:int(omf_header['xnodes'])*\
-                                    int(omf_header['ynodes'])]
-      layer_outline = layer_outline[::skip]
-
-    layer_cubed = np.array([cube(x, spacer)
-                                    for x in layer_outline]).flatten()
-    return layer_cubed, len(layer_cubed)/3
+def decode_byte_size(byte_format_specification):
+    if byte_format_specification == b'# Begin: Data Binary 4\n':
+        # float precision - 4 bytes
+        fmt = 'f'
+        buffer_size = struct.calcsize(fmt)
+        four_byte_validation =  1234567.0
+        return fmt, buffer_size, four_byte_validation
+    elif byte_format_specification == b'# Begin: Data Binary 8\n':
+        # double precision - 8 bytes
+        fmt = 'd'
+        buffer_size = struct.calcsize(fmt)
+        eight_byte_validation = 123456789012345.0
+        return fmt, buffer_size, eight_byte_validation
+    else:
+        raise TypeError("Unknown byte specification {}".format(
+                                            str(byte_format_specification)))
 
 def genCubes(layer_outline, spacer):
     layer_cubed = np.array([cube(x, spacer)

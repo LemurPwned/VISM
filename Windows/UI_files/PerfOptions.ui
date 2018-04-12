@@ -35,7 +35,7 @@
      <x>30</x>
      <y>20</y>
      <width>251</width>
-     <height>576</height>
+     <height>580</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
@@ -161,20 +161,6 @@
       <property name="alignment">
        <set>Qt::AlignCenter</set>
       </property>
-     </widget>
-    </item>
-    <item row="8" column="0" colspan="2">
-     <widget class="QComboBox" name="comboBox">
-      <item>
-       <property name="text">
-        <string>Standard</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Reversed</string>
-       </property>
-      </item>
      </widget>
     </item>
     <item row="9" column="0" colspan="2">
@@ -313,6 +299,16 @@
      <widget class="QCheckBox" name="checkBox_4">
       <property name="text">
        <string>Disable</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="0" colspan="2">
+     <widget class="QCheckBox" name="checkBox_5">
+      <property name="text">
+       <string>Normalize all vectors?</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
       </property>
      </widget>
     </item>
