@@ -32,13 +32,11 @@ class DataObjectHolderProxy(Proxy):
                 raise ValueError("Alias is not a string")
             if alias not in obj_handler.contains_lookup:
                 obj_handler.contains_lookup.append(alias)
-            else:
             func(*args)
         return _lookup
 
     def get_lookup(func):
         def _get_lookup(*args):
-            print(args)
             obj_handler = args[0]
             alias = args[1]
             if alias in obj_handler.contains_lookup:
