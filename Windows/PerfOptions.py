@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
                 QVBoxLayout, QRadioButton, QLabel, QSlider
 from Windows.PerfOptionsTemplate import Ui_Dialog
+from Windows.SimplePerfOptions import SimplePerfOptions
 import re
 
 class PerfOptions(QWidget, Ui_Dialog):

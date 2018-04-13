@@ -5,7 +5,8 @@ from ColorPolicy import ColorPolicy
 
 from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
 from multiprocessing_parse import asynchronous_pool_order
-from cython_modules.color_policy import multi_iteration_normalize
+from cython_modules.color_policy import multi_iteration_normalize, \
+                                        multi_iteration_dot_product
 
 class CanvasLayer(AbstractCanvas):
     def __init__(self, data_dict):
@@ -47,14 +48,9 @@ class CanvasLayer(AbstractCanvas):
         """
         reshaping the data so that plotting might happen faster
         """
-
-
         if self.normalize:
             multi_iteration_normalize(self.color_vectors)
-
-        # self.color_vectors = np.array([x.reshape(self.zc, self.yc * self.xc, 3)[self.layer]
-        #                                for x in self.color_vectors])
-
+        # dot product
         self.color_vectors = np.array(self.color_vectors)
         self.color_vectors = self.color_vectors.reshape(self.iterations,
                                                         self.zc, self.yc,
@@ -63,7 +59,8 @@ class CanvasLayer(AbstractCanvas):
         self.color_vectors = self.color_vectors.reshape(self.iterations,
                                                             self.xc*self.yc, 3)
         self.color_vectors = asynchronous_pool_order(CanvasLayer.calculate_layer_colors,
-                                                        (), self.color_vectors)
+                                                        (self.vector_set,),
+                                                        self.color_vectors)
         self.color_vectors = np.array(self.color_vectors, dtype=np.float)
         try:
             assert self.color_vectors.shape == (self.iterations, self.xc, self.yc)
@@ -77,9 +74,7 @@ class CanvasLayer(AbstractCanvas):
 
     @staticmethod
     def calculate_layer_colors(x, relative_vector=[0, 1, 0], scale=1):
-        norm = np.apply_along_axis(np.linalg.norm, 1, x)
-        dot = np.divide(np.array([np.inner(i, relative_vector)
-                                  for i in x]), norm)
+        dot = np.array([np.inner(i, relative_vector) for i in x])
         angle = np.arccos(dot) ** scale
         angle[np.isnan(angle)] = 0  # get rid of NaN expressions
         return angle
