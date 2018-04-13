@@ -46,3 +46,12 @@ class DataObjectHolderProxy(Proxy):
             else:
                 raise ValueError("No attribute in lookup {}".format(alias))
         return _get_lookup
+
+    def is_removable(func):
+        def _is_removable(*args):
+            obj_handler = args[0]
+            alias = args[1]
+            if alias in obj_handler.contains_lookup:
+                func(*args)
+            else:
+                raise ValueError("Trying to remove unexisting element")

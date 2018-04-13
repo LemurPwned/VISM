@@ -21,6 +21,9 @@ class DataObjectHolder(metaclass=Singleton):
         for dataObj, alias in zip(dataObjList, aliasList):
             self.setDataObject(dataObj, alias)
 
+    @DataObjectHolderProxy.is_removable
+    def removeDataObject(self, alias):
+        setattr(self, alias, None)
 
 class SettingsInterface:
     def __init__(self):
