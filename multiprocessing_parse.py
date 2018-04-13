@@ -31,7 +31,12 @@ class MultiprocessingParse:
             if voted_extension is not None:
                 break
 
-        print("SUPPORTED EXTESNION DETECTED {}".format(voted_extension))
+        #loop may end and the value may still be None, this means invalid directory
+        #tbh I am not sure but it helps fix issue
+        if voted_extension is None:
+            raise ValueError("Invalid Directory")
+
+        print("SUPPORTED EXTENSION DETECTED {}".format(voted_extension))
         files_in_directory = [os.path.join(directory, filename)
                               for filename in files_in_directory
                               if filename.endswith(voted_extension)]
@@ -47,6 +52,7 @@ class MultiprocessingParse:
         :param directory
         :return rawVectorData, omf_headers, getOdtData
         """
+
         files_in_directory, ext = MultiprocessingParse.guess_file_type(
                                                                     directory)
 
