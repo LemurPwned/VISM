@@ -40,11 +40,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.make1WindowGrid()  # shows default 1 widget Window
         self.events()  # create event listeners
         self._LOADED_FLAG_ = False
+        self._BLOCK_ITERABLES_ = False
+        self._BLOCK_STRUCTURE_ = False
+        #self.
 
     def events(self):
         """Creates all listeners for Main Window"""
         # FILE SUBMENU
         self.actionLoad_Directory.triggered.connect(self.loadDirectory)
+        self.actionLoad_File.triggered.connect(self.loadFile)
 
         # EDIT SUBMENU
         self.actionAnimation.triggered.connect(self.showAnimationSettings)
@@ -97,6 +101,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         fileDialog.close()
         return directory
 
+    def loadFile(self):
+        fileDialog = QtWidgets.QFileDialog()
+        fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+        file = str(fileDialog.getOpenFileName(self, "Select File"))
+
     def loadDirectory(self):
         """Loads whole directory based on Parse class as simple as BHP"""
         fileDialog = QtWidgets.QFileDialog()
@@ -106,13 +115,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self,
                 "Select Directory",
                 options = QtWidgets.QFileDialog.ShowDirsOnly))
+
         fileDialog.close()
 
-        if directory is None or directory == "":
+        if directory is None or directory == "" or directory=="  ":
+            print("here i am")
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
             self._LOADED_FLAG_ = False
             PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
-                            QtWidgets.QMessageBox.No, self.close(), None)
+                            QtWidgets.QMessageBox.No, self.refreshScreen, self.loadDirectory)
             return 0
         else:
             try:
@@ -124,6 +135,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                         'odt_data', 'iterations'),
                                         *MultiprocessingParse.readFolder(directory))
                 x.close()
+                print("closing window")
             except ValueError as e:
                 msg = "Invalid directory: {}. \
                     Error Message {}\nDo you wish to reselect?".format(directory,
@@ -134,6 +146,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                 self.loadDirectory, quit)
             finally:
                 self._LOADED_FLAG_ = True
+                print("loaded flag is true")
             return 1
 
     def showAnimationSettings(self):
