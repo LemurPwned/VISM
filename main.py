@@ -96,7 +96,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 options = QtWidgets.QFileDialog.ShowDirsOnly))
         fileDialog.close()
         return directory
-    
+
     def loadDirectory(self):
         """Loads whole directory based on Parse class as simple as BHP"""
         fileDialog = QtWidgets.QFileDialog()
@@ -116,8 +116,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             return 0
         else:
             try:
-                sub = "Data is currently being loaded using all cpu power, \
-                        app may stop responding for a while."
+                sub = "Data is currently being loaded using all cpu power," + \
+                        "app may stop responding for a while."
                 x = PopUpWrapper("Loading", sub, "Please Wait...")
 
                 self.doh.passListObject(('color_vectors', 'omf_header',
