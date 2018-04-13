@@ -1,25 +1,32 @@
 from matplotlib import cm
 import numpy as np
 
-from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
+from ColorPolicy import ColorPolicy
 
+from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
+from multiprocessing_parse import asynchronous_pool_order
+from cython_modules.color_policy import multi_iteration_normalize
 
 class CanvasLayer(AbstractCanvas):
-    def __init__(self):
+    def __init__(self, data_dict):
         super().__init__(self)
+        super().shareData(**data_dict)
+        super().receivedOptions()
+        self.createPlotCanvas()
         self._MINIMUM_PARAMS_ = ['i', 'iterations', 'multiple_data', 'title',
                                  'omf_header', 'current_layer']
 
     def createPlotCanvas(self):
-        if self.parameter_check():
-            msg = "Cannot create layer canvas"
-            raise ValueError(msg)
+        self.xc = int(self.omf_header['xnodes'])
+        self.yc = int(self.omf_header['ynodes'])
+        self.zc = int(self.omf_header['znodes'])
 
-        self.canvas_type = 'panel'
+        self.title = 'Single layer'
+        self.i = self.current_state
         dx, dy = self.reshape_data()
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
-        color_array = self.layer[self.i].astype(float)
+        color_array = self.selected_layer[self.i].astype(float)
 
         scat = self.plot_axis.scatter(dx, dy, c=color_array, cmap=cm.jet)
         self.plot_axis.hpl = scat
@@ -29,9 +36,10 @@ class CanvasLayer(AbstractCanvas):
         self.plot_axis.set_autoscale_on(False)
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
         self._CANVAS_ALREADY_CREATED_ = True
+        print("CREATED CANVAS")
 
     def replot(self):
-        color_array = self.layer[self.i].reshape(35 * 35)
+        color_array = self.selected_layer[self.i].reshape(self.xc * self.yc)
         self.plot_axis.hpl.set_array(color_array)
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
 
@@ -39,18 +47,25 @@ class CanvasLayer(AbstractCanvas):
         """
         reshaping the data so that plotting might happen faster
         """
-        xc = int(self.omf_header['xnodes'])
-        yc = int(self.omf_header['ynodes'])
-        zc = int(self.omf_header['znodes'])
-        self.multiple_data = np.array([x.reshape(zc, yc * xc, 3)[self.current_layer]
-                                       for x in self.multiple_data])
-        self.layer = np.array([self.calculate_layer_colors(x)
-                               for x in self.multiple_data])
-        self.layer = np.array([x.reshape(yc, xc) for x in self.layer])
-        x = np.linspace(0, xc, xc)
-        y = np.linspace(0, yc, yc)
+
+
+        if self.normalize:
+            multi_iteration_normalize(self.color_vectors)
+
+        self.color_vectors = np.array([x.reshape(self.zc, self.yc * self.xc, 3)[self.layer]
+                                       for x in self.color_vectors])
+
+        self.selected_layer = np.array([self.calculate_layer_colors(x)
+                               for x in self.color_vectors])
+        self.selected_layer = np.array([x.reshape(self.yc, self.xc)
+                                for x in self.selected_layer])
+        x = np.linspace(0, self.xc, self.xc)
+        y = np.linspace(0, self.yc, self.yc)
         dx, dy = np.meshgrid(x, y)
         return dx, dy
+
+    def atomic_reshape(self, x, layer):
+        return x.reshape(zc, yc * xc, 3)[layer]
 
     def calculate_layer_colors(self, x, relative_vector=[0, 1, 0], scale=1):
         norm = np.apply_along_axis(np.linalg.norm, 1, x)

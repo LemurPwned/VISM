@@ -28,16 +28,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         super().shareData(**kwargs)
         self.receivedOptions()
 
-    def receivedOptions(self):
-        print(self.options)
-        self.normalize = self.options[0]
-        self.averaging = int(self.options[1])
-        self.layer = self.options[2]
-        self.scale = int(self.options[3])
-        self.vector_set = self.options[4]
-        self.decimate = int(self.options[5])
-        self.disableDot = self.options[6]
-
     def initial_transformation(self):
         """
         resets the view to the initial one
