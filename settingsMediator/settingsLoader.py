@@ -18,6 +18,7 @@ class DataObjectHolder(metaclass=Singleton):
         return getattr(self, alias)
 
 
+
     def passListObject(self, aliasList, *dataObjList):
         for dataObj, alias in zip(dataObjList, aliasList):
             self.setDataObject(dataObj, alias)

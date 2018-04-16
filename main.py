@@ -36,10 +36,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         # By default all options are locked and they will be unlocked according to data loaded.
         self._BLOCK_ITERABLES_ = True
         self._BLOCK_STRUCTURES_ = True
-        self._BLOCK_ANIMATIONSETTINGS_ = True
 
-        self.actionAnimation.setDisabled(True)
-        
+        self.actionAnimation.setDisabled(self._BLOCK_ITERABLES_)
+
         # keeps all widgets in list of library object that handles Widgets
         self.panes = []
         self.playerWindow = None
@@ -47,10 +46,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.make1WindowGrid()  # shows default 1 widget Window
         self.events()  # create event listeners
         self._LOADED_FLAG_ = False
-
-
-
-
 
     def events(self):
         """Creates all listeners for Main Window"""
@@ -86,10 +81,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.resize(self.width() - 1, self.height())
         self.resize(self.width() + 1, self.height())
 
-        if not self._BLOCK_ITERABLES_:
-            self.actionAnimation.setEnabled(True)
-
-
+        self.actionAnimation.setDisabled(self._BLOCK_ITERABLES_)
 
     def resizeEvent(self, event):
         """What happens when window is resized"""
@@ -100,7 +92,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self.panes[i].groupBox.setMaximumHeight(self.height() / 2 - 10)
             else:
                 self.panes[i].groupBox.setMaximumHeight(self.height() - 10)
-
 
     def promptDirectory(self):
         fileDialog = QtWidgets.QFileDialog()
@@ -122,8 +113,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         if ".odt" in file:
             self.doh.passListObject(('odt_data', 'iterations'), *MultiprocessingParse.readFile(file))
+            self._BLOCK_ITERABLES_ = False
+
         elif ".omf" in file or ".ovf" in file:
             self.doh.passListObject(('color_vectors', 'omf_header'), *MultiprocessingParse.readFile(file))
+            self._BLOCK_STRUCTURES_ = False
         else:
             raise ValueError("main.py/loadFile: File format is not supported!")
 
@@ -143,7 +137,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         fileDialog.close()
 
         if directory is None or directory == "" or directory=="  ":
-            print("here i am")
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
             self._LOADED_FLAG_ = False
             PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
@@ -159,7 +152,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                         'odt_data', 'iterations'),
                                         *MultiprocessingParse.readFolder(directory))
                 x.close()
-                print("closing window")
             except ValueError as e:
                 msg = "Invalid directory: {}. \
                     Error Message {}\nDo you wish to reselect?".format(directory,
@@ -170,7 +162,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                 self.loadDirectory, quit)
             finally:
                 self._LOADED_FLAG_ = True
-                print("loaded flag is true")
+                self._BLOCK_STRUCTURES_ = False
+                self._BLOCK_ITERABLES_ = False
             return 1
 
     def showAnimationSettings(self):
@@ -210,7 +203,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             # spawn directory picker again
             self.loadDirectory()
         else:
-            self.new = ChooseWidget(number)
+            self.new = ChooseWidget(number, \
+                                    blockStructures = self._BLOCK_STRUCTURES_, \
+                                    blockIterables = self._BLOCK_ITERABLES_)
             self.new.setHandler(self.choosingWidgetReceiver)
 
     def choosingWidgetReceiver(self, value):
