@@ -19,8 +19,6 @@ class DataObjectHolder:
                                 format(data, alias))
 
     def retrieveDataObject(self, alias):
-        print(self.contains_lookup)
-        print(alias)
         if alias in self.contains_lookup:
             if self.isAllowed():
                 return getattr(self, alias)

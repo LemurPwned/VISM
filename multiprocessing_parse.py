@@ -52,8 +52,6 @@ class MultiprocessingParse:
             if .odt - odt_data, stages
             if .omf || .ovf - rawVectorData, header
         """
-        print(path)
-
         if ".odt" in path:
             odt_data, stages = getOdtData(path)
             return odt_data, stages
@@ -68,7 +66,6 @@ class MultiprocessingParse:
                 rawVectorData = MultiprocessingParse.readText([path])
             else:
                 raise RuntimeError("multiprocessing_parse.py readFile: Can't detect encoding!")
-            print("rVD: ", rawVectorData)
             return rawVectorData, header
 
         # elif ".ovf" in path:
