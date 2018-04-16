@@ -33,6 +33,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.setGeometry(10, 10, 1280, 768)  # size of window
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height())
 
+        # By default all options are locked and they will be unlocked according to data loaded.
+        self._BLOCK_ITERABLES_ = True
+        self._BLOCK_STRUCTURES_ = True
+        self._BLOCK_ANIMATIONSETTINGS_ = True
+
+        self.actionAnimation.setDisabled(True)
+        
         # keeps all widgets in list of library object that handles Widgets
         self.panes = []
         self.playerWindow = None
@@ -40,9 +47,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.make1WindowGrid()  # shows default 1 widget Window
         self.events()  # create event listeners
         self._LOADED_FLAG_ = False
-        self._BLOCK_ITERABLES_ = False
-        self._BLOCK_STRUCTURE_ = False
-        #self.
+
+
+
+
 
     def events(self):
         """Creates all listeners for Main Window"""
@@ -78,6 +86,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.resize(self.width() - 1, self.height())
         self.resize(self.width() + 1, self.height())
 
+        if not self._BLOCK_ITERABLES_:
+            self.actionAnimation.setEnabled(True)
+
+
 
     def resizeEvent(self, event):
         """What happens when window is resized"""
@@ -104,8 +116,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def loadFile(self):
         fileDialog = QtWidgets.QFileDialog()
         fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
-        file = str(fileDialog.getOpenFileName(self, "Select File"))
+        file = str(fileDialog.getOpenFileName(self, "Select File")[0])
 
+        self._LOADED_FLAG_ = False
+
+        if ".odt" in file:
+            self.doh.passListObject(('odt_data', 'iterations'), *MultiprocessingParse.readFile(file))
+        elif ".omf" in file or ".ovf" in file:
+            self.doh.passListObject(('color_vectors', 'omf_header'), *MultiprocessingParse.readFile(file))
+        else:
+            raise ValueError("main.py/loadFile: File format is not supported!")
+
+        self._LOADED_FLAG_ = True
 
     
     def loadDirectory(self):
