@@ -17,10 +17,13 @@ class DataObjectHolder(metaclass=Singleton):
     def retrieveDataObject(self, alias):
         return getattr(self, alias)
 
-    def passListObject(self, aliasList, *dataObjList, ):
+    def passListObject(self, aliasList, *dataObjList):
         for dataObj, alias in zip(dataObjList, aliasList):
             self.setDataObject(dataObj, alias)
 
+    @DataObjectHolderProxy.is_removable
+    def removeDataObject(self, alias):
+        setattr(self, alias, None)
 
 class SettingsInterface:
     def __init__(self):

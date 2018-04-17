@@ -31,7 +31,7 @@ class MultiprocessingParse:
             if voted_extension is not None:
                 break
 
-        print("SUPPORTED EXTESNION DETECTED {}".format(voted_extension))
+        print("SUPPORTED EXTENSION DETECTED {}".format(voted_extension))
         files_in_directory = [os.path.join(directory, filename)
                               for filename in files_in_directory
                               if filename.endswith(voted_extension)]

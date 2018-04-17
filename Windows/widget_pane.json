@@ -30,5 +30,13 @@
                         "settings": ["PlotSettings", "odt_data"],
                         "required": ["iterations", "current_state", "options",
                                      "odt_data", "geom"]
+                      },
+    "CanvasLayer": {
+                        "alias": "2D_Layer",
+                        "object": "CanvasLayer",
+                        "object_type": "2d_object",
+                        "settings": ["SimplePerfOptions", "omf_header"],
+                        "required": ["iterations", "current_state", "options",
+                                     "omf_header","color_vectors"]
                       }
 }

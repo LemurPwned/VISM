@@ -31,6 +31,7 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
 
     def set_i(self, value):
         self.i = value
+        self.loop_guard()
         self.replot()
         self.plot_axis.get_figure().canvas.draw()
 

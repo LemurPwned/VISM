@@ -4,8 +4,6 @@ import numpy as np
 
 from PyQt5.QtWidgets import QWidget
 from PyQt5.Qt import Qt
-from PyQt5.QtCore import QPoint, QThread
-
 
 from cython_modules.cython_parse import getLayerOutline, genCubes
 from cython_modules.color_policy import multi_iteration_normalize
@@ -15,6 +13,7 @@ from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 from ColorPolicy import ColorPolicy
 from multiprocessing import Pool
 
+from PIL import Image
 
 class CubicGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
@@ -30,7 +29,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
         self.buffer_len = 0
 
         self.shareData(**data_dict)
-
+        self.image_buffer = None
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
@@ -112,7 +111,12 @@ class CubicGLContext(AbstractGLContext, QWidget):
             gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
                                np.array(self.color_vectors[self.i],
                                dtype='float32').flatten())
-
+            image_buffer = gl.glReadPixels(0, 0, 800, 800,
+                                            gl.GL_RGB, gl.GL_UNSIGNED_BYTE)
+            image = Image.frombytes(mode='RGB', size=(800,800),
+                                                            data=image_buffer)
+            image = image.transpose(Image.FLIP_TOP_BOTTOM)
+            image.save('./SCR/' + str(self.i), "PNG")
             # if self.grabFramebuffer().save('./SCR/'+str(self.i), 'JPG'):
             #     print("successfull saving")
         self.draw_vbo()
