@@ -113,6 +113,3 @@ ENV/
 spintronics/
 
 .DS_Store
-
-#mem profiler dump
-mprofiles/
