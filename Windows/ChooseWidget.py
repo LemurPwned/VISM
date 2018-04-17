@@ -50,18 +50,7 @@ class ChooseWidget(QtWidgets.QWidget):
     def loadWidgetsFromFile(self):
         self.json_file_handler = json.load(open(self.__WIDGET_LOC__))
         for widget_key in self.json_file_handler.keys():
-            #TODO use 'required', it requires :P changes in json file, there need to be added "optional" field because
-            #TODO 3D objects do not always require iterations
-            #TODO basicly after fix in json you can uncomment below code and delete out bottom solution
-            # if 'iterations' in self.json_file_handler[widget_key]['required'] and self._BLOCK_ITERABLES_:
-            #     continue
-            #
-            # if 'omf_header' in self.json_file_handler[widget_key]['required'] and self._BLOCK_STRUCTURES__:
-            #     continue
-            #
-            # self.list.addItem(self.json_file_handler[widget_key]['alias'])
-
-
+            #TODO think about better solution
             if self.json_file_handler[widget_key]['object_type'] == "2d_object" and not self._BLOCK_ITERABLES_ or \
                self.json_file_handler[widget_key]['object_type'] == "3d_object" and not self._BLOCK_STRUCTURES_:
                 self.list.addItem(self.json_file_handler[widget_key]['alias'])
