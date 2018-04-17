@@ -123,7 +123,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         self._LOADED_FLAG_ = True
 
-
     def loadDirectory(self):
         """Loads whole directory based on Parse class as simple as BHP"""
         fileDialog = QtWidgets.QFileDialog()

@@ -51,6 +51,7 @@ class ChooseWidget(QtWidgets.QWidget):
         self.json_file_handler = json.load(open(self.__WIDGET_LOC__))
         for widget_key in self.json_file_handler.keys():
             #TODO think about better solution, now i have better solution but have to change few things...
+
             if self.json_file_handler[widget_key]['object_type'] == "2d_object" and not self._BLOCK_ITERABLES_ or \
                self.json_file_handler[widget_key]['object_type'] == "3d_object" and not self._BLOCK_STRUCTURES_:
                 self.list.addItem(self.json_file_handler[widget_key]['alias'])
