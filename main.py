@@ -257,6 +257,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
             self.playerWindow.forceWorkerReset()
             self.playerWindow.closeMe()
+            self.playerWindow.worker.clearWidgetIterators()
 
         self.panes[number].clearBox()
         self.panes[number].setUpDefaultBox()
