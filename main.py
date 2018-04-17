@@ -262,7 +262,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[number].setUpDefaultBox()
         self.panes[number].button.clicked.connect(\
             lambda: self.showChooseWidgetSettings(number))
-        self.playerWindow.worker.clearWidgetIterators()
 
     def propagate_resize(self):
         for i in range(4):
