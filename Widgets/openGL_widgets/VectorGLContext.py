@@ -51,6 +51,15 @@ class VectorGLContext(AbstractGLContext, QWidget):
                                                            self.decimate,
                                                            self.disableDot)
 
+        x_fix = (self.omf_header['xnodes'] * self.omf_header['xbase'] * 1e9) / 2
+        y_fix = (self.omf_header['ynodes'] * self.omf_header['ybase'] * 1e9) / 2
+        z_fix = (self.omf_header['znodes'] * self.omf_header['zbase'] * 1e9) / 2
+
+        for vec in self.vectors_list:
+            vec[0] -= x_fix
+            vec[1] -= y_fix
+            vec[2] -= z_fix
+
         if self.normalize:
             multi_iteration_normalize(self.color_vectors)
 
