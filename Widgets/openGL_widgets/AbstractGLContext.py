@@ -119,7 +119,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
 
     def zoomIn(self):
-        self.steps += 1
+        self.steps = 1
         # SMART SCROLL BETA
         self.position[0] -= mt.sin(self.rotation[0] * mt.pi / 180) * \
                             mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
@@ -130,7 +130,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
 
     def zoomOut(self):
-        self.steps -= 1
+        self.steps = -1
 
         self.position[0] -= mt.sin(self.rotation[0] * mt.pi / 180) * \
                             mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
