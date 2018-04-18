@@ -33,6 +33,21 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         resets the view to the initial one
         :return:
         """
+
+        gl.glLineWidth(2 * 2)
+        gl.glBegin(gl.GL_LINES)
+        gl.glColor3f(*[1, 0, 0])
+        gl.glVertex3f(*[0,0,0])
+        gl.glVertex3f(*[1,0,0])
+        gl.glColor3f(*[0, 1, 0])
+        gl.glVertex3f(*[0, 0, 0])
+        gl.glVertex3f(*[0, 1, 0])
+        gl.glColor3f(*[0, 0, 1])
+        gl.glVertex3f(*[0, 0, 0])
+        gl.glVertex3f(*[0, 0, 1])
+
+        gl.glEnd()
+
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
         self.position = [10, 10, -50]  # xyz initial
 
@@ -50,8 +65,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         Initializes openGL context and scenery
         """
 
-        gl.glClearColor(0.0, 0.0, 0.0, 1.0)
+        gl.glClearColor(0.5, 0.5, 0.5, 1.0)
         gl.glEnable(gl.GL_DEPTH_TEST)
+
 
     def resizeGL(self, w, h):
         """
@@ -95,12 +111,15 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.initial_transformation()
             self.update()
 
-    def wheelEvent(self, event):
-        """
-        Handles basic mouse scroll
-        """
-        degs = event.angleDelta().y() / 8
-        self.steps += degs / 15
+        if key == Qt.Key_I:
+            self.zoomIn()
+
+        if key == Qt.Key_O:
+            self.zoomOut()
+
+
+    def zoomIn(self):
+        self.steps = 1
         # SMART SCROLL BETA
         self.position[0] -= mt.sin(self.rotation[0] * mt.pi / 180) * \
                             mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
@@ -108,6 +127,34 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                             mt.sin(self.rotation[1] * mt.pi / 180) * self.steps
         self.position[2] += mt.cos(self.rotation[0] * mt.pi / 180) * \
                             mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
+
+
+    def zoomOut(self):
+        self.steps = -1
+
+        self.position[0] -= mt.sin(self.rotation[0] * mt.pi / 180) * \
+                            mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
+        self.position[1] += mt.cos(self.rotation[0] * mt.pi / 180) * \
+                            mt.sin(self.rotation[1] * mt.pi / 180) * self.steps
+        self.position[2] += mt.cos(self.rotation[0] * mt.pi / 180) * \
+                            mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
+
+    def wheelEvent(self, event):
+        """
+        Handles basic mouse scroll
+        """
+        degs = event.angleDelta().y() / 8
+        self.steps = degs / 15
+        # SMART SCROLL BETA
+        self.position[0] -= mt.sin(self.rotation[0] * mt.pi / 180) * \
+                            mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
+        self.position[1] += mt.cos(self.rotation[0] * mt.pi / 180) * \
+                            mt.sin(self.rotation[1] * mt.pi / 180) * self.steps
+        self.position[2] += mt.cos(self.rotation[0] * mt.pi / 180) * \
+                            mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
+
+        print(self.position[0], self.position[1], self.position[2])
+
         self.update()
 
     def mouseMoveEvent(self, event):
@@ -131,7 +178,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
         elif event.buttons() & Qt.RightButton:
             self.position[0] += dx * 0.2
-            self.position[1] += dy * 0.2
+            self.position[1] -= dy * 0.2
 
         self.update()
 
