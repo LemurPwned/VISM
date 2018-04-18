@@ -2,7 +2,6 @@ from matplotlib import cm
 import numpy as np
 
 from ColorPolicy import ColorPolicy
-
 from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
 from multiprocessing_parse import asynchronous_pool_order
 from cython_modules.color_policy import multi_iteration_normalize, \
@@ -13,9 +12,18 @@ class CanvasLayer(AbstractCanvas):
         super().__init__(self)
         super().shareData(**data_dict)
         super().receivedOptions()
+        self.handleOptionalData()
         self.createPlotCanvas()
-        self._MINIMUM_PARAMS_ = ['i', 'iterations', 'multiple_data', 'title',
-                                 'omf_header', 'current_layer']
+
+    def handleOptionalData(self):
+        # must handle iterations since these are optional
+        try:
+            getattr(self, 'iterations')
+        except NameError:
+            self.iterations = 1
+        finally:
+            if self.iterations is None:
+                self.iterations = 1
 
     def createPlotCanvas(self):
         self.xc = int(self.omf_header['xnodes'])
@@ -48,6 +56,8 @@ class CanvasLayer(AbstractCanvas):
         """
         reshaping the data so that plotting might happen faster
         """
+        print("DATA!!!")
+        print(self.iterations, self.xc, self.yc, self.zc)
         if self.normalize:
             multi_iteration_normalize(self.color_vectors)
         # dot product
@@ -56,6 +66,7 @@ class CanvasLayer(AbstractCanvas):
                                                         self.zc, self.yc,
                                                         self.xc, 3)
         self.color_vectors = self.color_vectors[:, self.layer, :, :, :]
+        print(self.iterations, self.xc, self.yc, self.zc)
         self.color_vectors = self.color_vectors.reshape(self.iterations,
                                                             self.xc*self.yc, 3)
         self.color_vectors = asynchronous_pool_order(CanvasLayer.calculate_layer_colors,
