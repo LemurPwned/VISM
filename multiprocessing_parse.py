@@ -90,11 +90,11 @@ class MultiprocessingParse:
             raise ValueError(".odt file extension conflict (too many)")
             #TODO error window
         elif not odt_file:
-            raise ValueError("None .odt")
-            #TODO error window
+            odt_data = None
 
         # NOTE: this should recognize both .omf and .ovf files
-        odt_data, stages = getOdtData(odt_file[0])
+        if odt_data is not None:
+            odt_data, _ = getOdtData(odt_file[0])
         stages = glob.glob(os.path.join(directory, '*' + ext))
         test_file = os.path.join(directory, stages[0])
 

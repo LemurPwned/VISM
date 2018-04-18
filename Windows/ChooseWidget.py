@@ -3,7 +3,8 @@ import json
 
 class ChooseWidget(QtWidgets.QWidget):
     """docstring for ChooseWidget."""
-    def __init__(self, number, blockStructures=False, blockIterables=False):
+    def __init__(self, number, blockStructures=False, blockIterables=False,
+                    blockPlotIterables=False):
         super(ChooseWidget, self).__init__()
         self.__WIDGET_LOC__ = "Windows/widget_pane.json"
         self.json_file_handler = None
@@ -11,7 +12,10 @@ class ChooseWidget(QtWidgets.QWidget):
                            "Better 2D plot"]
         self._BLOCK_STRUCTURES_ = blockStructures
         self._BLOCK_ITERABLES_ = blockIterables
-
+        if not self._BLOCK_ITERABLES_:
+            self._BLOCK_PLOT_ITERABLES_ = blockPlotIterables
+        else:
+            self._BLOCK_PLOT_ITERABLES_ = True
         self.number = number
         self.setWindowTitle("Choose Widget")
         self.setGeometry(0,0,350,400)
@@ -50,12 +54,26 @@ class ChooseWidget(QtWidgets.QWidget):
     def loadWidgetsFromFile(self):
         self.json_file_handler = json.load(open(self.__WIDGET_LOC__))
         for widget_key in self.json_file_handler.keys():
-            #TODO think about better solution, now i have better solution but have to change few things...
-
-            if self.json_file_handler[widget_key]['object_type'] == "2d_object" and not self._BLOCK_ITERABLES_ or \
-               self.json_file_handler[widget_key]['object_type'] == "3d_object" and not self._BLOCK_STRUCTURES_:
+            # TODO: think about better solution,
+            # now i have better solution but have to change few things...
+            if not self._BLOCK_ITERABLES_ and not self._BLOCK_STRUCTURES_ \
+                and not self._BLOCK_PLOT_ITERABLES_:
                 self.list.addItem(self.json_file_handler[widget_key]['alias'])
+            else:
+                if 'optional' in self.json_file_handler[widget_key]:
+                    if not self._BLOCK_STRUCTURES_:
+                        self.list.addItem(self.json_file_handler[widget_key]['alias'])
+                else:
+                    if not self._BLOCK_ITERABLES_ and not self._BLOCK_PLOT_ITERABLES_:
+                        self.list.addItem(self.json_file_handler[widget_key]['alias'])
 
+            # if not self._BLOCK_PLOT_ITERABLES_ and \
+            #     self.json_file_handler[widget_key]['object_type'] == "3d_object":
+            #
+            # if self.json_file_handler[widget_key]['object_type'] == "2d_object" \
+            #         and not self._BLOCK_ITERABLES_ or \
+            #    self.json_file_handler[widget_key]['object_type'] == "3d_object" \
+            #         and not self._BLOCK_STRUCTURES_:
 
 
     def loadAvailWidgets(self):
