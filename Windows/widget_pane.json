@@ -4,16 +4,18 @@
                       "object": "CubicGLContext",
                       "object_type": "3d_object",
                       "settings": ["PerfOptions", "omf_header"],
-                      "required": ["iterations", "current_state", "options",
-                                   "omf_header","color_vectors"]
+                      "required": ["current_state", "options",
+                                   "omf_header", "color_vectors"],
+                      "optional": ["iterations"]
                       },
     "VectorGLContext": {
                       "alias": "3D_VECTOR",
                       "object": "VectorGLContext",
                       "object_type": "3d_object",
                       "settings": ["PerfOptions", "omf_header"],
-                      "required": ["iterations", "current_state", "options",
-                                   "omf_header","color_vectors"]
+                      "required": ["current_state", "options",
+                                   "omf_header","color_vectors"],
+                      "optional": ["iterations"]
                       },
     "Canvas":         {
                         "alias": "2D_Matplotlib",
@@ -36,7 +38,8 @@
                         "object": "CanvasLayer",
                         "object_type": "2d_object",
                         "settings": ["SimplePerfOptions", "omf_header"],
-                        "required": ["iterations", "current_state", "options",
-                                     "omf_header","color_vectors"]
+                        "required": [ "current_state", "options",
+                                     "omf_header","color_vectors"],
+                        "optional" : ["iterations"]
                       }
 }

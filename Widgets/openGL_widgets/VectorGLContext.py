@@ -63,7 +63,7 @@ class VectorGLContext(AbstractGLContext, QWidget):
     def slow_arrow_draw(self):
         for vector, color in zip(self.vectors_list,
                                     self.color_vectors[self.i]):
-            if not color.any():
+            if not np.any(color):
                 continue
             self.base_arrow(vector, color)
 

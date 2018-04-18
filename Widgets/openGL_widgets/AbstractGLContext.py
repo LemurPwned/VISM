@@ -23,10 +23,20 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.position = [10, 10, -50]  # xyz initial
         self.drawing_function = None
         self.function_select = 'fast'
+        self.background = [0.5, 0.5, 0.5]
+
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
+        super().handleOptionalData()
         self.receivedOptions()
+
+    def handleOptionalData(self):
+        # must handle iterations since these are optional
+        try:
+            getattr(self, 'iterations')
+        except NameError:
+            self.iterations = 1
 
     def initial_transformation(self):
         """
@@ -65,7 +75,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         Initializes openGL context and scenery
         """
 
-        gl.glClearColor(0.5, 0.5, 0.5, 1.0)
+        gl.glClearColor(*self.background, 1)
+
         gl.glEnable(gl.GL_DEPTH_TEST)
 
 
@@ -152,8 +163,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                             mt.sin(self.rotation[1] * mt.pi / 180) * self.steps
         self.position[2] += mt.cos(self.rotation[0] * mt.pi / 180) * \
                             mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
-
-        # print(self.position[0], self.position[1], self.position[2])
 
         self.update()
 

@@ -26,12 +26,10 @@ class CubicGLContext(AbstractGLContext, QWidget):
 
         self.buffers = None
         self.buffer_len = 0
-
         self.shareData(**data_dict)
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
-
         self.spacer = self.spacer*self.scale
         xc = int(self.omf_header['xnodes'])
         yc = int(self.omf_header['ynodes'])
@@ -58,7 +56,11 @@ class CubicGLContext(AbstractGLContext, QWidget):
             self.spacer *= decimate*3
 
         if self.normalize:
+            background = np.array(self.background)
             multi_iteration_normalize(self.color_vectors)
+            # replace black with background colors
+            # NOTE: This is dangerous since dot product can be zero
+            self.color_vectors[~self.color_vectors.any(axis=2)] = background
 
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw
