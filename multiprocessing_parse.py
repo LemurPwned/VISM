@@ -57,20 +57,16 @@ class MultiprocessingParse:
             return odt_data, stages
 
         elif ".omf" in path or ".ovf" in path:
-            header = getOmfHeader(path)
             rawVectorData = None
             if is_binary(path):
-                rawVectorData = MultiprocessingParse.readBinary([path])
-                # return MultiprocessingParse.readBinary([path])
+                headers, rawVectorData = MultiprocessingParse.readBinary([path])
+                header = headers[0]
             elif not is_binary(path):
                 rawVectorData = MultiprocessingParse.readText([path])
+                header = getOmfHeader(path)
             else:
                 raise RuntimeError("multiprocessing_parse.py readFile: Can't detect encoding!")
             return rawVectorData, header
-
-        # elif ".ovf" in path:
-        #     pass
-
         else:
             raise ValueError("Invalid file! Must have .odt, .omf or .ovf extension!")
 
