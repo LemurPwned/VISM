@@ -56,8 +56,6 @@ class CanvasLayer(AbstractCanvas):
         """
         reshaping the data so that plotting might happen faster
         """
-        print("DATA!!!")
-        print(self.iterations, self.xc, self.yc, self.zc)
         if self.normalize:
             multi_iteration_normalize(self.color_vectors)
         # dot product
@@ -66,7 +64,6 @@ class CanvasLayer(AbstractCanvas):
                                                         self.zc, self.yc,
                                                         self.xc, 3)
         self.color_vectors = self.color_vectors[:, self.layer, :, :, :]
-        print(self.iterations, self.xc, self.yc, self.zc)
         self.color_vectors = self.color_vectors.reshape(self.iterations,
                                                             self.xc*self.yc, 3)
         self.color_vectors = asynchronous_pool_order(CanvasLayer.calculate_layer_colors,

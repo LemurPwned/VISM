@@ -23,6 +23,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.position = [10, 10, -50]  # xyz initial
         self.drawing_function = None
         self.function_select = 'fast'
+        self.background = [0.5, 0.5, 0.5]
+
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
@@ -58,7 +60,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         Initializes openGL context and scenery
         """
 
-        gl.glClearColor(0.0, 0.0, 0.0, 1.0)
+        gl.glClearColor(*self.background, 1)
         gl.glEnable(gl.GL_DEPTH_TEST)
 
     def resizeGL(self, w, h):
