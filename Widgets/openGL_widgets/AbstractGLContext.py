@@ -153,7 +153,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.position[2] += mt.cos(self.rotation[0] * mt.pi / 180) * \
                             mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
 
-        print(self.position[0], self.position[1], self.position[2])
+        # print(self.position[0], self.position[1], self.position[2])
 
         self.update()
 
@@ -177,8 +177,13 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.position[2] = zpos
 
         elif event.buttons() & Qt.RightButton:
-            self.position[0] += dx * 0.2
+            if abs(self.rotation[0])%360 < 90:
+                self.position[0] += dx * 0.2
+            else:
+                self.position[0] -= dx * 0.2
+
             self.position[1] -= dy * 0.2
+
 
         self.update()
 
