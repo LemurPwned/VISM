@@ -31,7 +31,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
-
         self.spacer = self.spacer*self.scale
         xc = int(self.omf_header['xnodes'])
         yc = int(self.omf_header['ynodes'])

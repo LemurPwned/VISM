@@ -10,9 +10,6 @@ class SimplePerfOptions(QWidget, Ui_Dialog):
         self.setupUi(self)
         self.loaded = True
         self.layer_size = layer_size['znodes']
-        if self.layer_size == 1:
-            self.checkBox.setEnabled(False)
-            self.checkBox.setChecked(True)
 
         self.basicOptions()
         self.show()
@@ -30,8 +27,14 @@ class SimplePerfOptions(QWidget, Ui_Dialog):
             self.horizontalSlider_2.setValue(3)
             self.horizontalSlider_2.setSingleStep(1)
 
+        # only a single layer is available
+        if self.layer_size == 1:
+            self.horizontalSlider_2.setEnabled(False)
+            self.picked_layer = 0
+
     def layerChange(self):
         val = self.horizontalSlider_2.value()
+        self.picked_layer = val
         self.label_3.setText("Layer: {}".format(val))
 
     def optionsVerifier(self):
@@ -39,7 +42,7 @@ class SimplePerfOptions(QWidget, Ui_Dialog):
         # checkBox_5 is normalize
         optionsList = [ self.checkBox_5.isChecked(),
                         0,
-                        self.horizontalSlider_2.value(),
+                        self.picked_layer,
                         0,
                         self.parseVectors(),
                         0,

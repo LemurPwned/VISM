@@ -36,6 +36,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         # By default all options are locked and they will be unlocked according to data loaded.
         self._BLOCK_ITERABLES_ = True
         self._BLOCK_STRUCTURES_ = True
+        self._BLOCK_PLOT_ITERABLES_ = True
 
         self.actionAnimation.setDisabled(self._BLOCK_ITERABLES_)
 
@@ -112,11 +113,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self._LOADED_FLAG_ = False
 
         if ".odt" in file:
-            self.doh.passListObject(('odt_data', 'iterations'), *MultiprocessingParse.readFile(file))
+            self.doh.passListObject(('odt_data', 'iterations'),
+                                        *MultiprocessingParse.readFile(file))
             self._BLOCK_ITERABLES_ = False
+            self._BLOCK_PLOT_ITERABLES_ = False
 
         elif ".omf" in file or ".ovf" in file:
-            self.doh.passListObject(('color_vectors', 'omf_header'), *MultiprocessingParse.readFile(file))
+            self.doh.passListObject(('color_vectors', 'omf_header'),
+                                        *MultiprocessingParse.readFile(file))
             self._BLOCK_STRUCTURES_ = False
         else:
             raise ValueError("main.py/loadFile: File format is not supported!")
@@ -146,12 +150,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 sub = "Data is currently being loaded using all cpu power," + \
                         "app may stop responding for a while."
                 x = PopUpWrapper("Loading", sub, "Please Wait...")
-
+                rawVectorData, header, odt_data, stages = \
+                                    MultiprocessingParse.readFolder(directory)
                 self.doh.passListObject(('color_vectors', 'omf_header',
-                                        'odt_data', 'iterations'),
-                                        *MultiprocessingParse.readFolder(directory))
+                                        'iterations'),
+                                        rawVectorData, header, stages)
+                if odt_data is not None:
+                    self.doh.setDataObject(odt_data, 'odt_data')
+                    # successfully loaded odt_data into DOH
+                    self._BLOCK_PLOT_ITERABLES_ = False
+                else:
+                    self._BLOCK_PLOT_ITERABLES_ = True
                 x.close()
             except ValueError as e:
+                print(e.print_stack())
                 msg = "Invalid directory: {}. \
                     Error Message {}\nDo you wish to reselect?".format(directory,
                                                                         str(e))
@@ -160,9 +172,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                 QtWidgets.QMessageBox.No,
                                 self.loadDirectory, quit)
             finally:
+                self._BLOCK_ITERABLES_ = False
                 self._LOADED_FLAG_ = True
                 self._BLOCK_STRUCTURES_ = False
-                self._BLOCK_ITERABLES_ = False
             return 1
 
     def showAnimationSettings(self):
@@ -204,7 +216,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         else:
             self.new = ChooseWidget(number, \
                                     blockStructures = self._BLOCK_STRUCTURES_, \
-                                    blockIterables = self._BLOCK_ITERABLES_)
+                                    blockIterables = self._BLOCK_ITERABLES_,
+                                    blockPlotIterables = self._BLOCK_PLOT_ITERABLES_)
             self.new.setHandler(self.choosingWidgetReceiver)
 
     def choosingWidgetReceiver(self, value):
