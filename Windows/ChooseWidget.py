@@ -66,16 +66,7 @@ class ChooseWidget(QtWidgets.QWidget):
                 else:
                     if not self._BLOCK_ITERABLES_ and not self._BLOCK_PLOT_ITERABLES_:
                         self.list.addItem(self.json_file_handler[widget_key]['alias'])
-
-            # if not self._BLOCK_PLOT_ITERABLES_ and \
-            #     self.json_file_handler[widget_key]['object_type'] == "3d_object":
-            #
-            # if self.json_file_handler[widget_key]['object_type'] == "2d_object" \
-            #         and not self._BLOCK_ITERABLES_ or \
-            #    self.json_file_handler[widget_key]['object_type'] == "3d_object" \
-            #         and not self._BLOCK_STRUCTURES_:
-
-
+                        
     def loadAvailWidgets(self):
         self.layout = QtWidgets.QGridLayout(self)
         self.list = QtWidgets.QListWidget(self)
