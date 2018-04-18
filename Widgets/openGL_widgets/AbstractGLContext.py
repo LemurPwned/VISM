@@ -111,10 +111,10 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.initial_transformation()
             self.update()
 
-        if key == Qt.Key_E:
+        if key == Qt.Key_I:
             self.zoomIn()
 
-        if key == Qt.Key_W:
+        if key == Qt.Key_O:
             self.zoomOut()
 
 
@@ -144,7 +144,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         Handles basic mouse scroll
         """
         degs = event.angleDelta().y() / 8
-        self.steps += degs / 15
+        self.steps = degs / 15
         # SMART SCROLL BETA
         self.position[0] -= mt.sin(self.rotation[0] * mt.pi / 180) * \
                             mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
