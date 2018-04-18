@@ -26,17 +26,15 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
+        super().handleOptionalData()
         self.receivedOptions()
 
-    def receivedOptions(self):
-        print(self.options)
-        self.normalize = self.options[0]
-        self.averaging = int(self.options[1])
-        self.layer = self.options[2]
-        self.scale = int(self.options[3])
-        self.vector_set = self.options[4]
-        self.decimate = int(self.options[5])
-        self.disableDot = self.options[6]
+    def handleOptionalData(self):
+        # must handle iterations since these are optional
+        try:
+            getattr(self, 'iterations')
+        except NameError:
+            self.iterations = 1
 
     def initial_transformation(self):
         """

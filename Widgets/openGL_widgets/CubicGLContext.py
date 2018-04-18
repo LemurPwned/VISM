@@ -25,15 +25,12 @@ class CubicGLContext(AbstractGLContext, QWidget):
         self.vertices = 0
 
         self.buffers = None
-        self.fbo = None
         self.buffer_len = 0
 
         self.shareData(**data_dict)
-        self.image_buffer = None
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
-
         self.spacer = self.spacer*self.scale
         xc = int(self.omf_header['xnodes'])
         yc = int(self.omf_header['ynodes'])
@@ -99,11 +96,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
     def vbo_cubic_draw(self):
         if self.buffers is None:
             self.buffers = self.create_vbo()
-            if self.fbo is None:
-                fbo_handler = self.defaultFramebufferObject()
-                # self.fbo = gl.glGenFramebuffers(1)
-                gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo_handler)
-                self.fbo = 1
         else:
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
             # later move to set_i function so that reference changes
@@ -111,14 +103,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
             gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
                                np.array(self.color_vectors[self.i],
                                dtype='float32').flatten())
-            image_buffer = gl.glReadPixels(0, 0, 800, 800,
-                                            gl.GL_RGB, gl.GL_UNSIGNED_BYTE)
-            image = Image.frombytes(mode='RGB', size=(800,800),
-                                                            data=image_buffer)
-            image = image.transpose(Image.FLIP_TOP_BOTTOM)
-            image.save('./SCR/' + str(self.i), "PNG")
-            # if self.grabFramebuffer().save('./SCR/'+str(self.i), 'JPG'):
-            #     print("successfull saving")
         self.draw_vbo()
 
     def draw_vbo(self):

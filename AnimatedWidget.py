@@ -7,6 +7,14 @@ class AnimatedWidget():
         for k, v in kwargs.items():
             setattr(self, k, v)
 
+    def handleOptionalData(self):
+        """
+        needs to handle all optional data that are stored in
+        json file
+        please implement
+        """
+        pass
+
     def loop_guard(self):
         self.i %= self.iterations
 
@@ -34,3 +42,13 @@ class AnimatedWidget():
         refresh it immediately.
         """
         pass
+
+    def receivedOptions(self):
+        print(self.options)
+        self.normalize = self.options[0]
+        self.averaging = int(self.options[1])
+        self.layer = self.options[2]
+        self.scale = int(self.options[3])
+        self.vector_set = self.options[4]
+        self.decimate = int(self.options[5])
+        self.disableDot = self.options[6]
