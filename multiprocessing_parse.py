@@ -31,12 +31,49 @@ class MultiprocessingParse:
             if voted_extension is not None:
                 break
 
+        #loop may end and the value may still be None, this means invalid directory
+        #tbh I am not sure but it helps fix issue
+        if voted_extension is None:
+            raise ValueError("Invalid Directory")
+
         print("SUPPORTED EXTENSION DETECTED {}".format(voted_extension))
         files_in_directory = [os.path.join(directory, filename)
                               for filename in files_in_directory
                               if filename.endswith(voted_extension)]
         files_in_directory = sorted(files_in_directory)
         return files_in_directory, voted_extension
+
+    @staticmethod
+    def readFile(path):
+        """
+        Function loads one selected file.
+        :param path: path to file which user wants to load (String)
+        :return: depends on filetype:
+            if .odt - odt_data, stages
+            if .omf || .ovf - rawVectorData, header
+        """
+        if ".odt" in path:
+            odt_data, stages = getOdtData(path)
+            return odt_data, stages
+
+        elif ".omf" in path or ".ovf" in path:
+            header = getOmfHeader(path)
+            rawVectorData = None
+            if is_binary(path):
+                rawVectorData = MultiprocessingParse.readBinary([path])
+                # return MultiprocessingParse.readBinary([path])
+            elif not is_binary(path):
+                rawVectorData = MultiprocessingParse.readText([path])
+            else:
+                raise RuntimeError("multiprocessing_parse.py readFile: Can't detect encoding!")
+            return rawVectorData, header
+
+        # elif ".ovf" in path:
+        #     pass
+
+        else:
+            raise ValueError("Invalid file! Must have .odt, .omf or .ovf extension!")
+
 
     @staticmethod
     def readFolder(directory, multipleOmfHeaders=False):
@@ -47,6 +84,7 @@ class MultiprocessingParse:
         :param directory
         :return rawVectorData, omf_headers, getOdtData
         """
+
         files_in_directory, ext = MultiprocessingParse.guess_file_type(
                                                                     directory)
 
@@ -54,8 +92,10 @@ class MultiprocessingParse:
         # look for .odt in current directory
         if len(odt_file) > 1:
             raise ValueError(".odt file extension conflict (too many)")
+            #TODO error window
         elif not odt_file:
             raise ValueError("None .odt")
+            #TODO error window
 
         # NOTE: this should recognize both .omf and .ovf files
         odt_data, stages = getOdtData(odt_file[0])

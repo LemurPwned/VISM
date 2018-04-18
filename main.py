@@ -33,6 +33,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.setGeometry(10, 10, 1280, 768)  # size of window
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height())
 
+        # By default all options are locked and they will be unlocked according to data loaded.
+        self._BLOCK_ITERABLES_ = True
+        self._BLOCK_STRUCTURES_ = True
+
+        self.actionAnimation.setDisabled(self._BLOCK_ITERABLES_)
+
         # keeps all widgets in list of library object that handles Widgets
         self.panes = []
         self.playerWindow = None
@@ -45,6 +51,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         """Creates all listeners for Main Window"""
         # FILE SUBMENU
         self.actionLoad_Directory.triggered.connect(self.loadDirectory)
+        self.actionLoad_File.triggered.connect(self.loadFile)
 
         # EDIT SUBMENU
         self.actionAnimation.triggered.connect(self.showAnimationSettings)
@@ -74,6 +81,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.resize(self.width() - 1, self.height())
         self.resize(self.width() + 1, self.height())
 
+        self.actionAnimation.setDisabled(self._BLOCK_ITERABLES_)
 
     def resizeEvent(self, event):
         """What happens when window is resized"""
@@ -84,7 +92,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self.panes[i].groupBox.setMaximumHeight(self.height() / 2 - 10)
             else:
                 self.panes[i].groupBox.setMaximumHeight(self.height() - 10)
-
 
     def promptDirectory(self):
         fileDialog = QtWidgets.QFileDialog()
@@ -97,6 +104,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         fileDialog.close()
         return directory
 
+    def loadFile(self):
+        fileDialog = QtWidgets.QFileDialog()
+        fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+        file = str(fileDialog.getOpenFileName(self, "Select File")[0])
+
+        self._LOADED_FLAG_ = False
+
+        if ".odt" in file:
+            self.doh.passListObject(('odt_data', 'iterations'), *MultiprocessingParse.readFile(file))
+            self._BLOCK_ITERABLES_ = False
+
+        elif ".omf" in file or ".ovf" in file:
+            self.doh.passListObject(('color_vectors', 'omf_header'), *MultiprocessingParse.readFile(file))
+            self._BLOCK_STRUCTURES_ = False
+        else:
+            raise ValueError("main.py/loadFile: File format is not supported!")
+
+        self._LOADED_FLAG_ = True
+
     def loadDirectory(self):
         """Loads whole directory based on Parse class as simple as BHP"""
         fileDialog = QtWidgets.QFileDialog()
@@ -106,13 +132,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self,
                 "Select Directory",
                 options = QtWidgets.QFileDialog.ShowDirsOnly))
+
         fileDialog.close()
 
-        if directory is None or directory == "":
+        if directory is None or directory == "" or directory=="  ":
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
             self._LOADED_FLAG_ = False
             PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
-                            QtWidgets.QMessageBox.No, self.close(), None)
+                            QtWidgets.QMessageBox.No, self.refreshScreen, self.loadDirectory)
             return 0
         else:
             try:
@@ -134,6 +161,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                 self.loadDirectory, quit)
             finally:
                 self._LOADED_FLAG_ = True
+                self._BLOCK_STRUCTURES_ = False
+                self._BLOCK_ITERABLES_ = False
             return 1
 
     def showAnimationSettings(self):
@@ -173,7 +202,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             # spawn directory picker again
             self.loadDirectory()
         else:
-            self.new = ChooseWidget(number)
+            self.new = ChooseWidget(number, \
+                                    blockStructures = self._BLOCK_STRUCTURES_, \
+                                    blockIterables = self._BLOCK_ITERABLES_)
             self.new.setHandler(self.choosingWidgetReceiver)
 
     def choosingWidgetReceiver(self, value):
@@ -225,12 +256,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
             self.playerWindow.forceWorkerReset()
             self.playerWindow.closeMe()
+            self.playerWindow.worker.clearWidgetIterators()
 
         self.panes[number].clearBox()
         self.panes[number].setUpDefaultBox()
         self.panes[number].button.clicked.connect(\
             lambda: self.showChooseWidgetSettings(number))
-        self.playerWindow.worker.clearWidgetIterators()
 
     def propagate_resize(self):
         for i in range(4):
