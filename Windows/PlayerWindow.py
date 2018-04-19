@@ -147,13 +147,14 @@ class WorkerObject:
 
         def play(self):
             if self._TRIGGER_:
-                for k in self.trigger:
-                    if self.running:
-                        for i in self.widgetIterators:
-                            i(k, trigger=True)
-                    if not self.running:
-                        break
-                    tm.sleep(1/self._speed)
+                while(True):
+                    for k in self.trigger:
+                        if self.running:
+                            for i in self.widgetIterators:
+                                i(k, trigger=True)
+                        if not self.running:
+                            break
+                        tm.sleep(1/self._speed)
             else:
                 while(True):
                     if self.running:

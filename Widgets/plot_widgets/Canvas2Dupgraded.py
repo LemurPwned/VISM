@@ -1,8 +1,7 @@
 import numpy as np
 from pyqtgraph import PlotWidget
 import pyqtgraph as pg
-from AnimatedWidget import AnimatedWidget #can inherit but \
-# have to overwrite anyway
+from AnimatedWidget import AnimatedWidget 
 
 class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
         def __init__(self, parent=None, data_dict=None):
@@ -11,6 +10,7 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
             self.plotWidget = PlotWidget(self)
             self._i = self.current_state
             self.title = self.options['column']
+            self.graph_data = self.odt_data[self.title].tolist()
             self.graph_data = self.odt_data[self.title].tolist()
             self.createPlotCanvas()
 
