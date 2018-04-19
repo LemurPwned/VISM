@@ -10,15 +10,15 @@ class Canvas(AbstractCanvas):
         self.i = self.current_state
         self.title = self.options['column']
         self.graph_data = self.odt_data[self.title].tolist()
-        # override 
-        self.iterations = len(self.graph_data)
+        # override
+        self.internal_iterations = len(self.graph_data)
         self.createPlotCanvas()
 
     def createPlotCanvas(self):
         self.canvas_type = 'panel'
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
-        self.null_data = [x for x in range(self.iterations)]
+        self.null_data = [x for x in range(self.internal_iterations)]
         a_handler = self.plot_axis.plot(self.null_data,
                                         self.graph_data[0:self.i] + \
                                         self.null_data[self.i:],
@@ -28,15 +28,15 @@ class Canvas(AbstractCanvas):
                                         markerfacecolor=self.options['marker_color'],
                                         markersize=self.options['marker_size'])[0]
         self.plot_axis.hpl = a_handler
-        self.plot_axis.axis([0, self.iterations, np.min(self.graph_data),
+        self.plot_axis.axis([0, self.internal_iterations, np.min(self.graph_data),
                              np.max(self.graph_data)])
         self.plot_axis.set_autoscale_on(False)
-        self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
+        self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
         self._CANVAS_ALREADY_CREATED_ = True
 
     def replot(self):
-        self.loop_guard()
+        self.i %= self.internal_iterations
         self.plot_axis.hpl.set_ydata(np.lib.pad(self.graph_data[:self.i],
-                                                (0, self.iterations - self.i),
+                                        (0, self.internal_iterations - self.i),
                                                 mode='constant'))
-        self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
+        self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))

@@ -93,4 +93,5 @@ class CanvasLayer(AbstractCanvas):
         else:
             self.i = value
         self.i %= self.iterations
-        self.update()
+        self.replot()
+        self.plot_axis.get_figure().canvas.draw()

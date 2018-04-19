@@ -18,13 +18,26 @@ def asynchronous_pool_order(func, args, object_list, timeout=20):
 class MultiprocessingParse:
     @staticmethod
     def compose_trigger_list(files, plot_data):
+        """
+        """
+        # TODO: FIND A DRIVER NAMES AND IMPLEMENT THEM IF THERE ARE OTHERS
         match_string = '(^.*)(Oxs_MinDriver-Magnetization-)([0-9]{2})(-)(.*)(.omf)'
         regex = re.compile(match_string)
         st = []
+        # probe file
+        filename = files[0]
+        column_name = None
+        try:
+            m = regex.search(os.path.basename(filename))
+            column_name = 'MinDriver::Iteration'
+        except AttributeError:
+            match_string = '(^.*)(Oxs_TimeDriver-Magnetization-)([0-9]{2})(-)(.*)(.omf)'
+            column_name = 'TimeDriver::Iteration'
+            regex = re.compile(match_string)
         for filename in files:
             m = regex.search(os.path.basename(filename))
             st.append(int(m.groups()[4]))
-        return plot_data.index[plot_data['MinDriver::Iteration'].isin(st)]
+        return plot_data.index[plot_data[column_name].isin(st)]
 
     @staticmethod
     def guess_file_type(directory):
@@ -109,18 +122,16 @@ class MultiprocessingParse:
         # NOTE: this should recognize both .omf and .ovf files
         trigger_list = None
         if odt_file is not None:
-            odt_data, stagesO = getOdtData(odt_file[0])
-            trigger_list = MultiprocessingParse.compose_trigger_list(ext_files,
-                                                                            odt_data)
-            stages = len(trigger_list)
-
-            if stagesO > stages:
-                pass
-            elif stages0 < stages:
-                raise ValueError("Odt cannot have fewer stages that files")
+            odt_data, stages0 = getOdtData(odt_file[0])
+            if stages0 != stages:
+                if stages0 > stages:
+                    trigger_list = MultiprocessingParse.compose_trigger_list(ext_files,
+                                                                                    odt_data)
+                    stages = len(trigger_list)
+                elif stages0 < stages:
+                    raise ValueError("Odt cannot have fewer stages that files")
         else:
             odt_data = None
-
 
         if not is_binary(test_file):
             rawVectorData = MultiprocessingParse.readText(files_in_directory)
