@@ -20,7 +20,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.setFocusPolicy(Qt.StrongFocus)  # needed if keyboard to be active
 
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
-        self.position = [10, 10, -50]  # xyz initial
+        self.position = [0, 0, -50]  # xyz initial
         self.drawing_function = None
         self.function_select = 'fast'
         self.background = [0.5, 0.5, 0.5]
@@ -43,23 +43,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         resets the view to the initial one
         :return:
         """
-
-        gl.glLineWidth(2 * 2)
-        gl.glBegin(gl.GL_LINES)
-        gl.glColor3f(*[1, 0, 0])
-        gl.glVertex3f(*[0,0,0])
-        gl.glVertex3f(*[1,0,0])
-        gl.glColor3f(*[0, 1, 0])
-        gl.glVertex3f(*[0, 0, 0])
-        gl.glVertex3f(*[0, 1, 0])
-        gl.glColor3f(*[0, 0, 1])
-        gl.glVertex3f(*[0, 0, 0])
-        gl.glVertex3f(*[0, 0, 1])
-
-        gl.glEnd()
-
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
-        self.position = [10, 10, -50]  # xyz initial
+        self.position = [0, 0 , -50]  # xyz initial
 
     def transformate(self):
         """
@@ -76,7 +61,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
 
         gl.glClearColor(*self.background, 1)
-
         gl.glEnable(gl.GL_DEPTH_TEST)
 
 
