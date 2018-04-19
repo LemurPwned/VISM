@@ -51,6 +51,19 @@ class CubicGLContext(AbstractGLContext, QWidget):
                                                            self.vector_set,
                                                            self.decimate,
                                                            disableDot=self.disableDot)
+
+        #move whole structure so middle is in [0,0,0]
+
+        x_fix = (self.omf_header['xnodes'] * self.omf_header['xbase'] * 1e9) / 2
+        y_fix = (self.omf_header['ynodes'] * self.omf_header['ybase'] * 1e9) / 2
+        z_fix = (self.omf_header['znodes'] * self.omf_header['zbase'] * 1e9) / 2
+
+        for vec in self.vectors_list:
+            vec[0]-= x_fix
+            vec[1]-= y_fix
+            vec[2]-= z_fix
+
+
         if decimate is not None:
             # this is arbitrary
             self.spacer *= decimate*3
