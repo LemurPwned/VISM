@@ -29,7 +29,7 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
         """
         pass
 
-    def set_i(self, value):
+    def set_i(self, value, trigger=False):
         self.i = value
         self.loop_guard()
         self.replot()

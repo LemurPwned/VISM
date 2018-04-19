@@ -105,6 +105,9 @@ class PlayerWindow(QtCore.QObject):
     def closeMe(self):
         self.gui.close()
 
+    def passTriggerList(self, trigger):
+        self.worker.passTriggerList(trigger)
+
 #SINGLETON
 
 #reset while playing weird stuff
@@ -118,6 +121,11 @@ class WorkerObject:
             self._speed = 10
             self.handler = None
             self.widgetIterators = None
+            self._TRIGGER_ = False
+
+        def passTriggerList(self, trigger):
+            self.trigger = trigger
+            self._TRIGGER_ = True
 
         def clearWidgetIterators(self):
             self.widgetIterators = None
@@ -138,17 +146,23 @@ class WorkerObject:
             self.play()
 
         def play(self):
-            while(True):
-                if self.running:
-
-                    self._iterator = self._iterator + 1
-                    for i in self.widgetIterators:
-                        i(self._iterator)
-
-                if not self.running:
-                    break
-
-                tm.sleep(1/self._speed)
+            if self._TRIGGER_:
+                for k in self.trigger:
+                    if self.running:
+                        for i in self.widgetIterators:
+                            i(k, trigger=True)
+                    if not self.running:
+                        break
+                    tm.sleep(1/self._speed)
+            else:
+                while(True):
+                    if self.running:
+                        self._iterator = self._iterator + 1
+                        for i in self.widgetIterators:
+                            i(self._iterator)
+                    if not self.running:
+                        break
+                    tm.sleep(1/self._speed)
 
         def moveFrame(self, howMany):
             self._iterator += howMany

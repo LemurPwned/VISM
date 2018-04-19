@@ -150,7 +150,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 sub = "Data is currently being loaded using all cpu power," + \
                         "app may stop responding for a while."
                 x = PopUpWrapper("Loading", sub, "Please Wait...")
-                rawVectorData, header, odt_data, stages = \
+                rawVectorData, header, odt_data, stages, trigger_list = \
                                     MultiprocessingParse.readFolder(directory)
                 self.doh.passListObject(('color_vectors', 'omf_header',
                                         'iterations'),
@@ -161,6 +161,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                     self._BLOCK_PLOT_ITERABLES_ = False
                 else:
                     self._BLOCK_PLOT_ITERABLES_ = True
+                if trigger_list is not None:
+                    self.doh.setDataObject(trigger_list, 'trigger')
+
                 x.close()
             except ValueError as e:
                 print(e.print_stack())
@@ -180,6 +183,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def showAnimationSettings(self):
         """Shows window to change animations settings"""
         self.playerWindow = PlayerWindow(self)
+        if self.sp.request_parameter_existence(self.doh, 'trigger'):
+            self.playerWindow.passTriggerList(\
+                            self.doh.retrieveDataObject('trigger'))
         self.refreshIterators()
 
     def refreshIterators(self, toDelete=None):

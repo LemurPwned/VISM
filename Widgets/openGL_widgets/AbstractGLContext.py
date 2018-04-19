@@ -108,8 +108,11 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         gl.glPopMatrix()
         self.update()
 
-    def set_i(self, value):
-        self.i = value
+    def set_i(self, value, trigger=False):
+        if trigger:
+            self.i += 1
+        else:
+            self.i = value
         self.i %= self.iterations
         self.update()
 

@@ -10,6 +10,8 @@ class Canvas(AbstractCanvas):
         self.i = self.current_state
         self.title = self.options['column']
         self.graph_data = self.odt_data[self.title].tolist()
+        # override 
+        self.iterations = len(self.graph_data)
         self.createPlotCanvas()
 
     def createPlotCanvas(self):
