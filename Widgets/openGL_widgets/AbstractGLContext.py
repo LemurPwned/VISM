@@ -38,6 +38,15 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         except NameError:
             self.iterations = 1
 
+    def auto_center(self):
+        x_fix = (self.omf_header['xnodes'] * self.omf_header['xbase'] * 1e9) / 2
+        y_fix = (self.omf_header['ynodes'] * self.omf_header['ybase'] * 1e9) / 2
+        z_fix = (self.omf_header['znodes'] * self.omf_header['zbase'] * 1e9) / 2
+        for vec in self.vectors_list:
+            vec[0] -= x_fix
+            vec[1] -= y_fix
+            vec[2] -= z_fix
+
     def initial_transformation(self):
         """
         resets the view to the initial one
