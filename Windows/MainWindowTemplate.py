@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'Windows/UI_files/MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.9
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -62,6 +62,8 @@ class Ui_MainWindow(object):
         self.actionWindow2Delete.setObjectName("actionWindow2Delete")
         self.actionWindow3Delete = QtWidgets.QAction(MainWindow)
         self.actionWindow3Delete.setObjectName("actionWindow3Delete")
+        self.actionMovie_composer = QtWidgets.QAction(MainWindow)
+        self.actionMovie_composer.setObjectName("actionMovie_composer")
         self.menuFile.addAction(self.actionLoad_File)
         self.menuFile.addAction(self.actionLoad_Directory)
         self.menuEdit.addAction(self.actionAnimation)
@@ -74,6 +76,7 @@ class Ui_MainWindow(object):
         self.menuView.addAction(self.action2_Windows_Grid)
         self.menuView.addAction(self.action4_Windows_Grid)
         self.menuOptions.addAction(self.actionPerformance)
+        self.menuOptions.addAction(self.actionMovie_composer)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
@@ -102,6 +105,7 @@ class Ui_MainWindow(object):
         self.actionWindow1Delete.setText(_translate("MainWindow", "Window1 delete"))
         self.actionWindow2Delete.setText(_translate("MainWindow", "Window2 delete"))
         self.actionWindow3Delete.setText(_translate("MainWindow", "Window3 delete"))
+        self.actionMovie_composer.setText(_translate("MainWindow", "Movie composer"))
 
 
 if __name__ == "__main__":

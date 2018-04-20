@@ -21,6 +21,8 @@ from PopUp import PopUpWrapper
 from settingsMediator.settingsPrompter import SettingsPrompter
 from settingsMediator.settingsLoader import DataObjectHolder
 
+from video_utils.video_composer import Movie
+
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -66,6 +68,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         # OPTIONS SUBMENU
         self.actionPerformance.triggered.connect(self.setScreenshotFolder)
+        self.actionMovie_composer.triggered.connect(self.composeMovie)
         # VIEW SUBMENU
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
         self.action2_Windows_Grid.triggered.connect(self.make2WindowsGrid)
@@ -96,6 +99,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             else:
                 self.panes[i].groupBox.setMaximumHeight(self.height() - 10)
 
+
+    def composeMovie(self):
+        x = PopUpWrapper(
+            title='Pick directory',
+            msg='Pick directory where screenshots are located.' +
+                'Current screenshot directory: {}'.format(self.screenshot_dir),
+            more='Changed',
+            yesMes=None)
+        self.setScreenshotFolder()
+        mv = Movie(self.screenshot_dir)
+        mv.create_video()
+
     def promptDirectory(self):
         fileDialog = QtWidgets.QFileDialog()
         directory = str(
@@ -112,13 +127,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.screenshot_dir = selected_dir
             x = PopUpWrapper(
                 title='Screenshot directory changed',
-                msg='Current screenshot directory {}'.format(self.screenshot_dir),
+                msg='Current screenshot directory: {}'.format(self.screenshot_dir),
                 more='Changed',
                 yesMes=None)
         else:
             x = PopUpWrapper(
                 title='Screenshot directory has not changed',
-                msg='Current screenshot directory {}'.format(self.screenshot_dir),
+                msg='Current screenshot directory: {}'.format(self.screenshot_dir),
                 more='Not changed',
                 yesMes=None)
 

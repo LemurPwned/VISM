@@ -66,6 +66,7 @@
      <string>Options</string>
     </property>
     <addaction name="actionPerformance"/>
+    <addaction name="actionMovie_composer"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -136,6 +137,11 @@
   <action name="actionWindow3Delete">
    <property name="text">
     <string>Window3 delete</string>
+   </property>
+  </action>
+  <action name="actionMovie_composer">
+   <property name="text">
+    <string>Movie composer</string>
    </property>
   </action>
  </widget>
