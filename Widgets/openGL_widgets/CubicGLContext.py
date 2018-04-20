@@ -9,6 +9,7 @@ from cython_modules.cython_parse import getLayerOutline, genCubes
 from cython_modules.color_policy import multi_iteration_normalize
 
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
+from pattern_types.Patterns import AbstractGLContextDecorators
 
 from ColorPolicy import ColorPolicy
 from multiprocessing import Pool
@@ -18,7 +19,7 @@ from PIL import Image
 class CubicGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
         super().__init__()
-        self.drawing_function = None
+        self.drawing_function = self.vbo_cubic_draw
         self.steps = 1
         self.spacer = 0.2
         self.vectors_list = None
@@ -111,6 +112,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
                                dtype='float32').flatten())
         self.draw_vbo()
 
+    @AbstractGLContextDecorators.recording_decorator
     def draw_vbo(self):
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
         gl.glEnableClientState(gl.GL_COLOR_ARRAY)
@@ -126,9 +128,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
-        if self.record:
-            self.screenshot_manager()
-
+    @AbstractGLContextDecorators.recording_decorator
     def slower_cubic_draw(self):
         for vector, color in zip(self.vectors_list, self.color_vectors[self.i]):
             gl.glColor3f(*color)

@@ -11,6 +11,7 @@ import math as mt
 from PIL import Image
 import os
 
+
 class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     def __init__(self, parent=None):
         super(AbstractGLContext, self).__init__(parent)
@@ -62,9 +63,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         try:
             image.save(os.path.join(self.screenshot_dir, str(self.i) + ".png"))
         except FileNotFoundError:
+            # if basic dir not found, create it and save there
             os.mkdir(self.screenshot_dir)
             image.save(os.path.join(self.screenshot_dir, str(self.i) + ".png"))
-
 
     def initial_transformation(self):
         """
@@ -217,8 +218,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                 self.position[0] -= dx * 0.2
 
             self.position[1] -= dy * 0.2
-
-
         self.update()
 
     @staticmethod

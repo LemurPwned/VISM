@@ -53,3 +53,12 @@ class DataObjectHolderProxy(Proxy):
                 func(*args)
             else:
                 raise AttributeError("Trying to remove unexisting element")
+        return _is_removable
+    
+class AbstractGLContextDecorators:
+    def recording_decorator(drawing_function):
+        def _rec(*args):
+            drawing_function(*args)
+            if args[0].record:
+                args[0].screenshot_manager()
+        return _rec

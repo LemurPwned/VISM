@@ -10,12 +10,14 @@ from PyQt5.QtCore import QPoint, QThread
 
 from cython_modules.cython_parse import getLayerOutline
 from cython_modules.color_policy import multi_iteration_normalize
+from pattern_types.Patterns import AbstractGLContextDecorators
 
 import numpy as np
 import OpenGL.GLU as glu
 import OpenGL.GL as gl
 import math as mt
 from multiprocessing import Pool
+
 
 class VectorGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
@@ -39,7 +41,6 @@ class VectorGLContext(AbstractGLContext, QWidget):
         xc = int(self.omf_header['xnodes'])
         yc = int(self.omf_header['ynodes'])
         zc = int(self.omf_header['znodes'])
-        self.function_select = 'slow'
         self.color_vectors, self.vectors_list, decimate = \
                     custom_color_policy.standard_procedure(self.vectors_list,
                                                            self.color_vectors,
@@ -58,16 +59,12 @@ class VectorGLContext(AbstractGLContext, QWidget):
             # this is arbitrary
             self.spacer *= decimate*3
 
-        self.drawing_function = self.slow_arrow_draw
-
     def slow_arrow_draw(self):
         for vector, color in zip(self.vectors_list,
                                     self.color_vectors[self.i]):
             if not np.any(color):
                 continue
             self.base_arrow(vector, color)
-        if self.record:
-            self.screenshot_manager()
 
     def base_arrow(self, vector, color):
         gl.glColor3f(*color)
