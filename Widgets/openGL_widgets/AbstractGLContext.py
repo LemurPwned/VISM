@@ -8,7 +8,8 @@ from PyQt5.Qt import Qt
 from PyQt5.QtCore import QPoint
 
 import math as mt
-
+from PIL import Image
+import os
 
 class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     def __init__(self, parent=None):
@@ -24,7 +25,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.drawing_function = None
         self.function_select = 'fast'
         self.background = [0.5, 0.5, 0.5]
-
+        self.record = False
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
@@ -46,6 +47,24 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             vec[0] -= x_fix
             vec[1] -= y_fix
             vec[2] -= z_fix
+
+    def screenshot_manager(self):
+        """
+        saves the screenshot to the folder specified in screenshot_dir
+        """
+        _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
+        color = gl.glReadPixels(0, 0,
+                               width, height,
+                               gl.GL_RGB, gl.GL_UNSIGNED_BYTE)
+        image = Image.frombytes(mode='RGB', size=(width, height),
+                                                    data=color)
+        image = image.transpose(Image.FLIP_TOP_BOTTOM)
+        try:
+            image.save(os.path.join(self.screenshot_dir, str(self.i) + ".png"))
+        except FileNotFoundError:
+            os.mkdir(self.screenshot_dir)
+            image.save(os.path.join(self.screenshot_dir, str(self.i) + ".png"))
+
 
     def initial_transformation(self):
         """
@@ -71,7 +90,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
         gl.glClearColor(*self.background, 1)
         gl.glEnable(gl.GL_DEPTH_TEST)
-
 
     def resizeGL(self, w, h):
         """
@@ -111,18 +129,29 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
     def keyPressEvent(self, event):
         """
-        if r is pressed on the keyboard, then reset view
+        Key mapping:
+        R - reset central view
+        I - zoom in
+        O - zoom out
+        Y - start/stop recording
+        S - take a screenshot
         """
         key = event.key()
         if key == Qt.Key_R:
             self.initial_transformation()
             self.update()
 
-        if key == Qt.Key_I:
+        elif key == Qt.Key_I:
             self.zoomIn()
 
-        if key == Qt.Key_O:
+        elif key == Qt.Key_O:
             self.zoomOut()
+
+        if key == Qt.Key_Y:
+            self.record = not self.record
+
+        if key == Qt.Key_S:
+            self.screenshot_manager()
 
 
     def zoomIn(self):

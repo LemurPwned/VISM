@@ -126,6 +126,9 @@ class CubicGLContext(AbstractGLContext, QWidget):
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
+        if self.record:
+            self.screenshot_manager()
+
     def slower_cubic_draw(self):
         for vector, color in zip(self.vectors_list, self.color_vectors[self.i]):
             gl.glColor3f(*color)

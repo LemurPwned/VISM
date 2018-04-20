@@ -66,6 +66,8 @@ class VectorGLContext(AbstractGLContext, QWidget):
             if not np.any(color):
                 continue
             self.base_arrow(vector, color)
+        if self.record:
+            self.screenshot_manager()
 
     def base_arrow(self, vector, color):
         gl.glColor3f(*color)
