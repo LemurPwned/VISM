@@ -123,11 +123,13 @@ class WorkerObject:
             self.widgetIterators = None
             self._TRIGGER_ = False
             self.trig_len = 0
+            self.play = self.standard_play
 
         def passTriggerList(self, trigger):
             self.trigger = trigger
             self._TRIGGER_ = True
             self.trig_len = len(self.trigger)
+            self.play = self.trigger_play
 
         def clearWidgetIterators(self):
             self.widgetIterators = None
@@ -147,23 +149,23 @@ class WorkerObject:
         def startWork(self):
             self.play()
 
-        def play(self):
-            if self._TRIGGER_:
-                while(True):
-                    for k in self.trigger:
-                        if self.running:
-                            self._iterator += 1
-                            for i in self.widgetIterators:
-                                i(k, trigger=True)
-                        if not self.running:
-                            break
-                        tm.sleep(1/self._speed)
-            else:
-                while(True):
+        def standard_play(self):
+            while(True):
+                if self.running:
+                    self._iterator += 1
+                    for i in self.widgetIterators:
+                        i(self._iterator)
+                if not self.running:
+                    break
+                tm.sleep(1/self._speed)
+
+        def trigger_play(self):
+            while(True):
+                for k in self.trigger:
                     if self.running:
-                        self._iterator = self._iterator + 1
+                        self._iterator += 1
                         for i in self.widgetIterators:
-                            i(self._iterator)
+                            i(k, trigger=True)
                     if not self.running:
                         break
                     tm.sleep(1/self._speed)
