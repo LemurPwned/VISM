@@ -11,12 +11,14 @@ import math as mt
 from PIL import Image
 import os
 
+from cython_modules.color_policy import multi_iteration_normalize
+from cython_modules.cython_parse import getLayerOutline, genCubes
+from ColorPolicy import ColorPolicy
+
 
 class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     def __init__(self, parent=None):
         super(AbstractGLContext, self).__init__(parent)
-        self._MINIMUM_PARAMS_ = ['i', 'iterations', 'color_list',
-                                'omf_header']
 
         self.lastPos = QPoint()
         self.setFocusPolicy(Qt.StrongFocus)  # needed if keyboard to be active
@@ -27,11 +29,43 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.function_select = 'fast'
         self.background = [0.5, 0.5, 0.5]
         self.record = False
+        self.spacer = 0.2
+        self.steps = 1
+
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         super().handleOptionalData()
         self.receivedOptions()
+        self.i = self.current_state
+
+    def normalize_specification(self):
+        multi_iteration_normalize(self.color_vectors)
+
+    def prerendering_calculation(self):
+        # get vector outline
+        self.vectors_list = getLayerOutline(self.omf_header)
+        self.auto_center()
+        # adjust spacing
+        self.spacer = self.spacer*self.scale
+
+        xc = int(self.omf_header['xnodes'])
+        yc = int(self.omf_header['ynodes'])
+        zc = int(self.omf_header['znodes'])
+        # change drawing function
+        self.color_vectors, self.vectors_list, decimate = \
+                    ColorPolicy.standard_procedure(self.vectors_list,
+                                                   self.color_vectors,
+                                                   self.iterations,
+                                                   self.averaging,
+                                                   xc, yc, zc,
+                                                   self.layer,
+                                                   self.vector_set,
+                                                   self.decimate,
+                                                   disableDot=self.disableDot)
+        if decimate is not None:
+            # this is arbitrary
+            self.spacer *= decimate*3
 
     def handleOptionalData(self):
         # must handle iterations since these are optional
@@ -53,6 +87,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         saves the screenshot to the folder specified in screenshot_dir
         """
+        # fetch dimensions for highest resolution
         _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
         color = gl.glReadPixels(0, 0,
                                width, height,

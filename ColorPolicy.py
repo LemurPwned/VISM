@@ -82,7 +82,8 @@ class ColorPolicy:
         subM = strd(a, shape = s, strides = a.strides * 2)
         return np.einsum('ij,ijkl->kl', f, subM)
 
-    def apply_vbo_format(self, color_array, k=24):
+    @staticmethod
+    def apply_vbo_format(color_array, k=24):
         """
         transforms a given numpy array matrix representing vecotrs in space
         into linear vbo matrix - to fit vertex buffer object
@@ -90,11 +91,12 @@ class ColorPolicy:
         :param k: indicates how many times should vertex be padded
         """
         pool = Pool()
-        output = asynchronous_pool_order(self.color_matrix_flatten, (k, ),
+        output = asynchronous_pool_order(ColorPolicy.color_matrix_flatten, (k, ),
                                             color_array)
         return np.array(output, dtype='float32')
 
-    def color_matrix_flatten(self, vector, times):
+    @staticmethod
+    def color_matrix_flatten(vector, times):
         return np.repeat(vector, times, axis=0).flatten()
 
     def convolutional_averaging(self, matrix, kernel_size, dim=2):
@@ -106,7 +108,8 @@ class ColorPolicy:
         matrix = self.linear_convolution(matrix)
         return np.array(matrix)
 
-    def standard_procedure(self, outline, color, iterations, averaging, xc, yc, zc,
+    @staticmethod
+    def standard_procedure(outline, color, iterations, averaging, xc, yc, zc,
                             picked_layer='all',
                             vector_set=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                             decimate=1,

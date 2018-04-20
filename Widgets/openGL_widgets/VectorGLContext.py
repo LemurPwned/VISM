@@ -8,7 +8,6 @@ from ctypes import c_void_p
 from PyQt5.Qt import Qt
 from PyQt5.QtCore import QPoint, QThread
 
-from cython_modules.cython_parse import getLayerOutline
 from cython_modules.color_policy import multi_iteration_normalize
 from pattern_types.Patterns import AbstractGLContextDecorators
 
@@ -22,42 +21,12 @@ from multiprocessing import Pool
 class VectorGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
         super().__init__()
-        self.shareData(**data_dict)
-        self.buffers = None
-        self.vertices = 1
-        self.steps = 1
-
-    def shareData(self, **kwargs):
-        super().shareData(**kwargs)
-        self.spacer = 0.2
+        super().shareData(**data_dict)
+        super().prerendering_calculation()
+        if self.normalize:
+            super().normalize_specification()
 
         self.drawing_function = self.slow_arrow_draw
-        self.vectors_list = getLayerOutline(self.omf_header)
-        self.auto_center()
-        # remap
-        self.i = self.current_state
-
-        custom_color_policy = ColorPolicy()
-        xc = int(self.omf_header['xnodes'])
-        yc = int(self.omf_header['ynodes'])
-        zc = int(self.omf_header['znodes'])
-        self.color_vectors, self.vectors_list, decimate = \
-                    custom_color_policy.standard_procedure(self.vectors_list,
-                                                           self.color_vectors,
-                                                           self.iterations,
-                                                           self.averaging,
-                                                           xc, yc, zc,
-                                                           self.layer,
-                                                           self.vector_set,
-                                                           self.decimate,
-                                                           self.disableDot)
-
-        if self.normalize:
-            multi_iteration_normalize(self.color_vectors)
-
-        if decimate is not None:
-            # this is arbitrary
-            self.spacer *= decimate*3
 
     @AbstractGLContextDecorators.recording_decorator
     def slow_arrow_draw(self):

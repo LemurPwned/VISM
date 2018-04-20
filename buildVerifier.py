@@ -16,8 +16,8 @@ class BuildVerifier:
 	# python3 cython_modules/ex_setup.py build_ext --build-lib cython_modules/build --inplace
     def intercept_failed_build(self, cython_traceback):
         error_msg = 'Error compiling Cython file:'
-        print("If above build failed, please follow instructions on \
-                webpage to build cython manually")
+        print("If above build failed, please follow instructions on " +
+                "webpage to build cython manually")
         if error_msg in cython_traceback:
             print(type(cython_traceback))
             catcher = '(-{55,60})(.*)(-{55,60})'
