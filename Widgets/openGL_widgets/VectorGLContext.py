@@ -59,6 +59,7 @@ class VectorGLContext(AbstractGLContext, QWidget):
             # this is arbitrary
             self.spacer *= decimate*3
 
+    @AbstractGLContextDecorators.recording_decorator
     def slow_arrow_draw(self):
         for vector, color in zip(self.vectors_list,
                                     self.color_vectors[self.i]):
