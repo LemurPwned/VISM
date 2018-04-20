@@ -126,7 +126,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         else:
             self.i = value
         self.i %= self.iterations
-        self.update()
 
     def keyPressEvent(self, event):
         """

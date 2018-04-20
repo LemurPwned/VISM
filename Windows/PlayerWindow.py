@@ -77,7 +77,7 @@ class PlayerWindow(QtCore.QObject):
         self.gui.button_prevFrame.clicked.connect(lambda: self.worker.moveFrame(-1))
         self.gui.slider_speed.valueChanged.connect(self.speedChange)
 
-        #self.parent().aboutToQuit.connect(self.forceWorkerQuit) #TODO search about this
+        # self.parent().aboutToQuit.connect(self.forceWorkerQuit) #TODO search about this
 
     def PlayPauseClicked(self):
         self.worker.running = not self.worker.running
@@ -162,13 +162,13 @@ class WorkerObject:
         def trigger_play(self):
             while(True):
                 for k in self.trigger:
+                    tm.sleep(1/self._speed)
                     if self.running:
                         self._iterator += 1
                         for i in self.widgetIterators:
                             i(k, trigger=True)
                     if not self.running:
                         break
-                    tm.sleep(1/self._speed)
 
         def moveFrame(self, howMany):
             self._iterator += howMany
