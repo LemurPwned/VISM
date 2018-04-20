@@ -32,7 +32,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.spacer = 0.2
         self.steps = 1
 
-
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         super().handleOptionalData()
@@ -40,9 +39,15 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.i = self.current_state
 
     def normalize_specification(self):
+        """
+        normalization procedure
+        """
         multi_iteration_normalize(self.color_vectors)
 
     def prerendering_calculation(self):
+        """
+        Some calculations that take place before object gets rendered
+        """
         # get vector outline
         self.vectors_list = getLayerOutline(self.omf_header)
         self.auto_center()
@@ -75,6 +80,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.iterations = 1
 
     def auto_center(self):
+        """
+        auto centers the structure in widget screen
+        """
         x_fix = (self.omf_header['xnodes'] * self.omf_header['xbase'] * 1e9) / 2
         y_fix = (self.omf_header['ynodes'] * self.omf_header['ybase'] * 1e9) / 2
         z_fix = (self.omf_header['znodes'] * self.omf_header['zbase'] * 1e9) / 2
