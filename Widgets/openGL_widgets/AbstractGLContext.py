@@ -61,11 +61,13 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                                                     data=color)
         image = image.transpose(Image.FLIP_TOP_BOTTOM)
         try:
-            image.save(os.path.join(self.screenshot_dir, str(self.i) + ".png"))
+            image.save(os.path.join(self.screenshot_dir,
+                                        str(self.i).zfill(4) + ".png"))
         except FileNotFoundError:
             # if basic dir not found, create it and save there
             os.mkdir(self.screenshot_dir)
-            image.save(os.path.join(self.screenshot_dir, str(self.i) + ".png"))
+            image.save(os.path.join(self.screenshot_dir,
+                                        str(self.i).zfill(4) + ".png"))
 
     def initial_transformation(self):
         """
