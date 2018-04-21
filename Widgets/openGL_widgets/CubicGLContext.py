@@ -70,7 +70,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
         return buffers
 
     def vbo_cubic_draw(self):
-        print("EXECUTING")
         if self.buffers is None:
             self.buffers = self.create_vbo()
         else:

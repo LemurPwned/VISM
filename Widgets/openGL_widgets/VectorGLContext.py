@@ -16,17 +16,30 @@ import OpenGL.GLU as glu
 import OpenGL.GL as gl
 import math as mt
 from multiprocessing import Pool
-
+from ColorPolicy import ColorPolicy
 
 class VectorGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
         super().__init__()
         super().shareData(**data_dict)
+        self.prerendering_calculation()
+        # self.drawing_function = self.slow_arrow_draw
+        self.drawing_function = self.vbo_arrow_draw
+
+
+    def prerendering_calculation(self):
         super().prerendering_calculation()
         if self.normalize:
             super().normalize_specification()
-
-        self.drawing_function = self.slow_arrow_draw
+        self.interleaved = ColorPolicy.apply_vbo_interleave_format(self.vectors_list,
+                                                                   self.color_vectors)
+        self.buffers = None
+        print(self.interleaved.shape, self.vectors_list.shape)
+        ## pad the color
+        self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors, k=2)
+        self.vertices = int(len(self.vectors_list)*2)
+        self.color_buffer_len = len(self.color_vectors[0])*4
+        self.inter_buffer_len = len(self.interleaved[0])*4
 
     @AbstractGLContextDecorators.recording_decorator
     def slow_arrow_draw(self):
@@ -51,33 +64,33 @@ class VectorGLContext(AbstractGLContext, QWidget):
         gl.glEnd()
 
     def standard_vbo_draw(self):
-        gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
         gl.glEnableClientState(gl.GL_COLOR_ARRAY)
-
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
-        gl.glVertexPointer(3, gl.GL_FLOAT, 0, None)
+        gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
         gl.glColorPointer(3, gl.GL_FLOAT, 0, None)
 
-        gl.glDrawArrays(gl.GL_LINES, 0, self.vertices)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
+        gl.glVertexPointer(3, gl.GL_FLOAT, 0, None)
+        gl.glDrawArrays(gl.GL_LINES, 0, int(self.vertices))
 
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
+
 
     def vbo_arrow_draw(self):
         if self.buffers is None:
             self.buffers = self.create_vbo()
         else:
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
-            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
-                               np.array(self.vectors_list[self.i],
-                               dtype='float32'))
+            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.inter_buffer_len,
+                               np.array(self.interleaved[self.i],
+                               dtype='float32').flatten())
 
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
-            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
+            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.color_buffer_len,
                                np.array(self.color_vectors[self.i],
-                               dtype='float32'))
+                               dtype='float32').flatten())
 
         self.standard_vbo_draw()
 
@@ -87,13 +100,13 @@ class VectorGLContext(AbstractGLContext, QWidget):
         # vertices buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[0])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                        np.array(self.vectors_list[self.i],
-                        dtype='float32'),
+                        np.array(self.interleaved[self.i],
+                        dtype='float32').flatten(),
                         gl.GL_DYNAMIC_DRAW)
         # color buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
                         np.array(self.color_vectors[self.i],
-                        dtype='float32'),
+                        dtype='float32').flatten(),
                         gl.GL_DYNAMIC_DRAW)
         return buffers

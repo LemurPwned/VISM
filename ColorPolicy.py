@@ -85,15 +85,27 @@ class ColorPolicy:
     @staticmethod
     def apply_vbo_format(color_array, k=24):
         """
-        transforms a given numpy array matrix representing vecotrs in space
+        transforms a given numpy array matrix representing vectors in space
         into linear vbo matrix - to fit vertex buffer object
         :param color_array: to be transformed, numpy array
         :param k: indicates how many times should vertex be padded
         """
-        pool = Pool()
         output = asynchronous_pool_order(ColorPolicy.color_matrix_flatten, (k, ),
                                             color_array)
         return np.array(output, dtype='float32')
+
+    @staticmethod
+    def apply_vbo_interleave_format(vector_array, color_array):
+        output = asynchronous_pool_order(ColorPolicy.interleave,
+                                            (vector_array,), color_array)
+        return np.array(output, dtype='float32')
+
+    @staticmethod
+    def interleave(color_iteration, vector_array):
+        interleaved = []
+        for v, c in zip(vector_array, color_iteration):
+            interleaved.extend([*v, v[0]+c[0], v[1]+c[1], v[2]+c[2]])
+        return interleaved
 
     @staticmethod
     def color_matrix_flatten(vector, times):
