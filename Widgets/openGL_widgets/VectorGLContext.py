@@ -42,6 +42,9 @@ class VectorGLContext(AbstractGLContext, QWidget):
         self.color_buffer_len = len(self.color_vectors[0])*4
         self.inter_buffer_len = len(self.interleaved[0])*4
 
+        t_offset = c_void_p(1)
+        self.v_offset = t_offset
+
     @AbstractGLContextDecorators.recording_decorator
     def slow_arrow_draw(self):
         for vector, color in zip(self.vectors_list,
@@ -80,7 +83,7 @@ class VectorGLContext(AbstractGLContext, QWidget):
         gl.glColorPointer(3, gl.GL_FLOAT, 3*8, None)
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
-        gl.glVertexPointer(3, gl.GL_FLOAT, 3*8, None)
+        gl.glVertexPointer(3, gl.GL_FLOAT, 3*8, c_void_p(4*3))
         gl.glDrawArrays(gl.GL_POINTS, 0, int(self.color_vertices))
 
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
