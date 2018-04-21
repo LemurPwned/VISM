@@ -37,7 +37,8 @@ class VectorGLContext(AbstractGLContext, QWidget):
         print(self.interleaved.shape, self.vectors_list.shape)
         ## pad the color
         self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors, k=2)
-        self.vertices = int(len(self.vectors_list)*2)
+        self.color_vertices = len(self.vectors_list)
+        self.vertices = self.color_vertices*2
         self.color_buffer_len = len(self.color_vectors[0])*4
         self.inter_buffer_len = len(self.interleaved[0])*4
 
@@ -74,6 +75,14 @@ class VectorGLContext(AbstractGLContext, QWidget):
         gl.glVertexPointer(3, gl.GL_FLOAT, 0, None)
         gl.glDrawArrays(gl.GL_LINES, 0, int(self.vertices))
 
+        # now the points
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
+        gl.glColorPointer(3, gl.GL_FLOAT, 3*8, None)
+
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
+        gl.glVertexPointer(3, gl.GL_FLOAT, 3*8, None)
+        gl.glDrawArrays(gl.GL_POINTS, 0, int(self.color_vertices))
+
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
@@ -97,6 +106,7 @@ class VectorGLContext(AbstractGLContext, QWidget):
     def create_vbo(self):
         buffers = gl.glGenBuffers(2)
         gl.glLineWidth(3)
+        gl.glPointSize(6)
         # vertices buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[0])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
