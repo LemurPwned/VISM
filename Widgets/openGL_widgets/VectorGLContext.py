@@ -26,15 +26,13 @@ class VectorGLContext(AbstractGLContext, QWidget):
         # self.drawing_function = self.slow_arrow_draw
         self.drawing_function = self.vbo_arrow_draw
 
-
     def prerendering_calculation(self):
         super().prerendering_calculation()
         if self.normalize:
-            super().normalize_specification()
+            VectorGLContext.normalize_specification(self.color_vectors, vbo=True)
         self.interleaved = ColorPolicy.apply_vbo_interleave_format(self.vectors_list,
                                                                    self.color_vectors)
         self.buffers = None
-        print(self.interleaved.shape, self.vectors_list.shape)
         ## pad the color
         self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors, k=2)
         self.color_vertices = len(self.vectors_list)
@@ -42,11 +40,12 @@ class VectorGLContext(AbstractGLContext, QWidget):
         self.color_buffer_len = len(self.color_vectors[0])*4
         self.inter_buffer_len = len(self.interleaved[0])*4
 
-        t_offset = c_void_p(1)
-        self.v_offset = t_offset
+        self.__FLOAT_BYTE_SIZE__ = 8
 
     @AbstractGLContextDecorators.recording_decorator
     def slow_arrow_draw(self):
+        gl.glLineWidth(2*self.scale)
+        gl.glPointSize(3*self.scale)
         for vector, color in zip(self.vectors_list,
                                     self.color_vectors[self.i]):
             if not np.any(color):
@@ -55,13 +54,11 @@ class VectorGLContext(AbstractGLContext, QWidget):
 
     def base_arrow(self, vector, color):
         gl.glColor3f(*color)
-        gl.glLineWidth(2*self.scale)
         gl.glBegin(gl.GL_LINES)
         gl.glVertex3f(*vector)
         gl.glVertex3f(vector[0]+color[0], vector[1]+color[1],
                         vector[2]+color[2])
         gl.glEnd()
-        gl.glPointSize(3*self.scale)
         gl.glBegin(gl.GL_POINTS)
         gl.glVertex3f(vector[0]+color[0], vector[1]+color[1],
                         vector[2]+color[2])
@@ -80,10 +77,13 @@ class VectorGLContext(AbstractGLContext, QWidget):
 
         # now the points
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
-        gl.glColorPointer(3, gl.GL_FLOAT, 3*8, None)
+        gl.glColorPointer(3, gl.GL_FLOAT, 3*self.__FLOAT_BYTE_SIZE__, None)
 
+        # stride is 3 bytes (3 floats) VVVCCCVVVCCC etc...
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
-        gl.glVertexPointer(3, gl.GL_FLOAT, 3*8, c_void_p(4*3))
+        # offset is at 3 indices, so points at 4th vector 3(vertices)*4
+        gl.glVertexPointer(3, gl.GL_FLOAT, 3*self.__FLOAT_BYTE_SIZE__,
+                                                                c_void_p(4*3))
         gl.glDrawArrays(gl.GL_POINTS, 0, int(self.color_vertices))
 
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
@@ -108,8 +108,8 @@ class VectorGLContext(AbstractGLContext, QWidget):
 
     def create_vbo(self):
         buffers = gl.glGenBuffers(2)
-        gl.glLineWidth(3)
-        gl.glPointSize(6)
+        gl.glLineWidth(2*self.scale)
+        gl.glPointSize(3*self.scale)
         # vertices buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[0])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,

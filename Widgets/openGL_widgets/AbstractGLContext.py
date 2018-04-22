@@ -11,6 +11,8 @@ import math as mt
 from PIL import Image
 import os
 
+import numpy as np
+
 from cython_modules.color_policy import multi_iteration_normalize
 from cython_modules.cython_parse import getLayerOutline, genCubes
 from ColorPolicy import ColorPolicy
@@ -38,11 +40,22 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.receivedOptions()
         self.i = self.current_state
 
-    def normalize_specification(self):
+    @classmethod
+    def normalize_specification(cls, color_vectors, vbo=False):
         """
         normalization procedure
         """
-        multi_iteration_normalize(self.color_vectors)
+        multi_iteration_normalize(color_vectors)
+        background = np.array([0.5, 0.5, 0.5])
+        if cls.__name__ == 'CubicGLContext':
+            # replace black with background colors
+            # NOTE: This is dangerous since dot product can be zero
+            color_vectors[~color_vectors.any(axis=2)] = background
+        elif cls.__name__ == 'VectorGLContext':
+            if vbo:
+                # replace black with background colors
+                # NOTE: This is dangerous since dot product can be zero
+                color_vectors[~color_vectors.any(axis=2)] = background                
 
     def prerendering_calculation(self):
         """
