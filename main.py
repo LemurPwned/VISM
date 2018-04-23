@@ -138,6 +138,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 yesMes=None)
 
     def loadFile(self):
+        if self._LOADED_FLAG_:
+            self.deleteLoadedFiles()
+
         fileDialog = QtWidgets.QFileDialog()
         fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
         filename = str(fileDialog.getOpenFileName(self, "Select File")[0])
@@ -160,8 +163,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self._LOADED_FLAG_ = True
 
     def loadDirectory(self):
-        """Loads whole directory based on Parse class as simple as BHP"""
-        directory = self.promptDirectory()
+        if self._LOADED_FLAG_:
+
 
         if directory is None or directory == "" or directory=="  ":
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
@@ -204,6 +207,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self._LOADED_FLAG_ = True
                 self._BLOCK_STRUCTURES_ = False
             return 1
+
+    def deleteLoadedFiles(self):
+        #clearing all widgets it's not a problem even if it does not exist
+        for i, e in enumerate(self.panes):
+            self.deleteWidget(i)
+        # self.doh.removeDataObject("__all__")
+        self.doh = DataObjectHolder()
+        self._LOADED_FLAG_ = False
+        self._BLOCK_STRUCTURES_ = True
+        self._BLOCK_ITERABLES_ = True
+        self._BLOCK_PLOT_ITERABLES_ = True
+
+
+
+
 
     def showAnimationSettings(self):
         """Shows window to change animations settings"""

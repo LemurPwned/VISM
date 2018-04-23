@@ -54,7 +54,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
                                                            self.decimate,
                                                            disableDot=self.disableDot)
 
-        #move whole structure so middle is in [0,0,0]
         if decimate is not None:
             # this is arbitrary
             self.spacer *= decimate*3
