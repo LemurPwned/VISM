@@ -373,7 +373,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionWindow3Delete.setDisabled(False)
 
 if __name__ == "__main__":
-
     app = QtWidgets.QApplication(sys.argv)
 
     main_window = MainWindow()

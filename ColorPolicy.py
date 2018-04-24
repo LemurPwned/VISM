@@ -126,6 +126,18 @@ class ColorPolicy:
                             vector_set=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                             decimate=1,
                             disableDot=True):
+        """
+        this function should be called whenever one of the following is needed:
+        - sampling
+        - decimation (pseudosampling)
+        - dot product calculation
+        @param: disableDot - if True, dot product is omitted
+        @param: vector_set - set of 3 vectors used to calculate R, G, B
+                components using dot product (valid if disableDot is False)
+        @param: picked_layer - determines which layer or all to calculate
+        @return: dotted_color, outline, decimate - return decimating factor,
+                    color after dot product (or not) and layer(s) outline
+        """
         color = np.array(color)
         outline = np.array(outline)
         if type(picked_layer) == int:

@@ -47,7 +47,6 @@ class CanvasLayer(AbstractCanvas):
         self.plot_axis.axis([0, len(dx), 0, len(dy)])
         self.plot_axis.set_autoscale_on(False)
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
-        self._CANVAS_ALREADY_CREATED_ = True
 
     def replot(self):
         self.plot_axis.hpl.set_array(self.color_vectors[self.i])

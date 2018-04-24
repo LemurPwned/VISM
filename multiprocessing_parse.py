@@ -177,12 +177,12 @@ class MultiprocessingParse:
         headers = output[:, 0]
         rawVectorData = output[:, 1]
         # test this solution, turn dtype object to float64
-        rawVectorData = np.array([x for x in rawVectorData], dtype=np.float64)
+        rawVectorData = np.array([x for x in rawVectorData], dtype=np.float32)
 
         if rawVectorData is None or headers is None:
             raise TypeError("\nNo vectors created")
 
-        assert rawVectorData.dtype == np.float64
+        assert rawVectorData.dtype == np.float32
         return headers, rawVectorData
 
     @staticmethod

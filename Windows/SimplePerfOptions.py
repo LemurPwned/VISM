@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
-                QVBoxLayout, QRadioButton, QLabel, QSlider
+                QVBoxLayout, QRadioButton, QLabel, QSlider, QPushButton, QMessageBox
 from Windows.SimplePerfOptionsTemplate import Ui_Dialog
 import re
+from PopUp import PopUpWrapper
 
 class SimplePerfOptions(QWidget, Ui_Dialog):
     def __init__(self, layer_size=None):
