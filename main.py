@@ -170,7 +170,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def loadDirectory(self):
         if self._LOADED_FLAG_:
-
+            self.deleteLoadedFiles()
         self._LOADED_FLAG_ = False
 
 
