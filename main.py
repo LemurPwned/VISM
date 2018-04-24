@@ -283,6 +283,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[self.current_pane].addWidget(\
                 self.sp.build_chain(self.current_widget_alias, self.doh))
         # that fixes the problem of having not all slots filled in groupBox
+        if self.playerWindow != None:
+            self.refreshIterators()
         self.propagate_resize()
         self.refreshScreen()
 
