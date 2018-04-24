@@ -51,10 +51,11 @@ class DataObjectHolderProxy(Proxy):
             alias = args[1]
             if alias in obj_handler.contains_lookup:
                 func(*args)
+                obj_handler.contains_lookup.remove(alias)
             else:
                 raise AttributeError("Trying to remove unexisting element")
         return _is_removable
-    
+
 class AbstractGLContextDecorators:
     def recording_decorator(drawing_function):
         def _rec(*args):
