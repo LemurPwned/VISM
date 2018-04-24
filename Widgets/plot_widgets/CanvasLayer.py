@@ -86,3 +86,12 @@ class CanvasLayer(AbstractCanvas):
         angle = np.arccos(dot) ** scale
         angle[np.isnan(angle)] = 0  # get rid of NaN expressions
         return angle
+
+    def set_i(self, value, trigger=False):
+        if trigger:
+            self.i += 1
+        else:
+            self.i = value
+        self.i %= self.iterations
+        self.replot()
+        self.plot_axis.get_figure().canvas.draw()

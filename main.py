@@ -21,6 +21,8 @@ from PopUp import PopUpWrapper
 from settingsMediator.settingsPrompter import SettingsPrompter
 from settingsMediator.settingsLoader import DataObjectHolder
 
+from video_utils.video_composer import Movie
+
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -33,7 +35,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.setGeometry(10, 10, 1280, 768)  # size of window
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height())
 
-        # By default all options are locked and they will be unlocked according to data loaded.
+        # By default all options are locked and they
+        # will be unlocked according to data loaded.
         self._BLOCK_ITERABLES_ = True
         self._BLOCK_STRUCTURES_ = True
         self._BLOCK_PLOT_ITERABLES_ = True
@@ -47,6 +50,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.make1WindowGrid()  # shows default 1 widget Window
         self.events()  # create event listeners
         self._LOADED_FLAG_ = False
+        self.screenshot_dir = 'Screenshots'
 
     def events(self):
         """Creates all listeners for Main Window"""
@@ -63,7 +67,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionWindow3Delete.triggered.connect(lambda: self.deleteWidget(3))
 
         # OPTIONS SUBMENU
-        self.actionPerformance.triggered.connect(self.promptDirectory)
+        self.actionPerformance.triggered.connect(self.setScreenshotFolder)
+        self.actionMovie_composer.triggered.connect(self.composeMovie)
         # VIEW SUBMENU
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
         self.action2_Windows_Grid.triggered.connect(self.make2WindowsGrid)
@@ -94,9 +99,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             else:
                 self.panes[i].groupBox.setMaximumHeight(self.height() - 10)
 
+
+    def composeMovie(self):
+        x = PopUpWrapper(
+            title='Pick directory',
+            msg='Pick directory where screenshots are located.' +
+                'Current screenshot directory: {}'.format(self.screenshot_dir),
+            more='Changed',
+            yesMes=None)
+        self.setScreenshotFolder()
+        mv = Movie(self.screenshot_dir)
+        mv.create_video()
+
     def promptDirectory(self):
         fileDialog = QtWidgets.QFileDialog()
-
         directory = str(
             fileDialog.getExistingDirectory(
                 self,
@@ -105,22 +121,38 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         fileDialog.close()
         return directory
 
+    def setScreenshotFolder(self):
+        selected_dir = self.promptDirectory()
+        if selected_dir is not None:
+            self.screenshot_dir = selected_dir
+            x = PopUpWrapper(
+                title='Screenshot directory changed',
+                msg='Current screenshot directory: {}'.format(self.screenshot_dir),
+                more='Changed',
+                yesMes=None)
+        else:
+            x = PopUpWrapper(
+                title='Screenshot directory has not changed',
+                msg='Current screenshot directory: {}'.format(self.screenshot_dir),
+                more='Not changed',
+                yesMes=None)
+
     def loadFile(self):
         fileDialog = QtWidgets.QFileDialog()
         fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
-        file = str(fileDialog.getOpenFileName(self, "Select File")[0])
+        filename = str(fileDialog.getOpenFileName(self, "Select File")[0])
 
         self._LOADED_FLAG_ = False
 
-        if ".odt" in file:
+        if ".odt" in filename:
             self.doh.passListObject(('odt_data', 'iterations'),
-                                        *MultiprocessingParse.readFile(file))
+                                    *MultiprocessingParse.readFile(filename))
             self._BLOCK_ITERABLES_ = False
             self._BLOCK_PLOT_ITERABLES_ = False
 
-        elif ".omf" in file or ".ovf" in file:
+        elif ".omf" in file or ".ovf" in filename:
             self.doh.passListObject(('color_vectors', 'omf_header'),
-                                        *MultiprocessingParse.readFile(file))
+                                    *MultiprocessingParse.readFile(filename))
             self._BLOCK_STRUCTURES_ = False
         else:
             raise ValueError("main.py/loadFile: File format is not supported!")
@@ -129,28 +161,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def loadDirectory(self):
         """Loads whole directory based on Parse class as simple as BHP"""
-        fileDialog = QtWidgets.QFileDialog()
-
-        directory = str(
-            fileDialog.getExistingDirectory(
-                self,
-                "Select Directory",
-                options = QtWidgets.QFileDialog.ShowDirsOnly))
-
-        fileDialog.close()
+        directory = self.promptDirectory()
 
         if directory is None or directory == "" or directory=="  ":
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
             self._LOADED_FLAG_ = False
             PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
-                            QtWidgets.QMessageBox.No, self.refreshScreen, self.loadDirectory)
+                            QtWidgets.QMessageBox.No, self.refreshScreen,
+                            self.loadDirectory)
             return 0
         else:
             try:
                 sub = "Data is currently being loaded using all cpu power," + \
                         "app may stop responding for a while."
                 x = PopUpWrapper("Loading", sub, "Please Wait...")
-                rawVectorData, header, odt_data, stages = \
+                rawVectorData, header, odt_data, stages, trigger_list = \
                                     MultiprocessingParse.readFolder(directory)
                 self.doh.passListObject(('color_vectors', 'omf_header',
                                         'iterations'),
@@ -161,6 +186,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                     self._BLOCK_PLOT_ITERABLES_ = False
                 else:
                     self._BLOCK_PLOT_ITERABLES_ = True
+                if trigger_list is not None:
+                    self.doh.setDataObject(trigger_list, 'trigger')
+
                 x.close()
             except ValueError as e:
                 print(e.print_stack())
@@ -180,6 +208,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def showAnimationSettings(self):
         """Shows window to change animations settings"""
         self.playerWindow = PlayerWindow(self)
+        if self.sp.request_parameter_existence(self.doh, 'trigger'):
+            self.playerWindow.passTriggerList(\
+                            self.doh.retrieveDataObject('trigger'))
         self.refreshIterators()
 
     def refreshIterators(self, toDelete=None):
@@ -222,7 +253,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def choosingWidgetReceiver(self, value):
         """Data receiver for choosingWidget action"""
-
         self.panes[value[0]].clearBox()
         # value[0] stores widget number
         # value[1] stores widget name
@@ -248,6 +278,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.doh.setDataObject(geom, 'geom')
         self.doh.setDataObject(0, 'current_state')
         self.doh.setDataObject(options, 'options')
+        self.doh.setDataObject(self.screenshot_dir, 'screenshot_dir')
 
         self.panes[self.current_pane].addWidget(\
                 self.sp.build_chain(self.current_widget_alias, self.doh))

@@ -5,7 +5,8 @@
                       "object_type": "3d_object",
                       "settings": ["PerfOptions", "omf_header"],
                       "required": ["current_state", "options",
-                                   "omf_header", "color_vectors"],
+                                   "omf_header", "color_vectors",
+                                   "screenshot_dir"],
                       "optional": ["iterations"]
                       },
     "VectorGLContext": {
@@ -14,7 +15,8 @@
                       "object_type": "3d_object",
                       "settings": ["PerfOptions", "omf_header"],
                       "required": ["current_state", "options",
-                                   "omf_header","color_vectors"],
+                                   "omf_header","color_vectors",
+                                   "screenshot_dir"],
                       "optional": ["iterations"]
                       },
     "Canvas":         {

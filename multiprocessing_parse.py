@@ -4,6 +4,7 @@ import glob
 from multiprocessing import Pool
 from cython_modules.cython_parse import *
 from binaryornot.check import is_binary
+import re
 
 def asynchronous_pool_order(func, args, object_list, timeout=20):
     pool = Pool()
@@ -15,6 +16,29 @@ def asynchronous_pool_order(func, args, object_list, timeout=20):
     return output_list
 
 class MultiprocessingParse:
+    @staticmethod
+    def compose_trigger_list(files, plot_data):
+        """
+        """
+        # TODO: FIND A DRIVER NAMES AND IMPLEMENT THEM IF THERE ARE OTHERS
+        match_string = '(^.*)(Oxs_MinDriver-Magnetization-)([0-9]{2})(-)(.*)(.omf)'
+        regex = re.compile(match_string)
+        st = []
+        # probe file
+        filename = files[0]
+        column_name = None
+        try:
+            m = regex.search(os.path.basename(filename))
+            column_name = 'MinDriver::Iteration'
+        except AttributeError:
+            match_string = '(^.*)(Oxs_TimeDriver-Magnetization-)([0-9]{2})(-)(.*)(.omf)'
+            column_name = 'TimeDriver::Iteration'
+            regex = re.compile(match_string)
+        for filename in files:
+            m = regex.search(os.path.basename(filename))
+            st.append(int(m.groups()[4]))
+        return plot_data.index[plot_data[column_name].isin(st)]
+
     @staticmethod
     def guess_file_type(directory):
         supported_extensions = ['.omf', '.ovf']
@@ -83,7 +107,10 @@ class MultiprocessingParse:
 
         files_in_directory, ext = MultiprocessingParse.guess_file_type(
                                                                     directory)
+        ext_files = glob.glob(os.path.join(directory, '*' + ext))
+        test_file = os.path.join(directory, ext_files[0])
 
+        stages = len(ext_files)
         odt_file = glob.glob(os.path.join(directory, '*.odt'))
         # look for .odt in current directory
         if len(odt_file) > 1:
@@ -93,14 +120,18 @@ class MultiprocessingParse:
             odt_file = None
 
         # NOTE: this should recognize both .omf and .ovf files
+        trigger_list = None
         if odt_file is not None:
-            odt_data, _ = getOdtData(odt_file[0])
+            odt_data, stages0 = getOdtData(odt_file[0])
+            if stages0 != stages:
+                if stages0 > stages:
+                    trigger_list = MultiprocessingParse.compose_trigger_list(ext_files,
+                                                                                    odt_data)
+                    stages = len(trigger_list)
+                elif stages0 < stages:
+                    raise ValueError("Odt cannot have fewer stages that files")
         else:
             odt_data = None
-        stages = glob.glob(os.path.join(directory, '*' + ext))
-        test_file = os.path.join(directory, stages[0])
-
-        stages = len(stages)
 
         if not is_binary(test_file):
             rawVectorData = MultiprocessingParse.readText(files_in_directory)
@@ -115,7 +146,7 @@ class MultiprocessingParse:
             header = headers[0]
             if not header:
                 raise ValueError("no .omf or .ovf file has been found")
-        return rawVectorData, header, odt_data, stages
+        return rawVectorData, header, odt_data, stages, trigger_list
 
     @staticmethod
     def readBinary(files_in_directory):

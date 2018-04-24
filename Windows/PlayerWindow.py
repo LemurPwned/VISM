@@ -77,7 +77,7 @@ class PlayerWindow(QtCore.QObject):
         self.gui.button_prevFrame.clicked.connect(lambda: self.worker.moveFrame(-1))
         self.gui.slider_speed.valueChanged.connect(self.speedChange)
 
-        #self.parent().aboutToQuit.connect(self.forceWorkerQuit) #TODO search about this
+        # self.parent().aboutToQuit.connect(self.forceWorkerQuit) #TODO search about this
 
     def PlayPauseClicked(self):
         self.worker.running = not self.worker.running
@@ -105,6 +105,9 @@ class PlayerWindow(QtCore.QObject):
     def closeMe(self):
         self.gui.close()
 
+    def passTriggerList(self, trigger):
+        self.worker.passTriggerList(trigger)
+
 #SINGLETON
 
 #reset while playing weird stuff
@@ -118,6 +121,15 @@ class WorkerObject:
             self._speed = 10
             self.handler = None
             self.widgetIterators = None
+            self._TRIGGER_ = False
+            self.trig_len = 0
+            self.play = self.standard_play
+
+        def passTriggerList(self, trigger):
+            self.trigger = trigger
+            self._TRIGGER_ = True
+            self.trig_len = len(self.trigger)
+            self.play = self.trigger_play
 
         def clearWidgetIterators(self):
             self.widgetIterators = None
@@ -137,23 +149,36 @@ class WorkerObject:
         def startWork(self):
             self.play()
 
-        def play(self):
+        def standard_play(self):
             while(True):
                 if self.running:
-
-                    self._iterator = self._iterator + 1
+                    self._iterator += 1
                     for i in self.widgetIterators:
                         i(self._iterator)
-
                 if not self.running:
                     break
-
                 tm.sleep(1/self._speed)
+
+        def trigger_play(self):
+            while(True):
+                for k in self.trigger:
+                    tm.sleep(1/self._speed)
+                    if self.running:
+                        self._iterator += 1
+                        for i in self.widgetIterators:
+                            i(k, trigger=True)
+                    if not self.running:
+                        break
 
         def moveFrame(self, howMany):
             self._iterator += howMany
-            for i in self.widgetIterators:
-                i(self._iterator)
+            if self._TRIGGER_:
+                self._iterator %= self.trig_len
+                for i in self.widgetIterators:
+                    i(self.trigger[self._iterator], trigger=True)
+            else:
+                for i in self.widgetIterators:
+                    i(self._iterator)
 
     numbers = 0  # fast_fix
     instance = None

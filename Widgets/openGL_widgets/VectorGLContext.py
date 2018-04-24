@@ -10,12 +10,14 @@ from PyQt5.QtCore import QPoint, QThread
 
 from cython_modules.cython_parse import getLayerOutline
 from cython_modules.color_policy import multi_iteration_normalize
+from pattern_types.Patterns import AbstractGLContextDecorators
 
 import numpy as np
 import OpenGL.GLU as glu
 import OpenGL.GL as gl
 import math as mt
 from multiprocessing import Pool
+
 
 class VectorGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
@@ -31,7 +33,7 @@ class VectorGLContext(AbstractGLContext, QWidget):
 
         self.drawing_function = self.slow_arrow_draw
         self.vectors_list = getLayerOutline(self.omf_header)
-
+        self.auto_center()
         # remap
         self.i = self.current_state
 
@@ -39,7 +41,6 @@ class VectorGLContext(AbstractGLContext, QWidget):
         xc = int(self.omf_header['xnodes'])
         yc = int(self.omf_header['ynodes'])
         zc = int(self.omf_header['znodes'])
-        self.function_select = 'slow'
         self.color_vectors, self.vectors_list, decimate = \
                     custom_color_policy.standard_procedure(self.vectors_list,
                                                            self.color_vectors,
@@ -51,15 +52,6 @@ class VectorGLContext(AbstractGLContext, QWidget):
                                                            self.decimate,
                                                            self.disableDot)
 
-        x_fix = (self.omf_header['xnodes'] * self.omf_header['xbase'] * 1e9) / 2
-        y_fix = (self.omf_header['ynodes'] * self.omf_header['ybase'] * 1e9) / 2
-        z_fix = (self.omf_header['znodes'] * self.omf_header['zbase'] * 1e9) / 2
-
-        for vec in self.vectors_list:
-            vec[0] -= x_fix
-            vec[1] -= y_fix
-            vec[2] -= z_fix
-
         if self.normalize:
             multi_iteration_normalize(self.color_vectors)
 
@@ -67,8 +59,7 @@ class VectorGLContext(AbstractGLContext, QWidget):
             # this is arbitrary
             self.spacer *= decimate*3
 
-        self.drawing_function = self.slow_arrow_draw
-
+    @AbstractGLContextDecorators.recording_decorator
     def slow_arrow_draw(self):
         for vector, color in zip(self.vectors_list,
                                     self.color_vectors[self.i]):

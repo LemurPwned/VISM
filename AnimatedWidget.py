@@ -35,7 +35,7 @@ class AnimatedWidget():
                 print(msg)
         return _MISSING_FLAG_
 
-    def set_i(self, value):
+    def set_i(self, value, trigger=False):
         """
         This is iterating setter. Function set_i should provide
         a neat way to change the current data of Widget and then

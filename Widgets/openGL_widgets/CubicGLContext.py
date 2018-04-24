@@ -9,6 +9,7 @@ from cython_modules.cython_parse import getLayerOutline, genCubes
 from cython_modules.color_policy import multi_iteration_normalize
 
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
+from pattern_types.Patterns import AbstractGLContextDecorators
 
 from ColorPolicy import ColorPolicy
 from multiprocessing import Pool
@@ -18,7 +19,7 @@ from PIL import Image
 class CubicGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
         super().__init__()
-        self.drawing_function = None
+        self.drawing_function = self.vbo_cubic_draw
         self.steps = 1
         self.spacer = 0.2
         self.vectors_list = None
@@ -40,6 +41,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
 
         custom_color_policy = ColorPolicy()
         self.vectors_list = getLayerOutline(self.omf_header)
+        self.auto_center()
         # change drawing function
         self.color_vectors, self.vectors_list, decimate = \
                     custom_color_policy.standard_procedure(self.vectors_list,
@@ -53,17 +55,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
                                                            disableDot=self.disableDot)
 
         #move whole structure so middle is in [0,0,0]
-
-        x_fix = (self.omf_header['xnodes'] * self.omf_header['xbase'] * 1e9) / 2
-        y_fix = (self.omf_header['ynodes'] * self.omf_header['ybase'] * 1e9) / 2
-        z_fix = (self.omf_header['znodes'] * self.omf_header['zbase'] * 1e9) / 2
-
-        for vec in self.vectors_list:
-            vec[0]-= x_fix
-            vec[1]-= y_fix
-            vec[2]-= z_fix
-
-
         if decimate is not None:
             # this is arbitrary
             self.spacer *= decimate*3
@@ -121,6 +112,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
                                dtype='float32').flatten())
         self.draw_vbo()
 
+    @AbstractGLContextDecorators.recording_decorator
     def draw_vbo(self):
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
         gl.glEnableClientState(gl.GL_COLOR_ARRAY)
@@ -136,6 +128,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
+    @AbstractGLContextDecorators.recording_decorator
     def slower_cubic_draw(self):
         for vector, color in zip(self.vectors_list, self.color_vectors[self.i]):
             gl.glColor3f(*color)
