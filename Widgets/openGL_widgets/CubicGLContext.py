@@ -26,8 +26,8 @@ class CubicGLContext(AbstractGLContext, QWidget):
     def prerendering_calculation(self):
         super().prerendering_calculation()
         if self.normalize:
-            self.normalize_specification()
-
+            CubicGLContext.normalize_specification(self.color_vectors, vbo=True)
+            
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw
             self.buffers = None
@@ -45,13 +45,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
 
         elif self.function_select == 'slow':
             self.drawing_function = self.slower_cubic_draw
-
-    def normalize_specification(self):
-        super().normalize_specification()
-        background = np.array(self.background)
-        # replace black with background colors
-        # NOTE: This is dangerous since dot product can be zero
-        self.color_vectors[~self.color_vectors.any(axis=2)] = background
 
     def create_vbo(self):
         buffers = gl.glGenBuffers(2)

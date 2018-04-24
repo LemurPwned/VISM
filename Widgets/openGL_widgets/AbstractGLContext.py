@@ -55,21 +55,21 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             if vbo:
                 # replace black with background colors
                 # NOTE: This is dangerous since dot product can be zero
-                color_vectors[~color_vectors.any(axis=2)] = background                
+                color_vectors[~color_vectors.any(axis=2)] = background
 
     def prerendering_calculation(self):
         """
         Some calculations that take place before object gets rendered
         """
         # get vector outline
-        self.vectors_list = getLayerOutline(self.omf_header)
+        self.vectors_list = getLayerOutline(self.file_header)
         self.auto_center()
         # adjust spacing
         self.spacer = self.spacer*self.scale
 
-        xc = int(self.omf_header['xnodes'])
-        yc = int(self.omf_header['ynodes'])
-        zc = int(self.omf_header['znodes'])
+        xc = int(self.file_header['xnodes'])
+        yc = int(self.file_header['ynodes'])
+        zc = int(self.file_header['znodes'])
         # change drawing function
         self.color_vectors, self.vectors_list, decimate = \
                     ColorPolicy.standard_procedure(self.vectors_list,
@@ -96,9 +96,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         auto centers the structure in widget screen
         """
-        x_fix = (self.omf_header['xnodes'] * self.omf_header['xbase'] * 1e9) / 2
-        y_fix = (self.omf_header['ynodes'] * self.omf_header['ybase'] * 1e9) / 2
-        z_fix = (self.omf_header['znodes'] * self.omf_header['zbase'] * 1e9) / 2
+        x_fix = (self.file_header['xnodes'] * self.file_header['xbase'] * 1e9) / 2
+        y_fix = (self.file_header['ynodes'] * self.file_header['ybase'] * 1e9) / 2
+        z_fix = (self.file_header['znodes'] * self.file_header['zbase'] * 1e9) / 2
         for vec in self.vectors_list:
             vec[0] -= x_fix
             vec[1] -= y_fix

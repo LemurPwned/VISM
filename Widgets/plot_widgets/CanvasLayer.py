@@ -7,6 +7,7 @@ from multiprocessing_parse import asynchronous_pool_order
 from cython_modules.color_policy import multi_iteration_normalize, \
                                         multi_iteration_dot_product
 
+
 class CanvasLayer(AbstractCanvas):
     def __init__(self, data_dict):
         super().__init__(self)
@@ -26,9 +27,9 @@ class CanvasLayer(AbstractCanvas):
                 self.iterations = 1
 
     def createPlotCanvas(self):
-        self.xc = int(self.omf_header['xnodes'])
-        self.yc = int(self.omf_header['ynodes'])
-        self.zc = int(self.omf_header['znodes'])
+        self.xc = int(self.file_header['xnodes'])
+        self.yc = int(self.file_header['ynodes'])
+        self.zc = int(self.file_header['znodes'])
 
         self.title = 'Displayed layer {}'.format(self.layer)
         self.i = self.current_state

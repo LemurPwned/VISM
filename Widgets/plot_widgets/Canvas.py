@@ -9,7 +9,7 @@ class Canvas(AbstractCanvas):
         self._MINIMUM_PARAMS_ = ['i', 'iterations', 'graph_data', 'title']
         self.i = self.current_state
         self.title = self.options['column']
-        self.graph_data = self.odt_data[self.title].tolist()
+        self.graph_data = self.plot_data[self.title].tolist()
         # override
         self.internal_iterations = len(self.graph_data)
         self.createPlotCanvas()

@@ -18,23 +18,6 @@ class AnimatedWidget():
     def loop_guard(self):
         self.i %= self.iterations
 
-    def parameter_check(self):
-        """
-        parameter_check function should define minimum number and list
-        of parameters used by widgets. This function provides a proper
-        way to verify if widget has received every chunk of data it
-        needs in order to be operational
-        """
-        _MISSING_FLAG_ = False
-        for attribute in self._MINIMUM_PARAMS_:
-            try:
-                getattr(self, attribute)
-            except AttributeError:
-                _MISSING_FLAG_ = True
-                msg = "There is an attribute missing: {}".format(attribute)
-                print(msg)
-        return _MISSING_FLAG_
-
     def set_i(self, value, trigger=False):
         """
         This is iterating setter. Function set_i should provide

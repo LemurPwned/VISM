@@ -162,13 +162,17 @@ class WorkerObject:
         def trigger_play(self):
             while(True):
                 for k in self.trigger:
-                    tm.sleep(1/self._speed)
                     if self.running:
                         self._iterator += 1
+                        c = 0
                         for i in self.widgetIterators:
+                            print(c)
                             i(k, trigger=True)
+                            c+=1
                     if not self.running:
                         break
+                    tm.sleep(1/self._speed)
+
 
         def moveFrame(self, howMany):
             self._iterator += howMany

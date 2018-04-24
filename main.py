@@ -29,7 +29,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.doh = DataObjectHolder()
         self.sp = SettingsPrompter(None)
 
-        self.odt_data = ""
+        self.plot_data = ""
         self.setupUi(self)
         self.setWindowTitle("ESE - Early Spins Environment")
         self.setGeometry(10, 10, 1280, 768)  # size of window
@@ -145,13 +145,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self._LOADED_FLAG_ = False
 
         if ".odt" in filename:
-            self.doh.passListObject(('odt_data', 'iterations'),
+            self.doh.passListObject(('plot_data', 'iterations'),
                                     *MultiprocessingParse.readFile(filename))
             self._BLOCK_ITERABLES_ = False
             self._BLOCK_PLOT_ITERABLES_ = False
 
         elif ".omf" in file or ".ovf" in filename:
-            self.doh.passListObject(('color_vectors', 'omf_header'),
+            self.doh.passListObject(('color_vectors', 'file_header'),
                                     *MultiprocessingParse.readFile(filename))
             self._BLOCK_STRUCTURES_ = False
         else:
@@ -175,14 +175,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 sub = "Data is currently being loaded using all cpu power," + \
                         "app may stop responding for a while."
                 x = PopUpWrapper("Loading", sub, "Please Wait...")
-                rawVectorData, header, odt_data, stages, trigger_list = \
+                rawVectorData, header, plot_data, stages, trigger_list = \
                                     MultiprocessingParse.readFolder(directory)
-                self.doh.passListObject(('color_vectors', 'omf_header',
+                self.doh.passListObject(('color_vectors', 'file_header',
                                         'iterations'),
                                         rawVectorData, header, stages)
-                if odt_data is not None:
-                    self.doh.setDataObject(odt_data, 'odt_data')
-                    # successfully loaded odt_data into DOH
+                if plot_data is not None:
+                    self.doh.setDataObject(plot_data, 'plot_data')
+                    # successfully loaded plot_data into DOH
                     self._BLOCK_PLOT_ITERABLES_ = False
                 else:
                     self._BLOCK_PLOT_ITERABLES_ = True
