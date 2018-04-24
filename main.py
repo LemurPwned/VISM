@@ -173,6 +173,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.deleteLoadedFiles()
         self._LOADED_FLAG_ = False
 
+        directory = self.promptDirectory()
 
         if directory is None or directory == "" or directory=="  ":
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
@@ -217,9 +218,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def deleteLoadedFiles(self):
         #clearing all widgets it's not a problem even if it does not exist
-        self.deleteWidget(0) #to show msg
-        for i in range(WidgetHandler.visibleCounter-1):
-            self.deleteWidget(i+1, False)
+        # self.deleteWidget(0) #to show msg
+        for i in range(WidgetHandler.visibleCounter):
+            if i == 0:
+                self.deleteWidget(i)
+                continue
+            self.deleteWidget(i, False)
 
         self.doh = DataObjectHolder()
 
