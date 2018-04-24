@@ -24,13 +24,14 @@ class DataObjectHolder(metaclass=Singleton):
     # @DataObjectHolderProxy.is_removable
     # don't want to work
     def removeDataObject(self, alias):
-        print("here")
+        # print("here")
         if alias == "__all__":
             for item in self.__dir__():
                 if "__" in item:
                     print("leaving: ", item)
                     break
                 print("deleting: ", item)
+                # del(item)
                 setattr(self, item, None)
         else:
             setattr(self, alias, None)
