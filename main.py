@@ -166,6 +166,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             raise ValueError("main.py/loadFile: File format is not supported!")
 
         self._LOADED_FLAG_ = True
+        return 1
 
     def loadDirectory(self):
         if self._LOADED_FLAG_:
@@ -217,8 +218,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def deleteLoadedFiles(self):
         #clearing all widgets it's not a problem even if it does not exist
         self.deleteWidget(0) #to show msg
-        for i, e in enumerate(self.panes):
-            self.deleteWidget(i, False)
+        for i in range(WidgetHandler.visibleCounter-1):
+            self.deleteWidget(i+1, False)
+
         self.doh = DataObjectHolder()
 
         self._LOADED_FLAG_ = False
@@ -327,6 +329,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[number].setUpDefaultBox()
         self.panes[number].button.clicked.connect(\
             lambda: self.showChooseWidgetSettings(number))
+        self.refreshScreen()
 
     def propagate_resize(self):
         for i in range(4):
