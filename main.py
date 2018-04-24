@@ -4,7 +4,6 @@ from buildVerifier import BuildVerifier
 bv = BuildVerifier()
 
 import sys
-import time
 
 from PyQt5 import QtWidgets, QtCore
 from Windows.MainWindowTemplate import Ui_MainWindow
@@ -141,21 +140,27 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         if self._LOADED_FLAG_:
             self.deleteLoadedFiles()
 
-        fileDialog = QtWidgets.QFileDialog()
-        fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
-        filename = str(fileDialog.getOpenFileName(self, "Select File")[0])
-
         self._LOADED_FLAG_ = False
 
-        if ".odt" in filename:
+        fileDialog = QtWidgets.QFileDialog()
+        fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+        fileLoaded = str(fileDialog.getOpenFileName(self, "Select File")[0])
+
+        if fileLoaded is None or fileLoaded == "" or fileLoaded=="  ":
+            msg = "Invalid directory: {}. Do you wish to abort?".format(fileLoaded)
+            PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
+                            QtWidgets.QMessageBox.No, self.refreshScreen, self.loadFile)
+            return 0
+
+        if ".odt" in fileLoaded:
             self.doh.passListObject(('plot_data', 'iterations'),
-                                    *MultiprocessingParse.readFile(filename))
+                                        *MultiprocessingParse.readFile(fileLoaded))
             self._BLOCK_ITERABLES_ = False
             self._BLOCK_PLOT_ITERABLES_ = False
 
-        elif ".omf" in file or ".ovf" in filename:
+        elif ".omf" in fileLoaded or ".ovf" in fileLoaded:
             self.doh.passListObject(('color_vectors', 'file_header'),
-                                    *MultiprocessingParse.readFile(filename))
+                                        *MultiprocessingParse.readFile(fileLoaded))
             self._BLOCK_STRUCTURES_ = False
         else:
             raise ValueError("main.py/loadFile: File format is not supported!")
@@ -165,10 +170,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def loadDirectory(self):
         if self._LOADED_FLAG_:
 
+        self._LOADED_FLAG_ = False
+
 
         if directory is None or directory == "" or directory=="  ":
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
-            self._LOADED_FLAG_ = False
             PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
                             QtWidgets.QMessageBox.No, self.refreshScreen,
                             self.loadDirectory)
@@ -210,18 +216,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def deleteLoadedFiles(self):
         #clearing all widgets it's not a problem even if it does not exist
+        self.deleteWidget(0) #to show msg
         for i, e in enumerate(self.panes):
-            self.deleteWidget(i)
-        # self.doh.removeDataObject("__all__")
+            self.deleteWidget(i, False)
         self.doh = DataObjectHolder()
+
         self._LOADED_FLAG_ = False
         self._BLOCK_STRUCTURES_ = True
         self._BLOCK_ITERABLES_ = True
         self._BLOCK_PLOT_ITERABLES_ = True
-
-
-
-
 
     def showAnimationSettings(self):
         """Shows window to change animations settings"""
@@ -311,8 +314,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.propagate_resize()
         self.refreshScreen()
 
-    def deleteWidget(self, number):
-        if self.playerWindow:
+    def deleteWidget(self, number, verbose=True):
+        if self.playerWindow and verbose:
             PopUpWrapper("Alert",
                 "You may loose calculation!", \
                 "If you proceed animation will be restarted and widget \
