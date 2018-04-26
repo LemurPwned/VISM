@@ -149,7 +149,7 @@ class MultiprocessingParse:
 
         if not is_binary(test_file):
             rawVectorData = MultiprocessingParse.readText(files_in_directory)
-            file_for_header = glob.glob(os.path.join(directory, '*' + ext))
+            file_for_header = glob.glob(os.path.join(directory, '*' + ext[0]))
             # virtually any will do
             if not file_for_header:
                 raise ValueError("no .omf  or .ovf file has been found")
@@ -199,5 +199,6 @@ class MultiprocessingParse:
                                                         timeout=20)
         if not rawVectorData:
             raise TypeError("\nNo vectors created")
-
-        return np.array(rawVectorData)
+        rawVectorData = np.array(rawVectorData, dtype=np.float32)
+        assert rawVectorData.dtype == np.float32
+        return rawVectorData

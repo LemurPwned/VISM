@@ -161,8 +161,8 @@ class PerfOptions(QWidget, Ui_Dialog):
             self.close()
         except ValueError as ve:
             PopUpWrapper("Invalid vector format", str(ve), None,
-                            QtWidgets.QMessageBox.Yes,
-                            QtWidgets.QMessageBox.No, None, quit)
+                            QMessageBox.Yes,
+                            QMessageBox.No, None, quit)
     def reject(self):
         self.close()
 
