@@ -3,10 +3,6 @@ from PyQt5.QtWidgets import QOpenGLWidget
 
 import OpenGL.GL as gl
 import OpenGL.GLU as glu
-# from OpenGL.GL import *
-# from OpenGL.GLU import *
-from OpenGL.GLUT import *
-from OpenGL._bytes import as_8_bit
 
 from PyQt5.Qt import Qt
 from PyQt5.QtCore import QPoint
@@ -96,14 +92,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         Initializes openGL context and scenery
         """
-        # gl.glColor3f(*[0,0,0,1])
-        text = "test"
-        gl.glEnable(gl.GL_BLEND)
-        gl.glColor3f(1.0, 1.0, 1.0)
-        gl.glWindowPos2d(100, 100)
-        for ch in text:
-            glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, (ord(ch)))
-
         gl.glClearColor(*self.background, 1)
         gl.glEnable(gl.GL_DEPTH_TEST)
 
