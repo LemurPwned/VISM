@@ -31,6 +31,8 @@ class MultiprocessingParse:
         column_name = None
         try:
             m = regex.search(os.path.basename(filename))
+            if m is None:
+                raise AttributeError
             column_name = driver_class +'::Iteration'
         except AttributeError:
             driver_class = 'TimeDriver'
@@ -40,7 +42,10 @@ class MultiprocessingParse:
             regex = re.compile(match_string)
         for filename in files:
             m = regex.search(os.path.basename(filename))
-            st.append(int(m.groups()[4]))
+            if m is not None:
+                st.append(int(m.groups()[4]))
+            else:
+                print(filename)
         return plot_data.index[plot_data[column_name].isin(st)]
 
     @staticmethod
