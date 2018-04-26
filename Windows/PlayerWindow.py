@@ -167,7 +167,6 @@ class WorkerObject:
                         self._iterator += 1
                         c = 0
                         for i in self.widgetIterators:
-                            print(c)
                             i(k, trigger=True)
                             c+=1
                     if not self.running:

@@ -46,7 +46,14 @@ class MultiprocessingParse:
                 st.append(int(m.groups()[4]))
             else:
                 print(filename)
-        return plot_data.index[plot_data[column_name].isin(st)]
+        trigger_list = plot_data.index[plot_data[column_name].isin(st)]
+        try:
+            assert len(files) == len(trigger_list)
+        except AssertionError:
+            # duplicates appeared, take first and drop rest
+            unique_stages = plot_data[column_name][~plot_data[column_name].duplicated(keep='first')]
+            trigger_list = unique_stages.index[unique_stages.isin(st)]
+        return trigger_list
 
     @staticmethod
     def guess_file_type(directory):
@@ -139,14 +146,13 @@ class MultiprocessingParse:
             print(stages0, stages)
             if stages0 != stages:
                 if stages0 > stages:
-                    if (stages0/stages).is_integer():
-                        p = stages0/stages
-                        trigger_list = [p*x for x in range(p)]
-                    else:
-                        trigger_list = MultiprocessingParse.\
-                                            compose_trigger_list(ext_files,
-                                                                        plot_data)
+                    trigger_list = MultiprocessingParse.\
+                                        compose_trigger_list(ext_files,
+                                                                    plot_data)
                     stages = len(trigger_list)
+                    print(trigger_list)
+                    print("TRIGGER LIST : {}, {}".format(stages,
+                                                            len(trigger_list)))
                 elif stages0 < stages:
                     raise ValueError("Odt cannot have fewer stages that files")
         else:

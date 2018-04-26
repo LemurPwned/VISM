@@ -39,7 +39,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         super().handleOptionalData()
         self.receivedOptions()
         self.i = self.current_state
-
+        print(self.iterations)
+        
     @classmethod
     def normalize_specification(cls, color_vectors, vbo=False):
         """
