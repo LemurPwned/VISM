@@ -6,10 +6,9 @@ class Canvas(AbstractCanvas):
     def __init__(self, data_dict):
         super().__init__(self)
         self.shareData(**data_dict)
-        self._MINIMUM_PARAMS_ = ['i', 'iterations', 'graph_data', 'title']
         self.i = self.current_state
         self.title = self.options['column']
-        self.graph_data = self.odt_data[self.title].tolist()
+        self.graph_data = self.plot_data[self.title].tolist()
         # override
         self.internal_iterations = len(self.graph_data)
         self.createPlotCanvas()
@@ -32,7 +31,6 @@ class Canvas(AbstractCanvas):
                              np.max(self.graph_data)])
         self.plot_axis.set_autoscale_on(False)
         self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
-        self._CANVAS_ALREADY_CREATED_ = True
 
     def replot(self):
         self.i %= self.internal_iterations

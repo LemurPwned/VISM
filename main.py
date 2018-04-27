@@ -28,7 +28,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.doh = DataObjectHolder()
         self.sp = SettingsPrompter(None)
 
-        self.odt_data = ""
+        self.plot_data = ""
         self.setupUi(self)
         self.setWindowTitle("ESE - Early Spins Environment")
         self.setGeometry(10, 10, 1280, 768)  # size of window
@@ -171,8 +171,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def loadDirectory(self):
         if self._LOADED_FLAG_:
             self.deleteLoadedFiles()
-        self._LOADED_FLAG_ = False
-
+            self._LOADED_FLAG_ = False
+            return 0
         directory = self.promptDirectory()
 
         if directory is None or directory == "" or directory=="  ":
@@ -186,14 +186,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 sub = "Data is currently being loaded using all cpu power," + \
                         "app may stop responding for a while."
                 x = PopUpWrapper("Loading", sub, "Please Wait...")
-                rawVectorData, header, odt_data, stages, trigger_list = \
+                rawVectorData, header, plot_data, stages, trigger_list = \
                                     MultiprocessingParse.readFolder(directory)
-                self.doh.passListObject(('color_vectors', 'omf_header',
+                self.doh.passListObject(('color_vectors', 'file_header',
                                         'iterations'),
                                         rawVectorData, header, stages)
-                if odt_data is not None:
-                    self.doh.setDataObject(odt_data, 'odt_data')
-                    # successfully loaded odt_data into DOH
+                if plot_data is not None:
+                    self.doh.setDataObject(plot_data, 'plot_data')
+                    # successfully loaded plot_data into DOH
                     self._BLOCK_PLOT_ITERABLES_ = False
                 else:
                     self._BLOCK_PLOT_ITERABLES_ = True
@@ -217,12 +217,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             return 1
 
     def deleteLoadedFiles(self):
-        #clearing all widgets it's not a problem even if it does not exist
-        # self.deleteWidget(0) #to show msg
+        # clearing all widgets it's not a problem even if it does not exist
         for i in range(WidgetHandler.visibleCounter):
-            if i == 0:
-                self.deleteWidget(i)
-                continue
             self.deleteWidget(i, False)
 
         #TODO need to clear DOH here
@@ -310,6 +306,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[self.current_pane].addWidget(\
                 self.sp.build_chain(self.current_widget_alias, self.doh))
         # that fixes the problem of having not all slots filled in groupBox
+        if self.playerWindow != None:
+            self.refreshIterators()
         self.propagate_resize()
         self.refreshScreen()
 
@@ -399,7 +397,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionWindow3Delete.setDisabled(False)
 
 if __name__ == "__main__":
-
     app = QtWidgets.QApplication(sys.argv)
 
     main_window = MainWindow()

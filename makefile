@@ -9,3 +9,5 @@ cython:
 del:
 	rm -rf build
 	rm -rf cython_modules/build
+	rm -rf cython_modules/*.c
+	rm -rf *.so

@@ -11,12 +11,16 @@ import math as mt
 from PIL import Image
 import os
 
+import numpy as np
+
+from cython_modules.color_policy import multi_iteration_normalize
+from cython_modules.cython_parse import getLayerOutline, genCubes
+from ColorPolicy import ColorPolicy
+
 
 class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     def __init__(self, parent=None):
         super(AbstractGLContext, self).__init__(parent)
-        self._MINIMUM_PARAMS_ = ['i', 'iterations', 'color_list',
-                                'omf_header']
 
         self.lastPos = QPoint()
         self.setFocusPolicy(Qt.StrongFocus)  # needed if keyboard to be active
@@ -27,11 +31,60 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.function_select = 'fast'
         self.background = [0.5, 0.5, 0.5]
         self.record = False
+        self.spacer = 0.2
+        self.steps = 1
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         super().handleOptionalData()
         self.receivedOptions()
+        self.i = self.current_state
+        print(self.iterations)
+        
+    @classmethod
+    def normalize_specification(cls, color_vectors, vbo=False):
+        """
+        normalization procedure
+        """
+        multi_iteration_normalize(color_vectors)
+        background = np.array([0.5, 0.5, 0.5])
+        if cls.__name__ == 'CubicGLContext':
+            # replace black with background colors
+            # NOTE: This is dangerous since dot product can be zero
+            color_vectors[~color_vectors.any(axis=2)] = background
+        elif cls.__name__ == 'VectorGLContext':
+            if vbo:
+                # replace black with background colors
+                # NOTE: This is dangerous since dot product can be zero
+                color_vectors[~color_vectors.any(axis=2)] = background
+
+    def prerendering_calculation(self):
+        """
+        Some calculations that take place before object gets rendered
+        """
+        # get vector outline
+        self.vectors_list = getLayerOutline(self.file_header)
+        self.auto_center()
+        # adjust spacing
+        self.spacer = self.spacer*self.scale
+
+        xc = int(self.file_header['xnodes'])
+        yc = int(self.file_header['ynodes'])
+        zc = int(self.file_header['znodes'])
+        # change drawing function
+        self.color_vectors, self.vectors_list, decimate = \
+                    ColorPolicy.standard_procedure(self.vectors_list,
+                                                   self.color_vectors,
+                                                   self.iterations,
+                                                   self.averaging,
+                                                   xc, yc, zc,
+                                                   self.layer,
+                                                   self.vector_set,
+                                                   self.decimate,
+                                                   disableDot=self.disableDot)
+        if decimate is not None:
+            # this is arbitrary
+            self.spacer *= decimate*3
 
     def handleOptionalData(self):
         # must handle iterations since these are optional
@@ -41,9 +94,12 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.iterations = 1
 
     def auto_center(self):
-        x_fix = (self.omf_header['xnodes'] * self.omf_header['xbase'] * 1e9) / 2
-        y_fix = (self.omf_header['ynodes'] * self.omf_header['ybase'] * 1e9) / 2
-        z_fix = (self.omf_header['znodes'] * self.omf_header['zbase'] * 1e9) / 2
+        """
+        auto centers the structure in widget screen
+        """
+        x_fix = (self.file_header['xnodes'] * self.file_header['xbase'] * 1e9) / 2
+        y_fix = (self.file_header['ynodes'] * self.file_header['ybase'] * 1e9) / 2
+        z_fix = (self.file_header['znodes'] * self.file_header['zbase'] * 1e9) / 2
         for vec in self.vectors_list:
             vec[0] -= x_fix
             vec[1] -= y_fix
@@ -53,6 +109,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         saves the screenshot to the folder specified in screenshot_dir
         """
+        # fetch dimensions for highest resolution
         _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
         color = gl.glReadPixels(0, 0,
                                width, height,

@@ -6,7 +6,6 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.Qt import Qt
 
 from cython_modules.cython_parse import getLayerOutline, genCubes
-from cython_modules.color_policy import multi_iteration_normalize
 
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 from pattern_types.Patterns import AbstractGLContextDecorators
@@ -14,62 +13,26 @@ from pattern_types.Patterns import AbstractGLContextDecorators
 from ColorPolicy import ColorPolicy
 from multiprocessing import Pool
 
-from PIL import Image
-
 class CubicGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict):
         super().__init__()
-        self.drawing_function = self.vbo_cubic_draw
-        self.steps = 1
-        self.spacer = 0.2
-        self.vectors_list = None
+        super().shareData(**data_dict)
         self.vertices = 0
-
         self.buffers = None
         self.buffer_len = 0
-        self.shareData(**data_dict)
+        self.prerendering_calculation()
+        self.drawing_function = self.vbo_cubic_draw
 
-    def shareData(self, **kwargs):
-        super().shareData(**kwargs)
-        self.spacer = self.spacer*self.scale
-        xc = int(self.omf_header['xnodes'])
-        yc = int(self.omf_header['ynodes'])
-        zc = int(self.omf_header['znodes'])
-
-        # remap
-        self.i = self.current_state
-
-        custom_color_policy = ColorPolicy()
-        self.vectors_list = getLayerOutline(self.omf_header)
-        self.auto_center()
-        # change drawing function
-        self.color_vectors, self.vectors_list, decimate = \
-                    custom_color_policy.standard_procedure(self.vectors_list,
-                                                           self.color_vectors,
-                                                           self.iterations,
-                                                           self.averaging,
-                                                           xc, yc, zc,
-                                                           self.layer,
-                                                           self.vector_set,
-                                                           self.decimate,
-                                                           disableDot=self.disableDot)
-
-        if decimate is not None:
-            # this is arbitrary
-            self.spacer *= decimate*3
-
+    def prerendering_calculation(self):
+        super().prerendering_calculation()
         if self.normalize:
-            background = np.array(self.background)
-            multi_iteration_normalize(self.color_vectors)
-            # replace black with background colors
-            # NOTE: This is dangerous since dot product can be zero
-            self.color_vectors[~self.color_vectors.any(axis=2)] = background
+            CubicGLContext.normalize_specification(self.color_vectors, vbo=True)
 
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw
             self.buffers = None
             # if vbo drawing is selected, do additional processing
-            self.color_vectors = custom_color_policy.apply_vbo_format(self.color_vectors)
+            self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors)
             self.vectors_list, self.vertices = genCubes(self.vectors_list,
                                                                     self.spacer)
             print(np.array(self.vectors_list).shape, self.vertices)

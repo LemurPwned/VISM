@@ -165,8 +165,10 @@ class WorkerObject:
                     tm.sleep(1/self._speed)
                     if self.running:
                         self._iterator += 1
+                        c = 0
                         for i in self.widgetIterators:
                             i(k, trigger=True)
+                            c+=1
                     if not self.running:
                         break
 
