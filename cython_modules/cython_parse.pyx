@@ -3,14 +3,14 @@ import pandas as pd
 import struct
 cimport cython
 
-def getOmfHeader(filename):
+def getFileHeader(filename):
     """
     .omf format reader
-    @param filename is .omf file path
+    @param filename is a file path
     @return dictionary with headers and their corresponding values
                 and number of these headers
     """
-    omf_header = {}
+    file_header = {}
 
     with open(filename, 'r') as f:
         g = f.readline()
@@ -18,16 +18,16 @@ def getOmfHeader(filename):
             g = f.readline()
             if ':' in g:
                 x = g.index(':')
-                if g[2:x] in omf_header:
-                    omf_header[g[2:x]] += g[x + 1:-1]
+                if g[2:x] in file_header:
+                    file_header[g[2:x]] += g[x + 1:-1]
                 else:
-                    omf_header[g[2:x]] = g[x + 1:-1]
+                    file_header[g[2:x]] = g[x + 1:-1]
                 try:
-                    omf_header[g[2:x]] = float(omf_header[g[2:x]])
+                    file_header[g[2:x]] = float(file_header[g[2:x]])
                 except:
                     pass
     f.close()
-    return omf_header
+    return file_header
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -36,16 +36,16 @@ def normalized(array, axis=-1, order=2):
     l2[l2==0] = 1
     return array / np.expand_dims(l2, axis)
 
-def getOdtData(filename):
+def getPlotData(filename):
     """
-    Reads .odt file
+    Reads .odt of .txt file
     @param filename is .odt file path
     @return dataFrame and stages number
     """
-    if not filename.endswith(".odt"):
-        print("\nWrong file type passed, only .odt")
-        return
-    else:
+    if filename.endswith('.txt'):
+        df = pd.read_table(filename)
+        return df, len(df)
+    elif filename.endswith('.odt'):
         header_lines = 4
         header = []
         i = 0
@@ -79,6 +79,8 @@ def getOdtData(filename):
         df = pd.DataFrame.from_records(dataset, columns=cols)
         stages = len(lines) -1
         return df, stages
+    else:
+        raise ValueError("Unsupported extension {}".format(filename))
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -99,11 +101,11 @@ def getRawVectors(filename):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def getLayerOutline(omf_header, unit_scaler=1e9):
+def getLayerOutline(file_header, unit_scaler=1e9):
     """
     constructs the vector outline of each layer, this is a shell that
     colors function operate on (masking)
-    @param omf_header is a dictionary form .omf file
+    @param file_header is a dictionary form .omf file
     @param unit_scaler is a unit scaler of dictionary, it indicates
             how much a value stored in a dictionary should be
             multiplied to get a proper unit scale
@@ -113,12 +115,12 @@ def getLayerOutline(omf_header, unit_scaler=1e9):
     @param layer_skip determines if just one layer should be plotted
     @return returns a proper list of vectors creating layer outlines
     """
-    xc = int(omf_header['xnodes'])
-    yc = int(omf_header['ynodes'])
-    zc = int(omf_header['znodes'])
-    xb = float(omf_header['xbase']) * unit_scaler
-    yb = float(omf_header['ybase']) * unit_scaler
-    zb = float(omf_header['zbase']) * unit_scaler
+    xc = int(file_header['xnodes'])
+    yc = int(file_header['ynodes'])
+    zc = int(file_header['znodes'])
+    xb = float(file_header['xbase']) * unit_scaler
+    yb = float(file_header['ybase']) * unit_scaler
+    zb = float(file_header['zbase']) * unit_scaler
     layers_outline = [[xb * (x%xc), yb * (y%yc), zb * (z%zc)]
             for z in range(zc) for y in range(yc) for x in range(xc)]
     return layers_outline

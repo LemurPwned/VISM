@@ -2,6 +2,9 @@ import os
 import platform
 import subprocess
 import re
+import glob
+
+
 class BuildVerifier:
     def __init__(self):
         self.__OSTYPE__ = self.os_deocde(platform.system())
@@ -16,8 +19,8 @@ class BuildVerifier:
 	# python3 cython_modules/ex_setup.py build_ext --build-lib cython_modules/build --inplace
     def intercept_failed_build(self, cython_traceback):
         error_msg = 'Error compiling Cython file:'
-        print("If above build failed, please follow instructions on \
-                webpage to build cython manually")
+        print("If above build failed, please follow instructions on " +
+                "webpage to build cython manually")
         if error_msg in cython_traceback:
             print(type(cython_traceback))
             catcher = '(-{55,60})(.*)(-{55,60})'
@@ -26,9 +29,23 @@ class BuildVerifier:
             cutout_error = re.compile(catcher)
             m = cutout_error.match(cython_traceback)
             print(cython_traceback)
+            self.cleanup_procedure()
             raise ValueError("Invalid cython build")
+
         else:
             print("Cython build was successfull \n\n")
+
+    def cleanup_procedure(self):
+        # cleanup
+        print("Cleaning...")
+        root_dirs = ['', 'cython_modules', 'build']
+        dirs_obj = ['*.so', '*.c']
+        for obj_dir in root_dirs:
+            for obj in dirs_obj:
+                pathname = glob.glob(os.path.join(obj_dir, obj))
+                for filename in pathname:
+                    print(filename)
+                    os.remove(filename)
 
     def cython_builds(self):
         # enforce cython build

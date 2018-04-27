@@ -3,9 +3,9 @@
                       "alias": "3D_CUBIC",
                       "object": "CubicGLContext",
                       "object_type": "3d_object",
-                      "settings": ["PerfOptions", "omf_header"],
+                      "settings": ["PerfOptions", "file_header"],
                       "required": ["current_state", "options",
-                                   "omf_header", "color_vectors",
+                                   "file_header", "color_vectors",
                                    "screenshot_dir"],
                       "optional": ["iterations"]
                       },
@@ -13,9 +13,9 @@
                       "alias": "3D_VECTOR",
                       "object": "VectorGLContext",
                       "object_type": "3d_object",
-                      "settings": ["PerfOptions", "omf_header"],
+                      "settings": ["PerfOptions", "file_header"],
                       "required": ["current_state", "options",
-                                   "omf_header","color_vectors",
+                                   "file_header","color_vectors",
                                    "screenshot_dir"],
                       "optional": ["iterations"]
                       },
@@ -23,25 +23,25 @@
                         "alias": "2D_Matplotlib",
                         "object": "Canvas",
                         "object_type": "2d_object",
-                        "settings": ["PlotSettings", "odt_data"],
+                        "settings": ["PlotSettings", "plot_data"],
                         "required": ["iterations", "current_state", "options",
-                                     "odt_data"]
+                                     "plot_data"]
                         },
     "Canvas2Dupgraded": {
                         "alias": "2D_BetterPlot",
                         "object": "Canvas2Dupgraded",
                         "object_type": "2d_object",
-                        "settings": ["PlotSettings", "odt_data"],
+                        "settings": ["PlotSettings", "plot_data"],
                         "required": ["iterations", "current_state", "options",
-                                     "odt_data", "geom"]
+                                     "plot_data", "geom"]
                       },
     "CanvasLayer": {
                         "alias": "2D_Layer",
                         "object": "CanvasLayer",
                         "object_type": "2d_object",
-                        "settings": ["SimplePerfOptions", "omf_header"],
+                        "settings": ["SimplePerfOptions", "file_header"],
                         "required": [ "current_state", "options",
-                                     "omf_header","color_vectors"],
+                                     "file_header","color_vectors"],
                         "optional" : ["iterations"]
                       }
 }

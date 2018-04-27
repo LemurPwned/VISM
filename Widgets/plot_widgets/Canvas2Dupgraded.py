@@ -10,7 +10,7 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
         self.plotWidget = PlotWidget(self)
         self._i = self.current_state
         self.title = self.options['column']
-        self.graph_data = self.odt_data[self.title].tolist()
+        self.graph_data = self.plot_data[self.title].tolist()
         self.internal_iterations = len(self.graph_data)
         self.createPlotCanvas()
 

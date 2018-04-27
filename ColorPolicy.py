@@ -82,19 +82,33 @@ class ColorPolicy:
         subM = strd(a, shape = s, strides = a.strides * 2)
         return np.einsum('ij,ijkl->kl', f, subM)
 
-    def apply_vbo_format(self, color_array, k=24):
+    @staticmethod
+    def apply_vbo_format(color_array, k=24):
         """
-        transforms a given numpy array matrix representing vecotrs in space
+        transforms a given numpy array matrix representing vectors in space
         into linear vbo matrix - to fit vertex buffer object
         :param color_array: to be transformed, numpy array
         :param k: indicates how many times should vertex be padded
         """
-        pool = Pool()
-        output = asynchronous_pool_order(self.color_matrix_flatten, (k, ),
+        output = asynchronous_pool_order(ColorPolicy.color_matrix_flatten, (k, ),
                                             color_array)
         return np.array(output, dtype='float32')
 
-    def color_matrix_flatten(self, vector, times):
+    @staticmethod
+    def apply_vbo_interleave_format(vector_array, color_array):
+        output = asynchronous_pool_order(ColorPolicy.interleave,
+                                            (vector_array,), color_array)
+        return np.array(output, dtype='float32')
+
+    @staticmethod
+    def interleave(color_iteration, vector_array):
+        interleaved = []
+        for v, c in zip(vector_array, color_iteration):
+            interleaved.extend([*v, v[0]+c[0], v[1]+c[1], v[2]+c[2]])
+        return interleaved
+
+    @staticmethod
+    def color_matrix_flatten(vector, times):
         return np.repeat(vector, times, axis=0).flatten()
 
     def convolutional_averaging(self, matrix, kernel_size, dim=2):
@@ -106,11 +120,24 @@ class ColorPolicy:
         matrix = self.linear_convolution(matrix)
         return np.array(matrix)
 
-    def standard_procedure(self, outline, color, iterations, averaging, xc, yc, zc,
+    @staticmethod
+    def standard_procedure(outline, color, iterations, averaging, xc, yc, zc,
                             picked_layer='all',
                             vector_set=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                             decimate=1,
                             disableDot=True):
+        """
+        this function should be called whenever one of the following is needed:
+        - sampling
+        - decimation (pseudosampling)
+        - dot product calculation
+        @param: disableDot - if True, dot product is omitted
+        @param: vector_set - set of 3 vectors used to calculate R, G, B
+                components using dot product (valid if disableDot is False)
+        @param: picked_layer - determines which layer or all to calculate
+        @return: dotted_color, outline, decimate - return decimating factor,
+                    color after dot product (or not) and layer(s) outline
+        """
         color = np.array(color)
         outline = np.array(outline)
         if type(picked_layer) == int:

@@ -1591,7 +1591,6 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, cha
 /* Module declarations from 'cython' */
 
 /* Module declarations from 'color_policy' */
-static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t = { "float64_t", NULL, sizeof(__pyx_t_5numpy_float64_t), { 0 }, 0, 'R', 0, 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_float32_t = { "float32_t", NULL, sizeof(__pyx_t_5numpy_float32_t), { 0 }, 0, 'R', 0, 0 };
 #define __Pyx_MODULE_NAME "color_policy"
 extern int __pyx_module_is_main_color_policy;
@@ -1708,7 +1707,7 @@ static PyObject *__pyx_codeobj__17;
 /* "color_policy.pyx":7
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def atomic_dot_product(np.ndarray[np.float64_t, ndim=1] color_vector,             # <<<<<<<<<<<<<<
+ * def atomic_dot_product(np.ndarray[np.float32_t, ndim=1] color_vector,             # <<<<<<<<<<<<<<
  *                        np.ndarray[np.float32_t, ndim=2] relative_vector_set):
  *     return [np.dot(color_vector, vector) for vector in relative_vector_set]
  */
@@ -1809,7 +1808,7 @@ static PyObject *__pyx_pf_12color_policy_atomic_dot_product(CYTHON_UNUSED PyObje
   __pyx_pybuffernd_relative_vector_set.rcbuffer = &__pyx_pybuffer_relative_vector_set;
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_color_vector.rcbuffer->pybuffer, (PyObject*)__pyx_v_color_vector, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) __PYX_ERR(0, 7, __pyx_L1_error)
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_color_vector.rcbuffer->pybuffer, (PyObject*)__pyx_v_color_vector, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float32_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) __PYX_ERR(0, 7, __pyx_L1_error)
   }
   __pyx_pybuffernd_color_vector.diminfo[0].strides = __pyx_pybuffernd_color_vector.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_color_vector.diminfo[0].shape = __pyx_pybuffernd_color_vector.rcbuffer->pybuffer.shape[0];
   {
@@ -1819,7 +1818,7 @@ static PyObject *__pyx_pf_12color_policy_atomic_dot_product(CYTHON_UNUSED PyObje
   __pyx_pybuffernd_relative_vector_set.diminfo[0].strides = __pyx_pybuffernd_relative_vector_set.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_relative_vector_set.diminfo[0].shape = __pyx_pybuffernd_relative_vector_set.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_relative_vector_set.diminfo[1].strides = __pyx_pybuffernd_relative_vector_set.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_relative_vector_set.diminfo[1].shape = __pyx_pybuffernd_relative_vector_set.rcbuffer->pybuffer.shape[1];
 
   /* "color_policy.pyx":9
- * def atomic_dot_product(np.ndarray[np.float64_t, ndim=1] color_vector,
+ * def atomic_dot_product(np.ndarray[np.float32_t, ndim=1] color_vector,
  *                        np.ndarray[np.float32_t, ndim=2] relative_vector_set):
  *     return [np.dot(color_vector, vector) for vector in relative_vector_set]             # <<<<<<<<<<<<<<
  * 
@@ -1930,7 +1929,7 @@ static PyObject *__pyx_pf_12color_policy_atomic_dot_product(CYTHON_UNUSED PyObje
   /* "color_policy.pyx":7
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def atomic_dot_product(np.ndarray[np.float64_t, ndim=1] color_vector,             # <<<<<<<<<<<<<<
+ * def atomic_dot_product(np.ndarray[np.float32_t, ndim=1] color_vector,             # <<<<<<<<<<<<<<
  *                        np.ndarray[np.float32_t, ndim=2] relative_vector_set):
  *     return [np.dot(color_vector, vector) for vector in relative_vector_set]
  */
@@ -1966,7 +1965,7 @@ static PyObject *__pyx_pf_12color_policy_atomic_dot_product(CYTHON_UNUSED PyObje
 /* "color_policy.pyx":13
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def multi_iteration_dot_product(np.ndarray[np.float64_t, ndim=2] color_iteration,             # <<<<<<<<<<<<<<
+ * def multi_iteration_dot_product(np.ndarray[np.float32_t, ndim=2] color_iteration,             # <<<<<<<<<<<<<<
  *                                 np.ndarray[np.float32_t, ndim=2] vec_set):
  *     cdef:
  */
@@ -2067,7 +2066,7 @@ static PyObject *__pyx_pf_12color_policy_2multi_iteration_dot_product(CYTHON_UNU
   __pyx_pybuffernd_vec_set.rcbuffer = &__pyx_pybuffer_vec_set;
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_color_iteration.rcbuffer->pybuffer, (PyObject*)__pyx_v_color_iteration, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 2, 0, __pyx_stack) == -1)) __PYX_ERR(0, 13, __pyx_L1_error)
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_color_iteration.rcbuffer->pybuffer, (PyObject*)__pyx_v_color_iteration, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float32_t, PyBUF_FORMAT| PyBUF_STRIDES, 2, 0, __pyx_stack) == -1)) __PYX_ERR(0, 13, __pyx_L1_error)
   }
   __pyx_pybuffernd_color_iteration.diminfo[0].strides = __pyx_pybuffernd_color_iteration.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_color_iteration.diminfo[0].shape = __pyx_pybuffernd_color_iteration.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_color_iteration.diminfo[1].strides = __pyx_pybuffernd_color_iteration.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_color_iteration.diminfo[1].shape = __pyx_pybuffernd_color_iteration.rcbuffer->pybuffer.shape[1];
   {
@@ -2173,7 +2172,7 @@ static PyObject *__pyx_pf_12color_policy_2multi_iteration_dot_product(CYTHON_UNU
   /* "color_policy.pyx":13
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def multi_iteration_dot_product(np.ndarray[np.float64_t, ndim=2] color_iteration,             # <<<<<<<<<<<<<<
+ * def multi_iteration_dot_product(np.ndarray[np.float32_t, ndim=2] color_iteration,             # <<<<<<<<<<<<<<
  *                                 np.ndarray[np.float32_t, ndim=2] vec_set):
  *     cdef:
  */
@@ -2207,7 +2206,7 @@ static PyObject *__pyx_pf_12color_policy_2multi_iteration_dot_product(CYTHON_UNU
 /* "color_policy.pyx":25
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def atomic_normalization(np.ndarray[np.float64_t, ndim=2] color_vector):             # <<<<<<<<<<<<<<
+ * def atomic_normalization(np.ndarray[np.float32_t, ndim=2] color_vector):             # <<<<<<<<<<<<<<
  *     return color_vector/np.linalg.norm(color_vector, axis=1, keepdims=True)
  * 
  */
@@ -2247,13 +2246,13 @@ static PyObject *__pyx_pf_12color_policy_4atomic_normalization(CYTHON_UNUSED PyO
   __pyx_pybuffernd_color_vector.rcbuffer = &__pyx_pybuffer_color_vector;
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_color_vector.rcbuffer->pybuffer, (PyObject*)__pyx_v_color_vector, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 2, 0, __pyx_stack) == -1)) __PYX_ERR(0, 25, __pyx_L1_error)
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_color_vector.rcbuffer->pybuffer, (PyObject*)__pyx_v_color_vector, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float32_t, PyBUF_FORMAT| PyBUF_STRIDES, 2, 0, __pyx_stack) == -1)) __PYX_ERR(0, 25, __pyx_L1_error)
   }
   __pyx_pybuffernd_color_vector.diminfo[0].strides = __pyx_pybuffernd_color_vector.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_color_vector.diminfo[0].shape = __pyx_pybuffernd_color_vector.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_color_vector.diminfo[1].strides = __pyx_pybuffernd_color_vector.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_color_vector.diminfo[1].shape = __pyx_pybuffernd_color_vector.rcbuffer->pybuffer.shape[1];
 
   /* "color_policy.pyx":26
  * @cython.wraparound(False)
- * def atomic_normalization(np.ndarray[np.float64_t, ndim=2] color_vector):
+ * def atomic_normalization(np.ndarray[np.float32_t, ndim=2] color_vector):
  *     return color_vector/np.linalg.norm(color_vector, axis=1, keepdims=True)             # <<<<<<<<<<<<<<
  * 
  * @cython.boundscheck(False)
@@ -2291,7 +2290,7 @@ static PyObject *__pyx_pf_12color_policy_4atomic_normalization(CYTHON_UNUSED PyO
   /* "color_policy.pyx":25
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def atomic_normalization(np.ndarray[np.float64_t, ndim=2] color_vector):             # <<<<<<<<<<<<<<
+ * def atomic_normalization(np.ndarray[np.float32_t, ndim=2] color_vector):             # <<<<<<<<<<<<<<
  *     return color_vector/np.linalg.norm(color_vector, axis=1, keepdims=True)
  * 
  */
@@ -2322,7 +2321,7 @@ static PyObject *__pyx_pf_12color_policy_4atomic_normalization(CYTHON_UNUSED PyO
 /* "color_policy.pyx":30
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def multi_iteration_normalize(np.ndarray[np.float64_t, ndim=3] color_iterations):             # <<<<<<<<<<<<<<
+ * def multi_iteration_normalize(np.ndarray[np.float32_t, ndim=3] color_iterations):             # <<<<<<<<<<<<<<
  *     cdef:
  *         int i
  */
@@ -2367,7 +2366,7 @@ static PyObject *__pyx_pf_12color_policy_6multi_iteration_normalize(CYTHON_UNUSE
   __pyx_pybuffernd_color_iterations.rcbuffer = &__pyx_pybuffer_color_iterations;
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_color_iterations.rcbuffer->pybuffer, (PyObject*)__pyx_v_color_iterations, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 3, 0, __pyx_stack) == -1)) __PYX_ERR(0, 30, __pyx_L1_error)
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_color_iterations.rcbuffer->pybuffer, (PyObject*)__pyx_v_color_iterations, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float32_t, PyBUF_FORMAT| PyBUF_STRIDES, 3, 0, __pyx_stack) == -1)) __PYX_ERR(0, 30, __pyx_L1_error)
   }
   __pyx_pybuffernd_color_iterations.diminfo[0].strides = __pyx_pybuffernd_color_iterations.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_color_iterations.diminfo[0].shape = __pyx_pybuffernd_color_iterations.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_color_iterations.diminfo[1].strides = __pyx_pybuffernd_color_iterations.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_color_iterations.diminfo[1].shape = __pyx_pybuffernd_color_iterations.rcbuffer->pybuffer.shape[1]; __pyx_pybuffernd_color_iterations.diminfo[2].strides = __pyx_pybuffernd_color_iterations.rcbuffer->pybuffer.strides[2]; __pyx_pybuffernd_color_iterations.diminfo[2].shape = __pyx_pybuffernd_color_iterations.rcbuffer->pybuffer.shape[2];
 
@@ -2479,7 +2478,7 @@ static PyObject *__pyx_pf_12color_policy_6multi_iteration_normalize(CYTHON_UNUSE
   /* "color_policy.pyx":30
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def multi_iteration_normalize(np.ndarray[np.float64_t, ndim=3] color_iterations):             # <<<<<<<<<<<<<<
+ * def multi_iteration_normalize(np.ndarray[np.float32_t, ndim=3] color_iterations):             # <<<<<<<<<<<<<<
  *     cdef:
  *         int i
  */
@@ -5284,7 +5283,7 @@ static int __Pyx_InitCachedConstants(void) {
   /* "color_policy.pyx":7
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def atomic_dot_product(np.ndarray[np.float64_t, ndim=1] color_vector,             # <<<<<<<<<<<<<<
+ * def atomic_dot_product(np.ndarray[np.float32_t, ndim=1] color_vector,             # <<<<<<<<<<<<<<
  *                        np.ndarray[np.float32_t, ndim=2] relative_vector_set):
  *     return [np.dot(color_vector, vector) for vector in relative_vector_set]
  */
@@ -5296,7 +5295,7 @@ static int __Pyx_InitCachedConstants(void) {
   /* "color_policy.pyx":13
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def multi_iteration_dot_product(np.ndarray[np.float64_t, ndim=2] color_iteration,             # <<<<<<<<<<<<<<
+ * def multi_iteration_dot_product(np.ndarray[np.float32_t, ndim=2] color_iteration,             # <<<<<<<<<<<<<<
  *                                 np.ndarray[np.float32_t, ndim=2] vec_set):
  *     cdef:
  */
@@ -5308,7 +5307,7 @@ static int __Pyx_InitCachedConstants(void) {
   /* "color_policy.pyx":25
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def atomic_normalization(np.ndarray[np.float64_t, ndim=2] color_vector):             # <<<<<<<<<<<<<<
+ * def atomic_normalization(np.ndarray[np.float32_t, ndim=2] color_vector):             # <<<<<<<<<<<<<<
  *     return color_vector/np.linalg.norm(color_vector, axis=1, keepdims=True)
  * 
  */
@@ -5320,7 +5319,7 @@ static int __Pyx_InitCachedConstants(void) {
   /* "color_policy.pyx":30
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def multi_iteration_normalize(np.ndarray[np.float64_t, ndim=3] color_iterations):             # <<<<<<<<<<<<<<
+ * def multi_iteration_normalize(np.ndarray[np.float32_t, ndim=3] color_iterations):             # <<<<<<<<<<<<<<
  *     cdef:
  *         int i
  */
@@ -5513,7 +5512,7 @@ static int __pyx_pymod_exec_color_policy(PyObject *__pyx_pyinit_module)
   /* "color_policy.pyx":7
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def atomic_dot_product(np.ndarray[np.float64_t, ndim=1] color_vector,             # <<<<<<<<<<<<<<
+ * def atomic_dot_product(np.ndarray[np.float32_t, ndim=1] color_vector,             # <<<<<<<<<<<<<<
  *                        np.ndarray[np.float32_t, ndim=2] relative_vector_set):
  *     return [np.dot(color_vector, vector) for vector in relative_vector_set]
  */
@@ -5525,7 +5524,7 @@ static int __pyx_pymod_exec_color_policy(PyObject *__pyx_pyinit_module)
   /* "color_policy.pyx":13
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def multi_iteration_dot_product(np.ndarray[np.float64_t, ndim=2] color_iteration,             # <<<<<<<<<<<<<<
+ * def multi_iteration_dot_product(np.ndarray[np.float32_t, ndim=2] color_iteration,             # <<<<<<<<<<<<<<
  *                                 np.ndarray[np.float32_t, ndim=2] vec_set):
  *     cdef:
  */
@@ -5537,7 +5536,7 @@ static int __pyx_pymod_exec_color_policy(PyObject *__pyx_pyinit_module)
   /* "color_policy.pyx":25
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def atomic_normalization(np.ndarray[np.float64_t, ndim=2] color_vector):             # <<<<<<<<<<<<<<
+ * def atomic_normalization(np.ndarray[np.float32_t, ndim=2] color_vector):             # <<<<<<<<<<<<<<
  *     return color_vector/np.linalg.norm(color_vector, axis=1, keepdims=True)
  * 
  */
@@ -5549,7 +5548,7 @@ static int __pyx_pymod_exec_color_policy(PyObject *__pyx_pyinit_module)
   /* "color_policy.pyx":30
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def multi_iteration_normalize(np.ndarray[np.float64_t, ndim=3] color_iterations):             # <<<<<<<<<<<<<<
+ * def multi_iteration_normalize(np.ndarray[np.float32_t, ndim=3] color_iterations):             # <<<<<<<<<<<<<<
  *     cdef:
  *         int i
  */
