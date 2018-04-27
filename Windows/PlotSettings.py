@@ -153,6 +153,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.close()
 
     def reject(self):
+        self.eventHandler(None)
         self.close()
 
     def getOptions(self):
