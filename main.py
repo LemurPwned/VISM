@@ -222,7 +222,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.deleteWidget(i, False)
 
         #TODO need to clear DOH here
-
+        self.doh.removeDataObject('__all__')
+        
         self._LOADED_FLAG_ = False
         self._BLOCK_STRUCTURES_ = True
         self._BLOCK_ITERABLES_ = True
