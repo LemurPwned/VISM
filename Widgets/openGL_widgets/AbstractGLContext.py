@@ -134,6 +134,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
         self.position = [0, 0 , -50]  # xyz initial
 
+
+
     def transformate(self):
         """
         applies rotation and transformation
@@ -147,7 +149,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         Initializes openGL context and scenery
         """
-
         gl.glClearColor(*self.background, 1)
         gl.glEnable(gl.GL_DEPTH_TEST)
 

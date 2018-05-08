@@ -4,7 +4,6 @@ from buildVerifier import BuildVerifier
 bv = BuildVerifier()
 
 import sys
-import time
 
 from PyQt5 import QtWidgets, QtCore
 from Windows.MainWindowTemplate import Ui_MainWindow
@@ -138,34 +137,46 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 yesMes=None)
 
     def loadFile(self):
-        fileDialog = QtWidgets.QFileDialog()
-        fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
-        filename = str(fileDialog.getOpenFileName(self, "Select File")[0])
+        if self._LOADED_FLAG_:
+            self.deleteLoadedFiles()
 
         self._LOADED_FLAG_ = False
 
-        if ".odt" in filename:
+        fileDialog = QtWidgets.QFileDialog()
+        fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+        fileLoaded = str(fileDialog.getOpenFileName(self, "Select File")[0])
+
+        if fileLoaded is None or fileLoaded == "" or fileLoaded=="  ":
+            msg = "Invalid directory: {}. Do you wish to abort?".format(fileLoaded)
+            PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
+                            QtWidgets.QMessageBox.No, self.refreshScreen, self.loadFile)
+            return 0
+
+        if ".odt" in fileLoaded:
             self.doh.passListObject(('plot_data', 'iterations'),
-                                    *MultiprocessingParse.readFile(filename))
+                                        *MultiprocessingParse.readFile(fileLoaded))
             self._BLOCK_ITERABLES_ = False
             self._BLOCK_PLOT_ITERABLES_ = False
 
-        elif ".omf" in file or ".ovf" in filename:
+        elif ".omf" in fileLoaded or ".ovf" in fileLoaded:
             self.doh.passListObject(('color_vectors', 'file_header'),
-                                    *MultiprocessingParse.readFile(filename))
+                                        *MultiprocessingParse.readFile(fileLoaded))
             self._BLOCK_STRUCTURES_ = False
         else:
             raise ValueError("main.py/loadFile: File format is not supported!")
 
         self._LOADED_FLAG_ = True
+        return 1
 
     def loadDirectory(self):
-        """Loads whole directory based on Parse class as simple as BHP"""
+        if self._LOADED_FLAG_:
+            self.deleteLoadedFiles()
+        self._LOADED_FLAG_ = False
+
         directory = self.promptDirectory()
 
         if directory is None or directory == "" or directory=="  ":
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
-            self._LOADED_FLAG_ = False
             PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
                             QtWidgets.QMessageBox.No, self.refreshScreen,
                             self.loadDirectory)
@@ -204,6 +215,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self._LOADED_FLAG_ = True
                 self._BLOCK_STRUCTURES_ = False
             return 1
+
+    def deleteLoadedFiles(self):
+        #clearing all widgets it's not a problem even if it does not exist
+        # self.deleteWidget(0) #to show msg
+        for i in range(WidgetHandler.visibleCounter):
+            if i == 0:
+                self.deleteWidget(i)
+                continue
+            self.deleteWidget(i, False)
+
+        #TODO need to clear DOH here
+
+        self._LOADED_FLAG_ = False
+        self._BLOCK_STRUCTURES_ = True
+        self._BLOCK_ITERABLES_ = True
+        self._BLOCK_PLOT_ITERABLES_ = True
 
     def showAnimationSettings(self):
         """Shows window to change animations settings"""
@@ -293,8 +320,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.propagate_resize()
         self.refreshScreen()
 
-    def deleteWidget(self, number):
-        if self.playerWindow:
+    def deleteWidget(self, number, verbose=True):
+        if self.playerWindow and verbose:
             PopUpWrapper("Alert",
                 "You may loose calculation!", \
                 "If you proceed animation will be restarted and widget \
@@ -312,6 +339,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[number].setUpDefaultBox()
         self.panes[number].button.clicked.connect(\
             lambda: self.showChooseWidgetSettings(number))
+        self.refreshScreen()
 
     def propagate_resize(self):
         for i in range(4):

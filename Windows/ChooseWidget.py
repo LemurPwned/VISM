@@ -54,8 +54,6 @@ class ChooseWidget(QtWidgets.QWidget):
     def loadWidgetsFromFile(self):
         self.json_file_handler = json.load(open(self.__WIDGET_LOC__))
         for widget_key in self.json_file_handler.keys():
-            # TODO: think about better solution,
-            # now i have better solution but have to change few things...
             if not self._BLOCK_ITERABLES_ and not self._BLOCK_STRUCTURES_ \
                 and not self._BLOCK_PLOT_ITERABLES_:
                 self.list.addItem(self.json_file_handler[widget_key]['alias'])
