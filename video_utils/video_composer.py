@@ -28,7 +28,12 @@ class Movie:
             return
         total_movie = []
         fileList.sort(key=lambda x: os.path.basename(x))
-        print("Merging up the files. This might take a moment...")
+        x = PopUpWrapper(
+            title='No files in directory!',
+            msg='No files with supported extension found in directory! Extension: \"{}\"'.format(self.format),
+            more='Changed',
+            yesMes=None)
+
         for filename in fileList:
             print(filename)
             img = ski.imread(filename)
@@ -36,6 +41,7 @@ class Movie:
                 total_movie.append(img)
         total_movie = np.array(total_movie)
         skv.vwrite(os.path.join(self.directory, 'movie.mkv'), total_movie)
+        x.close()
         self.do_cleanup(fileList)
 
     def do_cleanup(self, filenames):

@@ -5,6 +5,7 @@ from multiprocessing import Pool
 from cython_modules.cython_parse import *
 from binaryornot.check import is_binary
 import re
+from PopUp import PopUpWrapper
 
 def asynchronous_pool_order(func, args, object_list, timeout=20):
     pool = Pool()
@@ -67,6 +68,13 @@ class MultiprocessingParse:
     def mumax_trigger_list(file_len, pl_data):
         print("Warning: Mumax format is not fully supported, see documention" + \
                 " on how it is currently handled/implemented")
+        x = PopUpWrapper(
+            title='Warning!',
+            msg="Mumax format is not fully supported, see documention" + \
+                " on how it is currently handled/implemented",
+            more='Changed',
+            yesMes=None)
+        x.close()
         time_col = '# t (s)'
         # time interval per .ovf file
         time_interval = np.max(pl_data[time_col])/file_len
@@ -98,7 +106,14 @@ class MultiprocessingParse:
         # this means invalid directory
         # tbh I am not sure but it helps fix issue
         if voted_extension is None:
+            x = PopUpWrapper(
+                title='Error!',
+                msg="Invalid directory",
+                more='There is no data in provided directory or data is not recognized as readable by parser.',
+                yesMes=None)
+            x.close()
             raise ValueError("Invalid Directory")
+
         print("SUPPORTED EXTENSION DETECTED {}".format(voted_extension))
         files_in_directory = [os.path.join(directory, filename)
                               for filename in files_in_directory
@@ -128,10 +143,22 @@ class MultiprocessingParse:
                 rawVectorData = MultiprocessingParse.readText([path])
                 header = getFileHeader(path)
             else:
+                x = PopUpWrapper(
+                    title='Error!',
+                    msg="Can't detect encoding",
+                    more='Parser was not able to guess encoding type.',
+                    yesMes=None)
+                x.close()
                 raise RuntimeError("multiprocessing_parse.py readFile:" +\
                                                     " Can't detect encoding!")
             return rawVectorData, header
         else:
+            x = PopUpWrapper(
+                title='Error!',
+                msg="Invalid File!",
+                more='File must have .odt, .omf or .ovf extension!',
+                yesMes=None)
+            x.close()
             raise ValueError("Invalid file! Must have .odt, .omf " + \
                                                         "or .ovf extension!")
 
@@ -154,6 +181,12 @@ class MultiprocessingParse:
         plot_file = glob.glob(os.path.join(directory, ext[1]))
         # look for .odt  or .txt in current directory
         if len(plot_file) > 1:
+            x = PopUpWrapper(
+                title='Error!',
+                msg="Invalid Directory!",
+                more='To many files with plot data extension (.odt) don\'t know which one to pick.',
+                yesMes=None)
+            x.close()
             raise ValueError("plot file extension conflict (too many)")
             #TODO error window
         elif not plot_file or plot_file is None:
@@ -174,6 +207,12 @@ class MultiprocessingParse:
                     print("TRIGGER LIST : {}, {}".format(stages,
                                                             len(trigger_list)))
                 elif stages0 < stages:
+                    x = PopUpWrapper(
+                        title='Error!',
+                        msg="Invalid Directory",
+                        more='File (.odt) cannot have fewer stages than simulation files in directory.',
+                        yesMes=None)
+                    x.close()
                     raise ValueError("Odt cannot have fewer stages that files")
         else:
             plot_data = None
@@ -183,6 +222,12 @@ class MultiprocessingParse:
             file_for_header = glob.glob(os.path.join(directory, '*' + ext[0]))
             # virtually any will do
             if not file_for_header:
+                x = PopUpWrapper(
+                    title='Error!',
+                    msg="Invalid Directory",
+                    more='No .omf or .ovf file has been found in provided directory.',
+                    yesMes=None)
+                x.close()
                 raise ValueError("no .omf  or .ovf file has been found")
             header = getFileHeader(file_for_header[0])
         else:
@@ -190,6 +235,12 @@ class MultiprocessingParse:
                                                         files_in_directory)
             header = headers[0]
             if not header:
+                x = PopUpWrapper(
+                    title='Error!',
+                    msg="Invalid Directory",
+                    more='No .omf or .ovf file has been found in provided directory.',
+                    yesMes=None)
+                x.close()
                 raise ValueError("no .omf or .ovf file has been found")
         return rawVectorData, header, plot_data, stages, trigger_list
 
