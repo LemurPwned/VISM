@@ -64,6 +64,8 @@ class Ui_MainWindow(object):
         self.actionWindow3Delete.setObjectName("actionWindow3Delete")
         self.actionMovie_composer = QtWidgets.QAction(MainWindow)
         self.actionMovie_composer.setObjectName("actionMovie_composer")
+        self.actionText_select = QtWidgets.QAction(MainWindow)
+        self.actionText_select.setObjectName("actionText_select")
         self.menuFile.addAction(self.actionLoad_File)
         self.menuFile.addAction(self.actionLoad_Directory)
         self.menuEdit.addAction(self.actionAnimation)
@@ -77,6 +79,7 @@ class Ui_MainWindow(object):
         self.menuView.addAction(self.action4_Windows_Grid)
         self.menuOptions.addAction(self.actionPerformance)
         self.menuOptions.addAction(self.actionMovie_composer)
+        self.menuOptions.addAction(self.actionText_select)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
@@ -106,6 +109,7 @@ class Ui_MainWindow(object):
         self.actionWindow2Delete.setText(_translate("MainWindow", "Window2 delete"))
         self.actionWindow3Delete.setText(_translate("MainWindow", "Window3 delete"))
         self.actionMovie_composer.setText(_translate("MainWindow", "Movie composer"))
+        self.actionText_select.setText(_translate("MainWindow", "Text select"))
 
 
 if __name__ == "__main__":

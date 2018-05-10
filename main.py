@@ -13,6 +13,7 @@ from multiprocessing_parse import MultiprocessingParse
 
 from Windows.ChooseWidget import ChooseWidget
 from Windows.PlayerWindow import PlayerWindow
+from Windows.Select import Select
 
 from WidgetHandler import WidgetHandler
 
@@ -69,6 +70,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         # OPTIONS SUBMENU
         self.actionPerformance.triggered.connect(self.setScreenshotFolder)
         self.actionMovie_composer.triggered.connect(self.composeMovie)
+        self.actionText_select.triggered.connect(self.selectText)
+
         # VIEW SUBMENU
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
         self.action2_Windows_Grid.triggered.connect(self.make2WindowsGrid)
@@ -110,6 +113,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.setScreenshotFolder()
         mv = Movie(self.screenshot_dir)
         mv.create_video()
+
+    def selectText(self):
+        self.selectionWindow = Select()
 
     def promptDirectory(self):
         fileDialog = QtWidgets.QFileDialog()

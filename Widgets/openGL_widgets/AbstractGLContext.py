@@ -19,11 +19,17 @@ from ColorPolicy import ColorPolicy
 
 import time
 import pygame
-pygame.init()
 
 class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
+    PYGAME_INCLUDED = False
+    RECORD_REGION_SELECTION = False
+    SELECTED_POS = None
+    TEXT = None
+
+    ANY_GL_WIDGET_IN_VIEW = False
     def __init__(self, parent=None):
         super(AbstractGLContext, self).__init__(parent)
+        AbstractGLContext.ANY_GL_WIDGET_IN_VIEW = True
 
         self.lastPos = QPoint()
         self.setFocusPolicy(Qt.StrongFocus)  # needed if keyboard to be active
@@ -165,6 +171,10 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         # Pop Matrix off stack
         self.frames +=1
         self.fps_counter()
+        if AbstractGLContext.TEXT is not None \
+            and AbstractGLContext.SELECTED_POS is not None:
+            self.text_render(AbstractGLContext.TEXT,
+                            AbstractGLContext.SELECTED_POS)
         gl.glPopMatrix()
         self.update()
 
@@ -244,6 +254,13 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
         self.update()
 
+    def mousePressEvent(self, event):
+        x = event.x()
+        y = event.y()
+        if AbstractGLContext.RECORD_REGION_SELECTION:
+            AbstractGLContext.SELECTED_POS = (x, y, 0)
+            AbstractGLContext.RECORD_REGION_SELECTION = False
+
     def mouseMoveEvent(self, event):
         """
         Handles basic mouse press
@@ -287,6 +304,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.text_render(str(self.fps))
 
     def text_render(self, textString, position=(10, 10, 10)):
+        if not AbstractGLContext.PYGAME_INCLUDED:
+            pygame.init()
+            AbstractGLContext.PYGAME_INCLUDED = True
         font = pygame.font.Font (None, 64)
         textSurface = font.render(textString, False, (255,255,255,255))
         textData = pygame.image.tostring(textSurface, "RGBA", True)
