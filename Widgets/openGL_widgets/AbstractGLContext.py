@@ -26,10 +26,11 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     SELECTED_POS = None
     TEXT = None
 
-    ANY_GL_WIDGET_IN_VIEW = False
+    ANY_GL_WIDGET_IN_VIEW = 0
+    
     def __init__(self, parent=None):
         super(AbstractGLContext, self).__init__(parent)
-        AbstractGLContext.ANY_GL_WIDGET_IN_VIEW = True
+        AbstractGLContext.ANY_GL_WIDGET_IN_VIEW += 1
 
         self.lastPos = QPoint()
         self.setFocusPolicy(Qt.StrongFocus)  # needed if keyboard to be active
@@ -168,15 +169,18 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         gl.glPushMatrix()
         self.transformate()
         self.drawing_function()
+        self.text_functionalities()
         # Pop Matrix off stack
+        gl.glPopMatrix()
+        self.update()
+
+    def text_functionalities(self):
         self.frames +=1
         self.fps_counter()
         if AbstractGLContext.TEXT is not None \
             and AbstractGLContext.SELECTED_POS is not None:
             self.text_render(AbstractGLContext.TEXT,
                             AbstractGLContext.SELECTED_POS)
-        gl.glPopMatrix()
-        self.update()
 
     def set_i(self, value, trigger=False):
         if trigger:
