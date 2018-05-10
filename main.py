@@ -66,9 +66,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionWindow2Delete.triggered.connect(lambda: self.deleteWidget(2))
         self.actionWindow3Delete.triggered.connect(lambda: self.deleteWidget(3))
 
-        # OPTIONS SUBMENU
-        self.actionPerformance.triggered.connect(self.setScreenshotFolder)
-        self.actionMovie_composer.triggered.connect(self.composeMovie)
         # VIEW SUBMENU
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
         self.action2_Windows_Grid.triggered.connect(self.make2WindowsGrid)
@@ -80,6 +77,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[1].button.clicked.connect(lambda: self.showChooseWidgetSettings(1))
         self.panes[2].button.clicked.connect(lambda: self.showChooseWidgetSettings(2))
         self.panes[3].button.clicked.connect(lambda: self.showChooseWidgetSettings(3))
+
+        # OPTIONS SUBMENU
+        self.actionPerformance.triggered.connect(self.setScreenshotFolder)
+        self.actionMovie_composer.triggered.connect(self.composeMovie)
 
     def refreshScreen(self):
         """weird stuff is happening when u want to update window u need to
@@ -107,7 +108,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 'Current screenshot directory: {}'.format(self.screenshot_dir),
             more='Changed',
             yesMes=None)
+
         self.setScreenshotFolder()
+        if self.screenshot_dir == None:
+            return
         mv = Movie(self.screenshot_dir)
         mv.create_video()
 
@@ -119,6 +123,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 "Select Directory",
                 options = QtWidgets.QFileDialog.ShowDirsOnly))
         fileDialog.close()
+        if directory in ["", " ", None]:
+            return None
         return directory
 
     def setScreenshotFolder(self):
