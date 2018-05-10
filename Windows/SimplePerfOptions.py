@@ -80,6 +80,7 @@ class SimplePerfOptions(QWidget, Ui_Dialog):
                             QtWidgets.QMessageBox.Yes,
                             QtWidgets.QMessageBox.No, None, quit)
     def reject(self):
+        self.eventHandler(None)
         self.close()
 
     def getOptions(self):

@@ -12,6 +12,7 @@ from multiprocessing_parse import MultiprocessingParse
 
 from Windows.ChooseWidget import ChooseWidget
 from Windows.PlayerWindow import PlayerWindow
+from Windows.Select import Select
 
 from WidgetHandler import WidgetHandler
 
@@ -68,6 +69,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         # OPTIONS SUBMENU
         self.actionPerformance.triggered.connect(self.setScreenshotFolder)
         self.actionMovie_composer.triggered.connect(self.composeMovie)
+        self.actionText_select.triggered.connect(self.selectText)
+
         # VIEW SUBMENU
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
         self.action2_Windows_Grid.triggered.connect(self.make2WindowsGrid)
@@ -109,6 +112,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.setScreenshotFolder()
         mv = Movie(self.screenshot_dir)
         mv.create_video()
+
+    def selectText(self):
+        self.selectionWindow = Select()
 
     def promptDirectory(self):
         fileDialog = QtWidgets.QFileDialog()
@@ -223,7 +229,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         #TODO need to clear DOH here
         self.doh.removeDataObject('__all__')
-        
+
         self._LOADED_FLAG_ = False
         self._BLOCK_STRUCTURES_ = True
         self._BLOCK_ITERABLES_ = True
@@ -263,7 +269,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self.playerWindow.forceWorkerReset()
                 self.playerWindow.closeMe()
 
-
         """Spawns Window for choosing widget for this pane"""
         if not self._LOADED_FLAG_:
             # spawn directory picker again
@@ -295,6 +300,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         this allows to receive general type option structure that is passed
         on to the DataObjectHolder object that sends it to the right final object
         """
+        print("OPTIONS {}".format(options))
+        if options is None:
+            # delete widget
+            self.deleteWidget(self.current_pane)
+            self.refreshScreen()
+            return
         # fix that later in settings where it can be changed or not
         geom = (self.panes[self.current_pane].groupBox.width(),
                 self.panes[self.current_pane].groupBox.height())
@@ -312,9 +323,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.propagate_resize()
         self.refreshScreen()
 
-    def deleteWidget(self, number, verbose=True):
-
-        if self.playerWindow and verbose:
+    def deleteWidget(self, number):
+        if self.playerWindow:
             PopUpWrapper("Alert",
                 "You may loose calculation!", \
                 "If you proceed animation will be restarted and widget \
