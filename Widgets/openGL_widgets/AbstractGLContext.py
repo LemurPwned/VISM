@@ -27,7 +27,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     TEXT = None
 
     ANY_GL_WIDGET_IN_VIEW = 0
-    
+
     def __init__(self, parent=None):
         super(AbstractGLContext, self).__init__(parent)
         AbstractGLContext.ANY_GL_WIDGET_IN_VIEW += 1
@@ -44,6 +44,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.spacer = 0.2
         self.steps = 1
 
+        self.display_frames = False
         self.frames = 0
         self.fps = 0
         self.FRAME_BENCHMARK_FLAG = False
@@ -177,6 +178,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     def text_functionalities(self):
         self.frames +=1
         self.fps_counter()
+        if self.display_frames:
+            self.text_render(str(self.i))
         if AbstractGLContext.TEXT is not None \
             and AbstractGLContext.SELECTED_POS is not None:
             self.text_render(AbstractGLContext.TEXT,
@@ -198,6 +201,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         Y - start/stop recording
         S - take a screenshot
         B - start benchmarking
+        F - display current frame
         """
         key = event.key()
         if key == Qt.Key_R:
@@ -220,6 +224,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.fps_counter(initialize=True)
             self.FRAME_BENCHMARK_FLAG = \
                                 not self.FRAME_BENCHMARK_FLAG
+        if key == Qt.Key_F:
+            self.display_frames = True
 
     def zoomIn(self):
         self.steps = 1
