@@ -1,6 +1,9 @@
 #ignore data
 data/
 spins/
+examples/
+Screenshots/
+test_folder/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
