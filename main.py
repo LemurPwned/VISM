@@ -184,6 +184,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 sub = "Data is currently being loaded using all cpu power," + \
                         "app may stop responding for a while."
                 x = PopUpWrapper("Loading", sub, "Please Wait...")
+                x.close()
+                
                 rawVectorData, header, plot_data, stages, trigger_list = \
                                     MultiprocessingParse.readFolder(directory)
                 self.doh.passListObject(('color_vectors', 'file_header',
@@ -208,10 +210,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                 QtWidgets.QMessageBox.Yes,
                                 QtWidgets.QMessageBox.No,
                                 self.loadDirectory, quit)
-            finally:
-                self._BLOCK_ITERABLES_ = False
-                self._LOADED_FLAG_ = True
-                self._BLOCK_STRUCTURES_ = False
+                x.close()
+                return None
+            except Exception as e:
+                print(e)
+                return None
+
+            self._BLOCK_ITERABLES_ = False
+            self._LOADED_FLAG_ = True
+            self._BLOCK_STRUCTURES_ = False
             return 1
 
     def showAnimationSettings(self):

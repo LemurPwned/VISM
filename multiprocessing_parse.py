@@ -112,6 +112,7 @@ class MultiprocessingParse:
                 more='There is no data in provided directory or data is not recognized as readable by parser.',
                 yesMes=None)
             x.close()
+            return
             raise ValueError("Invalid Directory")
 
         print("SUPPORTED EXTENSION DETECTED {}".format(voted_extension))
@@ -174,6 +175,8 @@ class MultiprocessingParse:
 
         files_in_directory, ext = MultiprocessingParse.guess_file_type(
                                                                     directory)
+
+
         # ext_files = glob.glob(os.path.join(directory, '*' + ext[0]))
         test_file = os.path.join(directory, files_in_directory[0])
 
