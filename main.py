@@ -108,6 +108,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 'Current screenshot directory: {}'.format(self.screenshot_dir),
             more='Changed',
             yesMes=None)
+        x.close()
 
         self.setScreenshotFolder()
         if self.screenshot_dir == None:
@@ -136,12 +137,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 msg='Current screenshot directory: {}'.format(self.screenshot_dir),
                 more='Changed',
                 yesMes=None)
+            x.close()
         else:
             x = PopUpWrapper(
                 title='Screenshot directory has not changed',
                 msg='Current screenshot directory: {}'.format(self.screenshot_dir),
                 more='Not changed',
                 yesMes=None)
+            x.close()
 
     def loadFile(self):
         fileDialog = QtWidgets.QFileDialog()

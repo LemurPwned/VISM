@@ -1,10 +1,9 @@
-import PIL
 import skvideo.io as skv
 import skimage.io as ski
-from skimage import color
 import numpy as np
 import os
 import glob
+from PopUp import PopUpWrapper
 
 class Movie:
     def __init__(self, directory, fformat='.png', cleanup=True):
@@ -20,8 +19,12 @@ class Movie:
         '''
         fileList = glob.glob(os.path.join(self.directory, '*' + self.format))
         if len(fileList) == 0:
-            #TODO error
-            print("No files in provided directory!")
+            x = PopUpWrapper(
+                title='No files in directory!',
+                msg='No files with supported extension found in directory! Extension: \"{}\"'.format(self.format),
+                more='Changed',
+                yesMes=None)
+            x.close()
             return
         total_movie = []
         fileList.sort(key=lambda x: os.path.basename(x))
