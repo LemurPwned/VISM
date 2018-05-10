@@ -17,8 +17,14 @@ from cython_modules.color_policy import multi_iteration_normalize
 from cython_modules.cython_parse import getLayerOutline, genCubes
 from ColorPolicy import ColorPolicy
 
+import time
 
 class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
+    FRAME_BENCHMARK_FLAG = False
+    FRAMES = 0
+    FPS_UPDATE_INTERVAL = 0.5
+    TIME_PASSED = 0.0
+
     def __init__(self, parent=None):
         super(AbstractGLContext, self).__init__(parent)
 
@@ -34,13 +40,15 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.spacer = 0.2
         self.steps = 1
 
+        self.frames = 0
+
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
         super().handleOptionalData()
         self.receivedOptions()
         self.i = self.current_state
         print(self.iterations)
-        
+
     @classmethod
     def normalize_specification(cls, color_vectors, vbo=False):
         """
@@ -105,27 +113,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             vec[1] -= y_fix
             vec[2] -= z_fix
 
-    def screenshot_manager(self):
-        """
-        saves the screenshot to the folder specified in screenshot_dir
-        """
-        # fetch dimensions for highest resolution
-        _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
-        color = gl.glReadPixels(0, 0,
-                               width, height,
-                               gl.GL_RGB, gl.GL_UNSIGNED_BYTE)
-        image = Image.frombytes(mode='RGB', size=(width, height),
-                                                    data=color)
-        image = image.transpose(Image.FLIP_TOP_BOTTOM)
-        try:
-            image.save(os.path.join(self.screenshot_dir,
-                                        str(self.i).zfill(4) + ".png"))
-        except FileNotFoundError:
-            # if basic dir not found, create it and save there
-            os.mkdir(self.screenshot_dir)
-            image.save(os.path.join(self.screenshot_dir,
-                                        str(self.i).zfill(4) + ".png"))
-
     def initial_transformation(self):
         """
         resets the view to the initial one
@@ -170,6 +157,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         Clears the buffer and redraws the scene
         """
+        self.frames +=1
+        self.fps_counter()
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         # Push Matrix onto stack
         gl.glPushMatrix()
@@ -212,6 +201,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         if key == Qt.Key_S:
             self.screenshot_manager()
 
+        if key == Qt.Key_B:
+            self.fps_counter(initialize=True)
+            AbstractGLContext.FRAME_BENCHMARK_FLAG = True
 
     def zoomIn(self):
         self.steps = 1
@@ -278,6 +270,18 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.position[1] -= dy * 0.2
         self.update()
 
+    def fps_counter(self, initialize=False):
+        if initialize:
+            AbstractGLContext.TIME_PASSED = time.time()
+            self.frames = 0
+        elif AbstractGLContext.FRAME_BENCHMARK_FLAG:
+            ctime = time.time()
+            if ((ctime - AbstractGLContext.TIME_PASSED) > \
+                                    AbstractGLContext.FPS_UPDATE_INTERVAL):
+                fps = self.frames/(ctime - AbstractGLContext.TIME_PASSED)
+                AbstractGLContext.TIME_PASSED = ctime
+                self.frames = 0
+
     @staticmethod
     def get_open_gl_info():
         info = """
@@ -291,3 +295,24 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             gl.glGetString(gl.GL_VERSION),
             gl.glGetString(gl.GL_SHADING_LANGUAGE_VERSION))
         return info
+
+    def screenshot_manager(self):
+        """
+        saves the screenshot to the folder specified in screenshot_dir
+        """
+        # fetch dimensions for highest resolution
+        _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
+        color = gl.glReadPixels(0, 0,
+                               width, height,
+                               gl.GL_RGB, gl.GL_UNSIGNED_BYTE)
+        image = Image.frombytes(mode='RGB', size=(width, height),
+                                                    data=color)
+        image = image.transpose(Image.FLIP_TOP_BOTTOM)
+        try:
+            image.save(os.path.join(self.screenshot_dir,
+                                        str(self.i).zfill(4) + ".png"))
+        except FileNotFoundError:
+            # if basic dir not found, create it and save there
+            os.mkdir(self.screenshot_dir)
+            image.save(os.path.join(self.screenshot_dir,
+                                        str(self.i).zfill(4) + ".png"))
