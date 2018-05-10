@@ -1,0 +1,250 @@
+# MIF 2.1
+
+set z1  12.24e-9
+set z2  12.96e-9
+set z3  23.04e-9
+
+set Ms1 1710e3
+set Ms2 0
+set Ms3 1710e3
+
+set J 0
+
+set K1 48e3
+set K3 48e3
+
+set xlimit 520e-9
+set ylimit 520e-9
+set S [expr 3.1415926*$xlimit*$ylimit]
+
+proc EllipseFD { x y z xmax ymax zmax  } {
+global Ms1 Ms2 Ms3 z1 z2 z3
+   set m 0.0
+   if {$z<=$z1} {
+      set m $Ms1 }
+   if {$z>=$z2} {
+      set m $Ms3  }
+   set rx [expr 2.*$x/$xmax -1. ]
+   set ry [expr 2.*$y/$ymax -1. ]
+   set r [expr {sqrt($rx*$rx+$ry*$ry)}]
+   if {$r<=1} {
+      return [expr {$m} ]
+   }
+   return 0.0
+}
+
+proc Ellipse { x y z xmax ymax zmax } {
+    set xrad [expr 2.*$x/$xmax -1.]
+    set yrad [expr 2.*$y/$ymax -1.]
+    set test [expr $xrad*$xrad+$yrad*$yrad]
+    if {$test>1.0} {return 0}
+    return 1
+}
+
+Specify Oxs_MultiAtlas:atlas [subst {
+  atlas { Oxs_ScriptAtlas:top {
+  xrange {0 $xlimit}
+  yrange {0 $ylimit}
+  zrange {$z2 $z3}
+  regions { top }
+  script_args {rawpt maxpt}
+  script Ellipse 
+   }   }
+   atlas { Oxs_ScriptAtlas:spacer {
+  xrange {0 $xlimit}
+  yrange {0 $ylimit}
+  zrange {$z1 $z2}
+  regions { spacer }
+  script_args {rawpt maxpt}
+  script Ellipse
+   }   }
+   atlas { Oxs_ScriptAtlas:bottom {
+  xrange {0 $xlimit}
+  yrange {0 $ylimit}
+  zrange {0e-9  $z1}
+  regions { bottom }
+  script_args {rawpt maxpt}
+  script Ellipse
+   }   }   
+}]
+
+Specify Oxs_RectangularMesh:mesh {
+  cellsize {5e-9 5e-9 0.72e-9}
+  atlas :atlas
+}
+
+Specify Oxs_Exchange6Ngbr {
+  atlas :atlas
+  default_A 0
+  A {
+    top top 2e-11
+    bottom bottom 2e-11   
+  }
+}
+
+Specify Oxs_LinearScalarField:zheight {
+ vector {0 0 1}
+ norm   1.0
+}
+Specify Oxs_TwoSurfaceExchange:FF [subst {
+ sigma $J
+ comment {sigma2 -1e-4}
+ surface1 {
+         atlas  :atlas
+        region  bottom
+   scalarfield  :zheight
+   scalarvalue  $z1
+    scalarside  -
+ }
+ surface2 {
+         atlas  :atlas
+        region  top
+   scalarfield  :zheight
+   scalarvalue  $z2
+    scalarside  +
+ }
+}]
+
+proc Sineroughnessx { x y z } {
+global xlimit
+global ylimit
+    set Pi 3.1415926
+    set maxangle 1
+    set lambdax [expr 30e-9/$xlimit]  
+    set lambday [expr 30e-9/$ylimit]
+    set angamp [expr $Pi/180*$maxangle]
+    set kx [expr $Pi*2/$lambdax]
+    set ky [expr $Pi*2/$lambday]
+    set Kdevz [expr {sin($angamp*sin($x*$kx))} ]
+    set Kdevy [expr {sin($angamp*sin($y*$ky))} ]
+    return [list 1.0 $Kdevy $Kdevz]
+}
+
+Specify Oxs_ScriptVectorField:roughnessx {
+  script_args rawpt 
+  script {Sineroughnessx}
+  norm 1
+  atlas :atlas
+}
+
+proc Sineroughnessy { x y z } {
+global xlimit
+global ylimit
+    set Pi 3.1415926
+    set maxangle 1
+    set lambdax [expr 30e-9/$xlimit]  
+    set lambday [expr 30e-9/$ylimit]
+    set angamp [expr $Pi/180*$maxangle]
+    set kx [expr $Pi*2/$lambdax]
+    set ky [expr $Pi*2/$lambday]
+    set Kdevz [expr {sin($angamp*sin($x*$kx))} ]
+    set Kdevy [expr {sin($angamp*sin($y*$ky))} ]
+    return [list $Kdevz 1.0 $Kdevy]
+}
+
+Specify Oxs_ScriptVectorField:roughnessy {
+  script_args rawpt 
+  script {Sineroughnessy}
+  norm 1
+  atlas :atlas
+}
+
+Specify Oxs_UniaxialAnisotropy:xx [subst {
+ K1  { Oxs_AtlasScalarField {
+     atlas :atlas
+     default_value 0
+    values {
+        bottom $K1
+        top   $K3
+     }
+ }}
+  axis { Oxs_AtlasVectorField {
+   atlas :atlas
+   default_value { 1 0 0 }
+   values {
+    bottom { roughnessx }
+    top    { roughnessx }
+    }
+  }
+ }
+}]
+
+Specify Oxs_UniaxialAnisotropy:yy [subst {
+ K1  { Oxs_AtlasScalarField {
+     atlas :atlas
+     default_value 0
+    values {
+        bottom $K1
+        top   $K3
+     }
+ }}
+  axis { Oxs_AtlasVectorField {
+   atlas :atlas
+   default_value { 1 0 0 }
+   values {
+    bottom { roughnessy }
+    top    { roughnessy }
+    }
+  }
+ }
+}]
+
+Specify Oxs_UZeeman {
+	multiplier 79.577472
+	Hrange {
+	{ -3000 0 0 3000 0 0 60 }
+}
+}
+
+Specify Oxs_Demag {}
+
+Specify Oxs_MR [subst {
+
+  RA_p [expr $S*163.6/4]
+  RA_ap [expr $S*178.6/4]
+ 
+ surface1 {
+         atlas  :atlas
+        region  bottom
+   scalarfield  :zheight
+   scalarvalue  $z1
+    scalarside  -
+ }
+ surface2 {
+         atlas  :atlas
+        region  top
+   scalarfield  :zheight
+   scalarvalue  $z2
+    scalarside  +
+ }  
+} ]
+
+Specify Oxs_RungeKuttaEvolve:evolve {
+ alpha 0.5
+ min_timestep 1e-15
+}
+
+Specify Oxs_TimeDriver [subst {
+ basename proba1
+ evolver :evolve
+ stopping_dm_dt 7.5
+ mesh :mesh
+   Ms { Oxs_ScriptScalarField  {
+      atlas :atlas
+	script_args {rawpt maxpt}
+      script {EllipseFD}
+   } }
+ m0 { Oxs_AtlasVectorField {
+    atlas :atlas
+    default_value { 1 0 0 }
+    values {
+     bottom { -1 0 0 }
+     top    { -1 0 0 }
+    }
+  }}  
+}]
+
+Destination archive mmArchive
+Schedule DataTable archive step 1000
+Schedule DataTable archive stage 1
+Schedule Oxs_TimeDriver::Magnetization archive stage 1

@@ -262,7 +262,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self.playerWindow.forceWorkerReset()
                 self.playerWindow.closeMe()
 
-
         """Spawns Window for choosing widget for this pane"""
         if not self._LOADED_FLAG_:
             # spawn directory picker again
@@ -294,6 +293,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         this allows to receive general type option structure that is passed
         on to the DataObjectHolder object that sends it to the right final object
         """
+        print("OPTIONS {}".format(options))
+        if options is None:
+            # delete widget
+            self.deleteWidget(self.current_pane)
+            self.refreshScreen()
+            return
         # fix that later in settings where it can be changed or not
         geom = (self.panes[self.current_pane].groupBox.width(),
                 self.panes[self.current_pane].groupBox.height())
@@ -311,9 +316,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.propagate_resize()
         self.refreshScreen()
 
-    def deleteWidget(self, number, verbose=True):
 
-        if self.playerWindow and verbose:
+    def deleteWidget(self, number):
+        if self.playerWindow:
             PopUpWrapper("Alert",
                 "You may loose calculation!", \
                 "If you proceed animation will be restarted and widget \

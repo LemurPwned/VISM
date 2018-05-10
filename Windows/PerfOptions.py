@@ -164,6 +164,7 @@ class PerfOptions(QWidget, Ui_Dialog):
                             QMessageBox.Yes,
                             QMessageBox.No, None, quit)
     def reject(self):
+        self.eventHandler(None)
         self.close()
 
     def getOptions(self):

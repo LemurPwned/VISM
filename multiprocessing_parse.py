@@ -12,7 +12,11 @@ def asynchronous_pool_order(func, args, object_list, timeout=20):
     multiple_results = [pool.apply_async(func, (object_list[i], *args))
                         for i in range(len(object_list))]
     for result in multiple_results:
-        output_list.append(result.get(timeout=timeout))
+        try:
+            output_list.append(result.get(timeout=timeout))
+        except TimeoutError:
+            print("Function {}: timeout {}".format(func.__name__,
+                                                        timeout))
     return output_list
 
 class MultiprocessingParse:
@@ -20,6 +24,9 @@ class MultiprocessingParse:
     def compose_trigger_list(files, plot_data):
         """
         """
+        if files[0].endswith('.ovf'):
+            file_len = len(files)
+            return MultiprocessingParse.mumax_trigger_list(file_len, plot_data)
         # TODO: FIND A DRIVER NAMES AND IMPLEMENT THEM IF THERE ARE OTHERS
         driver_class = 'MinDriver'
         match_string = '(^.*)(Oxs_' + driver_class + \
@@ -51,13 +58,29 @@ class MultiprocessingParse:
             assert len(files) == len(trigger_list)
         except AssertionError:
             # duplicates appeared, take first and drop rest
-            unique_stages = plot_data[column_name][~plot_data[column_name].duplicated(keep='first')]
+            unique_stages = plot_data[column_name][~plot_data[column_name]\
+                                                    .duplicated(keep='first')]
             trigger_list = unique_stages.index[unique_stages.isin(st)]
         return trigger_list
 
     @staticmethod
+    def mumax_trigger_list(file_len, pl_data):
+        print("Warning: Mumax format is not fully supported, see documention" + \
+                " on how it is currently handled/implemented")
+        time_col = '# t (s)'
+        # time interval per .ovf file
+        time_interval = np.max(pl_data[time_col])/file_len
+        times_list = [time_interval*i for i in range(file_len)]
+        trigger_list = []
+        for time in times_list:
+            # matches closest time
+            trigger_list.append(pl_data[time_col]\
+                    .index[(pl_data[time_col]-time).abs().argsort()[0]])
+        return trigger_list
+
+    @staticmethod
     def guess_file_type(directory):
-        supported_extensions = [('.omf', '*.odt'), ('.ovf', '.notsuppyet')]
+        supported_extensions = [('.omf', '*.odt'), ('.ovf', 'table.txt')]
         voted_extension = None
         files_in_directory = os.listdir(directory)
         # NOTE: decide what extension is found in directory
@@ -76,11 +99,10 @@ class MultiprocessingParse:
         # tbh I am not sure but it helps fix issue
         if voted_extension is None:
             raise ValueError("Invalid Directory")
-
         print("SUPPORTED EXTENSION DETECTED {}".format(voted_extension))
         files_in_directory = [os.path.join(directory, filename)
                               for filename in files_in_directory
-                              if filename.endswith(voted_extension)]
+                              if filename.endswith(voted_extension[0])]
         files_in_directory = sorted(files_in_directory)
         return files_in_directory, voted_extension
 
@@ -113,7 +135,6 @@ class MultiprocessingParse:
             raise ValueError("Invalid file! Must have .odt, .omf " + \
                                                         "or .ovf extension!")
 
-
     @staticmethod
     def readFolder(directory, multipleFileHeaders=False):
         """
@@ -126,10 +147,10 @@ class MultiprocessingParse:
 
         files_in_directory, ext = MultiprocessingParse.guess_file_type(
                                                                     directory)
-        ext_files = glob.glob(os.path.join(directory, '*' + ext[0]))
-        test_file = os.path.join(directory, ext_files[0])
+        # ext_files = glob.glob(os.path.join(directory, '*' + ext[0]))
+        test_file = os.path.join(directory, files_in_directory[0])
 
-        stages = len(ext_files)
+        stages = len(files_in_directory)
         plot_file = glob.glob(os.path.join(directory, ext[1]))
         # look for .odt  or .txt in current directory
         if len(plot_file) > 1:
@@ -147,7 +168,7 @@ class MultiprocessingParse:
             if stages0 != stages:
                 if stages0 > stages:
                     trigger_list = MultiprocessingParse.\
-                                        compose_trigger_list(ext_files,
+                                        compose_trigger_list(files_in_directory,
                                                                     plot_data)
                     stages = len(trigger_list)
                 elif stages0 < stages:
@@ -177,10 +198,9 @@ class MultiprocessingParse:
                                    in a directory
         :return numpy array of vectors form .omf files
         """
-        text_pool = Pool()
-
         output = asynchronous_pool_order(binary_format_reader, (),
-                                                        files_in_directory)
+                                                        files_in_directory,
+                                                        timeout=20)
         output = np.array(output)
         headers = output[:, 0]
         rawVectorData = output[:, 1]
@@ -200,7 +220,6 @@ class MultiprocessingParse:
         :return numpy array of vectors form .omf files
         """
         # use multiprocessing
-        text_pool = Pool()
         rawVectorData = []
         rawVectorData = asynchronous_pool_order(getRawVectors, (),
                                                         files_in_directory,

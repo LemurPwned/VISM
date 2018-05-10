@@ -17,3 +17,9 @@ To use this software, in form as for now, you need:
    ```
 - Qt 5 or newer
 
+### Examples
+Examples come from the work
+A.Kozioł-Rachwał, W. Skowroński
+*Interlayer exchange coupling, dipolar coupling and magnetoresistance in Fe/MgO/Fe trilayers with a subnanometer MgO barrier*
+Journal of Magnetism and Magnetic Materials 424C:189
+Feb 2017
