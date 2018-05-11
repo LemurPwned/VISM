@@ -130,8 +130,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
         self.position = [0, 0 , -50]  # xyz initial
 
-
-
     def transformate(self):
         """
         applies rotation and transformation
@@ -239,7 +237,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.position[2] += mt.cos(self.rotation[0] * mt.pi / 180) * \
                             mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
 
-
     def zoomOut(self):
         self.steps = -1
 
@@ -315,14 +312,14 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                 self.frames = 0
             self.text_render(str(self.fps))
 
-    def text_render(self, textString, position=(10, 10, 10)):
+    def text_render(self, textString, position=(10, 10, 0)):
         if not AbstractGLContext.PYGAME_INCLUDED:
             pygame.init()
             AbstractGLContext.PYGAME_INCLUDED = True
         font = pygame.font.Font (None, 64)
         renderedFont = font.render(textString, False, (255,255,255,255))
         text = pygame.image.tostring(renderedFont, "RGBA", True)
-        gl.glRasterPos3d(*position)
+        gl.glWindowPos3f(*position)
         gl.glDrawPixels(renderedFont.get_width(), renderedFont.get_height(),
                                      gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, text)
 
