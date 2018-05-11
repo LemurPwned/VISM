@@ -320,11 +320,11 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             pygame.init()
             AbstractGLContext.PYGAME_INCLUDED = True
         font = pygame.font.Font (None, 64)
-        textSurface = font.render(textString, False, (255,255,255,255))
-        textData = pygame.image.tostring(textSurface, "RGBA", True)
+        renderedFont = font.render(textString, False, (255,255,255,255))
+        text = pygame.image.tostring(renderedFont, "RGBA", True)
         gl.glRasterPos3d(*position)
-        gl.glDrawPixels(textSurface.get_width(), textSurface.get_height(),
-                                        gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, textData)
+        gl.glDrawPixels(renderedFont.get_width(), renderedFont.get_height(),
+                                     gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, text)
 
     @staticmethod
     def get_open_gl_info():

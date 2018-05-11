@@ -302,9 +302,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         """
         print("OPTIONS {}".format(options))
         if options is None:
+            print("WIDGET WAS NOT CREATEDs")
             # delete widget
-            self.deleteWidget(self.current_pane)
+            self.deleteWidget(self.current_pane, null_delete=True)
             self.refreshScreen()
+
             return
         # fix that later in settings where it can be changed or not
         geom = (self.panes[self.current_pane].groupBox.width(),
@@ -323,7 +325,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.propagate_resize()
         self.refreshScreen()
 
-    def deleteWidget(self, number):
+    def deleteWidget(self, number, null_delete=False):
         if self.playerWindow:
             PopUpWrapper("Alert",
                 "You may loose calculation!", \
@@ -338,7 +340,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.playerWindow.closeMe()
             self.playerWindow.worker.clearWidgetIterators()
 
-        self.panes[number].clearBox()
+        """
+        null delete explanation:
+        for some unknown reason if clearBox() is called on the pane
+        that has no widget that causes a major bug
+        Therefore if cancel was pressed and no widget was created - hence
+        null_delete, then do not call 
+        """
+        if not null_delete: self.panes[number].clearBox()
         self.panes[number].setUpDefaultBox()
         self.panes[number].button.clicked.connect(\
             lambda: self.showChooseWidgetSettings(number))
