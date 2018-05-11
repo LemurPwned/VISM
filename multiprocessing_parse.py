@@ -155,7 +155,6 @@ class MultiprocessingParse:
         # look for .odt  or .txt in current directory
         if len(plot_file) > 1:
             raise ValueError("plot file extension conflict (too many)")
-            #TODO error window
         elif not plot_file or plot_file is None:
             plot_data = None
             plot_file = None
