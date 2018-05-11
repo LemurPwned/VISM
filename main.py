@@ -145,9 +145,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def loadFile(self):
         if self._LOADED_FLAG_:
             self.deleteLoadedFiles()
-
-        self._LOADED_FLAG_ = False
-
+            return 
         fileDialog = QtWidgets.QFileDialog()
         fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
         fileLoaded = str(fileDialog.getOpenFileName(self, "Select File")[0])
@@ -177,10 +175,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def loadDirectory(self):
         if self._LOADED_FLAG_:
             self.deleteLoadedFiles()
-            self._LOADED_FLAG_ = False
             return 0
         directory = self.promptDirectory()
-
         if directory is None or directory == "" or directory=="  ":
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
             PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
@@ -189,7 +185,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             return 0
         else:
             try:
-                sub = "Data is currently being loaded using all cpu power," + \
+                sub = "Data is currently being loaded using all cpu power, " + \
                         "app may stop responding for a while."
                 x = PopUpWrapper("Loading", sub, "Please Wait...")
                 rawVectorData, header, plot_data, stages, trigger_list = \
@@ -300,9 +296,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         this allows to receive general type option structure that is passed
         on to the DataObjectHolder object that sends it to the right final object
         """
-        print("OPTIONS {}".format(options))
         if options is None:
-            print("WIDGET WAS NOT CREATEDs")
             # delete widget
             self.deleteWidget(self.current_pane, null_delete=True)
             self.refreshScreen()
@@ -345,7 +339,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         for some unknown reason if clearBox() is called on the pane
         that has no widget that causes a major bug
         Therefore if cancel was pressed and no widget was created - hence
-        null_delete, then do not call 
+        null_delete, then do not call
         """
         if not null_delete: self.panes[number].clearBox()
         self.panes[number].setUpDefaultBox()
