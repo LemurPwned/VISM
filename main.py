@@ -225,10 +225,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def deleteLoadedFiles(self):
         # clearing all widgets it's not a problem even if it does not exist
         for i in range(WidgetHandler.visibleCounter):
-            self.deleteWidget(i, False)
+            self.deleteWidget(i)
 
         #TODO need to clear DOH here
-        self.doh.removeDataObject('__all__')
+        # self.doh.removeDataObject('__all__')
 
         self._LOADED_FLAG_ = False
         self._BLOCK_STRUCTURES_ = True
