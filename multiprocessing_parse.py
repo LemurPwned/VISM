@@ -171,8 +171,6 @@ class MultiprocessingParse:
                                         compose_trigger_list(files_in_directory,
                                                                     plot_data)
                     stages = len(trigger_list)
-                    print("TRIGGER LIST : {}, {}".format(stages,
-                                                            len(trigger_list)))
                 elif stages0 < stages:
                     raise ValueError("Odt cannot have fewer stages that files")
         else:

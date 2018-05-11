@@ -49,7 +49,10 @@ class DataObjectHolderProxy(Proxy):
         def _is_removable(*args):
             obj_handler = args[0]
             alias = args[1]
-            if alias in obj_handler.contains_lookup:
+            if alias == '__all__':
+                for element in obj_handler.contains_lookup:
+                    obj_handler.removeDataObject(element)
+            elif alias in obj_handler.contains_lookup:
                 func(*args)
                 obj_handler.contains_lookup.remove(alias)
             else:

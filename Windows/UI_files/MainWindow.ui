@@ -67,6 +67,7 @@
     </property>
     <addaction name="actionPerformance"/>
     <addaction name="actionMovie_composer"/>
+    <addaction name="actionText_select"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -142,6 +143,11 @@
   <action name="actionMovie_composer">
    <property name="text">
     <string>Movie composer</string>
+   </property>
+  </action>
+  <action name="actionText_select">
+   <property name="text">
+    <string>Text select</string>
    </property>
   </action>
  </widget>
