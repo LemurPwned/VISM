@@ -51,8 +51,7 @@ class DataObjectHolderProxy(Proxy):
             alias = args[1]
             if alias == '__all__':
                 for element in obj_handler.contains_lookup:
-                    func(*args)
-                    obj_handler.contains_lookup.remove(alias)
+                    obj_handler.removeDataObject(element)
             elif alias in obj_handler.contains_lookup:
                 func(*args)
                 obj_handler.contains_lookup.remove(alias)
