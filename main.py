@@ -17,6 +17,7 @@ from Windows.PlayerWindow import PlayerWindow
 from WidgetHandler import WidgetHandler
 
 from PopUp import PopUpWrapper
+from Windows.Progress import ProgressBar
 
 from settingsMediator.settingsPrompter import SettingsPrompter
 from settingsMediator.settingsLoader import DataObjectHolder
@@ -175,10 +176,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 t = threading.Thread(target=(lambda: self.loadDirectory(directory)))
                 t.start()
 
-                sub = "Data is currently being loaded using all cpu power," + \
-                        "app may stop responding for a while."
-                x = PopUpWrapper("Loading", sub, "Please Wait...")
-                x.close()
+                self.bar = ProgressBar()
+                self.bar.dumbProgress()
+                # self.bar.smartDumbProgress({25: ["task25...", 1000], \
+                #                                50: ["task50...", 1000], \
+                #                                75: ["task75...", 1000]})
+
 
             except ValueError as e:
                 print(e.print_stack())
@@ -215,6 +218,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self._BLOCK_PLOT_ITERABLES_ = True
         if trigger_list is not None:
             self.doh.setDataObject(trigger_list, 'trigger')
+        if self.bar != None:
+            self.bar.close()
+
         print("Data loaded!")
 
     def showAnimationSettings(self):

@@ -4,16 +4,18 @@ import sys
 import time
 
 class ProgressBar(QtCore.QObject):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, msg="Loading..."):
         QtCore.QThread.__init__(self)
         super(ProgressBar, self).__init__(parent)
         self.gui = Window()
+        self.gui.progressLabel.setText(msg)
         self.i = 0
         self.counter = 0
         self.breakPoints = {}
 
     def changeProgress(self):
         # print("progress...")
+
         if self.mode == "smart":
             if self.i in self.breakPoints.keys():
                 if self.counter < self.breakPoints[self.i][1] / 50:
@@ -26,6 +28,10 @@ class ProgressBar(QtCore.QObject):
 
             if self.i > 98:
                 self.timer.stop()
+        else:
+            if self.i == 101:
+                self.timer.stop()
+                self.close()
         self.gui.progressBar.setValue(self.i%101)
         self.i += 1
 
@@ -38,8 +44,6 @@ class ProgressBar(QtCore.QObject):
         self.timer.timeout.connect(self.changeProgress)
         self.timer.start(25)
         self.mode = "dumb"
-
-        # self.close()
 
     def smartDumbProgress(self, breakPoints={}):
         #breakPoints={25: ["Getting something ready", 200]}
@@ -60,7 +64,7 @@ class ProgressBar(QtCore.QObject):
         self.i = 99
         # self.changeProgress()
         self.timer.stop()
-        self.close()
+        self.gui.close()
 
 class Window(QWidget):
     def __init__(self):
