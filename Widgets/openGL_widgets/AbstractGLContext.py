@@ -39,7 +39,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.position = [0, 0, -50]  # xyz initial
         self.drawing_function = None
         self.function_select = 'fast'
-        self.background = [0.5, 0.5, 0.5]
+        self.background = [0, 0, 0]
         self.record = False
         self.spacer = 0.2
         self.steps = 1
@@ -64,7 +64,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         normalization procedure
         """
         multi_iteration_normalize(color_vectors)
-        background = np.array([0.5, 0.5, 0.5])
+        background = np.array([0.0, 0.0, 0.0])
         if cls.__name__ == 'CubicGLContext':
             # replace black with background colors
             # NOTE: This is dangerous since dot product can be zero
@@ -145,7 +145,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         Initializes openGL context and scenery
         """
-        gl.glClearColor(*self.background, 1)
+        gl.glClearColor(*self.background, 0)
         gl.glEnable(gl.GL_DEPTH_TEST)
 
     def resizeGL(self, w, h):
