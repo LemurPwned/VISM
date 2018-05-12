@@ -31,7 +31,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     def __init__(self, parent=None):
         super(AbstractGLContext, self).__init__(parent)
         AbstractGLContext.ANY_GL_WIDGET_IN_VIEW += 1
-
+        self.subdir = "GL" + str(AnimatedWidget.WIDGET_ID)
+        AnimatedWidget.WIDGET_ID += 1
         self.lastPos = QPoint()
         self.setFocusPolicy(Qt.StrongFocus)  # needed if keyboard to be active
 
@@ -191,12 +192,17 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.text_render(AbstractGLContext.TEXT,
                             AbstractGLContext.SELECTED_POS)
 
-    def set_i(self, value, trigger=False):
+    def grab(self):
+        self.screenshot_manager()
+
+    def set_i(self, value, trigger=False, record=False):
         if trigger:
             self.i += 1
         else:
             self.i = value
         self.i %= self.iterations
+        if record:
+            self.screenshot_manager()
 
     def keyPressEvent(self, event):
         """
@@ -349,6 +355,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         # fetch dimensions for highest resolution
         _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
+        if width == 0 or height == 0:
+            width = self.geom[0]
+            height = self.geom[1]
         color = gl.glReadPixels(0, 0,
                                width, height,
                                gl.GL_RGB, gl.GL_UNSIGNED_BYTE)
@@ -356,10 +365,13 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                                                     data=color)
         image = image.transpose(Image.FLIP_TOP_BOTTOM)
         try:
+            if os.path.basename(self.screenshot_dir) != self.subdir:
+                self.screenshot_dir = os.path.join(self.screenshot_dir,
+                                                                self.subdir)
             image.save(os.path.join(self.screenshot_dir,
                                         str(self.i).zfill(4) + ".png"))
         except FileNotFoundError:
             # if basic dir not found, create it and save there
-            os.mkdir(self.screenshot_dir)
+            os.makedirs(self.screenshot_dir)
             image.save(os.path.join(self.screenshot_dir,
                                         str(self.i).zfill(4) + ".png"))

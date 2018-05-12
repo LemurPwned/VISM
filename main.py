@@ -6,6 +6,7 @@ bv = BuildVerifier()
 import sys
 
 from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtGui import QScreen
 from Windows.MainWindowTemplate import Ui_MainWindow
 
 from multiprocessing_parse import MultiprocessingParse

@@ -6,7 +6,7 @@
                       "settings": ["PerfOptions", "file_header"],
                       "required": ["current_state", "options",
                                    "file_header", "color_vectors",
-                                   "screenshot_dir"],
+                                   "screenshot_dir", "geom"],
                       "optional": ["iterations"]
                       },
     "VectorGLContext": {
@@ -16,7 +16,7 @@
                       "settings": ["PerfOptions", "file_header"],
                       "required": ["current_state", "options",
                                    "file_header","color_vectors",
-                                   "screenshot_dir"],
+                                   "screenshot_dir", "geom"],
                       "optional": ["iterations"]
                       },
     "Canvas":         {
@@ -25,7 +25,7 @@
                         "object_type": "2d_object",
                         "settings": ["PlotSettings", "plot_data"],
                         "required": ["iterations", "current_state", "options",
-                                     "plot_data"]
+                                     "plot_data",  "screenshot_dir"]
                         },
     "Canvas2Dupgraded": {
                         "alias": "2D_BetterPlot",
@@ -33,7 +33,7 @@
                         "object_type": "2d_object",
                         "settings": ["PlotSettings", "plot_data"],
                         "required": ["iterations", "current_state", "options",
-                                     "plot_data", "geom"]
+                                     "plot_data", "geom", "screenshot_dir"]
                       },
     "CanvasLayer": {
                         "alias": "2D_Layer",
@@ -41,7 +41,8 @@
                         "object_type": "2d_object",
                         "settings": ["SimplePerfOptions", "file_header"],
                         "required": [ "current_state", "options",
-                                     "file_header","color_vectors"],
+                                     "file_header","color_vectors",
+                                     "screenshot_dir"],
                         "optional" : ["iterations"]
                       }
 }

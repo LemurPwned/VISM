@@ -1,4 +1,5 @@
 class AnimatedWidget():
+    WIDGET_ID = 0
     def shareData(self, **kwargs):
         """
         @param **kwargs are the arguments to be passed to the main widget
@@ -18,7 +19,7 @@ class AnimatedWidget():
     def loop_guard(self):
         self.i %= self.iterations
 
-    def set_i(self, value, trigger=False):
+    def set_i(self, value, trigger=False, record=False):
         """
         This is iterating setter. Function set_i should provide
         a neat way to change the current data of Widget and then
