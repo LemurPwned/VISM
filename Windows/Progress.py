@@ -78,7 +78,7 @@ class Window(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        self.setGeometry(10,10, 300,200)
+        self.setGeometry(10,10, 300, 50)
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
         # Creating a label

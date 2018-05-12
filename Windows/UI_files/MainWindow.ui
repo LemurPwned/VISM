@@ -32,7 +32,7 @@
      <x>0</x>
      <y>0</y>
      <width>863</width>
-     <height>26</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -46,8 +46,6 @@
     <property name="title">
      <string>Edit</string>
     </property>
-    <addaction name="actionAnimation"/>
-    <addaction name="separator"/>
     <addaction name="actionWindow0Delete"/>
     <addaction name="actionWindow1Delete"/>
     <addaction name="actionWindow2Delete"/>
@@ -68,10 +66,17 @@
     <addaction name="actionPerformance"/>
     <addaction name="actionMovie_composer"/>
    </widget>
+   <widget class="QMenu" name="menuAnimation">
+    <property name="title">
+     <string>Animation</string>
+    </property>
+    <addaction name="actionAnimation_2"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menuOptions"/>
+   <addaction name="menuAnimation"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionLoad_File">
@@ -121,27 +126,32 @@
   </action>
   <action name="actionWindow0Delete">
    <property name="text">
-    <string>Window0 delete</string>
+    <string>Window1 delete</string>
    </property>
   </action>
   <action name="actionWindow1Delete">
    <property name="text">
-    <string>Window1 delete</string>
+    <string>Window2 delete</string>
    </property>
   </action>
   <action name="actionWindow2Delete">
    <property name="text">
-    <string>Window2 delete</string>
+    <string>Window3 delete</string>
    </property>
   </action>
   <action name="actionWindow3Delete">
    <property name="text">
-    <string>Window3 delete</string>
+    <string>Window4 delete</string>
    </property>
   </action>
   <action name="actionMovie_composer">
    <property name="text">
     <string>Movie composer</string>
+   </property>
+  </action>
+  <action name="actionAnimation_2">
+   <property name="text">
+    <string>Player</string>
    </property>
   </action>
  </widget>

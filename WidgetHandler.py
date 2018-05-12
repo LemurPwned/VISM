@@ -12,7 +12,7 @@ class WidgetHandler:
         self._widget = None
         self._visible = True
         self.groupBox = QtWidgets.QGroupBox( \
-            "Window " + str(self._number+1), self._parent)
+            "Window " + str(self._number + 1), self._parent)
         self.layout = QtWidgets.QGridLayout()
         self.setUpDefaultBox()
 
