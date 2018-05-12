@@ -8,6 +8,10 @@ class ProgressBar(QtCore.QObject):
         QtCore.QThread.__init__(self)
         super(ProgressBar, self).__init__(parent)
         self.gui = Window()
+        if parent != None:
+            self.gui.setGeometry(parent.width()/2 - self.gui.width()/2,
+                                 parent.height()/2 - self.gui.height()/2,
+                                 self.gui.width(), self.gui.height())
         self.gui.progressLabel.setText(msg)
         self.i = 0
         self.counter = 0
@@ -31,9 +35,10 @@ class ProgressBar(QtCore.QObject):
         else:
             if self.i == 101:
                 self.timer.stop()
-                self.close()
+                self.gui.close()
         self.gui.progressBar.setValue(self.i%101)
         self.i += 1
+        self.i %= 101
 
 
     def dumbProgress(self):
@@ -61,10 +66,11 @@ class ProgressBar(QtCore.QObject):
 
     def close(self):
         self.counter = 1000
-        self.i = 99
+        self.i = 101
+        self.gui.progressLabel.setText("Finishing...")
         # self.changeProgress()
-        self.timer.stop()
-        self.gui.close()
+        # self.timer.stop()
+        # self.gui.close()
 
 class Window(QWidget):
     def __init__(self):

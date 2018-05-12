@@ -100,14 +100,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             else:
                 self.panes[i].groupBox.setMaximumHeight(self.height() - 10)
 
-
     def composeMovie(self):
         x = PopUpWrapper(
             title='Pick directory',
             msg='Pick directory where screenshots are located.' +
                 'Current screenshot directory: {}'.format(self.screenshot_dir),
             more='Changed',
-            yesMes=None)
+            yesMes=None, parent=self)
         self.setScreenshotFolder()
         mv = Movie(self.screenshot_dir)
         mv.create_video()
@@ -130,13 +129,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 title='Screenshot directory changed',
                 msg='Current screenshot directory: {}'.format(self.screenshot_dir),
                 more='Changed',
-                yesMes=None)
+                yesMes=None, parent=self)
         else:
             x = PopUpWrapper(
                 title='Screenshot directory has not changed',
                 msg='Current screenshot directory: {}'.format(self.screenshot_dir),
                 more='Not changed',
-                yesMes=None)
+                yesMes=None, parent=self)
 
     def loadFile(self):
         fileDialog = QtWidgets.QFileDialog()
@@ -169,18 +168,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self._LOADED_FLAG_ = False
             PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
                             QtWidgets.QMessageBox.No, self.refreshScreen,
-                            self.loadDirectoryWrapper)
+                            self.loadDirectoryWrapper, parent=self)
             return 0
         else:
             try:
                 t = threading.Thread(target=(lambda: self.loadDirectory(directory)))
                 t.start()
+                #DISABLE ALL GUI
+                self.menubar.setDisabled(True)
+                # for i in range(WidgetHandler.visibleCounter):
+                #     self.panes[i].setDisabled(True)
 
-                self.bar = ProgressBar()
+                self.bar = ProgressBar(self)
                 self.bar.dumbProgress()
-                # self.bar.smartDumbProgress({25: ["task25...", 1000], \
-                #                                50: ["task50...", 1000], \
-                #                                75: ["task75...", 1000]})
 
 
             except ValueError as e:
@@ -191,7 +191,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 x = PopUpWrapper("Invalid directory", msg, None,
                                 QtWidgets.QMessageBox.Yes,
                                 QtWidgets.QMessageBox.No,
-                                self.loadDirectoryWrapper, quit)
+                                self.loadDirectoryWrapper,
+                                quit,
+                                parent=self)
 
                 return None
             except Exception as e:
@@ -219,7 +221,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         if trigger_list is not None:
             self.doh.setDataObject(trigger_list, 'trigger')
         if self.bar != None:
+            # self.menubar.setDisabled(False) TODO
+            for i in range(WidgetHandler.visibleCounter):
+                self.panes[i].setDisabled(False)
             self.bar.close()
+
+
 
         print("Data loaded!")
 
@@ -320,7 +327,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 QtWidgets.QMessageBox.Yes, \
                 QtWidgets.QMessageBox.No, \
                 None, \
-                self.refreshScreen())
+                self.refreshScreen(), parent=self)
 
             self.playerWindow.forceWorkerReset()
             self.playerWindow.closeMe()
