@@ -175,9 +175,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 t = threading.Thread(target=(lambda: self.loadDirectory(directory)))
                 t.start()
                 #DISABLE ALL GUI
-                self.menubar.setDisabled(True)
-                # for i in range(WidgetHandler.visibleCounter):
-                #     self.panes[i].setDisabled(True)
+                # self.menubar.setDisabled(True)
+                for i in range(WidgetHandler.visibleCounter):
+                    self.panes[i].setDisabled(True)
 
                 self.bar = ProgressBar(self)
                 self.bar.dumbProgress()

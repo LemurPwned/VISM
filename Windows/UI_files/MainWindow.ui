@@ -70,7 +70,7 @@
     <property name="title">
      <string>Animation</string>
     </property>
-    <addaction name="actionAnimation_2"/>
+    <addaction name="actionAnimation"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -102,11 +102,6 @@
   <action name="actionPlot">
    <property name="text">
     <string>Plot</string>
-   </property>
-  </action>
-  <action name="actionAnimation">
-   <property name="text">
-    <string>Animation</string>
    </property>
   </action>
   <action name="action4_Windows_Grid">
@@ -149,7 +144,7 @@
     <string>Movie composer</string>
    </property>
   </action>
-  <action name="actionAnimation_2">
+  <action name="actionAnimation">
    <property name="text">
     <string>Player</string>
    </property>
