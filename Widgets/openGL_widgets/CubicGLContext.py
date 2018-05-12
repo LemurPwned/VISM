@@ -22,6 +22,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
         self.buffer_len = 0
         self.prerendering_calculation()
         self.drawing_function = self.vbo_cubic_draw
+        self.size = 5
 
     def prerendering_calculation(self):
         super().prerendering_calculation()

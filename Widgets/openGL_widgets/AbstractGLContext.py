@@ -71,7 +71,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             # replace black with background colors
             # NOTE: This is dangerous since dot product can be zero
             # color_vectors[~color_vectors.any(axis=2)] = background
-            print("DONE")
         elif cls.__name__ == 'VectorGLContext':
             background = np.array([0.0, 0.0, 0.0])
             if vbo:
@@ -151,6 +150,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         gl.glClearColor(*self.background, 0)
         gl.glEnable(gl.GL_DEPTH_TEST)
+        gl.glEnable(gl.GL_POLYGON_SMOOTH)
 
     def resizeGL(self, w, h):
         """
