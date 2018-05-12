@@ -17,11 +17,13 @@ class Canvas(AbstractCanvas):
         self.canvas_type = 'panel'
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
+        xlabl = "Time"
         try:
-            self.null_data = self.plot_data['Oxs_TimeDriver::Simulation time'].tolist()
+            self.null_data = self.plot_data['TimeDriver::Simulation time'].tolist()
         except KeyError:
             self.null_data = [x for x in range(self.internal_iterations)]
-        a_handler = self.plot_axis.plot(self.null_data,
+            xlabl = "Iteration"
+        self.plot_axis.hpl = self.plot_axis.plot(self.null_data,
                                         self.graph_data[0:self.i] + \
                                         self.null_data[self.i:],
                                         color=self.options['color'],
@@ -29,10 +31,10 @@ class Canvas(AbstractCanvas):
                                         marker=self.options['marker'],
                                         markerfacecolor=self.options['marker_color'],
                                         markersize=self.options['marker_size'])[0]
-        self.plot_axis.hpl = a_handler
-        self.plot_axis.axis([0, self.internal_iterations, np.min(self.graph_data),
+        self.plot_axis.axis([0, np.max(self.null_data), np.min(self.graph_data),
                              np.max(self.graph_data)])
         self.plot_axis.set_autoscale_on(False)
+        self.plot_axis.set_xlabel(xlabl)
         self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
 
     def replot(self):
