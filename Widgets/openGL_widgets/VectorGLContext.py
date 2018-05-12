@@ -72,7 +72,7 @@ class VectorGLContext(AbstractGLContext, QWidget):
         gl.glColorPointer(3, gl.GL_FLOAT, 0, None)
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
-        gl.glVertexPointer(3, gl.GL_FLOAT, 0, None)
+        gl.glVertexPointer(4, gl.GL_FLOAT, 0, None)
         gl.glDrawArrays(gl.GL_LINES, 0, int(self.vertices))
 
         # now the points
@@ -80,10 +80,13 @@ class VectorGLContext(AbstractGLContext, QWidget):
         gl.glColorPointer(3, gl.GL_FLOAT, 3*self.__FLOAT_BYTE_SIZE__, None)
 
         # stride is 3 bytes (3 floats) VVVCCCVVVCCC etc...
+        # VVVACCCAVVVACCCA etc. in case of 4f
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
         # offset is at 3 indices, so points at 4th vector 3(vertices)*4
-        gl.glVertexPointer(3, gl.GL_FLOAT, 3*self.__FLOAT_BYTE_SIZE__,
-                                                                c_void_p(4*3))
+        # offset is at 4 indices, so points at 4th vector 4(vertices)*4
+        # we have alpha value therefore it is a little different
+        gl.glVertexPointer(4, gl.GL_FLOAT, 4*self.__FLOAT_BYTE_SIZE__,
+                                                                c_void_p(4*4))
         gl.glDrawArrays(gl.GL_POINTS, 0, int(self.color_vertices))
 
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)

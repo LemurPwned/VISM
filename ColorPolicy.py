@@ -104,7 +104,11 @@ class ColorPolicy:
     def interleave(color_iteration, vector_array):
         interleaved = []
         for v, c in zip(vector_array, color_iteration):
-            interleaved.extend([*v, v[0]+c[0], v[1]+c[1], v[2]+c[2]])
+            # here add extra one for 4f visibility feature
+            if c.any():
+                interleaved.extend([*v, 1, v[0]+c[0], v[1]+c[1], v[2]+c[2], 1])
+            else:
+                interleaved.extend([*v, 0, v[0]+c[0], v[1]+c[1], v[2]+c[2], 0])
         return interleaved
 
     @staticmethod
