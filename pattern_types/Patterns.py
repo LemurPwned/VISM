@@ -42,7 +42,7 @@ class DataObjectHolderProxy(Proxy):
             if alias in obj_handler.contains_lookup:
                 return func(*args)
             else:
-                raise AttributeError("No attribute in lookup {}".format(alias))
+                raise AttributeError("No attribute in lookup: {}".format(alias))
         return _get_lookup
 
     def is_removable(func):
@@ -56,7 +56,7 @@ class DataObjectHolderProxy(Proxy):
                 func(*args)
                 obj_handler.contains_lookup.remove(alias)
             else:
-                raise AttributeError("Trying to remove unexisting element")
+                raise AttributeError("Trying to remove unexisting element: ")
         return _is_removable
 
 class AbstractGLContextDecorators:

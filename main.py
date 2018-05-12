@@ -157,13 +157,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             return 0
 
         if ".odt" in fileLoaded:
-            self.doh.passListObject(('odt_data', 'iterations'),
+            self.doh.passListObject(('plot_data', 'iterations'),
                                         *MultiprocessingParse.readFile(fileLoaded))
             self._BLOCK_ITERABLES_ = False
             self._BLOCK_PLOT_ITERABLES_ = False
 
         elif ".omf" in fileLoaded or ".ovf" in fileLoaded:
-            self.doh.passListObject(('color_vectors', 'omf_header'),
+            self.doh.passListObject(('color_vectors', 'file_header'),
                                         *MultiprocessingParse.readFile(fileLoaded))
             self._BLOCK_STRUCTURES_ = False
         else:

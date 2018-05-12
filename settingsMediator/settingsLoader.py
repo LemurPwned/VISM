@@ -124,8 +124,7 @@ class SettingsInterface:
                         self.widget_pane_handler[object_alias]['object'],
                         self.widget_pane_handler[object_alias]['object_type'])(data_dict=passing_dict)
         except KeyError:
-            raise ValueError("Invalid keys {} or {}".format(objectTypeA,
-                                                            objectTypeB))
+            raise ValueError("Invalid key {}".format(object_alias))
 
     def request_parameter_existence(self, doh, parameter_alias):
         if parameter_alias in doh.contains_lookup:

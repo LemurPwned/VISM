@@ -17,7 +17,10 @@ class Canvas(AbstractCanvas):
         self.canvas_type = 'panel'
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
-        self.null_data = [x for x in range(self.internal_iterations)]
+        try:
+            self.null_data = self.plot_data['Oxs_TimeDriver::Simulation time'].tolist()
+        except KeyError:
+            self.null_data = [x for x in range(self.internal_iterations)]
         a_handler = self.plot_axis.plot(self.null_data,
                                         self.graph_data[0:self.i] + \
                                         self.null_data[self.i:],
