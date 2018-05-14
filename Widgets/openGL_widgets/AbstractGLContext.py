@@ -273,8 +273,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         x = event.x()
         y = event.y()
         if AbstractGLContext.RECORD_REGION_SELECTION:
-            _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
-            y = height - y
+            y = self.geom[1] - y
             AbstractGLContext.SELECTED_POS = (x, y, 0)
             AbstractGLContext.RECORD_REGION_SELECTION = False
 
