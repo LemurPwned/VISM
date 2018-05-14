@@ -174,8 +174,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             try:
                 t = threading.Thread(target=(lambda: self.loadDirectory(directory)))
                 t.start()
-                #DISABLE ALL GUI
-                # self.menubar.setDisabled(True)
                 for i in range(WidgetHandler.visibleCounter):
                     self.panes[i].setDisabled(True)
 
@@ -194,7 +192,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                 self.loadDirectoryWrapper,
                                 quit,
                                 parent=self)
-
                 return None
             except Exception as e:
                 print(e)
@@ -272,7 +269,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.new = ChooseWidget(number, \
                                     blockStructures = self._BLOCK_STRUCTURES_, \
                                     blockIterables = self._BLOCK_ITERABLES_,
-                                    blockPlotIterables = self._BLOCK_PLOT_ITERABLES_)
+                                    blockPlotIterables = self._BLOCK_PLOT_ITERABLES_,
+                                    parent = self)
             self.new.setHandler(self.choosingWidgetReceiver)
 
     def choosingWidgetReceiver(self, value):
