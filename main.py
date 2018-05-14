@@ -145,7 +145,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def loadFile(self):
         if self._LOADED_FLAG_:
             self.deleteLoadedFiles()
-            return
+            if BuildVerifier.OS_GLOB_SYS == 'Linux':
+                return 0
+        self._LOADED_FLAG_ = False
         fileDialog = QtWidgets.QFileDialog()
         fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
         fileLoaded = str(fileDialog.getOpenFileName(self, "Select File")[0])
@@ -175,7 +177,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def loadDirectory(self):
         if self._LOADED_FLAG_:
             self.deleteLoadedFiles()
-            return 0
+            if BuildVerifier.OS_GLOB_SYS == 'Linux':
+                return 0
+        self._LOADED_FLAG_ = False
         directory = self.promptDirectory()
         if directory is None or directory == "" or directory=="  ":
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)

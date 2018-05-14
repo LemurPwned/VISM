@@ -6,6 +6,7 @@ import glob
 
 
 class BuildVerifier:
+    OS_GLOB_SYS = platform.system()
     def __init__(self):
         self.__OSTYPE__ = self.os_deocde(platform.system())
         self.cython_builds()
