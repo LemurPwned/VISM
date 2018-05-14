@@ -273,6 +273,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         x = event.x()
         y = event.y()
         if AbstractGLContext.RECORD_REGION_SELECTION:
+            _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
+            y = height - y
             AbstractGLContext.SELECTED_POS = (x, y, 0)
             AbstractGLContext.RECORD_REGION_SELECTION = False
 
@@ -325,7 +327,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         font = pygame.font.Font (None, 64)
         renderedFont = font.render(textString, False, (255,255,255,255))
         text = pygame.image.tostring(renderedFont, "RGBA", True)
-        gl.glWindowPos3f(*position)
+        gl.glWindowPos3f(position[0], position[1] - renderedFont.get_height(),
+                            position[2])
         gl.glDrawPixels(renderedFont.get_width(), renderedFont.get_height(),
                                      gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, text)
 
