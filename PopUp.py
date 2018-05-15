@@ -19,7 +19,6 @@ class PopUpWrapper(QWidget):
             self.left = parent.width()/2 - self.width/2
             self.top = parent.height()/2 - self.height/2
 
-
         self.title = title
         self.msg = msg
         self.actionWhenYes = actionWhenYes

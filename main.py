@@ -68,15 +68,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionWindow2Delete.triggered.connect(lambda: self.deleteWidget(2))
         self.actionWindow3Delete.triggered.connect(lambda: self.deleteWidget(3))
 
-        # OPTIONS SUBMENU
-        self.actionPerformance.triggered.connect(self.setScreenshotFolder)
-        self.actionMovie_composer.triggered.connect(self.composeMovie)
         self.actionText_select.triggered.connect(self.selectText)
 
         # VIEW SUBMENU
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
         self.action2_Windows_Grid.triggered.connect(self.make2WindowsGrid)
         self.action4_Windows_Grid.triggered.connect(self.make4WindowsGrid)
+
+        # OPTIONS SUBMENU
+        self.actionPerformance.triggered.connect(self.setScreenshotFolder)
+        self.actionMovie_composer.triggered.connect(self.composeMovie)
 
         # GRID BUTTONS
         # lambda required to pass parameter - which button was pressed
@@ -104,15 +105,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self.panes[i].groupBox.setMaximumHeight(self.height() - 10)
 
     def composeMovie(self):
-        x = PopUpWrapper(
-            title='Pick directory',
-            msg='Pick directory where screenshots are located.' +
-                'Current screenshot directory: {}'.format(self.screenshot_dir),
-            more='Changed',
-            yesMes=None, parent=self)
         self.setScreenshotFolder()
-        mv = Movie(self.screenshot_dir)
-        mv.create_video()
+        if self.screenshot_dir not in [None, "", " "]:
+            mv = Movie(self.screenshot_dir)
+            try:
+                mv.create_video()
+            except EnvironmentError:
+                x = PopUpWrapper(
+                    title='Movie Composer',
+                    msg='Pick directory where screenshots are located.' +
+                        'Proper files not found in current screenshot directory: {}'.format(self.screenshot_dir),
+                    more='',
+                    yesMes=None, parent=self)
 
     def selectText(self):
         self.selectionWindow = Select()
