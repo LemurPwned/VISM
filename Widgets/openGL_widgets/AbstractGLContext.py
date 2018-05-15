@@ -294,12 +294,16 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         if event.buttons() & Qt.LeftButton:
             rotation_speed = 0.5
             self.rotation[0] += dx * rotation_speed
+            self.rotation[1] += dy * rotation_speed
+            ypos = self.position[0] * mt.sin(dy * rotation_speed * mt.pi / 180) \
+                   - self.position[2] * mt.cos(dy * rotation_speed * mt.pi / 180)
             xpos = self.position[0] * mt.cos(dx * rotation_speed * mt.pi / 180) \
                    - self.position[2] * mt.sin(dx * rotation_speed * mt.pi / 180)
             zpos = self.position[0] * mt.sin(dx * rotation_speed * mt.pi / 180) \
                    + self.position[2] * mt.cos(dx * rotation_speed * mt.pi / 180)
 
             self.position[0] = xpos
+            self.position[1] = ypos
             self.position[2] = zpos
 
         elif event.buttons() & Qt.RightButton:
