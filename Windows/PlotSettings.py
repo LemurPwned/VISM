@@ -65,9 +65,6 @@ class PlotSettings(QWidget, Ui_PlotSettings):
     def pickColor(self):
         self.color = QColorDialog.getColor()
         self.color = (self.color.redF(), self.color.greenF(), self.color.blueF())
-        # return (self.color.redF(), self.color.greenF(), self.color.blueF())
-
-
 
     def additionalSetup(self, plotOptions=[None]):
         groupBox = QGroupBox("Plot"+str(self.GroupCounter), self)
