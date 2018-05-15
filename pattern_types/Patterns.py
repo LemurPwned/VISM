@@ -1,4 +1,5 @@
 import inspect
+from buildVerifier import BuildVerifier
 
 class Singleton(type):
     """
@@ -49,7 +50,10 @@ class DataObjectHolderProxy(Proxy):
         def _is_removable(*args):
             obj_handler = args[0]
             alias = args[1]
-            if alias in obj_handler.contains_lookup:
+            if alias == '__all__':
+                for element in obj_handler.contains_lookup:
+                    obj_handler.removeDataObject(element)
+            elif alias in obj_handler.contains_lookup:
                 func(*args)
                 obj_handler.contains_lookup.remove(alias)
             else:
@@ -63,3 +67,12 @@ class AbstractGLContextDecorators:
             if args[0].record:
                 args[0].screenshot_manager()
         return _rec
+
+    def systemDisable(func):
+        """
+        Used for not working Font renderings on Mac
+        """
+        def _disable(*args):
+            if BuildVerifier.OS_GLOB_SYS != 'Darwin':
+                func(*args)
+        return _disable

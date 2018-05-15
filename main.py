@@ -13,6 +13,7 @@ from multiprocessing_parse import MultiprocessingParse
 
 from Windows.ChooseWidget import ChooseWidget
 from Windows.PlayerWindow import PlayerWindow
+from Windows.Select import Select
 
 from WidgetHandler import WidgetHandler
 
@@ -70,6 +71,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         # OPTIONS SUBMENU
         self.actionPerformance.triggered.connect(self.setScreenshotFolder)
         self.actionMovie_composer.triggered.connect(self.composeMovie)
+        self.actionText_select.triggered.connect(self.selectText)
+
         # VIEW SUBMENU
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
         self.action2_Windows_Grid.triggered.connect(self.make2WindowsGrid)
@@ -111,6 +114,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         mv = Movie(self.screenshot_dir)
         mv.create_video()
 
+    def selectText(self):
+        self.selectionWindow = Select()
+
     def promptDirectory(self):
         fileDialog = QtWidgets.QFileDialog()
         directory = str(
@@ -138,34 +144,47 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 yesMes=None, parent=self)
 
     def loadFile(self):
+        if self._LOADED_FLAG_:
+            self.deleteLoadedFiles()
+            if BuildVerifier.OS_GLOB_SYS == 'Linux':
+                return 0
+        self._LOADED_FLAG_ = False
         fileDialog = QtWidgets.QFileDialog()
         fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
-        filename = str(fileDialog.getOpenFileName(self, "Select File")[0])
+        fileLoaded = str(fileDialog.getOpenFileName(self, "Select File")[0])
 
-        self._LOADED_FLAG_ = False
+        if fileLoaded is None or fileLoaded == "" or fileLoaded=="  ":
+            msg = "Invalid directory: {}. Do you wish to abort?".format(fileLoaded)
+            PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
+                            QtWidgets.QMessageBox.No, self.refreshScreen, self.loadFile)
+            return 0
 
-        if ".odt" in filename:
+        if ".odt" in fileLoaded:
             self.doh.passListObject(('plot_data', 'iterations'),
-                                    *MultiprocessingParse.readFile(filename))
+                                        *MultiprocessingParse.readFile(fileLoaded))
             self._BLOCK_ITERABLES_ = False
             self._BLOCK_PLOT_ITERABLES_ = False
 
-        elif ".omf" in file or ".ovf" in filename:
+        elif ".omf" in fileLoaded or ".ovf" in fileLoaded:
             self.doh.passListObject(('color_vectors', 'file_header'),
-                                    *MultiprocessingParse.readFile(filename))
+                                        *MultiprocessingParse.readFile(fileLoaded))
             self._BLOCK_STRUCTURES_ = False
         else:
             raise ValueError("main.py/loadFile: File format is not supported!")
 
         self._LOADED_FLAG_ = True
+        return 1
 
     def loadDirectoryWrapper(self):
         """Loads whole directory based on Parse class as simple as BHP"""
+        if self._LOADED_FLAG_:
+            self.deleteLoadedFiles()
+            if BuildVerifier.OS_GLOB_SYS == 'Linux':
+                return 0
+        self._LOADED_FLAG_ = False
         directory = self.promptDirectory()
-
         if directory is None or directory == "" or directory=="  ":
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
-            self._LOADED_FLAG_ = False
             PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
                             QtWidgets.QMessageBox.No, self.refreshScreen,
                             self.loadDirectoryWrapper, parent=self)
@@ -223,9 +242,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self.panes[i].setDisabled(False)
             self.bar.close()
 
+    def deleteLoadedFiles(self):
+        # clearing all widgets it's not a problem even if it does not exist
+        for i in range(WidgetHandler.visibleCounter):
+            self.deleteWidget(i)
+        self.doh.removeDataObject('__all__')
 
-
-        print("Data loaded!")
+        self._LOADED_FLAG_ = False
+        self._BLOCK_STRUCTURES_ = True
+        self._BLOCK_ITERABLES_ = True
+        self._BLOCK_PLOT_ITERABLES_ = True
 
     def showAnimationSettings(self):
         """Shows window to change animations settings"""
@@ -293,11 +319,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         this allows to receive general type option structure that is passed
         on to the DataObjectHolder object that sends it to the right final object
         """
-        print("OPTIONS {}".format(options))
         if options is None:
             # delete widget
-            self.deleteWidget(self.current_pane)
+            self.deleteWidget(self.current_pane, null_delete=True)
             self.refreshScreen()
+
             return
         # fix that later in settings where it can be changed or not
         geom = (self.panes[self.current_pane].groupBox.width(),
@@ -316,7 +342,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.propagate_resize()
         self.refreshScreen()
 
-    def deleteWidget(self, number):
+    def deleteWidget(self, number, null_delete=False):
         if self.playerWindow:
             PopUpWrapper("Alert",
                 "You may loose calculation!", \
@@ -331,10 +357,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.playerWindow.closeMe()
             self.playerWindow.worker.clearWidgetIterators()
 
-        self.panes[number].clearBox()
+        """
+        null delete explanation:
+        for some unknown reason if clearBox() is called on the pane
+        that has no widget that causes a major bug
+        Therefore if cancel was pressed and no widget was created - hence
+        null_delete, then do not call
+        """
+        if not null_delete: self.panes[number].clearBox()
         self.panes[number].setUpDefaultBox()
         self.panes[number].button.clicked.connect(\
             lambda: self.showChooseWidgetSettings(number))
+        self.refreshScreen()
 
     def propagate_resize(self):
         for i in range(4):

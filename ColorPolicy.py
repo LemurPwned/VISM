@@ -104,7 +104,11 @@ class ColorPolicy:
     def interleave(color_iteration, vector_array):
         interleaved = []
         for v, c in zip(vector_array, color_iteration):
-            interleaved.extend([*v, v[0]+c[0], v[1]+c[1], v[2]+c[2]])
+            # here add extra one for 4f visibility feature
+            if c.any():
+                interleaved.extend([*v, v[0]+c[0], v[1]+c[1], v[2]+c[2], 1])
+            else:
+                interleaved.extend([*v, v[0]+c[0], v[1]+c[1], v[2]+c[2], 0])
         return interleaved
 
     @staticmethod
@@ -119,6 +123,18 @@ class ColorPolicy:
         # firstly average the color matrix with kernel
         matrix = self.linear_convolution(matrix)
         return np.array(matrix)
+
+    @staticmethod
+    def pad_4f_vertices(color_iteration, vector_array):
+        assert color_iteration.shape == vector_array.shape
+        vector_array = vector_array.reshape(color_iteration.shape)
+        new_vector_list = np.zeros((vector_array.shape[0], 4))
+        for i in range(vector_array.shape[0]):
+            if color_iteration[i].any():
+                new_vector_list[i]= [*vector_array[i], 1.0]
+            else:
+                new_vector_list[i] = [0.0, 0.0, 0.0, 0.0]
+        return new_vector_list
 
     @staticmethod
     def standard_procedure(outline, color, iterations, averaging, xc, yc, zc,
@@ -140,6 +156,7 @@ class ColorPolicy:
         """
         color = np.array(color)
         outline = np.array(outline)
+        outline = ColorPolicy.pad_4f_vertices(color[0], outline)
         if type(picked_layer) == int:
             # if single layer is picked modify memory data
             zc = 1
@@ -147,7 +164,6 @@ class ColorPolicy:
             picked_layer = picked_layer*layer_thickness
             color = color[:, picked_layer:picked_layer+layer_thickness, :]
             outline = outline[picked_layer:picked_layer+layer_thickness]
-
         # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
         if decimate != 1:
             color = color[:,::decimate,:]
@@ -178,5 +194,5 @@ class ColorPolicy:
         # this should have shape (iterations, zc*yc*xc, 3)
         if not decimate:
             assert dotted_color.shape == (iterations, zc*yc*xc, 3)
-            assert outline.shape == (zc*yc*xc, 3)
+            assert outline.shape == (zc*yc*xc, 4)
         return dotted_color, outline, decimate

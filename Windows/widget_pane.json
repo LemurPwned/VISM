@@ -6,7 +6,7 @@
                       "settings": ["PerfOptions", "file_header"],
                       "required": ["current_state", "options",
                                    "file_header", "color_vectors",
-                                   "screenshot_dir"],
+                                   "screenshot_dir", "geom"],
                       "optional": ["iterations"]
                       },
     "VectorGLContext": {
@@ -16,7 +16,7 @@
                       "settings": ["PerfOptions", "file_header"],
                       "required": ["current_state", "options",
                                    "file_header","color_vectors",
-                                   "screenshot_dir"],
+                                   "screenshot_dir", "geom"],
                       "optional": ["iterations"]
                       },
     "Canvas":         {
