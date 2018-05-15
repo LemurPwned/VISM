@@ -32,7 +32,10 @@ class PlotSettings(QWidget, Ui_PlotSettings):
                              parent.height()/2 - 400/2,
                              300, 400)
         else:
-            self.setGeometry(10, 10, 300, 400)
+            app = QtCore.QCoreApplication.instance()
+            screen_resolution = app.desktop().screenGeometry()
+            width, height = screen_resolution.width(), screen_resolution.height()
+            self.setGeometry((width - 300)/2, (height - 400)/2, 300, 400)
         self.eventListeners()
         self.setWindowTitle("Plot Settings")
         self.gridLayout_2.addWidget(self.buttonBox, 4, 0, 1, 2)

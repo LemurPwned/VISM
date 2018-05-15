@@ -1,9 +1,4 @@
-from Windows.PlotSettings import PlotSettings
-from Windows.PerfOptions import PerfOptions
-
 from settingsMediator.settingsLoader import SettingsInterface
-from settingsMediator.settingsLoader import DataObjectHolder
-
 import json
 
 """

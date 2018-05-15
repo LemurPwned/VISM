@@ -1,7 +1,5 @@
-import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QMessageBox
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QWidget, QMessageBox
+from PyQt5 import QtCore
 
 
 class PopUpWrapper(QWidget):
@@ -13,8 +11,10 @@ class PopUpWrapper(QWidget):
         self.height = 200
 
         if parent == None:
-            self.left = 10
-            self.top = 10
+            app = QtCore.QCoreApplication.instance()
+            screen_resolution = app.desktop().screenGeometry()
+            width, height = screen_resolution.width(), screen_resolution.height()
+            self.setGeometry((width - self.width()) / 2, (height - self.height()) / 2, 300, 400)
         else:
             self.left = parent.width()/2 - self.width/2
             self.top = parent.height()/2 - self.height/2
