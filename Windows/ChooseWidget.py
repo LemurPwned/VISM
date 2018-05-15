@@ -58,18 +58,21 @@ class ChooseWidget(QtWidgets.QWidget):
 
     def loadWidgetsFromFile(self):
         self.json_file_handler = json.load(open(self.__WIDGET_LOC__))
+        print(self._BLOCK_ITERABLES_, self._BLOCK_STRUCTURES_,
+                self._BLOCK_PLOT_ITERABLES_)
         for widget_key in self.json_file_handler.keys():
+            print(self.json_file_handler[widget_key]['iterable_type'])
             if not self._BLOCK_ITERABLES_ and not self._BLOCK_STRUCTURES_ \
                 and not self._BLOCK_PLOT_ITERABLES_:
                 self.list.addItem(self.json_file_handler[widget_key]['alias'])
             else:
-                if 'optional' in self.json_file_handler[widget_key]:
-                    if not self._BLOCK_STRUCTURES_:
-                        self.list.addItem(self.json_file_handler[widget_key]['alias'])
-                else:
-                    if not self._BLOCK_ITERABLES_ and not self._BLOCK_PLOT_ITERABLES_:
-                        self.list.addItem(self.json_file_handler[widget_key]['alias'])
-                        
+                if self._BLOCK_PLOT_ITERABLES_ and \
+                    self.json_file_handler[widget_key]['iterable_type'] == 'structure':
+                    self.list.addItem(self.json_file_handler[widget_key]['alias'])
+                elif self._BLOCK_STRUCTURES_ and \
+                    self.json_file_handler[widget_key]['iterable_type'] == 'plot':
+                    self.list.addItem(self.json_file_handler[widget_key]['alias'])
+                    
     def loadAvailWidgets(self):
         self.layout = QtWidgets.QGridLayout(self)
         self.list = QtWidgets.QListWidget(self)

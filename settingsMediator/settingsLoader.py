@@ -113,7 +113,6 @@ class SettingsInterface:
                         self.get_and_verify_class_parameters(\
                             self.widget_pane_handler[object_alias]['required'],
                             doh)
-
             if 'optional' in self.widget_pane_handler[object_alias]:
                 optional_dict = self.get_and_verify_class_parameters(\
                                 self.widget_pane_handler[object_alias]['optional'],

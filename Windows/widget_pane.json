@@ -7,7 +7,8 @@
                       "required": ["current_state", "options",
                                    "file_header", "color_vectors",
                                    "screenshot_dir", "geom"],
-                      "optional": ["iterations"]
+                      "optional": ["iterations"],
+                      "iterable_type": "structure"
                       },
     "VectorGLContext": {
                       "alias": "3D_VECTOR",
@@ -17,7 +18,8 @@
                       "required": ["current_state", "options",
                                    "file_header","color_vectors",
                                    "screenshot_dir", "geom"],
-                      "optional": ["iterations"]
+                      "optional": ["iterations"],
+                      "iterable_type": "structure"
                       },
     "Canvas":         {
                         "alias": "2D_Matplotlib",
@@ -26,7 +28,8 @@
                         "settings": ["PlotSettings", "plot_data"],
                         "required": ["iterations", "current_state", "options",
                                      "plot_data",  "screenshot_dir"],
-                        "optional": ["trigger"]
+                        "optional": ["trigger"],
+                        "iterable_type": "plot"
                         },
     "Canvas2Dupgraded": {
                         "alias": "2D_BetterPlot",
@@ -34,7 +37,9 @@
                         "object_type": "2d_object",
                         "settings": ["PlotSettings", "plot_data"],
                         "required": ["iterations", "current_state", "options",
-                                     "plot_data", "geom", "screenshot_dir"]
+                                     "plot_data", "geom", "screenshot_dir"],
+                        "optional": ["trigger"],
+                        "iterable_type": "plot"
                       },
     "CanvasLayer": {
                         "alias": "2D_Layer",
@@ -44,6 +49,7 @@
                         "required": [ "current_state", "options",
                                      "file_header","color_vectors",
                                      "screenshot_dir"],
-                        "optional" : ["iterations"]
+                        "optional" : ["iterations"],
+                        "iterable_type": "structure"
                       }
 }
