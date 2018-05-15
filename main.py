@@ -146,7 +146,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def loadFile(self):
         if self._LOADED_FLAG_:
-            self.deleteLoadedFiles()
+            # self.deleteLoadedFiles()
             return
         fileDialog = QtWidgets.QFileDialog()
         fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
@@ -319,7 +319,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.doh.setDataObject(self.screenshot_dir, 'screenshot_dir')
 
         self.panes[self.current_pane].addWidget(\
-                self.sp.build_chain(self.current_widget_alias, self.doh))
+                self.sp.build_chain(self.current_widget_alias, self.doh, self))
         # that fixes the problem of having not all slots filled in groupBox
         if self.playerWindow != None:
             self.refreshIterators()

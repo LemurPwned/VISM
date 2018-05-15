@@ -1,22 +1,37 @@
 from AnimatedWidget import AnimatedWidget
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backend_bases import key_press_handler
+from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas,
+                                    NavigationToolbar2QT as NavigationToolbar)
 from PyQt5.QtWidgets import QSizePolicy, QPushButton
+from PyQt5 import QtCore
+from PyQt5.Qt import Qt
+
 import time
 import os
 
 class AbstractCanvas(AnimatedWidget, FigureCanvas):
-    def __init__(self, parent=None, width=8, height=6, dpi=100):
+    def __init__(self, parent=None, width=8, height=5, dpi=30):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
+        self.canvas = FigureCanvas(self.fig)
+
+        if self.cld is not None and self.enable_toolbar:
+            self.mpl_nav_toolbar = NavigationToolbar(FigureCanvas(self.fig), self.cld,
+                                                        coordinates=True)
+            self.cld.addToolBar(self.mpl_nav_toolbar)
+            self.canvas.mpl_connect('key_press_event', self.on_key_press)
+            self.canvas.setFocusPolicy(Qt.StrongFocus)
+            self.canvas.setFocus()
+
         FigureCanvas.__init__(self, self.fig)
         FigureCanvas.setSizePolicy(self,
                                    QSizePolicy.Expanding,
                                    QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
+
         self._CANVAS_ALREADY_CREATED_ = False
         self.subdir = "Canvas" + str(AnimatedWidget.WIDGET_ID)
         AnimatedWidget.WIDGET_ID += 1
-
 
     def handleOptionalData(self):
         super().handleOptionalData()
@@ -60,6 +75,8 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
             self.fig.savefig(os.path.join(self.screenshot_dir,
                                         str(self.i).zfill(4) + ".png"))
 
+    def on_key_press(self, event):
+        key_press_handler(event, self.canvas, self.mpl_nav_toolbar)
 
     def set_i(self, value, trigger=False, record=False):
         self.i = value

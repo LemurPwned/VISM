@@ -1,16 +1,17 @@
 import numpy as np
 from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
 
+from matplotlib.figure import Figure
 
 class Canvas(AbstractCanvas):
-    def __init__(self, data_dict):
+    def __init__(self, data_dict, parent=None, enable_toolbar=False):
+        self.cld = parent
         super().__init__(self)
         self.shareData(**data_dict)
         self.i = self.current_state
         self.createPlotCanvas()
 
     def construct_triggered_plot(self):
-        print(self.options['one_one'])
         if self.trigger is not None and self.options['one_one']:
             # shorter list
             self.plot_data = self.plot_data.iloc[self.trigger]
@@ -46,12 +47,17 @@ class Canvas(AbstractCanvas):
         self.plot_axis.set_xlabel(xlabl)
         self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
 
+        if self.mpl_nav_toolbar is not None:
+            self.mpl_nav_toolbar.update()
+
     def replot(self):
         self.i %= self.internal_iterations
         self.plot_axis.hpl.set_ydata(np.pad(self.graph_data[:self.i],
                                         (0, self.internal_iterations - self.i),
                                     mode='constant', constant_values=(np.nan,)))
         self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
+        if self.mpl_nav_toolbar is not None:
+            self.mpl_nav_toolbar.update()
 
     def set_i(self, value, trigger=False, record=False):
         if trigger:

@@ -14,7 +14,7 @@ from ColorPolicy import ColorPolicy
 from multiprocessing import Pool
 
 class CubicGLContext(AbstractGLContext, QWidget):
-    def __init__(self, data_dict):
+    def __init__(self, data_dict, parent):
         super().__init__()
         super().shareData(**data_dict)
         self.vertices = 0
