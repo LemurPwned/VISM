@@ -4,9 +4,15 @@ from Windows.SelectTemplate import Ui_Dialog
 from PopUp import PopUpWrapper
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 
+from buildVerifier import BuildVerifier
 class Select(QWidget, Ui_Dialog):
     def __init__(self):
         super(Select, self).__init__()
+        if BuildVerifier.OS_GLOB_SYS == 'Darwin':
+            """
+            temporary disable for Linux
+            """
+            return
         self.setWindowTitle("Select text to display")
         self.setupUi(self)
         self.show()
@@ -24,7 +30,7 @@ class Select(QWidget, Ui_Dialog):
                 more='Not changed',
                 yesMes=None)
             self.close()
-            
+
     def reject(self):
         self.eventHandler(None)
         self.close()
