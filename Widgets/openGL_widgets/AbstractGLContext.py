@@ -16,6 +16,9 @@ import numpy as np
 from cython_modules.color_policy import multi_iteration_normalize
 from cython_modules.cython_parse import getLayerOutline, genCubes
 from ColorPolicy import ColorPolicy
+from pattern_types.Patterns import AbstractGLContextDecorators
+
+from buildVerifier import BuildVerifier
 
 import time
 import pygame
@@ -51,6 +54,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.FRAME_BENCHMARK_FLAG = False
         self.FPS_UPDATE_INTERVAL = 0.25
         self.TIME_PASSED = 0.0
+
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
@@ -183,6 +187,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         gl.glPopMatrix()
         self.update()
 
+    @AbstractGLContextDecorators.systemDisable
     def text_functionalities(self):
         self.frames +=1
         self.fps_counter()
@@ -280,6 +285,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         x = event.x()
         y = event.y()
         if AbstractGLContext.RECORD_REGION_SELECTION:
+            y = self.geom[1] - y
             AbstractGLContext.SELECTED_POS = (x, y, 0)
             AbstractGLContext.RECORD_REGION_SELECTION = False
 
@@ -336,7 +342,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         font = pygame.font.Font (None, 64)
         renderedFont = font.render(textString, False, (255,255,255,255))
         text = pygame.image.tostring(renderedFont, "RGBA", True)
-        gl.glWindowPos3f(*position)
+        gl.glWindowPos3f(position[0], position[1] - renderedFont.get_height(),
+                            position[2])
         gl.glDrawPixels(renderedFont.get_width(), renderedFont.get_height(),
                                      gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, text)
 

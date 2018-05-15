@@ -146,8 +146,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def loadFile(self):
         if self._LOADED_FLAG_:
-            # self.deleteLoadedFiles()
-            return
+            self.deleteLoadedFiles()
+            if BuildVerifier.OS_GLOB_SYS == 'Linux':
+                return 0
+        self._LOADED_FLAG_ = False
         fileDialog = QtWidgets.QFileDialog()
         fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
         fileLoaded = str(fileDialog.getOpenFileName(self, "Select File")[0])
@@ -176,6 +178,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def loadDirectoryWrapper(self):
         """Loads whole directory based on Parse class as simple as BHP"""
+        if self._LOADED_FLAG_:
+            self.deleteLoadedFiles()
+            if BuildVerifier.OS_GLOB_SYS == 'Linux':
+                return 0
+        self._LOADED_FLAG_ = False
         directory = self.promptDirectory()
         if directory is None or directory == "" or directory=="  ":
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
@@ -235,7 +242,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             for i in range(WidgetHandler.visibleCounter):
                 self.panes[i].setDisabled(False)
             self.bar.close()
-        print("Data loaded!")
+
+    def deleteLoadedFiles(self):
+        # clearing all widgets it's not a problem even if it does not exist
+        for i in range(WidgetHandler.visibleCounter):
+            self.deleteWidget(i)
+        self.doh.removeDataObject('__all__')
+
+        self._LOADED_FLAG_ = False
+        self._BLOCK_STRUCTURES_ = True
+        self._BLOCK_ITERABLES_ = True
+        self._BLOCK_PLOT_ITERABLES_ = True
 
     def showAnimationSettings(self):
         """Shows window to change animations settings"""
