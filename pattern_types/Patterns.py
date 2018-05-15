@@ -1,4 +1,5 @@
 import inspect
+from buildVerifier import BuildVerifier
 
 class Singleton(type):
     """
@@ -66,3 +67,12 @@ class AbstractGLContextDecorators:
             if args[0].record:
                 args[0].screenshot_manager()
         return _rec
+
+    def systemDisable(func):
+        """
+        Used for not working Font renderings on Mac
+        """
+        def _disable(*args):
+            if BuildVerifier.OS_GLOB_SYS != 'Darwin':
+                func(*args)
+        return _disable

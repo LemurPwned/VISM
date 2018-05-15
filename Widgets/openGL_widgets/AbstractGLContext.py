@@ -16,6 +16,9 @@ import numpy as np
 from cython_modules.color_policy import multi_iteration_normalize
 from cython_modules.cython_parse import getLayerOutline, genCubes
 from ColorPolicy import ColorPolicy
+from pattern_types.Patterns import AbstractGLContextDecorators
+
+from buildVerifier import BuildVerifier
 
 import time
 import pygame
@@ -50,6 +53,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.FRAME_BENCHMARK_FLAG = False
         self.FPS_UPDATE_INTERVAL = 0.25
         self.TIME_PASSED = 0.0
+
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
@@ -181,6 +185,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         gl.glPopMatrix()
         self.update()
 
+    @AbstractGLContextDecorators.systemDisable
     def text_functionalities(self):
         self.frames +=1
         self.fps_counter()
