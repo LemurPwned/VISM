@@ -22,7 +22,7 @@ class Ui_MainWindow(object):
         self.gridLayout.setObjectName("gridLayout")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 863, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 863, 26))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -66,6 +66,8 @@ class Ui_MainWindow(object):
         self.actionMovie_composer.setObjectName("actionMovie_composer")
         self.actionAnimation = QtWidgets.QAction(MainWindow)
         self.actionAnimation.setObjectName("actionAnimation")
+        self.actionText_select = QtWidgets.QAction(MainWindow)
+        self.actionText_select.setObjectName("actionText_select")
         self.menuFile.addAction(self.actionLoad_File)
         self.menuFile.addAction(self.actionLoad_Directory)
         self.menuEdit.addAction(self.actionWindow0Delete)
@@ -77,6 +79,7 @@ class Ui_MainWindow(object):
         self.menuView.addAction(self.action4_Windows_Grid)
         self.menuOptions.addAction(self.actionPerformance)
         self.menuOptions.addAction(self.actionMovie_composer)
+        self.menuOptions.addAction(self.actionText_select)
         self.menuAnimation.addAction(self.actionAnimation)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
@@ -109,6 +112,7 @@ class Ui_MainWindow(object):
         self.actionWindow3Delete.setText(_translate("MainWindow", "Window4 delete"))
         self.actionMovie_composer.setText(_translate("MainWindow", "Movie composer"))
         self.actionAnimation.setText(_translate("MainWindow", "Player"))
+        self.actionText_select.setText(_translate("MainWindow", "Text select"))
 
 
 if __name__ == "__main__":
@@ -119,3 +123,4 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
+
