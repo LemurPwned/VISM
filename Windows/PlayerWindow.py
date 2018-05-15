@@ -205,7 +205,7 @@ class Window(QtWidgets.QWidget):
         self.elements = []
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
         self.button_start = QtWidgets.QPushButton('Play', self)
-        self.button_stop = QtWidgets.QPushButton('Reset', self)
+        self.button_stop = QtWidgets.QPushButton('Stop', self)
         self.button_nextFrame = QtWidgets.QPushButton('>', self)
         self.button_prevFrame = QtWidgets.QPushButton('<', self)
         self.slider_speed = QtWidgets.QSlider(QtCore.Qt.Horizontal, self)
