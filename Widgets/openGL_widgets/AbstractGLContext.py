@@ -54,7 +54,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
-        super().handleOptionalData()
+        self.handleOptionalData()
         self.receivedOptions()
         self.i = self.current_state
         print(self.iterations)
@@ -110,6 +110,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.spacer *= decimate*3
 
     def handleOptionalData(self):
+        super().handleOptionalData()
         # must handle iterations since these are optional
         try:
             getattr(self, 'iterations')

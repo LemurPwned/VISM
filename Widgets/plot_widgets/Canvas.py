@@ -7,14 +7,22 @@ class Canvas(AbstractCanvas):
         super().__init__(self)
         self.shareData(**data_dict)
         self.i = self.current_state
-        self.title = self.options['column']
-        self.graph_data = self.plot_data[self.title].tolist()
-        # override
-        self.internal_iterations = len(self.graph_data)
         self.createPlotCanvas()
 
+    def construct_triggered_plot(self):
+        print(self.options['one_one'])
+        if self.trigger is not None and self.options['one_one']:
+            # shorter list
+            self.plot_data = self.plot_data.iloc[self.trigger]
+            self.options['line_style'] = 'None'
+
     def createPlotCanvas(self):
-        self.canvas_type = 'panel'
+        self.title = self.options['column']
+        self.construct_triggered_plot()
+
+        self.graph_data = self.plot_data[self.title].tolist()
+        self.internal_iterations = len(self.graph_data)
+
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
         xlabl = "Time"
@@ -23,6 +31,7 @@ class Canvas(AbstractCanvas):
         except KeyError:
             self.null_data = [x for x in range(self.internal_iterations)]
             xlabl = "Iteration"
+
         self.plot_axis.hpl = self.plot_axis.plot(self.null_data,
                                         self.graph_data[0:self.i] + \
                                         self.null_data[self.i:],
@@ -43,3 +52,14 @@ class Canvas(AbstractCanvas):
                                         (0, self.internal_iterations - self.i),
                                     mode='constant', constant_values=(np.nan,)))
         self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
+
+    def set_i(self, value, trigger=False, record=False):
+        if trigger:
+            self.i += 1
+        else:
+            self.i = value
+        self.loop_guard()
+        self.replot()
+        self.plot_axis.get_figure().canvas.draw()
+        if record:
+            self.screenshot_manager()

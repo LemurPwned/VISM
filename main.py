@@ -235,9 +235,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             for i in range(WidgetHandler.visibleCounter):
                 self.panes[i].setDisabled(False)
             self.bar.close()
-
-
-
         print("Data loaded!")
 
     def showAnimationSettings(self):

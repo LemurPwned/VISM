@@ -102,6 +102,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
                                                                         self))
         self.radioButton[self.GroupCounter*2].setChecked(True)
         self.radioButton.append(QRadioButton("Show Plot", self))
+        self.radioButton.append(QRadioButton("1-1 synchronize", self))
 
         groupLayout.addWidget(self.comboBox[self.GroupCounter])
         groupLayout.addWidget(self.colorOptions_label)
@@ -117,7 +118,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
 
         groupLayout.addWidget(self.radioButton[self.GroupCounter*2])
         groupLayout.addWidget(self.radioButton[(self.GroupCounter*2)+1])
-
+        groupLayout.addWidget(self.radioButton[(self.GroupCounter*2)+2])
         groupBox.setLayout(groupLayout)
 
         if self.GroupCounter == 0:
@@ -151,7 +152,8 @@ class PlotSettings(QWidget, Ui_PlotSettings):
                         'line_style': self.comboBox4[i].currentText(),
                         'marker': self.comboBox3[i].currentText(),
                         'marker_color': 'blue',
-                        'marker_size': self.slider_markersize.value()
+                        'marker_size': self.slider_markersize.value(),
+                        'one_one': self.radioButton[i*2+2].isChecked()
                      }
         self.ret = param_dict
         self.eventHandler(self.ret)

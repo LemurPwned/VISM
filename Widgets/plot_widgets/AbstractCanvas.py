@@ -17,6 +17,15 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
         self.subdir = "Canvas" + str(AnimatedWidget.WIDGET_ID)
         AnimatedWidget.WIDGET_ID += 1
 
+
+    def handleOptionalData(self):
+        super().handleOptionalData()
+        # must handle iterations since these are optional
+        try:
+            getattr(self, 'trigger')
+        except NameError:
+            self.trigger = None
+
     def createPlotCanvas(self):
         """
         creates Canvas to be passed to Qt widgets. Creates a general instance of

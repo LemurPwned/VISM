@@ -25,7 +25,8 @@
                         "object_type": "2d_object",
                         "settings": ["PlotSettings", "plot_data"],
                         "required": ["iterations", "current_state", "options",
-                                     "plot_data",  "screenshot_dir"]
+                                     "plot_data",  "screenshot_dir"],
+                        "optional": ["trigger"]
                         },
     "Canvas2Dupgraded": {
                         "alias": "2D_BetterPlot",
