@@ -6,13 +6,19 @@ from PyQt5.QtCore import pyqtSlot
 
 class PopUpWrapper(QWidget):
     def __init__(self, title, msg, more=None, yesMes=None, noMes=None,
-                    actionWhenYes=None, actionWhenNo=None):
+                    actionWhenYes=None, actionWhenNo=None, parent=None):
         super().__init__()
 
-        self.left = 10
-        self.top = 10
         self.width = 320
         self.height = 200
+
+        if parent == None:
+            self.left = 10
+            self.top = 10
+        else:
+            self.left = parent.width()/2 - self.width/2
+            self.top = parent.height()/2 - self.height/2
+
 
         self.title = title
         self.msg = msg

@@ -6,7 +6,7 @@ from Windows.PlotSettingsTemplate import Ui_PlotSettings
 
 
 class PlotSettings(QWidget, Ui_PlotSettings):
-    def __init__(self, plotOptions=[None], gridSize=1):
+    def __init__(self, plotOptions=[None], gridSize=1, parent=None):
         super(PlotSettings, self).__init__()
         self.setupUi(self)
         self.GroupCounter = 0
@@ -25,7 +25,12 @@ class PlotSettings(QWidget, Ui_PlotSettings):
             for i in range(gridSize):
                 self.additionalSetup(plotOptions)
 
-        self.setGeometry(10,10,300, 400)
+        if parent != None:
+            self.setGeometry(parent.width()/2 - 350/2,
+                             parent.height()/2 - 400/2,
+                             300, 400)
+        else:
+            self.setGeometry(10, 10, 300, 400)
         self.eventListeners()
         self.setWindowTitle("Plot Settings")
         self.gridLayout_2.addWidget(self.buttonBox, 4, 0, 1, 2)

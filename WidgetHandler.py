@@ -12,7 +12,7 @@ class WidgetHandler:
         self._widget = None
         self._visible = True
         self.groupBox = QtWidgets.QGroupBox( \
-            "Window " + str(self._number), self._parent)
+            "Window " + str(self._number + 1), self._parent)
         self.layout = QtWidgets.QGridLayout()
         self.setUpDefaultBox()
 
@@ -89,3 +89,6 @@ class WidgetHandler:
             self._layout.addWidget(widget)
         except:
             raise ValueError("Layout is not proper or argument is not a widget")
+
+    def setDisabled(self, value):
+        self._button.setDisabled(value)
