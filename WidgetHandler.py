@@ -69,15 +69,22 @@ class WidgetHandler:
     def setUpDefaultBox(self):
         self.button = QtWidgets.QPushButton("Add Widget", self._parent)
         self._visible = True
-
+        self._widget = None
 
     def clearBox(self):
         """Clears whole Widget and leaves just groupBox with layout"""
+
         if self._groupBox == None:
             raise ValueError('groupBox must be initialized')
 
+        self._widget = None
         for i in range(len(self._groupBox.children())):
             self._groupBox.children()[-1].deleteLater()
+
+    def hasWidget(self):
+        if self._widget != None:
+            return True
+        return False
 
     def addWidget(self, widget):
         """Just adds new Widget to our Pane"""

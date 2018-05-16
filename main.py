@@ -91,7 +91,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.resize(self.width() - 1, self.height())
         self.resize(self.width() + 1, self.height())
 
-        self.actionAnimation.setDisabled(self._BLOCK_ITERABLES_)
+        print("hasWidget: ", self.panes[0].hasWidget())
+        self.actionAnimation.setDisabled((self._BLOCK_ITERABLES_ or not self.panes[0].hasWidget()))
 
     def resizeEvent(self, event):
         """What happens when window is resized"""
@@ -182,6 +183,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             if BuildVerifier.OS_GLOB_SYS == 'Linux':
                 return 0
         self._LOADED_FLAG_ = False
+        self._BLOCK_PLOT_ITERABLES_ = True
+        self._BLOCK_ITERABLES_ = True
+        self._BLOCK_STRUCTURES_ = True
+        self.refreshScreen()
         directory = self.promptDirectory()
         if directory is None or directory == "" or directory=="  ":
             msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
@@ -219,6 +224,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self._BLOCK_ITERABLES_ = False
             self._LOADED_FLAG_ = True
             self._BLOCK_STRUCTURES_ = False
+            self.refreshScreen()
             return 1
 
     def loadDirectory(self, directory):

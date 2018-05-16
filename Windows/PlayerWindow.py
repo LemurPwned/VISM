@@ -44,6 +44,22 @@ class PlayerWindow(QtCore.QObject):
 
             return False
 
+        if self.parent._BLOCK_ITERABLES_ == True:
+            msg = "PlayerWindow: Cannot activate animation with this type of data!"
+            print(msg)
+            for element in self.gui.elements:
+                element.setEnabled(False)
+
+            return False
+
+        if self.parent._BLOCK_PLOT_ITERABLES_ == True:
+            msg = "PlayerWindow: Cannot activate animation with this type of data!"
+            print(msg)
+            for element in self.gui.elements:
+                element.setEnabled(False)
+
+            return False
+
         if self.parent.panes[0].widget == None:
             msg = "PlayerWindow: No widget selected Click Add Widget button in main window!"
             print(msg)
