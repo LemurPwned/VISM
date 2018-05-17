@@ -337,6 +337,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         self.panes[self.current_pane].addWidget(\
                 self.sp.build_chain(self.current_widget_alias, self.doh, self))
+
+        self.toolbar = QtWidgets.QToolBar()
+        self.toolbar.addAction("Reset",
+            self.panes[self.current_pane].widget.initial_transformation)
+        self.panes[self.current_pane].layout.setMenuBar(self.toolbar)
+        self.panes[self.current_pane].layout.setContentsMargins(0,0,0,0)
+
+        # self.panes[self.current_pane].addToolBar(self.toolbar)
         # that fixes the problem of having not all slots filled in groupBox
         if self.playerWindow != None:
             self.refreshIterators()

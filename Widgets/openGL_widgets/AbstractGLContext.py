@@ -1,5 +1,5 @@
 from AnimatedWidget import AnimatedWidget
-from PyQt5.QtWidgets import QOpenGLWidget
+from PyQt5.QtWidgets import QOpenGLWidget, QToolBar
 
 import OpenGL.GL as gl
 import OpenGL.GLU as glu
@@ -55,6 +55,11 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.FPS_UPDATE_INTERVAL = 0.25
         self.TIME_PASSED = 0.0
 
+        # if self.cld is not None:
+        #     print(type(self.cld ))
+        #     self.toolbar = QToolBar(self.cld)
+        #     self.toolbar.setFloatable(True)
+        #     self.cld.addToolBar(self.toolbar)
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
@@ -297,19 +302,29 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         dx = event.x() - self.lastPos.x()
         dy = event.y() - self.lastPos.y()
         self.lastPos = event.pos()
-        if event.buttons() & Qt.LeftButton:
+        if event.buttons() & Qt.MidButton:
             rotation_speed = 0.5
             self.rotation[0] += dx * rotation_speed
             self.rotation[1] += dy * rotation_speed
-            ypos = self.position[0] * mt.sin(dy * rotation_speed * mt.pi / 180) \
-                   - self.position[2] * mt.cos(dy * rotation_speed * mt.pi / 180)
+            ypos = self.position[1] * mt.cos(dy * rotation_speed * mt.pi / 180) \
+                   - self.position[2] * mt.sin(dy * rotation_speed * mt.pi / 180)
+            zpos = self.position[1] * mt.sin(dx * rotation_speed * mt.pi / 180) \
+                   + self.position[2] * mt.cos(dx * rotation_speed * mt.pi / 180)
+
+            self.position[1] = ypos
+            self.position[2] = zpos
+
+        elif event.buttons() & Qt.LeftButton:
+            rotation_speed = 0.5
+            self.rotation[0] += dx * rotation_speed
+            self.rotation[1] += dy * rotation_speed
             xpos = self.position[0] * mt.cos(dx * rotation_speed * mt.pi / 180) \
                    - self.position[2] * mt.sin(dx * rotation_speed * mt.pi / 180)
             zpos = self.position[0] * mt.sin(dx * rotation_speed * mt.pi / 180) \
                    + self.position[2] * mt.cos(dx * rotation_speed * mt.pi / 180)
 
             self.position[0] = xpos
-            self.position[1] = ypos
+            # self.position[1] = ypos
             self.position[2] = zpos
 
         elif event.buttons() & Qt.RightButton:

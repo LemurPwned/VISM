@@ -11,7 +11,7 @@ import time
 import os
 
 class AbstractCanvas(AnimatedWidget, FigureCanvas):
-    def __init__(self, parent=None, width=8, height=5, dpi=30):
+    def __init__(self, parent=None, width=8, height=5, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.canvas = FigureCanvas(self.fig)
 
@@ -35,7 +35,7 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
 
     def handleOptionalData(self):
         super().handleOptionalData()
-        # must handle iterations since these are optional
+        # must handle trigger vals since these are optional
         try:
             getattr(self, 'trigger')
         except NameError:

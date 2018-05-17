@@ -90,5 +90,14 @@ class WidgetHandler:
         except:
             raise ValueError("Layout is not proper or argument is not a widget")
 
+    def addToolBar(self, toolbar):
+        self._toolbar = toolbar
+        if self._groupBox == None:
+            raise ValueError("GroupBox must be initialized")
+        # try:
+        self._widget.addToolBar(self._toolbar)
+        # except:
+            # raise ValueError("Argument is not a toolbar")
+
     def setDisabled(self, value):
         self._button.setDisabled(value)
