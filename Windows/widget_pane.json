@@ -8,7 +8,11 @@
                                    "file_header", "color_vectors",
                                    "screenshot_dir", "geom"],
                       "optional": ["iterations"],
-                      "iterable_type": "structure"
+                      "iterable_type": "structure",
+                      "toolbar" : [["Reset", "initial_transformation"],
+                                   ["Zoom in", "zoomIn"],
+                                   ["Zoom out", "zoomOut"],
+                                   ["Screenshot", "screenshot_manager"]]
                       },
     "VectorGLContext": {
                       "alias": "3D_VECTOR",
@@ -19,7 +23,11 @@
                                    "file_header","color_vectors",
                                    "screenshot_dir", "geom"],
                       "optional": ["iterations"],
-                      "iterable_type": "structure"
+                      "iterable_type": "structure",
+                      "toolbar" : [["Reset", "initial_transformation"],
+                                   ["Zoom in", "zoomIn"],
+                                   ["Zoom out", "zoomOut"],
+                                   ["Screenshot", "screenshot_manager"]]
                       },
     "Canvas":         {
                         "alias": "2D_Matplotlib",
@@ -29,7 +37,8 @@
                         "required": ["iterations", "current_state", "options",
                                      "plot_data",  "screenshot_dir"],
                         "optional": ["trigger"],
-                        "iterable_type": "plot"
+                        "iterable_type": "plot",
+                        "toolbar": "NavigationToolbar"
                         },
     "Canvas2Dupgraded": {
                         "alias": "2D_BetterPlot",
@@ -50,6 +59,7 @@
                                      "file_header","color_vectors",
                                      "screenshot_dir"],
                         "optional" : ["iterations"],
-                        "iterable_type": "structure"
+                        "iterable_type": "structure",
+                        "toolbar": "NavigationToolbar"
                       }
 }

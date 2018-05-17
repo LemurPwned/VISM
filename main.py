@@ -26,6 +26,10 @@ from settingsMediator.settingsLoader import DataObjectHolder
 
 from video_utils.video_composer import Movie
 
+from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas,
+                                    NavigationToolbar2QT as NavigationToolbar)
+
+
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -338,18 +342,46 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[self.current_pane].addWidget(\
                 self.sp.build_chain(self.current_widget_alias, self.doh, self))
 
-        self.toolbar = QtWidgets.QToolBar()
-        self.toolbar.addAction("Reset",
-            self.panes[self.current_pane].widget.initial_transformation)
-        self.panes[self.current_pane].layout.setMenuBar(self.toolbar)
-        self.panes[self.current_pane].layout.setContentsMargins(0,0,0,0)
-
-        # self.panes[self.current_pane].addToolBar(self.toolbar)
+        self.constructWidgetToolbar(self.panes[self.current_pane])
         # that fixes the problem of having not all slots filled in groupBox
         if self.playerWindow != None:
             self.refreshIterators()
         self.propagate_resize()
         self.refreshScreen()
+
+    def constructWidgetToolbar(self, pane):
+        """
+        Construct toolbar for a given pane
+        Function assumes object was created successfully
+        """
+        self.toolbar = QtWidgets.QToolBar()
+        self.toolbar = self.buildToolbar(pane.widget)
+        if self.toolbar is not None:
+            pane.layout.setMenuBar(self.toolbar)
+            pane.layout.setContentsMargins(0,0,0,0)
+
+    def buildToolbar(self, widget):
+        """
+        Build toolbar from parameters in doh - toolbar section
+        """
+        toolbar = QtWidgets.QToolBar()
+        if 'toolbar' in self.doh.contains_lookup:
+            toolbar_general = self.doh.retrieveDataObject('toolbar')
+        else:
+            return None
+        if type(toolbar_general) == list:
+            # toolbar needs to be defined if this parameter is a list
+            for toolbar_option in toolbar_general:
+                toolbar.addAction(toolbar_option[0],
+                                            getattr(widget, toolbar_option[1]))
+            return toolbar
+        else:
+            if toolbar_general == 'NavigationToolbar':
+                toolbar = NavigationToolbar(widget.canvas, widget,
+                                                                coordinates=True)
+                widget.updateCanvasSettings()
+            else:
+                return None
 
     def deleteWidget(self, number, null_delete=False):
         if self.playerWindow:

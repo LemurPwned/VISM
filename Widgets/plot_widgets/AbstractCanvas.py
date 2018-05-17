@@ -15,14 +15,6 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.canvas = FigureCanvas(self.fig)
 
-        if self.cld is not None and self.enable_toolbar:
-            self.mpl_nav_toolbar = NavigationToolbar(FigureCanvas(self.fig), self.cld,
-                                                        coordinates=True)
-            self.cld.addToolBar(self.mpl_nav_toolbar)
-            self.canvas.mpl_connect('key_press_event', self.on_key_press)
-            self.canvas.setFocusPolicy(Qt.StrongFocus)
-            self.canvas.setFocus()
-
         FigureCanvas.__init__(self, self.fig)
         FigureCanvas.setSizePolicy(self,
                                    QSizePolicy.Expanding,
@@ -32,6 +24,12 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
         self._CANVAS_ALREADY_CREATED_ = False
         self.subdir = "Canvas" + str(AnimatedWidget.WIDGET_ID)
         AnimatedWidget.WIDGET_ID += 1
+
+
+    def updateCanvasSettings(self):
+        FigureCanvas.updateGeometry(self)
+        self.canvas.setFocusPolicy(Qt.StrongFocus)
+        self.canvas.setFocus()
 
     def handleOptionalData(self):
         super().handleOptionalData()

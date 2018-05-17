@@ -4,7 +4,6 @@ import glob
 import json
 from pattern_types.Patterns import Singleton, DataObjectHolderProxy
 
-
 class DataObjectHolder(metaclass=Singleton):
     def __init__(self):
         self.contains_lookup = []
@@ -52,7 +51,7 @@ class SettingsInterface:
 
             # if paths do not exist, raise error
             if not os.path.isdir(module_path):
-                raise ValueError("Module path: {} does not exist")
+                raise ValueError("Module path: {} does not exist".format(module_path))
 
             module = None
             # if there is a build, prefer .pyc files
@@ -107,6 +106,9 @@ class SettingsInterface:
             print(type(doh))
             raise ValueError("Passed invalid data object, cannot request parameter")
         try:
+            # pack in toolbar options
+            doh.setDataObject(self.widget_pane_handler[object_alias]['toolbar'],
+                                'toolbar',)
             # get the necessary parameters for object construction
             # specified in field 'required'
             passing_dict = \
