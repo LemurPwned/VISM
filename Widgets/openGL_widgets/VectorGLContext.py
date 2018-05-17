@@ -19,7 +19,7 @@ from multiprocessing import Pool
 from ColorPolicy import ColorPolicy
 
 class VectorGLContext(AbstractGLContext, QWidget):
-    def __init__(self, data_dict):
+    def __init__(self, data_dict, parent=None):
         super().__init__()
         super().shareData(**data_dict)
         self.prerendering_calculation()

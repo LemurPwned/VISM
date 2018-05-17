@@ -1,7 +1,8 @@
 import inspect
 from buildVerifier import BuildVerifier
 from widget_counter import WidgetCounter
-from PyQt5 import QtCore, Qt
+from PyQt5 import QtCore
+from PyQt5.QtCore import Qt
 
 class Singleton(type):
     """
@@ -85,15 +86,35 @@ class MainContextDecorators:
             if WidgetCounter.OPENGL_WIDGET:
                 normalWindowSize = main_window.size()
                 main_window.hide()
-                main_window.setWindowState(main_window.windowState() | Qt.Qt.WindowFullScreen)
+                main_window.setWindowState(main_window.windowState())
                 main_window.setFixedSize(main_window.size()-QtCore.QSize(0,1))
                 main_window.show()
                 to_return = qdialog_function(main_window)
                 main_window.hide()
-                main_window.setWindowState(main_window.windowState() & ~Qt.Qt.WindowFullScreen)
+                main_window.setWindowState(main_window.windowState())
                 main_window.setFixedSize(normalWindowSize);
                 main_window.show()
+                window.saved_parent.lower() # reconcoile context
             else:
                 to_return = qdialog_function(main_window)
+            return to_return
+        return _window_resize
+
+    def parent_window_resize_fix(qdialog_function):
+        def _window_resize(window):
+            if WidgetCounter.OPENGL_WIDGET:
+                normalWindowSize = window.saved_parent.size()
+                window.saved_parent.hide()
+                window.setWindowState(window.saved_parent.windowState())
+                window.saved_parent.setFixedSize(window.saved_parent.size()-QtCore.QSize(0,1))
+                window.saved_parent.show()
+                to_return = qdialog_function(window)
+                window.saved_parent.hide()
+                window.setWindowState(window.saved_parent.windowState())
+                window.saved_parent.setFixedSize(normalWindowSize)
+                window.saved_parent.lower()
+                window.saved_parent.show()
+            else:
+                to_return = qdialog_function(window)
             return to_return
         return _window_resize

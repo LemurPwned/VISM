@@ -28,7 +28,7 @@ from video_utils.video_composer import Movie
 
 from pattern_types.Patterns import MainContextDecorators
 
-class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):    
+class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.doh = DataObjectHolder()
@@ -161,8 +161,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def loadFile(self):
         if self._LOADED_FLAG_:
             self.deleteLoadedFiles()
-            # if BuildVerifier.OS_GLOB_SYS == 'Linux':
-            #     return 0
         self._LOADED_FLAG_ = False
 
         fileLoaded = self.promptFile()
@@ -189,21 +187,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self._LOADED_FLAG_ = True
         return 1
 
-    def windowReload(self):
-
-        print(self.size())
-        self.show()
-        self.hide();
-        self.setWindowState(self.windowState() & ~Qt.WindowFullScreen);
-        self.setFixedSize(normalWindowSize);
-        self.show()
-
     def loadDirectoryWrapper(self):
         """Loads whole directory based on Parse class as simple as BHP"""
         if self._LOADED_FLAG_:
             self.deleteLoadedFiles()
-            # if BuildVerifier.OS_GLOB_SYS == 'Linux':
-            #     return 0
 
         self._LOADED_FLAG_ = False
         directory = self.promptDirectory()
@@ -331,7 +318,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.sp.swap_settings_type(value[1])
         # deduce object type based on passed string
         self.window = self.sp.\
-            get_settings_window_constructor_from_file(self.doh)
+            get_settings_window_constructor_from_file(self.doh, parent=self)
         # all widgets get generalReceiver handler
         self.window.setEventHandler(self.generalReceiver)
 

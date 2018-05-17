@@ -21,7 +21,8 @@ class SettingsPrompter(SettingsInterface):
     def swap_settings_type(self, settingsType):
         self.settingsType = settingsType
 
-    def get_settings_window_constructor_from_file(self, DataObjectHolder=None):
+    def get_settings_window_constructor_from_file(self, DataObjectHolder=None,
+                                                  parent=None):
         """
         :param DataObjectHolder: object holder instance
         this function extracts the settings window object from file specified
@@ -41,7 +42,7 @@ class SettingsPrompter(SettingsInterface):
         # return a proper settings object constructed using params above
         return self.evaluate_string_as_class_object(self.\
                     widget_pane_handler[self.settingsType]['settings'][0],
-                    'settings_object')(*settings_args_param)
+                    'settings_object')(*settings_args_param, parent=parent)
 
     def allow_settings_type(self, settingsType):
         if settingsType.lower() not in settings_dict.keys():

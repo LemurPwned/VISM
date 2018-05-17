@@ -5,10 +5,11 @@ from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
 from PyQt5 import QtCore, QtGui
 from Windows.PlotSettingsTemplate import Ui_PlotSettings
 import numpy as np
-
+from pattern_types.Patterns import MainContextDecorators
 
 class PlotSettings(QWidget, Ui_PlotSettings):
     def __init__(self, plotOptions=[None], gridSize=1, parent=None):
+        self.saved_parent = parent
         super(PlotSettings, self).__init__()
         self.setupUi(self)
         self.GroupCounter = 0
@@ -65,6 +66,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
+    @MainContextDecorators.parent_window_resize_fix
     def pickColor(self):
         self.color = QColorDialog.getColor()
         self.color = (self.color.redF(), self.color.greenF(), self.color.blueF())
