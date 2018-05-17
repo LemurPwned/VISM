@@ -149,7 +149,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.deleteLoadedFiles()
             if BuildVerifier.OS_GLOB_SYS == 'Linux':
                 return 0
+
         self._LOADED_FLAG_ = False
+        self._BLOCK_PLOT_ITERABLES_ = True
+        self._BLOCK_ITERABLES_ = True
+        self._BLOCK_STRUCTURES_ = True
+
         fileDialog = QtWidgets.QFileDialog()
         fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
         fileLoaded = str(fileDialog.getOpenFileName(self, "Select File")[0])
@@ -349,7 +354,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.refreshScreen()
 
     def deleteWidget(self, number, null_delete=False):
-        if self.playerWindow:
+        if self.playerWindow.worker.running or self.playerWindow.state in ["Paused", "Stopped"]:
             PopUpWrapper("Alert",
                 "You may loose calculation!", \
                 "If you proceed animation will be restarted and widget \

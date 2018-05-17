@@ -10,6 +10,7 @@ class PlayerWindow(QtCore.QObject):
         super(self.__class__, self).__init__(parent)
         self.gui = Window()
         self.parent = parent
+        self.state = "Not Launched"
 
         self.checkForErrors()
 
@@ -23,6 +24,7 @@ class PlayerWindow(QtCore.QObject):
             #worker already exists, load it's data
             if self.worker.running:
                 self.gui.button_start.setText("Pause")
+                self.state = "Playing"
 
             self.gui.slider_speed.setValue(self.worker.getSpeed())
             self.gui.speedLabel.setText("Animation Speed: " + str(self.worker.getSpeed()/10))
@@ -99,13 +101,16 @@ class PlayerWindow(QtCore.QObject):
         self.worker.running = not self.worker.running
         if self.worker.running:
             self.gui.button_start.setText("Pause")
+            self.state = "Playing"
         else:
             self.gui.button_start.setText("Play")
+            self.state = "Paused"
 
     def forceWorkerReset(self):
         # if self.worker_thread.isRunning():
         self.worker.running = False
         self.gui.button_start.setText("Play")
+        self.state = "Stopped"
         self.worker.resetIterator()
 
     def forceWorkerQuit(self):
@@ -119,6 +124,7 @@ class PlayerWindow(QtCore.QObject):
         self.worker.setSpeed(self.gui.slider_speed.value())
 
     def closeMe(self):
+        self.state = "Hidden"
         self.gui.close()
 
     def passTriggerList(self, trigger):
