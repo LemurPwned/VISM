@@ -31,7 +31,7 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
 
     def loop_guard(self):
         self.i %= self.internal_iterations
-        
+
     def set_i(self, value, trigger=False):
         self.i = value
         self.loop_guard()

@@ -11,11 +11,13 @@ class PopUpWrapper(QWidget):
         self.height = 200
 
         if parent == None:
+            self.parentless = True
             app = QtCore.QCoreApplication.instance()
             screen_resolution = app.desktop().screenGeometry()
             width, height = screen_resolution.width(), screen_resolution.height()
-            self.setGeometry((width - self.width()) / 2, (height - self.height()) / 2, 300, 400)
+            self.setGeometry((width - self.width) / 2, (height - self.height) / 2, 300, 400)
         else:
+            self.parentless = False
             self.left = parent.width()/2 - self.width/2
             self.top = parent.height()/2 - self.height/2
 
@@ -35,8 +37,8 @@ class PopUpWrapper(QWidget):
 
     def questionWindow(self):
         self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
-
+        if not self.parentless:
+            self.setGeometry(self.left, self.top, self.width, self.height)
         buttonReply = QMessageBox.question(self, self.title, self.msg,
                                             self.yesMes | self.noMes, self.yesMes)
         if buttonReply == self.yesMes:
@@ -49,7 +51,8 @@ class PopUpWrapper(QWidget):
 
     def infoWindow(self):
         self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
+        if not self.parentless:
+            self.setGeometry(self.left, self.top, self.width, self.height)
         infotext = QMessageBox.information(self, self.title, self.msg, QMessageBox.Ok)
 
         if infotext == QMessageBox.Ok:

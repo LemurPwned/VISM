@@ -6,6 +6,7 @@ bv = BuildVerifier()
 import sys
 import threading
 
+from PyQt5.Qt import Qt
 from PyQt5 import QtWidgets, QtCore
 from Windows.MainWindowTemplate import Ui_MainWindow
 
@@ -25,7 +26,9 @@ from settingsMediator.settingsLoader import DataObjectHolder
 
 from video_utils.video_composer import Movie
 
-class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
+from pattern_types.Patterns import MainContextDecorators
+
+class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):    
     def __init__(self):
         super(MainWindow, self).__init__()
         self.doh = DataObjectHolder()
@@ -121,6 +124,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def selectText(self):
         self.selectionWindow = Select()
 
+    @MainContextDecorators.window_resize_fix
     def promptDirectory(self):
         fileDialog = QtWidgets.QFileDialog()
         directory = str(
@@ -130,6 +134,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 options = QtWidgets.QFileDialog.ShowDirsOnly))
         fileDialog.close()
         return directory
+
+    @MainContextDecorators.window_resize_fix
+    def promptFile(self):
+        fileDialog = QtWidgets.QFileDialog()
+        fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+        fileLoaded = str(fileDialog.getOpenFileName(self, "Select File")[0])
+        return fileLoaded
 
     def setScreenshotFolder(self):
         selected_dir = self.promptDirectory()
@@ -150,12 +161,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def loadFile(self):
         if self._LOADED_FLAG_:
             self.deleteLoadedFiles()
-            if BuildVerifier.OS_GLOB_SYS == 'Linux':
-                return 0
+            # if BuildVerifier.OS_GLOB_SYS == 'Linux':
+            #     return 0
         self._LOADED_FLAG_ = False
-        fileDialog = QtWidgets.QFileDialog()
-        fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
-        fileLoaded = str(fileDialog.getOpenFileName(self, "Select File")[0])
+
+        fileLoaded = self.promptFile()
 
         if fileLoaded is None or fileLoaded == "" or fileLoaded=="  ":
             msg = "Invalid directory: {}. Do you wish to abort?".format(fileLoaded)
@@ -179,12 +189,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self._LOADED_FLAG_ = True
         return 1
 
+    def windowReload(self):
+
+        print(self.size())
+        self.show()
+        self.hide();
+        self.setWindowState(self.windowState() & ~Qt.WindowFullScreen);
+        self.setFixedSize(normalWindowSize);
+        self.show()
+
     def loadDirectoryWrapper(self):
         """Loads whole directory based on Parse class as simple as BHP"""
         if self._LOADED_FLAG_:
             self.deleteLoadedFiles()
-            if BuildVerifier.OS_GLOB_SYS == 'Linux':
-                return 0
+            # if BuildVerifier.OS_GLOB_SYS == 'Linux':
+            #     return 0
+
         self._LOADED_FLAG_ = False
         directory = self.promptDirectory()
         if directory is None or directory == "" or directory=="  ":
@@ -327,7 +347,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             # delete widget
             self.deleteWidget(self.current_pane, null_delete=True)
             self.refreshScreen()
-
             return
         # fix that later in settings where it can be changed or not
         geom = (self.panes[self.current_pane].groupBox.width(),
@@ -339,7 +358,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.doh.setDataObject(self.screenshot_dir, 'screenshot_dir')
 
         self.panes[self.current_pane].addWidget(\
-                self.sp.build_chain(self.current_widget_alias, self.doh))
+                self.sp.build_chain(self.current_widget_alias, self.doh, self))
         # that fixes the problem of having not all slots filled in groupBox
         if self.playerWindow != None:
             self.refreshIterators()
@@ -436,6 +455,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionWindow1Delete.setDisabled(False)
         self.actionWindow2Delete.setDisabled(False)
         self.actionWindow3Delete.setDisabled(False)
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

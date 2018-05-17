@@ -1,5 +1,7 @@
 import inspect
 from buildVerifier import BuildVerifier
+from widget_counter import WidgetCounter
+from PyQt5 import QtCore, Qt
 
 class Singleton(type):
     """
@@ -76,3 +78,22 @@ class AbstractGLContextDecorators:
             if BuildVerifier.OS_GLOB_SYS != 'Darwin':
                 func(*args)
         return _disable
+
+class MainContextDecorators:
+    def window_resize_fix(qdialog_function):
+        def _window_resize(main_window):
+            if WidgetCounter.OPENGL_WIDGET:
+                normalWindowSize = main_window.size()
+                main_window.hide()
+                main_window.setWindowState(main_window.windowState() | Qt.Qt.WindowFullScreen)
+                main_window.setFixedSize(main_window.size()-QtCore.QSize(0,1))
+                main_window.show()
+                to_return = qdialog_function(main_window)
+                main_window.hide()
+                main_window.setWindowState(main_window.windowState() & ~Qt.Qt.WindowFullScreen)
+                main_window.setFixedSize(normalWindowSize);
+                main_window.show()
+            else:
+                to_return = qdialog_function(main_window)
+            return to_return
+        return _window_resize
