@@ -1,11 +1,10 @@
 from AnimatedWidget import AnimatedWidget
-from PyQt5.QtWidgets import QOpenGLWidget, QToolBar
-
+from PyQt5.QtWidgets import QOpenGLWidget
 import OpenGL.GL as gl
 import OpenGL.GLU as glu
 
 from PyQt5.Qt import Qt
-from PyQt5.QtCore import QPoint
+from PyQt5.QtCore import QPoint, QCoreApplication, QSize
 
 import math as mt
 from PIL import Image
@@ -34,8 +33,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     def __init__(self, parent=None):
         super(AbstractGLContext, self).__init__(parent)
         AbstractGLContext.ANY_GL_WIDGET_IN_VIEW += 1
-        self.subdir = "GL" + str(AnimatedWidget.WIDGET_ID)
-        AnimatedWidget.WIDGET_ID += 1
+
         self.lastPos = QPoint()
         self.setFocusPolicy(Qt.StrongFocus)  # needed if keyboard to be active
 
@@ -55,15 +53,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.FPS_UPDATE_INTERVAL = 0.25
         self.TIME_PASSED = 0.0
 
-        # if self.cld is not None:
-        #     print(type(self.cld ))
-        #     self.toolbar = QToolBar(self.cld)
-        #     self.toolbar.setFloatable(True)
-        #     self.cld.addToolBar(self.toolbar)
-
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
-        self.handleOptionalData()
+        super().handleOptionalData()
         self.receivedOptions()
         self.i = self.current_state
         print(self.iterations)
@@ -119,7 +111,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.spacer *= decimate*3
 
     def handleOptionalData(self):
-        super().handleOptionalData()
         # must handle iterations since these are optional
         try:
             getattr(self, 'iterations')
@@ -203,17 +194,12 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.text_render(AbstractGLContext.TEXT,
                             AbstractGLContext.SELECTED_POS)
 
-    def grab(self):
-        self.screenshot_manager()
-
-    def set_i(self, value, trigger=False, record=False):
+    def set_i(self, value, trigger=False):
         if trigger:
             self.i += 1
         else:
             self.i = value
         self.i %= self.iterations
-        if record:
-            self.screenshot_manager()
 
     def keyPressEvent(self, event):
         """
@@ -302,30 +288,26 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         dx = event.x() - self.lastPos.x()
         dy = event.y() - self.lastPos.y()
         self.lastPos = event.pos()
-        if event.buttons() & Qt.MidButton:
+        if event.buttons() & Qt.LeftButton:
             rotation_speed = 0.5
-            self.rotation[0] += dx * rotation_speed
-            self.rotation[1] += dy * rotation_speed
-            ypos = self.position[1] * mt.cos(dy * rotation_speed * mt.pi / 180) \
-                   - self.position[2] * mt.sin(dy * rotation_speed * mt.pi / 180)
-            zpos = self.position[1] * mt.sin(dx * rotation_speed * mt.pi / 180) \
-                   + self.position[2] * mt.cos(dx * rotation_speed * mt.pi / 180)
+            if abs(dx) > abs(dy):
+                self.rotation[0] += dx * rotation_speed
+                xpos = self.position[0] * mt.cos(dx * rotation_speed * mt.pi / 180) \
+                       - self.position[2] * mt.sin(dx * rotation_speed * mt.pi / 180)
+                zpos = self.position[0] * mt.sin(dx * rotation_speed * mt.pi / 180) \
+                       + self.position[2] * mt.cos(dx * rotation_speed * mt.pi / 180)
 
-            self.position[1] = ypos
-            self.position[2] = zpos
+                self.position[0] = xpos
+                self.position[2] = zpos
+            else:
+                self.rotation[1] += dy * rotation_speed
+                ypos = self.position[1] * mt.cos(dy * rotation_speed * mt.pi / 180) \
+                       + self.position[2] * mt.sin(dy * rotation_speed * mt.pi / 180)
+                zpos = - self.position[1] * mt.sin(dy * rotation_speed * mt.pi / 180) \
+                       + self.position[2] * mt.cos(dy * rotation_speed * mt.pi / 180)
 
-        elif event.buttons() & Qt.LeftButton:
-            rotation_speed = 0.5
-            self.rotation[0] += dx * rotation_speed
-            self.rotation[1] += dy * rotation_speed
-            xpos = self.position[0] * mt.cos(dx * rotation_speed * mt.pi / 180) \
-                   - self.position[2] * mt.sin(dx * rotation_speed * mt.pi / 180)
-            zpos = self.position[0] * mt.sin(dx * rotation_speed * mt.pi / 180) \
-                   + self.position[2] * mt.cos(dx * rotation_speed * mt.pi / 180)
-
-            self.position[0] = xpos
-            # self.position[1] = ypos
-            self.position[2] = zpos
+                self.position[1] = ypos
+                self.position[2] = zpos
 
         elif event.buttons() & Qt.RightButton:
             if abs(self.rotation[0])%360 < 90:
@@ -382,9 +364,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         # fetch dimensions for highest resolution
         _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
-        if width == 0 or height == 0:
-            width = self.geom[0]
-            height = self.geom[1]
         color = gl.glReadPixels(0, 0,
                                width, height,
                                gl.GL_RGB, gl.GL_UNSIGNED_BYTE)
@@ -392,13 +371,10 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                                                     data=color)
         image = image.transpose(Image.FLIP_TOP_BOTTOM)
         try:
-            if os.path.basename(self.screenshot_dir) != self.subdir:
-                self.screenshot_dir = os.path.join(self.screenshot_dir,
-                                                                self.subdir)
             image.save(os.path.join(self.screenshot_dir,
                                         str(self.i).zfill(4) + ".png"))
         except FileNotFoundError:
             # if basic dir not found, create it and save there
-            os.makedirs(self.screenshot_dir)
+            os.mkdir(self.screenshot_dir)
             image.save(os.path.join(self.screenshot_dir,
                                         str(self.i).zfill(4) + ".png"))
