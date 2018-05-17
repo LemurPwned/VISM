@@ -377,8 +377,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             return toolbar
         else:
             if toolbar_general == 'NavigationToolbar':
+                # for now not all of functions work
+                return None
                 toolbar = NavigationToolbar(widget.canvas, widget,
                                                                 coordinates=True)
+                widget.canvas.toolbar = toolbar
                 widget.updateCanvasSettings()
             else:
                 return None
