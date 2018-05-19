@@ -5,6 +5,8 @@ bv = BuildVerifier()
 
 import sys
 import threading
+import queue
+import time as tm
 
 from PyQt5 import QtWidgets, QtCore
 from Windows.MainWindowTemplate import Ui_MainWindow
@@ -24,6 +26,8 @@ from settingsMediator.settingsPrompter import SettingsPrompter
 from settingsMediator.settingsLoader import DataObjectHolder
 
 from video_utils.video_composer import Movie
+
+from DirectoryLoaderPoll import DirectoryLoaderPoll
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
@@ -200,41 +204,49 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             self.loadDirectoryWrapper, parent=self)
             return 0
         else:
-            try:
-                t = threading.Thread(target=(lambda: self.loadDirectory(directory)))
-                t.start()
-                for i in range(WidgetHandler.visibleCounter):
-                    self.panes[i].setDisabled(True)
+            # try:
+            self.bar = ProgressBar(self)
+            self.bar.dumbProgress()
 
-                self.bar = ProgressBar(self)
-                self.bar.dumbProgress()
+            for i in range(WidgetHandler.visibleCounter):
+                self.panes[i].setDisabled(True)
 
+            self.menubar.setDisabled(False)
 
-            except ValueError as e:
-                print(e.print_stack())
-                msg = "Invalid directory: {}. \
-                    Error Message {}\nDo you wish to reselect?".format(directory,
-                                                                        str(e))
-                x = PopUpWrapper("Invalid directory", msg, None,
-                                QtWidgets.QMessageBox.Yes,
-                                QtWidgets.QMessageBox.No,
-                                self.loadDirectoryWrapper,
-                                quit,
-                                parent=self)
-                return None
-            except Exception as e:
-                print(e)
-                return None
+            self.q = queue.Queue()
+            self.q.put(True)
 
-            self._BLOCK_ITERABLES_ = False
-            self._LOADED_FLAG_ = True
-            self._BLOCK_STRUCTURES_ = False
+            self.poll = DirectoryLoaderPoll(self.q, self.directoryLoaderCallback)
+            self.thread = QtCore.QThread()
+            self.poll.moveToThread(self.thread)
+            self.thread.started.connect(self.poll.startWork)
+            self.thread.start()
+
+            t = threading.Thread(target=(lambda: self.loadDirectory(directory, self.q)))
+            t.setDaemon(True)
+            t.start()
             self.refreshScreen()
             return 1
 
-    def loadDirectory(self, directory):
-        rawVectorData, header, plot_data, stages, trigger_list = \
+    def loadDirectory(self, directory, q):
+        try:
+            rawVectorData, header, plot_data, stages, trigger_list = \
                             MultiprocessingParse.readFolder(directory)
+        except ValueError as e:
+            print(e.print_stack())
+            msg = "Invalid directory: {}. \
+                Error Message {}\nDo you wish to reselect?".format(directory,
+                                                                    str(e))
+            x = PopUpWrapper("Invalid directory", msg, None,
+                            QtWidgets.QMessageBox.Yes,
+                            QtWidgets.QMessageBox.No,
+                            self.loadDirectoryWrapper,
+                            quit,
+                            parent=self)
+            return None
+        except Exception as e:
+            print(e)
+            return None
 
         self.doh.passListObject(('color_vectors', 'file_header',
                                  'iterations'),
@@ -247,8 +259,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self._BLOCK_PLOT_ITERABLES_ = True
         if trigger_list is not None:
             self.doh.setDataObject(trigger_list, 'trigger')
+
+        self._BLOCK_ITERABLES_ = False
+        self._LOADED_FLAG_ = True
+        self._BLOCK_STRUCTURES_ = False
+
+        q.put(False)
+
+    def directoryLoaderCallback(self):
         if self.bar != None:
-            # self.menubar.setDisabled(False) TODO
+            self.menubar.setDisabled(False)
             for i in range(WidgetHandler.visibleCounter):
                 self.panes[i].setDisabled(False)
             self.bar.close()
