@@ -34,7 +34,7 @@ class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
         """
         self.plotWidget.setGeometry(0, 0, geom[0]-60, geom[1]-60)
 
-    def set_i(self, value, trigger=False):
+    def set_i(self, value, trigger=False, record=False):
         self._i = value
         self._i %= self.internal_iterations
         self.plotData.setData(self.null_data[:self._i], self.graph_data[:self._i])

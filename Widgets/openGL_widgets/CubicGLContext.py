@@ -22,11 +22,10 @@ class CubicGLContext(AbstractGLContext, QWidget):
         self.vertices = 0
         self.buffers = None
         self.buffer_len = 0
+        self.scale = 5
+
         self.prerendering_calculation()
         self.drawing_function = self.vbo_cubic_draw
-        self.size = 5
-        # self.subdir = "GL" + str(AnimatedWidget.WIDGET_ID)
-
 
     def prerendering_calculation(self):
         super().prerendering_calculation()
@@ -51,7 +50,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
             # TODO: temporary fix, dont know why x4, should not be multiplied
             # at all!
             self.buffer_len = len(self.color_vectors[0])*4
-            print("BUFFER LEN" , self.buffer_len)
         elif self.function_select == 'slow':
             self.drawing_function = self.slower_cubic_draw
 

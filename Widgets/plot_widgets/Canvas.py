@@ -61,7 +61,7 @@ class Canvas(AbstractCanvas):
             self.i += 1
         else:
             self.i = value
-        self.loop_guard()
+        self.i %= self.internal_iterations
         self.replot()
         self.plot_axis.get_figure().canvas.draw()
         self.record = record
