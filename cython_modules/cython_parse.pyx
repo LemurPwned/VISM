@@ -200,7 +200,7 @@ def decode_byte_size(byte_format_specification):
                                             str(byte_format_specification)))
 
 def genCubes(layer_outline, spacer):
-    layer_cubed = np.array([cube(x, spacer)
+    layer_cubed = np.array([cube2(x, spacer)
                                     for x in layer_outline]).flatten()
     return layer_cubed, len(layer_cubed)/3
 
@@ -236,3 +236,39 @@ def cube(vec, spacer=0.1):
         vec[0], vec[1], vec[2],
         vec[0], vec[1]+spacer, vec[2]]
     return vertex_list
+
+def cube2(vec, spacer=0.1):
+    if vec.any():
+        vertex_list =[
+            vec[0]+spacer, vec[1], vec[2]+spacer, vec[3],
+            vec[0], vec[1], vec[2]+spacer, vec[3],
+            vec[0], vec[1]+spacer, vec[2]+spacer, vec[3],
+            vec[0]+spacer, vec[1]+spacer, vec[2]+spacer, vec[3],
+            #BOTTOM FACE
+            vec[0]+spacer, vec[1], vec[2], vec[3],
+            vec[0], vec[1], vec[2], vec[3],
+            vec[0], vec[1]+spacer, vec[2], vec[3],
+            vec[0]+spacer, vec[1]+spacer, vec[2], vec[3],
+            #FRONT FACE
+            vec[0]+spacer, vec[1]+spacer, vec[2]+spacer, vec[3],
+            vec[0], vec[1]+spacer, vec[2]+spacer, vec[3],
+            vec[0], vec[1]+spacer, vec[2], vec[3],
+            vec[0]+spacer, vec[1]+spacer, vec[2], vec[3],
+            #BACK FACE
+            vec[0]+spacer, vec[1], vec[2]+spacer, vec[3],
+            vec[0], vec[1], vec[2]+spacer, vec[3],
+            vec[0], vec[1], vec[2], vec[3],
+            vec[0]+spacer, vec[1], vec[2], vec[3],
+            #RIGHT FACE
+            vec[0]+spacer, vec[1], vec[2]+spacer, vec[3],
+            vec[0]+spacer, vec[1]+spacer, vec[2]+spacer, vec[3],
+            vec[0]+spacer, vec[1]+spacer, vec[2], vec[3],
+            vec[0]+spacer, vec[1], vec[2], vec[3],
+            #LEFT FACE
+            vec[0], vec[1]+spacer, vec[2]+spacer, vec[3],
+            vec[0], vec[1], vec[2]+spacer, vec[3],
+            vec[0], vec[1], vec[2], vec[3],
+            vec[0], vec[1]+spacer, vec[2], vec[3]]
+        return vertex_list
+    else:
+        return np.zeros(96)

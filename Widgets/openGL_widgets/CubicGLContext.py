@@ -22,19 +22,25 @@ class CubicGLContext(AbstractGLContext, QWidget):
         self.buffer_len = 0
         self.prerendering_calculation()
         self.drawing_function = self.vbo_cubic_draw
+        self.size = 5
 
     def prerendering_calculation(self):
         super().prerendering_calculation()
         if self.normalize:
             CubicGLContext.normalize_specification(self.color_vectors, vbo=True)
-            
+
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw
             self.buffers = None
             # if vbo drawing is selected, do additional processing
-            self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors)
+
+            xc = int(self.file_header['xnodes'])
+            yc = int(self.file_header['ynodes'])
+            zc = int(self.file_header['znodes'])
             self.vectors_list, self.vertices = genCubes(self.vectors_list,
                                                                     self.spacer)
+            self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors)
+
             print(np.array(self.vectors_list).shape, self.vertices)
             print(np.array(self.color_vectors).shape)
 
@@ -42,7 +48,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
             # at all!
             self.buffer_len = len(self.color_vectors[0])*4
             print("BUFFER LEN" , self.buffer_len)
-
         elif self.function_select == 'slow':
             self.drawing_function = self.slower_cubic_draw
 
@@ -80,7 +85,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
         gl.glEnableClientState(gl.GL_COLOR_ARRAY)
         # bind vertex buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
-        gl.glVertexPointer(3, gl.GL_FLOAT, 0, None)
+        gl.glVertexPointer(4, gl.GL_FLOAT, 0, None)
         # bind color buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
         gl.glColorPointer(3, gl.GL_FLOAT, 0, None)
