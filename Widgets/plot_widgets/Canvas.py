@@ -4,14 +4,16 @@ from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
 from matplotlib.figure import Figure
 
 class Canvas(AbstractCanvas):
-    def __init__(self, data_dict, parent=None, enable_toolbar=False):
+    def __init__(self, data_dict, parent=None):
         super().__init__(self)
         self.shareData(**data_dict)
         self.i = self.current_state
+        self.triggered = False
         self.createPlotCanvas()
 
     def construct_triggered_plot(self):
         if self.trigger is not None and self.options['one_one']:
+            self.triggered = True
             # shorter list
             self.plot_data = self.plot_data.iloc[self.trigger]
             self.options['line_style'] = 'None'
@@ -52,9 +54,9 @@ class Canvas(AbstractCanvas):
                                         (0, self.internal_iterations - self.i),
                                     mode='constant', constant_values=(np.nan,)))
         self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
-        
+
     def set_i(self, value, trigger=False, record=False):
-        if trigger:
+        if self.triggered:
             self.i += 1
         else:
             self.i = value

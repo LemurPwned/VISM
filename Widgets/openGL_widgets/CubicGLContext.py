@@ -13,6 +13,7 @@ from pattern_types.Patterns import AbstractGLContextDecorators
 from ColorPolicy import ColorPolicy
 from multiprocessing import Pool
 
+
 class CubicGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict, parent):
         self.cld = parent
@@ -24,6 +25,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
         self.prerendering_calculation()
         self.drawing_function = self.vbo_cubic_draw
         self.size = 5
+        # self.subdir = "GL" + str(AnimatedWidget.WIDGET_ID)
 
 
     def prerendering_calculation(self):
