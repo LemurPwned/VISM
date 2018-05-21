@@ -1,6 +1,6 @@
 import numpy as np
 from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
-
+from pattern_types.Patterns import AbstractGLContextDecorators
 from matplotlib.figure import Figure
 
 class Canvas(AbstractCanvas):
@@ -48,6 +48,7 @@ class Canvas(AbstractCanvas):
         self.plot_axis.set_xlabel(xlabl)
         self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
 
+    @AbstractGLContextDecorators.recording_decorator
     def replot(self):
         self.i %= self.internal_iterations
         self.plot_axis.hpl.set_ydata(np.pad(self.graph_data[:self.i],
@@ -63,5 +64,4 @@ class Canvas(AbstractCanvas):
         self.loop_guard()
         self.replot()
         self.plot_axis.get_figure().canvas.draw()
-        if record:
-            self.screenshot_manager()
+        self.record = record

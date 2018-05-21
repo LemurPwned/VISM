@@ -201,8 +201,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         else:
             self.i = value
         self.i %= self.iterations
-        if record:
-            self.screenshot_manager()
+        self.record = record
 
     def keyPressEvent(self, event):
         """
@@ -361,17 +360,16 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             gl.glGetString(gl.GL_SHADING_LANGUAGE_VERSION))
         return info
 
-    def screenshot_manager(self, width=None, height=None):
+    def screenshot_manager(self):
         """
         saves the screenshot to the folder specified in screenshot_dir
         """
         # fetch dimensions for highest resolution
-        if width = None or height = None:
-            _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
-            # print(width, height)
-            if width == 0 or height == 0:
-                width = self.geom[0]
-                height = self.geom[1]
+        _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
+        # print(width, height)
+        if width == 0 or height == 0:
+            width = self.geom[0]
+            height = self.geom[1]
         color = gl.glReadPixels(0, 0,
                                width, height,
                                gl.GL_RGB, gl.GL_UNSIGNED_BYTE)

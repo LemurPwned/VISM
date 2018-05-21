@@ -24,7 +24,7 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
         self._CANVAS_ALREADY_CREATED_ = False
         self.subdir = "Canvas" + str(AnimatedWidget.WIDGET_ID)
         AnimatedWidget.WIDGET_ID += 1
-
+        self.record = False
 
     def updateCanvasSettings(self):
         FigureCanvas.updateGeometry(self)
@@ -81,8 +81,6 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
         self.loop_guard()
         self.replot()
         self.plot_axis.get_figure().canvas.draw()
-        if record:
-            self.screenshot_manager()
 
     def loop(self, scheduler=0.1):
         while (self.iterations):
