@@ -1,13 +1,12 @@
 from PyQt5 import QtCore
 import time as tm
-import threading
-
 
 class DirectoryLoaderPoll(QtCore.QObject):
+    signal = QtCore.pyqtSignal(int)
     def __init__(self, q, callback):
         super(self.__class__, self).__init__()
         self.q = q
-        self.callback = callback
+        self.signal.connect(callback)
 
     def startWork(self):
         # q:
@@ -23,7 +22,7 @@ class DirectoryLoaderPoll(QtCore.QObject):
                 status = self.q.get()
                 if status != 0:
                     break
+            # to avoid too much overhead for cpu
             tm.sleep(0.1)
 
-        self.callback(status)
-
+        self.signal.emit(status)

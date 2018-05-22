@@ -204,7 +204,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             self.loadDirectoryWrapper, parent=self)
             return 0
         else:
-            # try:
             self.bar = ProgressBar(self)
             self.bar.dumbProgress()
 
@@ -233,23 +232,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             rawVectorData, header, plot_data, stages, trigger_list = \
                             MultiprocessingParse.readFolder(directory)
         except ValueError as e:
-            # print(e.print_stack())
-            # msg = "Invalid directory: {}. \
-            #     Error Message {}\nDo you wish to reselect?".format(directory,
-            #                                                         str(e))
-            # x = PopUpWrapper("Invalid directory", msg, None,
-            #                 QtWidgets.QMessageBox.Yes,
-            #                 QtWidgets.QMessageBox.No,
-            #                 self.loadDirectoryWrapper,
-            #                 quit,
-            #                 parent=self)
-            print("value", e)
             q.put(2)
-            # q.put(ValueError(e))
-            # raise ValueError(e)
             return None
         except Exception:
-            print("Exception")
             q.put(3)
             return None
 
@@ -271,17 +256,32 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         q.put(1)
 
+    @QtCore.pyqtSlot(int)
     def directoryLoaderCallback(self, status):
-        print(status)
+
         if self.bar != None:
             self.menubar.setDisabled(False)
             for i in range(WidgetHandler.visibleCounter):
                 self.panes[i].setDisabled(False)
             self.bar.close()
 
+        if status == 3:
+            x = PopUpWrapper(
+                title='Invalid exception',
+                msg='There is something wrong with this directory!',
+                more='If this happens all the time contact us.',
+                yesMes=None, parent=self)
+
+        if status == 2:
+            x = PopUpWrapper(
+                title='Invalid Directory',
+                msg='Directory selected by user is not proper',
+                more='Check if files in this directory have proper extensions.',
+                yesMes=None, parent=self)
+
         if self.thread.isRunning():
             self.thread.terminate()
-            # self.thread.wait()
+            self.thread.wait()
 
     def deleteLoadedFiles(self):
         # clearing all widgets it's not a problem even if it does not exist
@@ -384,7 +384,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.refreshScreen()
 
     def deleteWidget(self, number, null_delete=False):
-        if self.playerWindow.worker.running or self.playerWindow.state in ["Paused", "Stopped"]:
+        if self.playerWindow!= None \
+                and (self.playerWindow.worker.running or \
+                    self.playerWindow.state in ["Paused", "Stopped"]):
             PopUpWrapper("Alert",
                 "You may loose calculation!", \
                 "If you proceed animation will be restarted and widget \
