@@ -214,7 +214,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.menubar.setDisabled(False)
 
             self.q = queue.Queue()
-            self.q.put(True)
+            self.q.put(0)
 
             self.poll = DirectoryLoaderPoll(self.q, self.directoryLoaderCallback)
             self.thread = QtCore.QThread()
@@ -233,19 +233,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             rawVectorData, header, plot_data, stages, trigger_list = \
                             MultiprocessingParse.readFolder(directory)
         except ValueError as e:
-            print(e.print_stack())
-            msg = "Invalid directory: {}. \
-                Error Message {}\nDo you wish to reselect?".format(directory,
-                                                                    str(e))
-            x = PopUpWrapper("Invalid directory", msg, None,
-                            QtWidgets.QMessageBox.Yes,
-                            QtWidgets.QMessageBox.No,
-                            self.loadDirectoryWrapper,
-                            quit,
-                            parent=self)
+            # print(e.print_stack())
+            # msg = "Invalid directory: {}. \
+            #     Error Message {}\nDo you wish to reselect?".format(directory,
+            #                                                         str(e))
+            # x = PopUpWrapper("Invalid directory", msg, None,
+            #                 QtWidgets.QMessageBox.Yes,
+            #                 QtWidgets.QMessageBox.No,
+            #                 self.loadDirectoryWrapper,
+            #                 quit,
+            #                 parent=self)
+            print("value", e)
+            q.put(2)
+            # q.put(ValueError(e))
+            # raise ValueError(e)
             return None
-        except Exception as e:
-            print(e)
+        except Exception:
+            print("Exception")
+            q.put(3)
             return None
 
         self.doh.passListObject(('color_vectors', 'file_header',
@@ -264,14 +269,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self._LOADED_FLAG_ = True
         self._BLOCK_STRUCTURES_ = False
 
-        q.put(False)
+        q.put(1)
 
-    def directoryLoaderCallback(self):
+    def directoryLoaderCallback(self, status):
+        print(status)
         if self.bar != None:
             self.menubar.setDisabled(False)
             for i in range(WidgetHandler.visibleCounter):
                 self.panes[i].setDisabled(False)
             self.bar.close()
+
+        if self.thread.isRunning():
+            self.thread.terminate()
+            # self.thread.wait()
 
     def deleteLoadedFiles(self):
         # clearing all widgets it's not a problem even if it does not exist

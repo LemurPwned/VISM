@@ -10,9 +10,20 @@ class DirectoryLoaderPoll(QtCore.QObject):
         self.callback = callback
 
     def startWork(self):
+        # q:
+        # 0 - loading directory still running
+        # 1 - loading finished without errors
+        # 2 - ValueError during process
+        # 3 - Exception during process
+
+        status = 3
         while(True):
-            if not self.q.empty() and not self.q.get():
-                break
+
+            if not self.q.empty():
+                status = self.q.get()
+                if status != 0:
+                    break
             tm.sleep(0.1)
 
-        self.callback()
+        self.callback(status)
+
