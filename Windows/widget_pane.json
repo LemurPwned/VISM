@@ -19,6 +19,17 @@
                                    "screenshot_dir", "geom"],
                       "optional": ["iterations"]
                       },
+
+    "BetterArrow": {
+                      "alias": "ARROW",
+                      "object": "BetterArrow",
+                      "object_type": "3d_object",
+                      "settings": ["PerfOptions", "file_header"],
+                      "required": ["current_state", "options",
+                                   "file_header","color_vectors",
+                                   "screenshot_dir", "geom"],
+                      "optional": ["iterations"]
+                      },
     "Canvas":         {
                         "alias": "2D_Matplotlib",
                         "object": "Canvas",
