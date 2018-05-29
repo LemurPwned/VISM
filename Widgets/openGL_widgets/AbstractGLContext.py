@@ -84,6 +84,15 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                 # NOTE: This is dangerous since dot product can be zero
                 color_vectors[~color_vectors.any(axis=2)] = background
 
+        elif cls.__name__ == 'BetterArrow':
+            background = np.array([0.0, 0.0, 0.0])
+            if vbo:
+                pass
+                # not needed right now but leave for compatibility
+                # replace black with background colors
+                # NOTE: This is dangerous since dot product can be zero
+                color_vectors[~color_vectors.any(axis=2)] = background
+
     def prerendering_calculation(self):
         """
         Some calculations that take place before object gets rendered
@@ -98,7 +107,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         yc = int(self.file_header['ynodes'])
         zc = int(self.file_header['znodes'])
         # change drawing function
-        self.color_vectors, self.vectors_list, decimate = \
+        self.color_vectors, self.vectors_list, decimate, self.color = \
                     ColorPolicy.standard_procedure(self.vectors_list,
                                                    self.color_vectors,
                                                    self.iterations,
