@@ -264,7 +264,6 @@ class BetterArrow(AbstractGLContext, QWidget):
         cone_base = np.array([origin[0]+self.default_radius*2,
                               origin[1]+self.default_radius*2,
                               origin[2]])
-        cone_base = origin_circle
         c_rot = self.co_rot
 
         c_rot = self.t_rotation.dot(c_rot)  
