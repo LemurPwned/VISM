@@ -62,8 +62,9 @@ class BetterArrow(AbstractGLContext, QWidget):
         self.indices = np.array(self.indices, dtype='uint32')
         # print(self.indices)
         print("INDICES :{}".format(self.indices.shape))
-
-        self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors, k=(int(self.index_required)*3))
+        # self.color_vectors = np.array(self.color_vectors)
+        self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors, 
+                                                            k=(self.index_required))
         print(np.array(self.structure_vbo).shape, self.color_vectors.shape)
         print("ARROW SHAPES {}, {}".format(self.vertices, len(self.structure_vbo)))
 
@@ -131,13 +132,6 @@ class BetterArrow(AbstractGLContext, QWidget):
 
     @AbstractGLContextDecorators.recording_decorator
     def draw_vbo(self):
-        # gl.glPointSize(3)
-        # gl.glBegin(gl.GL_POINTS)
-        # gl.glColor3f(1.0, 0.0, 0.0)
-        # gl.glVertex3f(0, 0, 0)
-        # gl.glVertex3f(*self.special_vertex)
-
-        # gl.glEnd()
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
         gl.glEnableClientState(gl.GL_COLOR_ARRAY)
 
@@ -162,9 +156,6 @@ class BetterArrow(AbstractGLContext, QWidget):
                         gl.GL_UNSIGNED_INT, 
                         None)
 
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
-        # gl.glColorPointer(3, gl.GL_FLOAT, 0, None)
-
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.buffers[2])
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
         # gl.glEnableVertexAttribArray(0)
@@ -175,17 +166,6 @@ class BetterArrow(AbstractGLContext, QWidget):
                         len(self.indices),
                         gl.GL_UNSIGNED_INT, 
                         None)
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
-        # gl.glVertexPointer(3, gl.GL_FLOAT, 0, c_void_p(3*1))
-        # gl.glDrawArrays(gl.GL_TRIANGLE_STRIP, 0, int(self.vertices))
-        # # bind color buffer
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
-        # gl.glColorPointer(3, gl.GL_FLOAT, 0, None)
-
-        # bind vertex buffer - cone
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
-        # gl.glVertexPointer(3, gl.GL_FLOAT, 3*self.__FLOAT_BYTE_SIZE__, c_void_p(4*3))
-        # gl.glDrawArrays(gl.GL_TRIANGLES, 0, int(self.vertices))
 
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
@@ -196,24 +176,33 @@ class BetterArrow(AbstractGLContext, QWidget):
         origin_circle = np.array([origin[0],
                                   origin[1],
                                   origin[2]])
+
         cylinder_co_rot = self.cylinder_co_rot
         cone_co_rot = self.cone_c_rot
         for i in range(self.sides-1):
             # bottom triangle - cylinder
-            vbo.extend(rot_matrix.dot(origin_circle+cylinder_co_rot))
+            vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot))
+            # vbo.extend(rot_matrix.dot(origin_circle+cylinder_co_rot))
             # bottom triangle - cone
-            vbo.extend(rot_matrix.dot(origin_circle+cone_co_rot+self.height))
+            vbo.extend(origin_circle+rot_matrix.dot(cone_co_rot+self.height))
+            # vbo.extend(rot_matrix.dot(origin_circle+cone_co_rot+self.height))
             # top triangle -cylinder
-            vbo.extend(rot_matrix.dot(origin_circle+cylinder_co_rot+self.height))
+            vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot+self.height))
+            # vbo.extend(rot_matrix.dot(origin_circle+cylinder_co_rot+self.height))
             # top triangle -cone
-            vbo.extend(rot_matrix.dot(origin_circle+self.height*1.5))
+            vbo.extend(origin_circle+rot_matrix.dot(self.height*1.5))
+            # vbo.extend(rot_matrix.dot(origin_circle+self.height*1.5))
             cylinder_co_rot = self.t_rotation.dot(cylinder_co_rot)        
-            cone_co_rot = self.t_rotation.dot(cone_co_rot)        
-
-        vbo.extend(rot_matrix.dot(origin_circle+self.cylinder_co_rot))
-        vbo.extend(rot_matrix.dot(origin_circle+self.cone_c_rot+self.height))
-        vbo.extend(rot_matrix.dot(origin_circle+self.cylinder_co_rot+self.height))
-        vbo.extend(rot_matrix.dot(origin_circle+self.height*1.5))
+            cone_co_rot = self.t_rotation.dot(cone_co_rot)     
+               
+        vbo.extend(origin_circle+rot_matrix.dot(self.cylinder_co_rot))
+        vbo.extend(origin_circle+rot_matrix.dot(self.cone_c_rot+self.height))
+        vbo.extend(origin_circle+rot_matrix.dot(self.cylinder_co_rot+self.height))
+        vbo.extend(origin_circle+rot_matrix.dot(self.height*1.5))
+        # vbo.extend(rot_matrix.dot(origin_circle+self.cylinder_co_rot))
+        # vbo.extend(rot_matrix.dot(origin_circle+self.cone_c_rot+self.height))
+        # vbo.extend(rot_matrix.dot(origin_circle+self.cylinder_co_rot+self.height))
+        # vbo.extend(rot_matrix.dot(origin_circle+self.height*1.5))
 
         return vbo
 
@@ -221,8 +210,8 @@ class BetterArrow(AbstractGLContext, QWidget):
         # default_cone_orientation = [0,0,1]
         cos_x_rot = vector[2]/np.sqrt(vector[1]**2 + vector[2]**2)
         cos_y_rot = vector[2]/np.sqrt(vector[0]**2 + vector[2]**2)
-        sin_x_rot = np.sin(np.arccos(cos_x_rot))
-        sin_y_rot = np.sin(np.arccos(cos_y_rot))
+        sin_x_rot = math.sin(math.acos(cos_x_rot)) # radian input
+        sin_y_rot = math.sin(math.acos(cos_y_rot))
         rot_matrix = [[cos_y_rot, 0, sin_y_rot],
                       [sin_y_rot*sin_x_rot, cos_x_rot, -sin_x_rot*cos_y_rot],
                       [-cos_x_rot*sin_y_rot, sin_x_rot, sin_x_rot*cos_y_rot]]
@@ -231,27 +220,12 @@ class BetterArrow(AbstractGLContext, QWidget):
     def generate_structure(self, vectors_list, colors_list):
         iterative_vbo = []
         print(vectors_list.shape, colors_list.shape)
-        for iteration in colors_list[0:1]:
+        for iteration in colors_list:
             local_vbo = []
-            c = 0
-            # for i in range(len(vectors_list)):
-            #     if c == 0:
-            #         self.special_vertex = vectors_list[i][:3]
-            #     if vectors_list[i].any() and c < self.n:
-            #         local_vbo.extend(self.generate_arrow_object(vectors_list[i], None))
-            #         c += 1
             for vector, color in zip(vectors_list, iteration):
-                if color.any():
-                    rot_matrix = self.construct_rotation_matrix(color)
-                    # rot_matrix = None
-                    local_vbo.extend(self.generate_arrow_object(vector, rot_matrix))
-            #         # print(local_vbo)
-            #     # quit()
-            #     else:
-            #         # local_vbo.extend(self.zero_pad)
-            #         rot_matrix = None
-            #         local_vbo.extend(self.generate_arrow_object(vector, rot_matrix))
-            #         # quit()
+                # if color.any():
+                rot_matrix = self.construct_rotation_matrix(color)
+                local_vbo.extend(self.generate_arrow_object(vector, rot_matrix))
             iterative_vbo.append(local_vbo)
             self.n = len(self.vectors_list)
             x = self.n*(self.sides+1)*2
