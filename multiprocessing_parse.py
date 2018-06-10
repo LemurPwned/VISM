@@ -7,6 +7,16 @@ from binaryornot.check import is_binary
 import re
 
 def asynchronous_pool_order(func, args, object_list, timeout=20):
+    """
+    This function parallelizes by multiprocessing a given function.
+    It operates by iterating a list - object_list and passes each object
+    to a new process of function along with additional args with args
+    :param func: function that is to be multiprocessed
+    :param args: are the additional parameters to the functions (non-iterative)
+    if none pass () - an empty tuple
+    :param object_list: is the objects that are iterated
+    :param timeout: is the timeout for getting value in multiprocessing
+    """
     pool = Pool()
     output_list = []
     multiple_results = [pool.apply_async(func, (object_list[i], *args))
