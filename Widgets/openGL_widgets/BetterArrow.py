@@ -24,37 +24,29 @@ from multiprocessing_parse import asynchronous_pool_order
 import math
 
 class BetterArrow(AbstractGLContext, QWidget):
-    DEFAULT_RADIUS = 0.25
-    CYLINDER_CO_ROT =  np.array([DEFAULT_RADIUS, DEFAULT_RADIUS, 0])
-    CONE_CO_ROT = np.array([2*DEFAULT_RADIUS, 2*DEFAULT_RADIUS, 0])
-    HEIGHT = np.array([0, 0, 3])
-    ZERO_ROT = np.array([[1, 0, 0],[0, 1, 0],[0, 0, 1]])
-    SIDES = 32
-    theta = 2*np.pi/SIDES
-    c = np.cos(theta)
-    s = np.sin(theta)
-    T_ROTATION = np.array([[c, -s, 0], 
-                           [s, c, 0], 
-                           [0, 0, 1]])
-
     def __init__(self, data_dict):
         super().__init__()
         super().shareData(**data_dict)
-        self.sides = 32
-        self.spacer = 0
-        theta = 2*np.pi/self.sides
+        self.DEFAULT_RADIUS = 0.25
+        self.CYLINDER_CO_ROT =  np.array([self.DEFAULT_RADIUS, 
+                                          self.DEFAULT_RADIUS, 0])
+        self.CONE_CO_ROT = np.array([2*self.DEFAULT_RADIUS, 
+                                     2*self.DEFAULT_RADIUS, 0])
+        self.HEIGHT = np.array([0, 0, 3])
+        self.ZERO_ROT = np.array([[1, 0, 0],
+                                  [0, 1, 0],
+                                  [0, 0, 1]])
+        self.SIDES = 32
+        theta = 2*np.pi/self.SIDES
         c = np.cos(theta)
         s = np.sin(theta)
-        # this is cylinder rotation matrix[a]
-        self.zero_rot = np.array([[1, 0, 0],[0, 1, 0],[0, 0, 1]])
-        self.t_rotation = np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
-        self.default_radius = 0.25
-        self.cylinder_co_rot =  np.array([self.default_radius, self.default_radius, 0])
-        self.cone_c_rot = np.array([2*self.default_radius, 2*self.default_radius, 0])
+        self.T_ROTATION = np.array([[c, -s, 0], 
+                                    [s, c, 0], 
+                                    [0, 0, 1]])
+
         self.height = np.array([0, 0, 3])
         self.drawing_function = self.vbo_arrow_draw
         self.buffers = None
-        self.n = 20
         self.prerendering_calculation()
 
     def prerendering_calculation(self):
@@ -62,17 +54,13 @@ class BetterArrow(AbstractGLContext, QWidget):
         super().prerendering_calculation()
         if self.normalize:
             BetterArrow.normalize_specification(self.color_vectors, vbo=True)
-        # self.structure_vbo = self.generate_structure(self.vectors_list,
-                                                                    # self.color_vectors)
         self.structure_vbo = self.regenerate_structure(self.color_vectors)
-        self.index_required = (self.sides)*2
+        self.index_required = (self.SIDES)*2
         print("INDEX REQUIRED {}".format(self.index_required))
-        self.indices = []
-        self.generate_index()
+        self.indices = self.generate_index()
         print("INDICES :{}".format(self.indices.shape))
         self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors, 
-                                                            k=(self.index_required))
-        print(np.array(self.structure_vbo).shape, self.color_vectors.shape)
+                                                          k=(self.index_required))
 
         self.buffers = None
         # pad the color
@@ -83,12 +71,18 @@ class BetterArrow(AbstractGLContext, QWidget):
 
 
     def generate_index(self):
+        # try:
+        #     indices = np.loadtxt('savespace/index.obj', delimiter=';', dtype='uint32')
+        #     return indices[:self.n]
+        # except FileNotFoundError:
+        indices = []
         for n in range(self.n):
             start_index = n*self.index_required+3
             for i in range(int(self.index_required)-2):
                 l = [start_index+i-3, start_index+i-2, start_index+i-1]
-                self.indices.extend(l)
-        self.indices = np.array(self.indices, dtype='uint32')
+                indices.extend(l)
+        indices = np.array(indices, dtype='uint32')
+        return indices
 
     def paintGL(self):
         """
@@ -183,12 +177,13 @@ class BetterArrow(AbstractGLContext, QWidget):
                                cylinder_co_rot, 
                                cone_co_rot,
                                t_rotation,
-                               height):
+                               height,
+                               sides):
         # no faces for now
         vbo = []
         org_cyl_rot = cylinder_co_rot 
         org_cone_rot = cone_co_rot
-        for i in range(BetterArrow.SIDES-1):
+        for i in range(sides-1):
             # bottom triangle - cylinder
             vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot))
             # bottom triangle - cone
@@ -223,79 +218,35 @@ class BetterArrow(AbstractGLContext, QWidget):
                               cylinder_co_rot, 
                               cone_co_rot, 
                               t_rotation,
-                              height):
+                              height,
+                              zero_rot,
+                              sides):
         local_vbo = []
         for vector, color in zip(vectors_list, iteration):
             if color.any():
                 try:
                     rot_matrix = BetterArrow.construct_rotation_matrix(color)
                 except:
-                    rot_matrix = BetterArrow.ZERO_ROT
+                    rot_matrix = zero_rot
             else:
-                rot_matrix = BetterArrow.ZERO_ROT
+                rot_matrix = zero_rot
             local_vbo.extend(BetterArrow.generate_arrow_object2(np.array(vector[0:3]), 
                                                                         rot_matrix,
                                                                         cylinder_co_rot, 
                                                                         cone_co_rot, 
                                                                         t_rotation,
-                                                                        height))
+                                                                        height,
+                                                                        sides))
         return local_vbo
 
     def regenerate_structure(self, colors_list):
         iterative_vbo = asynchronous_pool_order(BetterArrow.process_vector_to_vbo, (
-                                                self.vectors_list, BetterArrow.CYLINDER_CO_ROT,
-                                                                   BetterArrow.CONE_CO_ROT,
-                                                                   BetterArrow.T_ROTATION,
-                                                                   BetterArrow.HEIGHT), 
+                                                self.vectors_list, self.CYLINDER_CO_ROT,
+                                                                   self.CONE_CO_ROT,
+                                                                   self.T_ROTATION,
+                                                                   self.HEIGHT,
+                                                                   self.ZERO_ROT,
+                                                                   self.SIDES), 
                                                 colors_list)
         self.n = len(self.vectors_list)
         return np.array(iterative_vbo)
-
-    def generate_structure(self, vectors_list, colors_list):
-        iterative_vbo = []
-        print(vectors_list.shape, colors_list.shape)
-        for iteration in colors_list:
-            local_vbo = []
-            c = 0
-            for vector, color in zip(vectors_list, iteration):
-                if c >= self.n:
-                    break
-                if color.any():
-                    try:
-                        rot_matrix = self.construct_rotation_matrix(color)
-                    except:
-                        rot_matrix = self.zero_rot
-                    local_vbo.extend(self.generate_arrow_object(vector, rot_matrix))
-                else:                    
-                    local_vbo.extend(self.generate_arrow_object(vector, self.zero_rot))
-                c += 1
-            iterative_vbo.append(local_vbo)
-        self.n = len(self.vectors_list)
-        return iterative_vbo
-
-    def generate_arrow_object(self, origin, rot_matrix):
-        # no faces for now
-        vbo = []
-        origin_circle = np.array([origin[0],
-                                  origin[1],
-                                  origin[2]])
-
-        cylinder_co_rot = self.cylinder_co_rot
-        cone_co_rot = self.cone_c_rot
-        for i in range(self.sides-1):
-            # bottom triangle - cylinder
-            vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot))
-            # bottom triangle - cone
-            vbo.extend(origin_circle+rot_matrix.dot(cone_co_rot+self.height))
-            # top triangle -cylinder
-            vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot+self.height))
-            # top triangle -cone
-            vbo.extend(origin_circle+rot_matrix.dot(self.height*1.5))
-            cylinder_co_rot = self.t_rotation.dot(cylinder_co_rot)        
-            cone_co_rot = self.t_rotation.dot(cone_co_rot)     
-               
-        vbo.extend(origin_circle+rot_matrix.dot(self.cylinder_co_rot))
-        vbo.extend(origin_circle+rot_matrix.dot(self.cone_c_rot+self.height))
-        vbo.extend(origin_circle+rot_matrix.dot(self.cylinder_co_rot+self.height))
-        vbo.extend(origin_circle+rot_matrix.dot(self.height*1.5))
-        return vbo
