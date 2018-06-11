@@ -7,6 +7,16 @@ from binaryornot.check import is_binary
 import re
 
 def asynchronous_pool_order(func, args, object_list, timeout=20):
+    """
+    This function parallelizes by multiprocessing a given function.
+    It operates by iterating a list - object_list and passes each object
+    to a new process of function along with additional args with args
+    :param func: function that is to be multiprocessed
+    :param args: are the additional parameters to the functions (non-iterative)
+    if none pass () - an empty tuple
+    :param object_list: is the objects that are iterated
+    :param timeout: is the timeout for getting value in multiprocessing
+    """
     pool = Pool()
     output_list = []
     multiple_results = [pool.apply_async(func, (object_list[i], *args))
@@ -155,7 +165,6 @@ class MultiprocessingParse:
         # look for .odt  or .txt in current directory
         if len(plot_file) > 1:
             raise ValueError("plot file extension conflict (too many)")
-            #TODO error window
         elif not plot_file or plot_file is None:
             plot_data = None
             plot_file = None
@@ -171,8 +180,6 @@ class MultiprocessingParse:
                                         compose_trigger_list(files_in_directory,
                                                                     plot_data)
                     stages = len(trigger_list)
-                    print("TRIGGER LIST : {}, {}".format(stages,
-                                                            len(trigger_list)))
                 elif stages0 < stages:
                     raise ValueError("Odt cannot have fewer stages that files")
         else:

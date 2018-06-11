@@ -1,8 +1,17 @@
 #ignore data
+.vscode
 data/
 spins/
 examples/
-.gitignore
+
+
+
+Screenshots/
+test_folder/
+*.so
+*.o
+cython_modules/*.so
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -3,6 +3,7 @@ import imp
 import glob
 import json
 from pattern_types.Patterns import Singleton, DataObjectHolderProxy
+from widget_counter import WidgetCounter
 
 
 class DataObjectHolder(metaclass=Singleton):
@@ -95,7 +96,7 @@ class SettingsInterface:
         if file_list_in_dir is not None:
             return file_list_in_dir[-1]
 
-    def build_chain(self, object_alias, doh):
+    def build_chain(self, object_alias, doh, parent=None):
         """
         Returns the Widget object (not the constructor!) created by
         evaluating the file in __WIDGET_LOC__.
@@ -120,9 +121,14 @@ class SettingsInterface:
                                 doh)
                 passing_dict = {**optional_dict, **passing_dict}
             # construct object and pass dict as parameter
+            if self.widget_pane_handler[object_alias]['object_type'] == '3d_object':
+                WidgetCounter.OPENGL_WIDGET += 1
+            elif self.widget_pane_handler[object_alias]['object_type'] == '2d_object':
+                WidgetCounter.MATPLOTLIB_WIDGET += 1
             return self.evaluate_string_as_class_object(\
                         self.widget_pane_handler[object_alias]['object'],
-                        self.widget_pane_handler[object_alias]['object_type'])(data_dict=passing_dict)
+                        self.widget_pane_handler[object_alias]['object_type'])(data_dict=passing_dict,
+                                                                              parent=parent)
         except KeyError:
             raise ValueError("Invalid keys {} or {}".format(objectTypeA,
                                                             objectTypeB))

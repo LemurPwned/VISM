@@ -4,7 +4,7 @@ import json
 class ChooseWidget(QtWidgets.QWidget):
     """docstring for ChooseWidget."""
     def __init__(self, number, blockStructures=False, blockIterables=False,
-                    blockPlotIterables=False):
+                    blockPlotIterables=False, parent=None):
         super(ChooseWidget, self).__init__()
         self.__WIDGET_LOC__ = "Windows/widget_pane.json"
         self.json_file_handler = None
@@ -18,7 +18,12 @@ class ChooseWidget(QtWidgets.QWidget):
             self._BLOCK_PLOT_ITERABLES_ = True
         self.number = number
         self.setWindowTitle("Choose Widget")
-        self.setGeometry(0,0,350,400)
+        if parent == None:
+            self.setGeometry(0,0,350,400)
+        else:
+            self.setGeometry(parent.width()/2 - 350/2,
+                             parent.height()/2 - 400/2,
+                             350, 400)
         self.loadAvailWidgets()
         self.events()
         self.show()
@@ -54,8 +59,6 @@ class ChooseWidget(QtWidgets.QWidget):
     def loadWidgetsFromFile(self):
         self.json_file_handler = json.load(open(self.__WIDGET_LOC__))
         for widget_key in self.json_file_handler.keys():
-            # TODO: think about better solution,
-            # now i have better solution but have to change few things...
             if not self._BLOCK_ITERABLES_ and not self._BLOCK_STRUCTURES_ \
                 and not self._BLOCK_PLOT_ITERABLES_:
                 self.list.addItem(self.json_file_handler[widget_key]['alias'])

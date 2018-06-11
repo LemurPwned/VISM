@@ -19,6 +19,8 @@ class Movie:
         composes video from .fformat files, requires ffmpeg
         '''
         fileList = glob.glob(os.path.join(self.directory, '*' + self.format))
+        if len(fileList) < 1:
+            raise EnvironmentError
         total_movie = []
         fileList.sort(key=lambda x: os.path.basename(x))
         print("Merging up the files. This might take a moment...")

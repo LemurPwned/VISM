@@ -3,7 +3,7 @@ from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
 
 
 class Canvas(AbstractCanvas):
-    def __init__(self, data_dict):
+    def __init__(self, data_dict, parent=None):
         super().__init__(self)
         self.shareData(**data_dict)
         self.i = self.current_state
@@ -34,7 +34,7 @@ class Canvas(AbstractCanvas):
 
     def replot(self):
         self.i %= self.internal_iterations
-        self.plot_axis.hpl.set_ydata(np.lib.pad(self.graph_data[:self.i],
+        self.plot_axis.hpl.set_ydata(np.pad(self.graph_data[:self.i],
                                         (0, self.internal_iterations - self.i),
-                                                mode='constant'))
+                                    mode='constant', constant_values=(np.nan,)))
         self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))

@@ -1,4 +1,6 @@
 import numpy as np
+import math
+
 cimport numpy as np
 cimport cython
 
@@ -34,3 +36,76 @@ def multi_iteration_normalize(np.ndarray[np.float32_t, ndim=3] color_iterations)
     for i in range(0, ci):
         color_iterations[i] = atomic_normalization(color_iterations[i])
     np.nan_to_num(color_iterations, copy=False)
+
+
+def generate_arrow_object(origin_circle,
+                           rot_matrix,
+                           cylinder_co_rot,
+                           cone_co_rot,
+                           t_rotation,
+                           height,
+                           sides):
+    # no faces for now
+    vbo = []
+    org_cyl_rot = cylinder_co_rot
+    org_cone_rot = cone_co_rot
+    for i in range(sides-1):
+        # bottom triangle - cylinder
+        vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot))
+        # bottom triangle - cone
+        vbo.extend(origin_circle+rot_matrix.dot(cone_co_rot+height))
+        # top triangle -cylinder
+        vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot+height))
+        # top triangle -cone
+        vbo.extend(origin_circle+rot_matrix.dot(height*1.5))
+        cylinder_co_rot = t_rotation.dot(cylinder_co_rot)
+        cone_co_rot = t_rotation.dot(cone_co_rot)
+
+    vbo.extend(origin_circle+rot_matrix.dot(org_cyl_rot))
+    vbo.extend(origin_circle+rot_matrix.dot(org_cone_rot+height))
+    vbo.extend(origin_circle+rot_matrix.dot(org_cyl_rot+height))
+    vbo.extend(origin_circle+rot_matrix.dot(height*1.5))
+    return vbo
+
+
+def construct_rotation_matrix(vector):
+    cos_x_rot = vector[1]
+    cos_y_rot = vector[0]/math.sqrt(1 - math.pow(vector[2],2))
+    sin_x_rot = math.sin(math.acos(cos_x_rot))  # radian input
+    sin_y_rot = math.sin(math.acos(cos_y_rot))
+    return np.array([[cos_y_rot, 0, sin_y_rot],
+                     [sin_y_rot*sin_x_rot, cos_x_rot, -sin_x_rot*cos_y_rot],
+                     [-cos_x_rot*sin_y_rot, sin_x_rot, sin_x_rot*cos_y_rot]])
+
+def process_vector_to_vbo(iteration,
+                          vectors_list,
+                          cylinder_co_rot,
+                          cone_co_rot,
+                          t_rotation,
+                          height,
+                          sides,
+                          zero_pad):
+    local_vbo = []
+    for vector, color in zip(vectors_list, iteration):
+        if color.any():
+            try:
+                rot_matrix = construct_rotation_matrix(color)
+                local_vbo.extend(generate_arrow_object(np.array(vector[0:3]),
+                                                       rot_matrix,
+                                                       cylinder_co_rot,
+                                                       cone_co_rot,
+                                                       t_rotation,
+                                                       height,
+                                                       sides))
+            except:
+                local_vbo.extend(zero_pad)
+        else:
+            local_vbo.extend(zero_pad)
+
+    return local_vbo
+
+def calculate_layer_colors(x, relative_vector=[0, 1, 0], scale=1):
+    dot = np.array([np.inner(i, relative_vector) for i in x])
+    angle = np.arccos(dot) ** scale
+    angle[np.isnan(angle)] = 0  # get rid of NaN expressions
+    return angle

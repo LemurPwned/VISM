@@ -12,18 +12,17 @@ from CanvasLayer import CanvasLayer
 
 class Debugger:
     def __init__(self):
-        self.path = "data/firstData/"
+        self.path = "data/0200nm/"
         self.mainGui = MainWindow()
 
     def loadData(self):
         self.rawVectorData, self.omf_header, self.odtData, \
                 self.stages = Parser.readFolder(self.path)
         self.mainGui.rawVectorData = self.rawVectorData
-        self.mainGui.omf_header = self.omf_header
-        self.mainGui.odt_data = self.odtData
+        self.mainGui.file_header = self.omf_header
+        self.mainGui.plot_data = self.odtData
         self.mainGui.stages = self.stages
         self.mainGui._LOADED_FLAG_ = True
-
 
     def setupPanes(self, count):
         self.count = count

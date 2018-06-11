@@ -5,7 +5,7 @@ import re
 from PopUp import PopUpWrapper
 
 class SimplePerfOptions(QWidget, Ui_Dialog):
-    def __init__(self, layer_size=None):
+    def __init__(self, layer_size=None, parent=None):
         super(SimplePerfOptions, self).__init__()
         self.setWindowTitle("Simple Perfomance Options")
         self.setupUi(self)
@@ -77,8 +77,8 @@ class SimplePerfOptions(QWidget, Ui_Dialog):
             self.close()
         except ValueError as ve:
             PopUpWrapper("Invalid vector format", str(ve), None,
-                            QtWidgets.QMessageBox.Yes,
-                            QtWidgets.QMessageBox.No, None, quit)
+                            QMessageBox.Yes,
+                            QMessageBox.No, None, quit, parent=self)
     def reject(self):
         self.eventHandler(None)
         self.close()
