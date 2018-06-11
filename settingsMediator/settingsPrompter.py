@@ -40,6 +40,7 @@ class SettingsPrompter(SettingsInterface):
             # firstly check if a given parameter is accessible in DataObjectHolde
             settings_args_param.append(DataObjectHolder.retrieveDataObject(setting_parameter))
         # return a proper settings object constructed using params above
+        # parent must be always the last parameter
         return self.evaluate_string_as_class_object(self.\
                     widget_pane_handler[self.settingsType]['settings'][0],
                     'settings_object')(*settings_args_param, parent=parent)

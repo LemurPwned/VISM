@@ -17,7 +17,6 @@ class BuildVerifier:
         else:
             return os_string
 
-	# python3 cython_modules/ex_setup.py build_ext --build-lib cython_modules/build --inplace
     def intercept_failed_build(self, cython_traceback):
         error_msg = 'Error compiling Cython file:'
         print("If above build failed, please follow instructions on " +
@@ -50,9 +49,10 @@ class BuildVerifier:
 
     def cython_builds(self):
         # enforce cython build
+# python3 cython_modules/ex_setup.py build_ext --build-lib cython_modules/build --inplace
         out = None
         if self.__OSTYPE__ == "Windows":
-            result = subprocess.Popen(['python', 'cython_modules/ex_setup.py',
+            result = subprocess.Popen(['python3', 'cython_modules/ex_setup.py',
                                     'build_ext', '--build-lib',
                                     'cython_modules/build',
                                     '--inplace'], stdout=subprocess.PIPE,

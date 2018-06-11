@@ -316,6 +316,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         # value[0] stores widget number
         # value[1] stores widget name
         self.sp.swap_settings_type(value[1])
+        self.doh.setDataObject(value[1], 'object_alias')
         # deduce object type based on passed string
         self.window = self.sp.\
             get_settings_window_constructor_from_file(self.doh, parent=self)
