@@ -1,4 +1,5 @@
 #ignore data
+.vscode
 data/
 spins/
 examples/

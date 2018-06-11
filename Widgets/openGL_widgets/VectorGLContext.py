@@ -71,6 +71,7 @@ class VectorGLContext(AbstractGLContext, QWidget):
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
         gl.glColorPointer(3, gl.GL_FLOAT, 0, None)
 
+        # draw the lines
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
         gl.glVertexPointer(4, gl.GL_FLOAT, 0, None)
         gl.glDrawArrays(gl.GL_LINES, 0, int(self.vertices))

@@ -6,7 +6,7 @@ from PopUp import PopUpWrapper
 import re
 
 class PerfOptions(QWidget, Ui_Dialog):
-    def __init__(self, layer_size=None):
+    def __init__(self, layer_size=None, object_type='None'):
         super(PerfOptions, self).__init__()
         self.setWindowTitle("Perfomance Options")
         self.setupUi(self)
@@ -18,13 +18,25 @@ class PerfOptions(QWidget, Ui_Dialog):
 
         self.decimate = 1
         self.averaging = 1
+        self.initial_options(object_type)
 
         self.basicOptions()
         self.show()
         self.options = None
-
         self.color_disable = False
 
+    def initial_options(self, object_type):
+        print(object_type)
+        self.default_size = 1
+        self.default_averaging = 1
+        if object_type == 'ArrowGLContext':
+            # defaults
+            self.default_averaging = 4
+            self.decimate = 1
+            self.default_size = 2
+        elif object_type == 'CubicGLContext':
+            self.default_size = 5
+        
     def disableDecimate(self):
         self.horizontalSlider_4.setEnabled(False)
         # enable averaging
@@ -59,30 +71,35 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.checkBox_2.stateChanged.connect(self.disableAveraging)
 
         # check decimate: decimate is checkbox 2 and slider 4
-        self.checkBox_2.setChecked(True)
+        self.checkBox_2.setChecked(False)
+        self.checkBox_3.setChecked(True)
 
         self.horizontalSlider.valueChanged.connect(self.averagingChange)
         self.horizontalSlider_2.valueChanged.connect(self.layerChange)
         self.horizontalSlider_3.valueChanged.connect(self.sizeChange)
         self.horizontalSlider_4.valueChanged.connect(self.decimateChange)
 
+        # averaging
         self.horizontalSlider.setMaximum(5)
         self.horizontalSlider.setMinimum(1)
-        self.horizontalSlider.setValue(1)
+        self.horizontalSlider.setValue(self.default_averaging)
         self.horizontalSlider.setSingleStep(1)
 
+        # scale
         self.horizontalSlider_3.setEnabled(True)
         self.horizontalSlider_3.setMaximum(5)
         self.horizontalSlider_3.setMinimum(1)
-        self.horizontalSlider_3.setValue(1)
+        self.horizontalSlider_3.setValue(self.default_size)
         self.horizontalSlider_3.setSingleStep(1)
 
+        # decimate
         self.horizontalSlider_4.setEnabled(True)
         self.horizontalSlider_4.setMaximum(5)
         self.horizontalSlider_4.setMinimum(1)
         self.horizontalSlider_4.setValue(1)
         self.horizontalSlider_4.setSingleStep(1)
 
+        # layer
         if not self.loaded:
             self.horizontalSlider_2.setEnabled(False)
         elif self.loaded:
