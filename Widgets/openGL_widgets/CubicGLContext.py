@@ -14,7 +14,8 @@ from ColorPolicy import ColorPolicy
 from multiprocessing import Pool
 
 class CubicGLContext(AbstractGLContext, QWidget):
-    def __init__(self, data_dict):
+    def __init__(self, data_dict, parent):
+        self.cld = parent
         super().__init__()
         super().shareData(**data_dict)
         self.vertices = 0
@@ -22,8 +23,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
         self.buffer_len = 0
         self.prerendering_calculation()
         self.drawing_function = self.vbo_cubic_draw
-        self.size = 5
-
+        
     def prerendering_calculation(self):
         super().prerendering_calculation()
         if self.normalize:

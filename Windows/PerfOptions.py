@@ -6,7 +6,7 @@ from PopUp import PopUpWrapper
 import re
 
 class PerfOptions(QWidget, Ui_Dialog):
-    def __init__(self, layer_size=None, object_type='None'):
+    def __init__(self, layer_size=None, object_type='None', parent=None):
         super(PerfOptions, self).__init__()
         self.setWindowTitle("Perfomance Options")
         self.setupUi(self)

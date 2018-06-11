@@ -1,11 +1,10 @@
 from AnimatedWidget import AnimatedWidget
 from PyQt5.QtWidgets import QOpenGLWidget
-
 import OpenGL.GL as gl
 import OpenGL.GLU as glu
 
 from PyQt5.Qt import Qt
-from PyQt5.QtCore import QPoint
+from PyQt5.QtCore import QPoint, QCoreApplication, QSize
 
 import math as mt
 from PIL import Image
@@ -53,7 +52,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.FRAME_BENCHMARK_FLAG = False
         self.FPS_UPDATE_INTERVAL = 0.25
         self.TIME_PASSED = 0.0
-
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)

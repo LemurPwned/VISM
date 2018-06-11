@@ -9,7 +9,7 @@ from cython_modules.color_policy import multi_iteration_normalize, \
 
 
 class CanvasLayer(AbstractCanvas):
-    def __init__(self, data_dict):
+    def __init__(self, data_dict, parent=None):
         super().__init__(self)
         super().shareData(**data_dict)
         super().receivedOptions()

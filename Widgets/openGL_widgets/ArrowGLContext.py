@@ -24,9 +24,11 @@ from multiprocessing_parse import asynchronous_pool_order
 import math
 
 class ArrowGLContext(AbstractGLContext, QWidget):
-    def __init__(self, data_dict):
+    def __init__(self, data_dict, parent):
+        self.cld = parent
         super().__init__()
         super().shareData(**data_dict)
+        print(self.parent())
         self.DEFAULT_RADIUS = 0.25*self.scale
         self.CYLINDER_CO_ROT =  np.array([self.DEFAULT_RADIUS, 
                                           self.DEFAULT_RADIUS, 0])

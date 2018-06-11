@@ -3,7 +3,7 @@ from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
 
 
 class Canvas(AbstractCanvas):
-    def __init__(self, data_dict):
+    def __init__(self, data_dict, parent=None):
         super().__init__(self)
         self.shareData(**data_dict)
         self.i = self.current_state
