@@ -54,10 +54,11 @@ class BetterArrow(AbstractGLContext, QWidget):
         self.height = np.array([0, 0, 3])
         self.drawing_function = self.vbo_arrow_draw
         self.buffers = None
-        self.n = 20000
+        self.n = 20
         self.prerendering_calculation()
 
     def prerendering_calculation(self):
+        self.decimate = 4
         super().prerendering_calculation()
         if self.normalize:
             BetterArrow.normalize_specification(self.color_vectors, vbo=True)
@@ -177,32 +178,100 @@ class BetterArrow(AbstractGLContext, QWidget):
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
     @staticmethod
-    def generate_arrow_object2(origin, rot_matrix):
+    def generate_arrow_object2(origin_circle,
+                               rot_matrix, 
+                               cylinder_co_rot, 
+                               cone_co_rot,
+                               t_rotation,
+                               height):
         # no faces for now
         vbo = []
-        origin_circle = np.array([origin[0],
-                                  origin[1],
-                                  origin[2]])
-
-        cylinder_co_rot = BetterArrow.CYLINDER_CO_ROT
-        cone_co_rot = BetterArrow.CONE_CO_ROT
+        org_cyl_rot = cylinder_co_rot 
+        org_cone_rot = cone_co_rot
         for i in range(BetterArrow.SIDES-1):
             # bottom triangle - cylinder
             vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot))
             # bottom triangle - cone
-            vbo.extend(origin_circle+rot_matrix.dot(cone_co_rot+BetterArrow.HEIGHT))
+            vbo.extend(origin_circle+rot_matrix.dot(cone_co_rot+height))
             # top triangle -cylinder
-            vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot+BetterArrow.HEIGHT))
+            vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot+height))
             # top triangle -cone
-            vbo.extend(origin_circle+rot_matrix.dot(BetterArrow.HEIGHT*1.5))
-            cylinder_co_rot = BetterArrow.T_ROTATION.dot(cylinder_co_rot)        
-            cone_co_rot = BetterArrow.T_ROTATION.dot(cone_co_rot)     
+            vbo.extend(origin_circle+rot_matrix.dot(height*1.5))
+            cylinder_co_rot = t_rotation.dot(cylinder_co_rot)        
+            cone_co_rot = t_rotation.dot(cone_co_rot)     
                
-        vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot))
-        vbo.extend(origin_circle+rot_matrix.dot(cone_co_rot+BetterArrow.HEIGHT))
-        vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot+BetterArrow.HEIGHT))
-        vbo.extend(origin_circle+rot_matrix.dot(BetterArrow.HEIGHT*1.5))
+        vbo.extend(origin_circle+rot_matrix.dot(org_cyl_rot))
+        vbo.extend(origin_circle+rot_matrix.dot(org_cone_rot+height))
+        vbo.extend(origin_circle+rot_matrix.dot(org_cyl_rot+height))
+        vbo.extend(origin_circle+rot_matrix.dot(height*1.5))
         return vbo
+
+
+    @staticmethod
+    def construct_rotation_matrix(vector):
+        cos_x_rot = vector[1]
+        cos_y_rot = vector[0]/math.sqrt(1 - math.pow(vector[2],2))
+        sin_x_rot = math.sin(math.acos(cos_x_rot)) # radian input
+        sin_y_rot = math.sin(math.acos(cos_y_rot))
+        return np.array([[cos_y_rot, 0, sin_y_rot],
+                         [sin_y_rot*sin_x_rot, cos_x_rot, -sin_x_rot*cos_y_rot],
+                         [-cos_x_rot*sin_y_rot, sin_x_rot, sin_x_rot*cos_y_rot]])
+
+    @staticmethod
+    def process_vector_to_vbo(iteration, 
+                              vectors_list, 
+                              cylinder_co_rot, 
+                              cone_co_rot, 
+                              t_rotation,
+                              height):
+        local_vbo = []
+        for vector, color in zip(vectors_list, iteration):
+            if color.any():
+                try:
+                    rot_matrix = BetterArrow.construct_rotation_matrix(color)
+                except:
+                    rot_matrix = BetterArrow.ZERO_ROT
+            else:
+                rot_matrix = BetterArrow.ZERO_ROT
+            local_vbo.extend(BetterArrow.generate_arrow_object2(np.array(vector[0:3]), 
+                                                                        rot_matrix,
+                                                                        cylinder_co_rot, 
+                                                                        cone_co_rot, 
+                                                                        t_rotation,
+                                                                        height))
+        return local_vbo
+
+    def regenerate_structure(self, colors_list):
+        iterative_vbo = asynchronous_pool_order(BetterArrow.process_vector_to_vbo, (
+                                                self.vectors_list, BetterArrow.CYLINDER_CO_ROT,
+                                                                   BetterArrow.CONE_CO_ROT,
+                                                                   BetterArrow.T_ROTATION,
+                                                                   BetterArrow.HEIGHT), 
+                                                colors_list)
+        self.n = len(self.vectors_list)
+        return np.array(iterative_vbo)
+
+    def generate_structure(self, vectors_list, colors_list):
+        iterative_vbo = []
+        print(vectors_list.shape, colors_list.shape)
+        for iteration in colors_list:
+            local_vbo = []
+            c = 0
+            for vector, color in zip(vectors_list, iteration):
+                if c >= self.n:
+                    break
+                if color.any():
+                    try:
+                        rot_matrix = self.construct_rotation_matrix(color)
+                    except:
+                        rot_matrix = self.zero_rot
+                    local_vbo.extend(self.generate_arrow_object(vector, rot_matrix))
+                else:                    
+                    local_vbo.extend(self.generate_arrow_object(vector, self.zero_rot))
+                c += 1
+            iterative_vbo.append(local_vbo)
+        self.n = len(self.vectors_list)
+        return iterative_vbo
 
     def generate_arrow_object(self, origin, rot_matrix):
         # no faces for now
@@ -230,51 +299,3 @@ class BetterArrow(AbstractGLContext, QWidget):
         vbo.extend(origin_circle+rot_matrix.dot(self.cylinder_co_rot+self.height))
         vbo.extend(origin_circle+rot_matrix.dot(self.height*1.5))
         return vbo
-
-    @staticmethod
-    def construct_rotation_matrix(vector):
-        cos_x_rot = vector[1]
-        cos_y_rot = vector[0]/math.sqrt(1 - math.pow(vector[2],2))
-        sin_x_rot = math.sin(math.acos(cos_x_rot)) # radian input
-        sin_y_rot = math.sin(math.acos(cos_y_rot))
-        return np.array([[cos_y_rot, 0, sin_y_rot],
-                         [sin_y_rot*sin_x_rot, cos_x_rot, -sin_x_rot*cos_y_rot],
-                         [-cos_x_rot*sin_y_rot, sin_x_rot, sin_x_rot*cos_y_rot]])
-
-    @staticmethod
-    def process_vector_to_vbo(iteration, vectors_list):
-        local_vbo = []
-        for vector, color in zip(vectors_list, iteration):
-            if color.any():
-                try:
-                    rot_matrix = BetterArrow.construct_rotation_matrix(color)
-                except:
-                    rot_matrix = BetterArrow.ZERO_ROT
-                local_vbo.extend(BetterArrow.generate_arrow_object2(vector, rot_matrix))
-            else:                    
-                local_vbo.extend(BetterArrow.generate_arrow_object2(vector, BetterArrow.ZERO_ROT))
-        return local_vbo
-
-    def regenerate_structure(self, colors_list):
-        iterative_vbo = asynchronous_pool_order(BetterArrow.process_vector_to_vbo, (self.vectors_list,), 
-                                                colors_list)
-        self.n = len(self.vectors_list)
-        return np.array(iterative_vbo)
-
-    def generate_structure(self, vectors_list, colors_list):
-        iterative_vbo = []
-        print(vectors_list.shape, colors_list.shape)
-        for iteration in colors_list:
-            local_vbo = []
-            for vector, color in zip(vectors_list, iteration):
-                if color.any():
-                    try:
-                        rot_matrix = self.construct_rotation_matrix(color)
-                    except:
-                        rot_matrix = self.zero_rot
-                    local_vbo.extend(self.generate_arrow_object(vector, rot_matrix))
-                else:                    
-                    local_vbo.extend(self.generate_arrow_object(vector, self.zero_rot))
-            iterative_vbo.append(local_vbo)
-        self.n = len(self.vectors_list)
-        return iterative_vbo
