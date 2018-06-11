@@ -68,30 +68,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         normalization procedure
         """
         multi_iteration_normalize(color_vectors)
-        background = np.array([0.5, 0.5, 0.5])
-        if cls.__name__ == 'CubicGLContext':
-            # color_vectors = ColorPolicy.multi_padding(color_vectors)
-            background = np.array([np.nan, np.nan, np.nan])
-            # replace black with background colors
-            # NOTE: This is dangerous since dot product can be zero
-            # color_vectors[~color_vectors.any(axis=2)] = background
-        elif cls.__name__ == 'VectorGLContext':
-            background = np.array([0.0, 0.0, 0.0])
-            if vbo:
-                pass
-                # not needed right now but leave for compatibility
-                # replace black with background colors
-                # NOTE: This is dangerous since dot product can be zero
-                color_vectors[~color_vectors.any(axis=2)] = background
-
-        elif cls.__name__ == 'BetterArrow':
-            background = np.array([0.0, 0.0, 0.0])
-            if vbo:
-                pass
-                # not needed right now but leave for compatibility
-                # replace black with background colors
-                # NOTE: This is dangerous since dot product can be zero
-                color_vectors[~color_vectors.any(axis=2)] = background
 
     def prerendering_calculation(self):
         """
