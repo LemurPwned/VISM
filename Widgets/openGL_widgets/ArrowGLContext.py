@@ -1,27 +1,16 @@
-import OpenGL.GLUT as glut
-import OpenGL.GLU as glu
 import OpenGL.GL as gl
-from OpenGL.arrays import vbo
-from OpenGL.raw.GL.ARB.vertex_array_object import glGenVertexArrays, \
-                                                  glBindVertexArray
-
 import numpy as np
-
 from PyQt5.QtWidgets import QWidget
-from PyQt5.Qt import Qt
-
-from cython_modules.cython_parse import getLayerOutline, genCubes
 
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 from pattern_types.Patterns import AbstractGLContextDecorators
 
 from ColorPolicy import ColorPolicy
-from multiprocessing import Pool
 from ctypes import c_void_p
-
 from multiprocessing_parse import asynchronous_pool_order
-
+from cython_modules.color_policy import process_vector_to_vbo
 import math
+
 
 class ArrowGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict, parent):
@@ -30,8 +19,8 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         super().shareData(**data_dict)
         print(self.parent())
         self.DEFAULT_RADIUS = 0.25*self.scale
-        self.CYLINDER_CO_ROT =  np.array([self.DEFAULT_RADIUS, 
-                                          self.DEFAULT_RADIUS, 0])
+        self.CYLINDER_CO_ROT = np.array([self.DEFAULT_RADIUS,
+                                         self.DEFAULT_RADIUS, 0])
         self.CONE_CO_ROT = np.array([2*self.DEFAULT_RADIUS, 
                                      2*self.DEFAULT_RADIUS, 0])
         self.HEIGHT = np.array([0, 0, 3])
@@ -56,7 +45,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         if self.normalize:
             ArrowGLContext.normalize_specification(self.color_vectors, vbo=True)
         self.structure_vbo = self.regenerate_structure(self.color_vectors)
-        self.index_required = (self.SIDES)*2
+        self.index_required = self.SIDES*2
         self.indices = self.generate_index()
         self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors, 
                                                           k=(self.index_required))
@@ -159,93 +148,22 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.buffers[2])
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
         gl.glVertexPointer(3, gl.GL_FLOAT,
-                            3*self.__FLOAT_BYTE_SIZE__, c_void_p(4*3))
+                           3*self.__FLOAT_BYTE_SIZE__, c_void_p(4*3))
 
         gl.glDrawElements(gl.GL_TRIANGLES,
-                        len(self.indices),
-                        gl.GL_UNSIGNED_INT, 
-                        None)
+                          len(self.indices),
+                          gl.GL_UNSIGNED_INT,
+                          None)
 
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
-    @staticmethod
-    def generate_arrow_object(origin_circle,
-                               rot_matrix, 
-                               cylinder_co_rot, 
-                               cone_co_rot,
-                               t_rotation,
-                               height,
-                               sides):
-        # no faces for now
-        vbo = []
-        org_cyl_rot = cylinder_co_rot 
-        org_cone_rot = cone_co_rot
-        for i in range(sides-1):
-            # bottom triangle - cylinder
-            vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot))
-            # bottom triangle - cone
-            vbo.extend(origin_circle+rot_matrix.dot(cone_co_rot+height))
-            # top triangle -cylinder
-            vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot+height))
-            # top triangle -cone
-            vbo.extend(origin_circle+rot_matrix.dot(height*1.5))
-            cylinder_co_rot = t_rotation.dot(cylinder_co_rot)        
-            cone_co_rot = t_rotation.dot(cone_co_rot)     
-               
-        vbo.extend(origin_circle+rot_matrix.dot(org_cyl_rot))
-        vbo.extend(origin_circle+rot_matrix.dot(org_cone_rot+height))
-        vbo.extend(origin_circle+rot_matrix.dot(org_cyl_rot+height))
-        vbo.extend(origin_circle+rot_matrix.dot(height*1.5))
-        return vbo
-
-
-    @staticmethod
-    def construct_rotation_matrix(vector):
-        cos_x_rot = vector[1]
-        cos_y_rot = vector[0]/math.sqrt(1 - math.pow(vector[2],2))
-        sin_x_rot = math.sin(math.acos(cos_x_rot)) # radian input
-        sin_y_rot = math.sin(math.acos(cos_y_rot))
-        return np.array([[cos_y_rot, 0, sin_y_rot],
-                         [sin_y_rot*sin_x_rot, cos_x_rot, -sin_x_rot*cos_y_rot],
-                         [-cos_x_rot*sin_y_rot, sin_x_rot, sin_x_rot*cos_y_rot]])
-
-    @staticmethod
-    def process_vector_to_vbo(iteration, 
-                              vectors_list, 
-                              cylinder_co_rot, 
-                              cone_co_rot, 
-                              t_rotation,
-                              height,
-                              zero_rot,
-                              sides,
-                              zero_pad):
-        local_vbo = []
-        for vector, color in zip(vectors_list, iteration):
-            if color.any():
-                try:
-                    rot_matrix = ArrowGLContext.construct_rotation_matrix(color)
-                    local_vbo.extend(ArrowGLContext.generate_arrow_object(np.array(vector[0:3]), 
-                                                        rot_matrix,
-                                                        cylinder_co_rot, 
-                                                        cone_co_rot, 
-                                                        t_rotation,
-                                                        height,
-                                                        sides))
-                except:
-                    local_vbo.extend(zero_pad)
-            else:
-                local_vbo.extend(zero_pad)
-
-        return local_vbo
-
     def regenerate_structure(self, colors_list):
-        iterative_vbo = asynchronous_pool_order(ArrowGLContext.process_vector_to_vbo, (
+        iterative_vbo = asynchronous_pool_order(process_vector_to_vbo, (
                                                 self.vectors_list, self.CYLINDER_CO_ROT,
                                                                    self.CONE_CO_ROT,
                                                                    self.T_ROTATION,
                                                                    self.HEIGHT,
-                                                                   self.ZERO_ROT,
                                                                    self.SIDES,
                                                                    self.ZERO_PAD), 
                                                 colors_list)

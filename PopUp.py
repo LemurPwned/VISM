@@ -10,7 +10,7 @@ class PopUpWrapper(QWidget):
         self.width = 320
         self.height = 200
 
-        if parent == None:
+        if parent is None:
             self.parentless = True
             app = QtCore.QCoreApplication.instance()
             screen_resolution = app.desktop().screenGeometry()

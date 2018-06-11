@@ -1,11 +1,11 @@
 from matplotlib import cm
 import numpy as np
 
-from ColorPolicy import ColorPolicy
 from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
 from multiprocessing_parse import asynchronous_pool_order
 from cython_modules.color_policy import multi_iteration_normalize, \
-                                        multi_iteration_dot_product
+                                        multi_iteration_dot_product, \
+                                        calculate_layer_colors
 
 
 class CanvasLayer(AbstractCanvas):
@@ -66,9 +66,9 @@ class CanvasLayer(AbstractCanvas):
         self.color_vectors = self.color_vectors[:, self.layer, :, :, :]
         self.color_vectors = self.color_vectors.reshape(self.iterations,
                                                             self.xc*self.yc, 3)
-        self.color_vectors = asynchronous_pool_order(CanvasLayer.calculate_layer_colors,
-                                                        (self.vector_set,),
-                                                        self.color_vectors)
+        self.color_vectors = asynchronous_pool_order(calculate_layer_colors,
+                                                     (self.vector_set,),
+                                                     self.color_vectors)
         self.color_vectors = np.array(self.color_vectors, dtype=np.float)
         try:
             assert self.color_vectors.shape == (self.iterations, self.xc, self.yc)
@@ -79,13 +79,6 @@ class CanvasLayer(AbstractCanvas):
         y = np.linspace(0, self.yc, self.yc)
         dx, dy = np.meshgrid(x, y)
         return dx, dy
-
-    @staticmethod
-    def calculate_layer_colors(x, relative_vector=[0, 1, 0], scale=1):
-        dot = np.array([np.inner(i, relative_vector) for i in x])
-        angle = np.arccos(dot) ** scale
-        angle[np.isnan(angle)] = 0  # get rid of NaN expressions
-        return angle
 
     def set_i(self, value, trigger=False):
         if trigger:

@@ -9,6 +9,7 @@ MPL - Matplotlib 2d Plot
 LP - Layer 2d Plot
 """
 
+
 class SettingsPrompter(SettingsInterface):
     """
     @settingsType is a tuple string indicating settings object for a given object
