@@ -82,19 +82,6 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         indices = np.array(indices, dtype='uint32')
         return indices
 
-    def paintGL(self):
-        """
-        Clears the buffer and redraws the scene
-        """
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        # Push Matrix onto stack
-        gl.glPushMatrix()
-        self.transformate()
-        self.drawing_function()
-        # Pop Matrix off stack
-        gl.glPopMatrix()
-        self.update()
-
     def create_vbo(self):
         buffers = gl.glGenBuffers(3)
         # vertices buffer
