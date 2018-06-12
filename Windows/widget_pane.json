@@ -40,7 +40,11 @@
                       "required": ["current_state", "options",
                                    "file_header","color_vectors",
                                    "screenshot_dir", "geom"],
-                      "optional": ["iterations"]
+                      "optional": ["iterations"],
+                      "toolbar" : [["Reset", "initial_transformation"],
+                                                   ["Zoom in", "zoomIn"],
+                                                   ["Zoom out", "zoomOut"],
+                                                   ["Screenshot", "screenshot_manager"]]
                       },
     "Canvas":         {
                         "alias": "2D_Matplotlib",

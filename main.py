@@ -372,7 +372,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.toolbar = self.buildToolbar(pane.widget)
         if self.toolbar is not None:
             pane.layout.setMenuBar(self.toolbar)
-            pane.layout.setContentsMargins(0,0,0,0)
+            pane.layout.setContentsMargins(0, 0, 0, 0)
 
     def buildToolbar(self, widget):
         """

@@ -1,9 +1,7 @@
-import OpenGL.GLU as glu
 import OpenGL.GL as gl
 import numpy as np
 
-from PyQt5.QtWidgets import QWidget, QToolBar
-from PyQt5.Qt import Qt
+from PyQt5.QtWidgets import QWidget
 
 from cython_modules.cython_parse import getLayerOutline, genCubes
 
@@ -11,7 +9,6 @@ from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 from pattern_types.Patterns import AbstractGLContextDecorators
 
 from ColorPolicy import ColorPolicy
-from multiprocessing import Pool
 
 
 class CubicGLContext(AbstractGLContext, QWidget):
@@ -26,11 +23,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
 
         self.prerendering_calculation()
         self.drawing_function = self.vbo_cubic_draw
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> 8af83b4c9c4d07d3e724007fdc41930a7b9cbbb6
     def prerendering_calculation(self):
         super().prerendering_calculation()
         if self.normalize:

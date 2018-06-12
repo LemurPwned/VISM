@@ -4,6 +4,7 @@ from widget_counter import WidgetCounter
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
 
+
 class Singleton(type):
     """
     From StackOverflow on pythonic way to implement Singleton
@@ -18,6 +19,7 @@ class Singleton(type):
 class Proxy(object):
     def __init__(self, _obj):
         self._obj = _obj
+
 
 class DataObjectHolderProxy(Proxy):
     """
@@ -63,6 +65,7 @@ class DataObjectHolderProxy(Proxy):
                 raise AttributeError("Trying to remove unexisting element: ")
         return _is_removable
 
+
 class AbstractGLContextDecorators:
     def recording_decorator(drawing_function):
         def _rec(*args):
@@ -80,6 +83,7 @@ class AbstractGLContextDecorators:
                 func(*args)
         return _disable
 
+
 class MainContextDecorators:
     def window_resize_fix(qdialog_function):
         def _window_resize(main_window):
@@ -94,7 +98,7 @@ class MainContextDecorators:
                 main_window.setWindowState(main_window.windowState())
                 main_window.setFixedSize(normalWindowSize);
                 main_window.show()
-                window.saved_parent.lower() # reconcoile context
+                main_window.saved_parent.lower() # reconcoile context
             else:
                 to_return = qdialog_function(main_window)
             return to_return
