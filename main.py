@@ -1,11 +1,11 @@
-# from buildVerifier import BuildVerifier
+from buildVerifier import BuildVerifier
 # verify build
 # execute makefile
-# if BuildVerifier.OS_GLOB_SYS == "Windows":
-#     print("PLEASE BUILD CYTHON AS INDICATED IN GETTING STARTED GUIDE\n")
-# else:
-#     bv = BuildVerifier()
-#     bv.cython_builds()
+if BuildVerifier.OS_GLOB_SYS == "Windows":
+    print("PLEASE BUILD CYTHON AS INDICATED IN GETTING STARTED GUIDE\n")
+else:
+    bv = BuildVerifier()
+    bv.cython_builds()
 
 import sys
 import threading
@@ -131,7 +131,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                     yesMes=None, parent=self)
 
     def selectText(self):
-        self.selectionWindow = Select()
+        self.selectionWindow = Select(self)
 
     @MainContextDecorators.window_resize_fix
     def promptDirectory(self):
