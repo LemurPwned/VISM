@@ -7,9 +7,9 @@ import glob
 
 class BuildVerifier:
     OS_GLOB_SYS = platform.system()
+
     def __init__(self):
         self.__OSTYPE__ = self.os_deocde(platform.system())
-        self.cython_builds()
 
     def os_deocde(self, os_string):
         if os_string == 'Darwin':
@@ -60,7 +60,7 @@ class BuildVerifier:
         else:
             # build from makefile
             result = subprocess.Popen(['make', 'cython'], stdout=subprocess.PIPE,
-                                                        stderr=subprocess.PIPE)
+                                                          stderr=subprocess.PIPE)
         out, err = result.communicate()
         self.intercept_failed_build(err.decode('utf-8'))
         print(out.decode('utf-8'))

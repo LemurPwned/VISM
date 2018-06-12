@@ -195,4 +195,4 @@ class ColorPolicy:
         if not decimate:
             assert dotted_color.shape == (iterations, zc*yc*xc, 3)
             assert outline.shape == (zc*yc*xc, 4)
-        return dotted_color, outline, decimate
+        return dotted_color, outline, decimate, color

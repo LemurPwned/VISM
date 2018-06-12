@@ -19,7 +19,11 @@ from multiprocessing import Pool
 from ColorPolicy import ColorPolicy
 
 class VectorGLContext(AbstractGLContext, QWidget):
+<<<<<<< HEAD
     def __init__(self, data_dict, parent):
+=======
+    def __init__(self, data_dict, parent=None):
+>>>>>>> 8af83b4c9c4d07d3e724007fdc41930a7b9cbbb6
         super().__init__()
         super().shareData(**data_dict)
         self.prerendering_calculation()
@@ -71,6 +75,7 @@ class VectorGLContext(AbstractGLContext, QWidget):
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
         gl.glColorPointer(3, gl.GL_FLOAT, 0, None)
 
+        # draw the lines
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
         gl.glVertexPointer(4, gl.GL_FLOAT, 0, None)
         gl.glDrawArrays(gl.GL_LINES, 0, int(self.vertices))

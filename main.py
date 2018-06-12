@@ -1,13 +1,16 @@
-from buildVerifier import BuildVerifier
+# from buildVerifier import BuildVerifier
 # verify build
 # execute makefile
-bv = BuildVerifier()
+# if BuildVerifier.OS_GLOB_SYS == "Windows":
+#     print("PLEASE BUILD CYTHON AS INDICATED IN GETTING STARTED GUIDE\n")
+# else:
+#     bv = BuildVerifier()
+#     bv.cython_builds()
 
 import sys
 import threading
 
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import QScreen
 from Windows.MainWindowTemplate import Ui_MainWindow
 
 from multiprocessing_parse import MultiprocessingParse
@@ -26,8 +29,8 @@ from settingsMediator.settingsLoader import DataObjectHolder
 
 from video_utils.video_composer import Movie
 
-from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas,
-                                    NavigationToolbar2QT as NavigationToolbar)
+from matplotlib.backends.backend_qt5agg import (NavigationToolbar2QT as NavigationToolbar)
+from pattern_types.Patterns import MainContextDecorators
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
@@ -39,7 +42,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.plot_data = ""
         self.setupUi(self)
         self.setWindowTitle("ESE - Early Spins Environment")
-        self.setGeometry(10, 10, 1280, 768)  # size of window
+        app = QtCore.QCoreApplication.instance()
+        screen_resolution = app.desktop().screenGeometry()
+        self.scr_width, self.scr_height = screen_resolution.width(), screen_resolution.height()
+        self.setGeometry((self.scr_width - self.width()) / 2,
+                         (self.scr_height - self.height()) / 2, 1200, 768)
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height())
 
         # By default all options are locked and they
@@ -73,15 +80,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionWindow2Delete.triggered.connect(lambda: self.deleteWidget(2))
         self.actionWindow3Delete.triggered.connect(lambda: self.deleteWidget(3))
 
-        # OPTIONS SUBMENU
-        self.actionPerformance.triggered.connect(self.setScreenshotFolder)
-        self.actionMovie_composer.triggered.connect(self.composeMovie)
         self.actionText_select.triggered.connect(self.selectText)
 
         # VIEW SUBMENU
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
         self.action2_Windows_Grid.triggered.connect(self.make2WindowsGrid)
         self.action4_Windows_Grid.triggered.connect(self.make4WindowsGrid)
+
+        # OPTIONS SUBMENU
+        self.actionPerformance.triggered.connect(self.setScreenshotFolder)
+        self.actionMovie_composer.triggered.connect(self.composeMovie)
 
         # GRID BUTTONS
         # lambda required to pass parameter - which button was pressed
@@ -109,19 +117,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self.panes[i].groupBox.setMaximumHeight(self.height() - 10)
 
     def composeMovie(self):
-        x = PopUpWrapper(
-            title='Pick directory',
-            msg='Pick directory where screenshots are located.' +
-                'Current screenshot directory: {}'.format(self.screenshot_dir),
-            more='Changed',
-            yesMes=None, parent=self)
         self.setScreenshotFolder()
-        mv = Movie(self.screenshot_dir)
-        mv.create_video()
+        if self.screenshot_dir not in [None, "", " "]:
+            mv = Movie(self.screenshot_dir)
+            try:
+                mv.create_video()
+            except EnvironmentError:
+                x = PopUpWrapper(
+                    title='Movie Composer',
+                    msg='Pick directory where screenshots are located.' +
+                        'Proper files not found in current screenshot directory: {}'.format(self.screenshot_dir),
+                    more='',
+                    yesMes=None, parent=self)
 
     def selectText(self):
         self.selectionWindow = Select()
 
+    @MainContextDecorators.window_resize_fix
     def promptDirectory(self):
         fileDialog = QtWidgets.QFileDialog()
         directory = str(
@@ -131,6 +143,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 options = QtWidgets.QFileDialog.ShowDirsOnly))
         fileDialog.close()
         return directory
+
+    @MainContextDecorators.window_resize_fix
+    def promptFile(self):
+        fileDialog = QtWidgets.QFileDialog()
+        fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+        fileLoaded = str(fileDialog.getOpenFileName(self, "Select File")[0])
+        return fileLoaded
 
     def setScreenshotFolder(self):
         selected_dir = self.promptDirectory()
@@ -151,12 +170,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def loadFile(self):
         if self._LOADED_FLAG_:
             self.deleteLoadedFiles()
-            if BuildVerifier.OS_GLOB_SYS == 'Linux':
-                return 0
         self._LOADED_FLAG_ = False
-        fileDialog = QtWidgets.QFileDialog()
-        fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
-        fileLoaded = str(fileDialog.getOpenFileName(self, "Select File")[0])
+
+        fileLoaded = self.promptFile()
 
         if fileLoaded is None or fileLoaded == "" or fileLoaded=="  ":
             msg = "Invalid directory: {}. Do you wish to abort?".format(fileLoaded)
@@ -184,8 +200,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         """Loads whole directory based on Parse class as simple as BHP"""
         if self._LOADED_FLAG_:
             self.deleteLoadedFiles()
-            if BuildVerifier.OS_GLOB_SYS == 'Linux':
-                return 0
+
         self._LOADED_FLAG_ = False
         directory = self.promptDirectory()
         if directory is None or directory == "" or directory=="  ":
@@ -278,7 +293,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def showChooseWidgetSettings(self, number):
         if self.playerWindow != None:
-            #animation is running and this is may be not first window
+            # animation is running and this is may be not first window
             if self.playerWindow.worker.running:
                 PopUpWrapper("Alert",
                              "You may loose calculation!" +
@@ -310,9 +325,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         # value[0] stores widget number
         # value[1] stores widget name
         self.sp.swap_settings_type(value[1])
+        self.doh.setDataObject(value[1], 'object_alias')
         # deduce object type based on passed string
         self.window = self.sp.\
-            get_settings_window_constructor_from_file(self.doh)
+            get_settings_window_constructor_from_file(self.doh, parent=self)
         # all widgets get generalReceiver handler
         self.window.setEventHandler(self.generalReceiver)
 
@@ -328,7 +344,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             # delete widget
             self.deleteWidget(self.current_pane, null_delete=True)
             self.refreshScreen()
-
             return
         # fix that later in settings where it can be changed or not
         geom = (self.panes[self.current_pane].groupBox.width(),
@@ -341,7 +356,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         self.panes[self.current_pane].addWidget(\
                 self.sp.build_chain(self.current_widget_alias, self.doh, self))
-
         self.constructWidgetToolbar(self.panes[self.current_pane])
         # that fixes the problem of having not all slots filled in groupBox
         if self.playerWindow != None:
@@ -379,8 +393,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             if toolbar_general == 'NavigationToolbar':
                 # for now not all of functions work
                 return None
-                toolbar = NavigationToolbar(widget.canvas, widget,
-                                                                coordinates=True)
+                toolbar = NavigationToolbar(widget.canvas, widget, coordinates=True)
                 widget.canvas.toolbar = toolbar
                 widget.updateCanvasSettings()
             else:
@@ -476,6 +489,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionWindow1Delete.setDisabled(False)
         self.actionWindow2Delete.setDisabled(False)
         self.actionWindow3Delete.setDisabled(False)
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

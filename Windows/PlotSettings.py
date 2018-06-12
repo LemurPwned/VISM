@@ -1,12 +1,15 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
-                QVBoxLayout, QRadioButton, QLabel, QSlider
-from PyQt5 import QtCore
+                QVBoxLayout, QRadioButton, QLabel, QSlider, QPushButton, \
+                QColorDialog
+from PyQt5 import QtCore, QtGui
 from Windows.PlotSettingsTemplate import Ui_PlotSettings
-
+import numpy as np
+from pattern_types.Patterns import MainContextDecorators
 
 class PlotSettings(QWidget, Ui_PlotSettings):
     def __init__(self, plotOptions=[None], gridSize=1, parent=None):
+        self.saved_parent = parent
         super(PlotSettings, self).__init__()
         self.setupUi(self)
         self.GroupCounter = 0
@@ -30,7 +33,10 @@ class PlotSettings(QWidget, Ui_PlotSettings):
                              parent.height()/2 - 400/2,
                              300, 400)
         else:
-            self.setGeometry(10, 10, 300, 400)
+            app = QtCore.QCoreApplication.instance()
+            screen_resolution = app.desktop().screenGeometry()
+            width, height = screen_resolution.width(), screen_resolution.height()
+            self.setGeometry((width - 300)/2, (height - 400)/2, 300, 400)
         self.eventListeners()
         self.setWindowTitle("Plot Settings")
         self.gridLayout_2.addWidget(self.buttonBox, 4, 0, 1, 2)
@@ -60,19 +66,26 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
+    @MainContextDecorators.parent_window_resize_fix
+    def pickColor(self):
+        self.color = QColorDialog.getColor()
+        self.color = (self.color.redF(), self.color.greenF(), self.color.blueF())
+
     def additionalSetup(self, plotOptions=[None]):
         groupBox = QGroupBox("Plot"+str(self.GroupCounter), self)
         groupLayout = QVBoxLayout(self) #layout to put in group
 
         self.comboBox.append(QComboBox(self))
-        self.comboBox2.append(QComboBox(self))
         self.comboBox3.append(QComboBox(self))
         self.comboBox4.append(QComboBox(self))
 
 
         #set options
-        colorOptions = ['blue', 'red', 'green', 'cyan', 'magenta','yellow',
-                        'black']
+        self.color = np.random.random(3) / 2
+        #divided by 2 to avoid to bright colors
+
+        self.colorButton = QPushButton("Set plot color")
+        self.colorButton.clicked.connect(self.pickColor)
         markerOptions = ['*', 'p', 's', 'h', 'H', 'x', '+', 'D',
                          'd', '|', '_', 'o',  'v', '^']
         linestyleOptions = ['-', '--', ':', '-.']
@@ -80,7 +93,6 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         #define label
         self.markersize_label = QLabel("Marker Size: 1", self)
         self.markerOptions_label = QLabel("Marker type", self)
-        self.colorOptions_label = QLabel("Color", self)
         self.linestyle_label = QLabel("Linestyle", self)
 
         #definde slider
@@ -91,8 +103,6 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.slider_markersize.setSingleStep(1)
         for option in plotOptions:
             self.comboBox[self.GroupCounter].addItem(option)
-        for color in colorOptions:
-            self.comboBox2[self.GroupCounter].addItem(color)
         for marker in markerOptions:
             self.comboBox3[self.GroupCounter].addItem(marker)
         for line in linestyleOptions:
@@ -105,8 +115,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.radioButton.append(QRadioButton("1-1 synchronize", self))
 
         groupLayout.addWidget(self.comboBox[self.GroupCounter])
-        groupLayout.addWidget(self.colorOptions_label)
-        groupLayout.addWidget(self.comboBox2[self.GroupCounter])
+        groupLayout.addWidget(self.colorButton)
         groupLayout.addWidget(self.markerOptions_label)
         groupLayout.addWidget(self.comboBox3[self.GroupCounter])
         groupLayout.addWidget(self.linestyle_label)
@@ -148,7 +157,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         param_dict = {
                         'column': self.comboBox[i].currentText(),
                         'synchronizedPlot': self.radioButton[i*2].isChecked(),
-                        'color': self.comboBox2[i].currentText(),
+                        'color': self.color,
                         'line_style': self.comboBox4[i].currentText(),
                         'marker': self.comboBox3[i].currentText(),
                         'marker_color': 'blue',
