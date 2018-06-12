@@ -1,7 +1,11 @@
-from buildVerifier import BuildVerifier
+# from buildVerifier import BuildVerifier
 # verify build
 # execute makefile
-bv = BuildVerifier()
+# if BuildVerifier.OS_GLOB_SYS == "Windows":
+#     print("PLEASE BUILD CYTHON AS INDICATED IN GETTING STARTED GUIDE\n")
+# else:
+#     bv = BuildVerifier()
+#     bv.cython_builds()
 
 import sys
 import threading
@@ -28,6 +32,7 @@ from video_utils.video_composer import Movie
 
 from pattern_types.Patterns import MainContextDecorators
 
+
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -37,7 +42,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.plot_data = ""
         self.setupUi(self)
         self.setWindowTitle("ESE - Early Spins Environment")
-        self.setGeometry(10, 10, 1280, 768)  # size of window
+        app = QtCore.QCoreApplication.instance()
+        screen_resolution = app.desktop().screenGeometry()
+        self.scr_width, self.scr_height = screen_resolution.width(), screen_resolution.height()
+        self.setGeometry((self.scr_width - self.width()) / 2,
+                         (self.scr_height - self.height()) / 2, 1200, 768)
         self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height())
 
         # By default all options are locked and they
