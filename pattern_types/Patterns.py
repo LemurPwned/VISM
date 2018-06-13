@@ -94,7 +94,7 @@ class MainContextDecorators:
                 main_window.setWindowState(main_window.windowState())
                 main_window.setFixedSize(normalWindowSize);
                 main_window.show()
-                window.saved_parent.lower() # reconcoile context
+                # main_window.saved_parent.lower() 
             else:
                 to_return = qdialog_function(main_window)
             return to_return
@@ -112,7 +112,7 @@ class MainContextDecorators:
                 window.saved_parent.hide()
                 window.setWindowState(window.saved_parent.windowState())
                 window.saved_parent.setFixedSize(normalWindowSize)
-                window.saved_parent.lower()
+                window.saved_parent.lower() # reconcile context
                 window.saved_parent.show()
             else:
                 to_return = qdialog_function(window)

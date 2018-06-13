@@ -2,7 +2,8 @@ from buildVerifier import BuildVerifier
 # verify build
 # execute makefile
 if BuildVerifier.OS_GLOB_SYS == "Windows":
-    print("PLEASE BUILD CYTHON AS INDICATED IN GETTING STARTED GUIDE\n")
+    # print("PLEASE BUILD CYTHON AS INDICATED IN GETTING STARTED GUIDE\n")
+    pass
 else:
     bv = BuildVerifier()
     bv.cython_builds()
@@ -38,7 +39,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         super(MainWindow, self).__init__()
         self.doh = DataObjectHolder()
         self.sp = SettingsPrompter(None)
-
+        
         self.plot_data = ""
         self.setupUi(self)
         self.setWindowTitle("ESE - Early Spins Environment")

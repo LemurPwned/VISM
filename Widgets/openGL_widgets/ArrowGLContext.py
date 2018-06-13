@@ -17,7 +17,6 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         self.cld = parent
         super().__init__()
         super().shareData(**data_dict)
-        print(self.parent())
         self.DEFAULT_RADIUS = 0.25*self.scale
         self.CYLINDER_CO_ROT = np.array([self.DEFAULT_RADIUS,
                                          self.DEFAULT_RADIUS, 0])

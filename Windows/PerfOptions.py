@@ -26,7 +26,6 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.color_disable = False
 
     def initial_options(self, object_type):
-        print(object_type)
         self.default_size = 1
         self.default_averaging = 1
         if object_type == 'ArrowGLContext':
@@ -174,12 +173,13 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.hide()
         try:
             self.options = self.optionsVerifier()
-            self.eventHandler(self.options)
+            if self.options is not None:
+                self.eventHandler(self.options)
             self.close()
         except ValueError as ve:
             PopUpWrapper("Invalid vector format", str(ve), None,
                             QMessageBox.Yes,
-                            QMessageBox.No, None, quit, parent=self)
+                            QMessageBox.No, None, None, parent=self)
     def reject(self):
         self.eventHandler(None)
         self.close()
