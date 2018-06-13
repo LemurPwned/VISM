@@ -55,11 +55,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
-        super().handleOptionalData()
-        # self.handleOptionalData()
+        self.handleOptionalData()
         self.receivedOptions()
         self.i = self.current_state
-        print("ITERATION", self.iterations)
 
     @classmethod
     def normalize_specification(cls, color_vectors, vbo=False):
@@ -82,7 +80,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         yc = int(self.file_header['ynodes'])
         zc = int(self.file_header['znodes'])
         # change drawing function
-        print("ITERATIONS 2", self.iterations)
         self.color_vectors, self.vectors_list, decimate, self.color = \
                     ColorPolicy.standard_procedure(self.vectors_list,
                                                    self.color_vectors,
@@ -98,10 +95,12 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.spacer *= decimate*3
 
     def handleOptionalData(self):
+        super().handleOptionalData()
         # must handle iterations since these are optional
-        print("BEING CALLED :", print(self))
         try:
-            getattr(self, 'iterations')
+            value = getattr(self, 'iterations')
+            if value is None:
+                setattr(self, 'iterations', 1)
         except NameError:
             self.iterations = 1
 

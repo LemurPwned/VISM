@@ -94,7 +94,6 @@ class MainContextDecorators:
                 main_window.setWindowState(main_window.windowState())
                 main_window.setFixedSize(normalWindowSize);
                 main_window.show()
-                # main_window.saved_parent.lower() 
             else:
                 to_return = qdialog_function(main_window)
             return to_return
