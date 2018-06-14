@@ -11,6 +11,7 @@ class Canvas(AbstractCanvas):
         self.graph_data = self.plot_data[self.title].tolist()
         # override
         self.internal_iterations = len(self.graph_data)
+        self.synchronizedPlot = self.options['synchronizedPlot']
         self.createPlotCanvas()
 
     def createPlotCanvas(self):
@@ -31,8 +32,13 @@ class Canvas(AbstractCanvas):
                              np.max(self.graph_data)])
         self.plot_axis.set_autoscale_on(False)
         self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
+        if self.synchronizedPlot == False:
+            self.plot_axis.plot(self.graph_data)
 
     def replot(self):
+        if self.synchronizedPlot == False:
+            return
+        
         self.i %= self.internal_iterations
         self.plot_axis.hpl.set_ydata(np.pad(self.graph_data[:self.i],
                                         (0, self.internal_iterations - self.i),
