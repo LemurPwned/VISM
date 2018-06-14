@@ -80,6 +80,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionWindow1Delete.triggered.connect(lambda: self.deleteWidget(1))
         self.actionWindow2Delete.triggered.connect(lambda: self.deleteWidget(2))
         self.actionWindow3Delete.triggered.connect(lambda: self.deleteWidget(3))
+        self.actionDeleteAllWindows.triggered.connect(lambda: self.deleteAllWidgets())
 
         self.actionText_select.triggered.connect(self.selectText)
 
@@ -363,16 +364,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.propagate_resize()
         self.refreshScreen()
 
-    def deleteWidget(self, number, null_delete=False):
+    def deleteAllWidgets(self):
+        self.deleteWidget(0)
+        for i in range(WidgetHandler.visibleCounter - 1):
+            self.deleteWidget(i+1, False, False)
+
+
+    def deleteWidget(self, number, null_delete=False, verbose=True):
         if self.playerWindow:
-            PopUpWrapper("Alert",
-                "You may loose calculation!", \
-                "If you proceed animation will be restarted and widget \
-                will be deleted!", \
-                QtWidgets.QMessageBox.Yes, \
-                QtWidgets.QMessageBox.No, \
-                None, \
-                self.refreshScreen(), parent=self)
+            if verbose:
+                PopUpWrapper("Alert",
+                    "You may loose calculation!", \
+                    "If you proceed animation will be restarted and widget \
+                    will be deleted!", \
+                    QtWidgets.QMessageBox.Yes, \
+                    QtWidgets.QMessageBox.No, \
+                    None, \
+                    self.refreshScreen(), parent=self)
 
             self.playerWindow.forceWorkerReset()
             self.playerWindow.closeMe()
