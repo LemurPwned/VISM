@@ -1,14 +1,13 @@
 from AnimatedWidget import AnimatedWidget
 from matplotlib.figure import Figure
 from matplotlib.backend_bases import key_press_handler
-from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas,
-                                    NavigationToolbar2QT as NavigationToolbar)
-from PyQt5.QtWidgets import QSizePolicy, QPushButton
-from PyQt5 import QtCore
+from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas)
+from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.Qt import Qt
 
 import time
 import os
+
 
 class AbstractCanvas(AnimatedWidget, FigureCanvas):
     def __init__(self, parent=None, width=8, height=5, dpi=100):
@@ -89,3 +88,4 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
             self.loop_guard()
             self.refresh()
             self.replot()
+

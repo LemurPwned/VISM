@@ -11,9 +11,7 @@ else:
 import sys
 import threading
 
-from PyQt5.Qt import Qt
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import QScreen
 from Windows.MainWindowTemplate import Ui_MainWindow
 
 from multiprocessing_parse import MultiprocessingParse
@@ -32,8 +30,12 @@ from settingsMediator.settingsLoader import DataObjectHolder
 
 from video_utils.video_composer import Movie
 
+<<<<<<< HEAD
 from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas,
                                     NavigationToolbar2QT as NavigationToolbar)
+=======
+from matplotlib.backends.backend_qt5agg import (NavigationToolbar2QT as NavigationToolbar)
+>>>>>>> 1ad94dbbe9b38f5293adb7b260cbdd7f037e6658
 from pattern_types.Patterns import MainContextDecorators
 
 
@@ -297,7 +299,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def showChooseWidgetSettings(self, number):
         if self.playerWindow != None:
-            #animation is running and this is may be not first window
+            # animation is running and this is may be not first window
             if self.playerWindow.worker.running:
                 PopUpWrapper("Alert",
                              "You may loose calculation!" +
@@ -360,7 +362,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         self.panes[self.current_pane].addWidget(\
                 self.sp.build_chain(self.current_widget_alias, self.doh, self))
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1ad94dbbe9b38f5293adb7b260cbdd7f037e6658
         self.constructWidgetToolbar(self.panes[self.current_pane])
         # that fixes the problem of having not all slots filled in groupBox
         if self.playerWindow != None:
@@ -377,7 +382,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.toolbar = self.buildToolbar(pane.widget)
         if self.toolbar is not None:
             pane.layout.setMenuBar(self.toolbar)
-            pane.layout.setContentsMargins(0,0,0,0)
+            pane.layout.setContentsMargins(0, 0, 0, 0)
 
     def buildToolbar(self, widget):
         """
@@ -398,8 +403,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             if toolbar_general == 'NavigationToolbar':
                 # for now not all of functions work
                 return None
-                toolbar = NavigationToolbar(widget.canvas, widget,
-                                                                coordinates=True)
+                toolbar = NavigationToolbar(widget.canvas, widget, coordinates=True)
                 widget.canvas.toolbar = toolbar
                 widget.updateCanvasSettings()
             else:
