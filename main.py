@@ -30,12 +30,8 @@ from settingsMediator.settingsLoader import DataObjectHolder
 
 from video_utils.video_composer import Movie
 
-<<<<<<< HEAD
 from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas,
                                     NavigationToolbar2QT as NavigationToolbar)
-=======
-from matplotlib.backends.backend_qt5agg import (NavigationToolbar2QT as NavigationToolbar)
->>>>>>> 1ad94dbbe9b38f5293adb7b260cbdd7f037e6658
 from pattern_types.Patterns import MainContextDecorators
 
 
@@ -362,10 +358,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         self.panes[self.current_pane].addWidget(\
                 self.sp.build_chain(self.current_widget_alias, self.doh, self))
-<<<<<<< HEAD
-
-=======
->>>>>>> 1ad94dbbe9b38f5293adb7b260cbdd7f037e6658
         self.constructWidgetToolbar(self.panes[self.current_pane])
         # that fixes the problem of having not all slots filled in groupBox
         if self.playerWindow != None:
