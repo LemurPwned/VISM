@@ -6,8 +6,9 @@ from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 
 from buildVerifier import BuildVerifier
 class Select(QWidget, Ui_Dialog):
-    def __init__(self):
+    def __init__(self, parent=None):
         super(Select, self).__init__()
+        self.eventHandler = None
         if BuildVerifier.OS_GLOB_SYS == 'Darwin':
             """
             temporary disable for Linux
@@ -32,5 +33,9 @@ class Select(QWidget, Ui_Dialog):
             self.close()
 
     def reject(self):
-        self.eventHandler(None)
+        if self.eventHandler is not None:
+            self.eventHandler(None)
         self.close()
+
+    def setEventHandler(self, handler):
+        self.eventHandler = handler

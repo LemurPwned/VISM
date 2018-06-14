@@ -3,6 +3,7 @@ import imp
 import glob
 import json
 from pattern_types.Patterns import Singleton, DataObjectHolderProxy
+from widget_counter import WidgetCounter
 
 class DataObjectHolder(metaclass=Singleton):
     def __init__(self):
@@ -121,6 +122,10 @@ class SettingsInterface:
                                 doh)
                 passing_dict = {**optional_dict, **passing_dict}
             # construct object and pass dict as parameter
+            if self.widget_pane_handler[object_alias]['object_type'] == '3d_object':
+                WidgetCounter.OPENGL_WIDGET += 1
+            elif self.widget_pane_handler[object_alias]['object_type'] == '2d_object':
+                WidgetCounter.MATPLOTLIB_WIDGET += 1
             return self.evaluate_string_as_class_object(\
                         self.widget_pane_handler[object_alias]['object'],
                         self.widget_pane_handler[object_alias]['object_type'])(data_dict=passing_dict,

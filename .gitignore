@@ -1,4 +1,5 @@
 #ignore data
+.vscode
 data/
 spins/
 examples/
@@ -14,6 +15,7 @@ __pycache__/
 
 # C extensions
 *.so
+*.c
 
 # Distribution / packaging
 .Python

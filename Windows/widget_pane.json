@@ -3,7 +3,8 @@
                       "alias": "3D_CUBIC",
                       "object": "CubicGLContext",
                       "object_type": "3d_object",
-                      "settings": ["PerfOptions", "file_header"],
+                      "settings": ["PerfOptions", "file_header",
+                                   "object_alias"],
                       "required": ["current_state", "options",
                                    "file_header", "color_vectors",
                                    "screenshot_dir", "geom"],
@@ -28,6 +29,18 @@
                                    ["Zoom in", "zoomIn"],
                                    ["Zoom out", "zoomOut"],
                                    ["Screenshot", "screenshot_manager"]]
+                      },
+
+    "ArrowGLContext": {
+                      "alias": "3D_ARROW",
+                      "object": "ArrowGLContext",
+                      "object_type": "3d_object",
+                      "settings": ["PerfOptions", "file_header", 
+                                   "object_alias"],
+                      "required": ["current_state", "options",
+                                   "file_header","color_vectors",
+                                   "screenshot_dir", "geom"],
+                      "optional": ["iterations"]
                       },
     "Canvas":         {
                         "alias": "2D_Matplotlib",
