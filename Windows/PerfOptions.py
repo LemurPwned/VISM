@@ -176,10 +176,14 @@ class PerfOptions(QWidget, Ui_Dialog):
             if self.options is not None:
                 self.eventHandler(self.options)
             self.close()
-        except ValueError as ve:
-            PopUpWrapper("Invalid vector format", str(ve), None,
-                            QMessageBox.Yes,
-                            QMessageBox.No, None, None, parent=self)
+        except ValueError:
+            x = PopUpWrapper(
+                title='Invalid format',
+                msg='Vectors must be normalized',
+                more='',
+                yesMes=None, parent=self)
+            self.show()
+
     def reject(self):
         self.eventHandler(None)
         self.close()
