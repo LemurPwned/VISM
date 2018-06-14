@@ -23,11 +23,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
 
         self.prerendering_calculation()
         self.drawing_function = self.vbo_cubic_draw
-<<<<<<< HEAD
         
-=======
-
->>>>>>> 1ad94dbbe9b38f5293adb7b260cbdd7f037e6658
     def prerendering_calculation(self):
         super().prerendering_calculation()
         if self.normalize:

@@ -353,7 +353,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         # fetch dimensions for highest resolution
         _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
-        # print(width, height)
         if width == 0 or height == 0:
             width = self.geom[0]
             height = self.geom[1]

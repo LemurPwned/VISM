@@ -41,6 +41,7 @@
                                    "file_header","color_vectors",
                                    "screenshot_dir", "geom"],
                       "optional": ["iterations"],
+                      "iterable_type": "structure",
                       "toolbar" : [["Reset", "initial_transformation"],
                                                    ["Zoom in", "zoomIn"],
                                                    ["Zoom out", "zoomOut"],
