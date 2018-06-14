@@ -280,7 +280,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         if event.buttons() & Qt.LeftButton:
             rotation_speed = 0.5
             if abs(dx) > abs(dy):
-                self.rotation[0] += dx * rotation_speed
+                ang = self.normalize_angle(dx * rotation_speed)
+                self.rotation[0] += ang
                 xpos = self.position[0] * mt.cos(dx * rotation_speed * mt.pi / 180) \
                        - self.position[2] * mt.sin(dx * rotation_speed * mt.pi / 180)
                 zpos = self.position[0] * mt.sin(dx * rotation_speed * mt.pi / 180) \
@@ -289,7 +290,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                 self.position[0] = xpos
                 self.position[2] = zpos
             else:
-                self.rotation[1] += dy * rotation_speed
+                ang = self.normalize_angle(dy * rotation_speed)
+                self.rotation[1] += ang
                 ypos = self.position[1] * mt.cos(dy * rotation_speed * mt.pi / 180) \
                        + self.position[2] * mt.sin(dy * rotation_speed * mt.pi / 180)
                 zpos = - self.position[1] * mt.sin(dy * rotation_speed * mt.pi / 180) \
@@ -306,6 +308,18 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
             self.position[1] -= dy * 0.2
         self.update()
+
+    def mouseReleaseEvent(self, event):
+        print("Mouse release:",  event.button(), int(event.buttons()))
+        if event.buttons() & Qt.RightButton:
+            self.lastPos = event.pos()
+
+    def normalize_angle(self, angle):
+        while angle < 0:
+            angle += 360 * 16
+        while angle > 360 * 16:
+            angle -= 360 * 16
+        return angle
 
     def fps_counter(self, initialize=False):
         if initialize:
