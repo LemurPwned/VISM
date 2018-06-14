@@ -2,7 +2,7 @@ from buildVerifier import BuildVerifier
 # verify build
 # execute makefile
 if BuildVerifier.OS_GLOB_SYS == "Windows":
-    # print("PLEASE BUILD CYTHON AS INDICATED IN GETTING STARTED GUIDE\n")
+    print("PLEASE MAKE SURE CYTHON HAS BEEN BUILT AS INDICATED IN GETTING STARTED GUIDE\n")
     pass
 else:
     bv = BuildVerifier()
@@ -81,6 +81,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionWindow1Delete.triggered.connect(lambda: self.deleteWidget(1))
         self.actionWindow2Delete.triggered.connect(lambda: self.deleteWidget(2))
         self.actionWindow3Delete.triggered.connect(lambda: self.deleteWidget(3))
+        self.actionDeleteAllWindows.triggered.connect(lambda: self.deleteAllWidgets())
 
         self.actionText_select.triggered.connect(self.selectText)
 
@@ -401,16 +402,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             else:
                 return None
 
-    def deleteWidget(self, number, null_delete=False):
+    def deleteAllWidgets(self):
+        self.deleteWidget(0)
+        for i in range(WidgetHandler.visibleCounter - 1):
+            self.deleteWidget(i+1, False, False)
+
+
+    def deleteWidget(self, number, null_delete=False, verbose=True):
         if self.playerWindow:
-            PopUpWrapper("Alert",
-                "You may loose calculation!", \
-                "If you proceed animation will be restarted and widget \
-                will be deleted!", \
-                QtWidgets.QMessageBox.Yes, \
-                QtWidgets.QMessageBox.No, \
-                None, \
-                self.refreshScreen(), parent=self)
+            if verbose:
+                PopUpWrapper("Alert",
+                    "You may loose calculation!", \
+                    "If you proceed animation will be restarted and widget \
+                    will be deleted!", \
+                    QtWidgets.QMessageBox.Yes, \
+                    QtWidgets.QMessageBox.No, \
+                    None, \
+                    self.refreshScreen(), parent=self)
 
             self.playerWindow.forceWorkerReset()
             self.playerWindow.closeMe()
