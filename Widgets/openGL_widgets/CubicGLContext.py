@@ -33,16 +33,9 @@ class CubicGLContext(AbstractGLContext, QWidget):
             self.drawing_function = self.vbo_cubic_draw
             self.buffers = None
             # if vbo drawing is selected, do additional processing
-
-            xc = int(self.file_header['xnodes'])
-            yc = int(self.file_header['ynodes'])
-            zc = int(self.file_header['znodes'])
             self.vectors_list, self.vertices = genCubes(self.vectors_list,
                                                                     self.spacer)
             self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors)
-
-            print(np.array(self.vectors_list).shape, self.vertices)
-            print(np.array(self.color_vectors).shape)
 
             # TODO: temporary fix, dont know why x4, should not be multiplied
             # at all!

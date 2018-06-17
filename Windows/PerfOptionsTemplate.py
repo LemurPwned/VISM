@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'Windows/UI_files/PerfOptions.ui'
 #
-# Created by: PyQt5 UI code generator 5.9
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -18,7 +18,7 @@ class Ui_Dialog(object):
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.formLayoutWidget = QtWidgets.QWidget(Dialog)
-        self.formLayoutWidget.setGeometry(QtCore.QRect(30, 20, 251, 580))
+        self.formLayoutWidget.setGeometry(QtCore.QRect(30, 20, 256, 580))
         self.formLayoutWidget.setObjectName("formLayoutWidget")
         self.formLayout = QtWidgets.QFormLayout(self.formLayoutWidget)
         self.formLayout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
@@ -67,31 +67,31 @@ class Ui_Dialog(object):
         self.label_2.setObjectName("label_2")
         self.formLayout.setWidget(7, QtWidgets.QFormLayout.SpanningRole, self.label_2)
         spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.formLayout.setItem(9, QtWidgets.QFormLayout.SpanningRole, spacerItem3)
+        self.formLayout.setItem(10, QtWidgets.QFormLayout.SpanningRole, spacerItem3)
         self.label_3 = QtWidgets.QLabel(self.formLayoutWidget)
         self.label_3.setAlignment(QtCore.Qt.AlignCenter)
         self.label_3.setObjectName("label_3")
-        self.formLayout.setWidget(10, QtWidgets.QFormLayout.LabelRole, self.label_3)
+        self.formLayout.setWidget(11, QtWidgets.QFormLayout.LabelRole, self.label_3)
         self.checkBox = QtWidgets.QCheckBox(self.formLayoutWidget)
         self.checkBox.setObjectName("checkBox")
-        self.formLayout.setWidget(10, QtWidgets.QFormLayout.FieldRole, self.checkBox)
+        self.formLayout.setWidget(11, QtWidgets.QFormLayout.FieldRole, self.checkBox)
         self.horizontalSlider_2 = QtWidgets.QSlider(self.formLayoutWidget)
         self.horizontalSlider_2.setEnabled(False)
         self.horizontalSlider_2.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider_2.setObjectName("horizontalSlider_2")
-        self.formLayout.setWidget(11, QtWidgets.QFormLayout.SpanningRole, self.horizontalSlider_2)
+        self.formLayout.setWidget(12, QtWidgets.QFormLayout.SpanningRole, self.horizontalSlider_2)
         spacerItem4 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.formLayout.setItem(13, QtWidgets.QFormLayout.SpanningRole, spacerItem4)
+        self.formLayout.setItem(14, QtWidgets.QFormLayout.SpanningRole, spacerItem4)
         self.label_4 = QtWidgets.QLabel(self.formLayoutWidget)
         self.label_4.setAlignment(QtCore.Qt.AlignCenter)
         self.label_4.setObjectName("label_4")
-        self.formLayout.setWidget(14, QtWidgets.QFormLayout.SpanningRole, self.label_4)
+        self.formLayout.setWidget(15, QtWidgets.QFormLayout.SpanningRole, self.label_4)
         self.horizontalSlider_3 = QtWidgets.QSlider(self.formLayoutWidget)
         self.horizontalSlider_3.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider_3.setObjectName("horizontalSlider_3")
-        self.formLayout.setWidget(15, QtWidgets.QFormLayout.SpanningRole, self.horizontalSlider_3)
+        self.formLayout.setWidget(16, QtWidgets.QFormLayout.SpanningRole, self.horizontalSlider_3)
         spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.formLayout.setItem(16, QtWidgets.QFormLayout.SpanningRole, spacerItem5)
+        self.formLayout.setItem(17, QtWidgets.QFormLayout.SpanningRole, spacerItem5)
         self.formLayout_2 = QtWidgets.QFormLayout()
         self.formLayout_2.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
         self.formLayout_2.setObjectName("formLayout_2")
@@ -113,14 +113,19 @@ class Ui_Dialog(object):
         self.label_7 = QtWidgets.QLabel(self.formLayoutWidget)
         self.label_7.setObjectName("label_7")
         self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_7)
-        self.formLayout.setLayout(17, QtWidgets.QFormLayout.LabelRole, self.formLayout_2)
+        self.formLayout.setLayout(18, QtWidgets.QFormLayout.LabelRole, self.formLayout_2)
         self.checkBox_4 = QtWidgets.QCheckBox(self.formLayoutWidget)
         self.checkBox_4.setObjectName("checkBox_4")
-        self.formLayout.setWidget(17, QtWidgets.QFormLayout.FieldRole, self.checkBox_4)
+        self.formLayout.setWidget(18, QtWidgets.QFormLayout.FieldRole, self.checkBox_4)
         self.checkBox_5 = QtWidgets.QCheckBox(self.formLayoutWidget)
         self.checkBox_5.setChecked(True)
         self.checkBox_5.setObjectName("checkBox_5")
         self.formLayout.setWidget(8, QtWidgets.QFormLayout.SpanningRole, self.checkBox_5)
+        self.checkBox_6 = QtWidgets.QCheckBox(self.formLayoutWidget)
+        self.checkBox_6.setEnabled(True)
+        self.checkBox_6.setChecked(False)
+        self.checkBox_6.setObjectName("checkBox_6")
+        self.formLayout.setWidget(9, QtWidgets.QFormLayout.LabelRole, self.checkBox_6)
 
         self.retranslateUi(Dialog)
         self.buttonBox.accepted.connect(Dialog.accept)
@@ -146,6 +151,7 @@ class Ui_Dialog(object):
         self.label_7.setText(_translate("Dialog", "B"))
         self.checkBox_4.setText(_translate("Dialog", "Disable"))
         self.checkBox_5.setText(_translate("Dialog", "Normalize all vectors?"))
+        self.checkBox_6.setText(_translate("Dialog", "Hyper Contrast?"))
 
 
 if __name__ == "__main__":

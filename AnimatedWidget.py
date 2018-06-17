@@ -36,3 +36,4 @@ class AnimatedWidget():
         self.vector_set = self.options[4]
         self.decimate = int(self.options[5])
         self.disableDot = self.options[6]
+        self.hyperContrast = self.options[7]

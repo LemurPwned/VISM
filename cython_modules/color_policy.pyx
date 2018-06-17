@@ -35,8 +35,8 @@ def multi_iteration_normalize(np.ndarray[np.float32_t, ndim=3] color_iterations)
         int ci = color_iterations.shape[0]
     for i in range(0, ci):
         color_iterations[i] = atomic_normalization(color_iterations[i])
-    np.nan_to_num(color_iterations, copy=False)
-
+    #np.nan_to_num(color_iterations, copy=False)
+    # return color_iterations
 
 def generate_arrow_object(origin_circle,
                            rot_matrix,
