@@ -5,7 +5,6 @@ import json
 from pattern_types.Patterns import Singleton, DataObjectHolderProxy
 from widget_counter import WidgetCounter
 
-
 class DataObjectHolder(metaclass=Singleton):
     def __init__(self):
         self.contains_lookup = []
@@ -53,7 +52,7 @@ class SettingsInterface:
 
             # if paths do not exist, raise error
             if not os.path.isdir(module_path):
-                raise ValueError("Module path: {} does not exist")
+                raise ValueError("Module path: {} does not exist".format(module_path))
 
             module = None
             # if there is a build, prefer .pyc files
@@ -108,13 +107,15 @@ class SettingsInterface:
             print(type(doh))
             raise ValueError("Passed invalid data object, cannot request parameter")
         try:
+            # pack in toolbar options
+            doh.setDataObject(self.widget_pane_handler[object_alias]['toolbar'],
+                                'toolbar',)
             # get the necessary parameters for object construction
             # specified in field 'required'
             passing_dict = \
                         self.get_and_verify_class_parameters(\
                             self.widget_pane_handler[object_alias]['required'],
                             doh)
-
             if 'optional' in self.widget_pane_handler[object_alias]:
                 optional_dict = self.get_and_verify_class_parameters(\
                                 self.widget_pane_handler[object_alias]['optional'],
@@ -128,10 +129,9 @@ class SettingsInterface:
             return self.evaluate_string_as_class_object(\
                         self.widget_pane_handler[object_alias]['object'],
                         self.widget_pane_handler[object_alias]['object_type'])(data_dict=passing_dict,
-                                                                              parent=parent)
+                                                                               parent=parent)
         except KeyError:
-            raise ValueError("Invalid keys {} or {}".format(objectTypeA,
-                                                            objectTypeB))
+            raise ValueError("Invalid key {}".format(object_alias))
 
     def request_parameter_existence(self, doh, parameter_alias):
         if parameter_alias in doh.contains_lookup:

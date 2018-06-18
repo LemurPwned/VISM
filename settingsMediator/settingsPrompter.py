@@ -47,7 +47,7 @@ class SettingsPrompter(SettingsInterface):
                     'settings_object')(*settings_args_param, parent=parent)
 
     def allow_settings_type(self, settingsType):
-        if settingsType.lower() not in settings_dict.keys():
+        if settingsType.lower() not in self.settings_dict.keys():
             raise ValueError("Invalid settings window promoted {}".\
                                 format(settingsType))
         else:

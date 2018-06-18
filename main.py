@@ -2,7 +2,7 @@ from buildVerifier import BuildVerifier
 # verify build
 # execute makefile
 if BuildVerifier.OS_GLOB_SYS == "Windows":
-    # print("PLEASE BUILD CYTHON AS INDICATED IN GETTING STARTED GUIDE\n")
+    print("PLEASE MAKE SURE CYTHON HAS BEEN BUILT AS INDICATED IN GETTING STARTED GUIDE\n")
     pass
 else:
     bv = BuildVerifier()
@@ -11,7 +11,6 @@ else:
 import sys
 import threading
 
-from PyQt5.Qt import Qt
 from PyQt5 import QtWidgets, QtCore
 from Windows.MainWindowTemplate import Ui_MainWindow
 
@@ -31,6 +30,8 @@ from settingsMediator.settingsLoader import DataObjectHolder
 
 from video_utils.video_composer import Movie
 
+from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas,
+                                    NavigationToolbar2QT as NavigationToolbar)
 from pattern_types.Patterns import MainContextDecorators
 
 
@@ -295,7 +296,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def showChooseWidgetSettings(self, number):
         if self.playerWindow != None:
-            #animation is running and this is may be not first window
+            # animation is running and this is may be not first window
             if self.playerWindow.worker.running:
                 PopUpWrapper("Alert",
                              "You may loose calculation!" +
@@ -358,11 +359,48 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         self.panes[self.current_pane].addWidget(\
                 self.sp.build_chain(self.current_widget_alias, self.doh, self))
+        self.constructWidgetToolbar(self.panes[self.current_pane])
         # that fixes the problem of having not all slots filled in groupBox
         if self.playerWindow != None:
             self.refreshIterators()
         self.propagate_resize()
         self.refreshScreen()
+
+    def constructWidgetToolbar(self, pane):
+        """
+        Construct toolbar for a given pane
+        Function assumes object was created successfully
+        """
+        self.toolbar = QtWidgets.QToolBar()
+        self.toolbar = self.buildToolbar(pane.widget)
+        if self.toolbar is not None:
+            pane.layout.setMenuBar(self.toolbar)
+            pane.layout.setContentsMargins(0, 0, 0, 0)
+
+    def buildToolbar(self, widget):
+        """
+        Build toolbar from parameters in doh - toolbar section
+        """
+        toolbar = QtWidgets.QToolBar()
+        if 'toolbar' in self.doh.contains_lookup:
+            toolbar_general = self.doh.retrieveDataObject('toolbar')
+        else:
+            return None
+        if type(toolbar_general) == list:
+            # toolbar needs to be defined if this parameter is a list
+            for toolbar_option in toolbar_general:
+                toolbar.addAction(toolbar_option[0],
+                                            getattr(widget, toolbar_option[1]))
+            return toolbar
+        else:
+            if toolbar_general == 'NavigationToolbar':
+                # for now not all of functions work
+                return None
+                toolbar = NavigationToolbar(widget.canvas, widget, coordinates=True)
+                widget.canvas.toolbar = toolbar
+                widget.updateCanvasSettings()
+            else:
+                return None
 
     def deleteAllWidgets(self):
         self.deleteWidget(0)

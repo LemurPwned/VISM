@@ -8,7 +8,12 @@
                       "required": ["current_state", "options",
                                    "file_header", "color_vectors",
                                    "screenshot_dir", "geom"],
-                      "optional": ["iterations"]
+                      "optional": ["iterations"],
+                      "iterable_type": "structure",
+                      "toolbar" : [["Reset", "initial_transformation"],
+                                   ["Zoom in", "zoomIn"],
+                                   ["Zoom out", "zoomOut"],
+                                   ["Screenshot", "screenshot_manager"]]
                       },
     "VectorGLContext": {
                       "alias": "3D_VECTOR",
@@ -18,7 +23,12 @@
                       "required": ["current_state", "options",
                                    "file_header","color_vectors",
                                    "screenshot_dir", "geom"],
-                      "optional": ["iterations"]
+                      "optional": ["iterations"],
+                      "iterable_type": "structure",
+                      "toolbar" : [["Reset", "initial_transformation"],
+                                   ["Zoom in", "zoomIn"],
+                                   ["Zoom out", "zoomOut"],
+                                   ["Screenshot", "screenshot_manager"]]
                       },
 
     "ArrowGLContext": {
@@ -30,7 +40,12 @@
                       "required": ["current_state", "options",
                                    "file_header","color_vectors",
                                    "screenshot_dir", "geom"],
-                      "optional": ["iterations"]
+                      "optional": ["iterations"],
+                      "iterable_type": "structure",
+                      "toolbar" : [["Reset", "initial_transformation"],
+                                                   ["Zoom in", "zoomIn"],
+                                                   ["Zoom out", "zoomOut"],
+                                                   ["Screenshot", "screenshot_manager"]]
                       },
     "Canvas":         {
                         "alias": "2D_Matplotlib",
@@ -38,7 +53,10 @@
                         "object_type": "2d_object",
                         "settings": ["PlotSettings", "plot_data"],
                         "required": ["iterations", "current_state", "options",
-                                     "plot_data"]
+                                     "plot_data",  "screenshot_dir"],
+                        "optional": ["trigger"],
+                        "iterable_type": "plot",
+                        "toolbar": "NavigationToolbar"
                         },
     "Canvas2Dupgraded": {
                         "alias": "2D_BetterPlot",
@@ -46,7 +64,9 @@
                         "object_type": "2d_object",
                         "settings": ["PlotSettings", "plot_data"],
                         "required": ["iterations", "current_state", "options",
-                                     "plot_data", "geom"]
+                                     "plot_data", "geom", "screenshot_dir"],
+                        "optional": ["trigger"],
+                        "iterable_type": "plot"
                       },
     "CanvasLayer": {
                         "alias": "2D_Layer",
@@ -54,7 +74,10 @@
                         "object_type": "2d_object",
                         "settings": ["SimplePerfOptions", "file_header"],
                         "required": [ "current_state", "options",
-                                     "file_header","color_vectors"],
-                        "optional" : ["iterations"]
+                                     "file_header","color_vectors",
+                                     "screenshot_dir"],
+                        "optional" : ["iterations"],
+                        "iterable_type": "structure",
+                        "toolbar": "NavigationToolbar"
                       }
 }

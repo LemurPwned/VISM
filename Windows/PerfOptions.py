@@ -134,7 +134,8 @@ class PerfOptions(QWidget, Ui_Dialog):
                                 self.horizontalSlider_3.value(),
                                 self.parseVectors(),
                                 self.decimate,
-                                self.color_disable]
+                                self.color_disable,
+                                self.checkBox_6.isChecked()]
         else:
             optionsList = [ self.checkBox_5.isChecked(),
                             self.averaging,
@@ -142,7 +143,8 @@ class PerfOptions(QWidget, Ui_Dialog):
                             self.horizontalSlider_3.value(),
                             self.parseVectors(),
                             self.decimate,
-                            self.color_disable]
+                            self.color_disable,
+                            self.checkBox_6.isChecked()]
         return optionsList
 
     def parseVectors(self):
@@ -176,10 +178,10 @@ class PerfOptions(QWidget, Ui_Dialog):
             if self.options is not None:
                 self.eventHandler(self.options)
             self.close()
-        except ValueError:
+        except ValueError as e:
             x = PopUpWrapper(
                 title='Invalid format',
-                msg='Vectors must be normalized',
+                msg='Vectors must be normalized {}'.format(e),
                 more='',
                 yesMes=None, parent=self)
             self.show()

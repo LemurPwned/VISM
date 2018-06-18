@@ -33,6 +33,12 @@ class MultiprocessingParse:
     @staticmethod
     def compose_trigger_list(files, plot_data):
         """
+        Creates a trigger list.
+        Because the number of entries in plot data file is not always (or rarely)
+        equal to number of files, it has to be synchronized somehow.
+        Thus, for each file, there are multiple plot datapoints assigned.
+        How many and when the change will be activated is dependent on
+        the trigger list
         """
         if files[0].endswith('.ovf'):
             file_len = len(files)

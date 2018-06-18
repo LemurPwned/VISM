@@ -5,6 +5,7 @@ import sys #temp
 class PlayerWindow(QtCore.QObject):
 
     signalStatus = QtCore.pyqtSignal(int)
+    RECORD = False
 
     def __init__(self, parent=None):
         super(self.__class__, self).__init__(parent)
@@ -77,6 +78,8 @@ class PlayerWindow(QtCore.QObject):
         self.gui.button_prevFrame.clicked.connect(lambda: self.worker.moveFrame(-1))
         self.gui.slider_speed.valueChanged.connect(self.speedChange)
 
+        self.gui.button_record.clicked.connect(self.startRecording)
+
         # self.parent().aboutToQuit.connect(self.forceWorkerQuit) #TODO search about this
 
     def PlayPauseClicked(self):
@@ -108,6 +111,13 @@ class PlayerWindow(QtCore.QObject):
     def passTriggerList(self, trigger):
         self.worker.passTriggerList(trigger)
 
+    def startRecording(self):
+        if PlayerWindow.RECORD:
+            self.gui.button_record.setText("Record")
+            PlayerWindow.RECORD = False
+        else:
+            self.gui.button_record.setText("Pause R")
+            PlayerWindow.RECORD = True
 #SINGLETON
 
 #reset while playing weird stuff
@@ -166,7 +176,7 @@ class WorkerObject:
                     if self.running:
                         self._iterator += 1
                         for i in self.widgetIterators:
-                            i(k, trigger=True)
+                            i(k, trigger=True, record=PlayerWindow.RECORD)
                     if not self.running:
                         break
 
@@ -210,6 +220,9 @@ class Window(QtWidgets.QWidget):
         self.button_prevFrame = QtWidgets.QPushButton('<', self)
         self.slider_speed = QtWidgets.QSlider(QtCore.Qt.Horizontal, self)
         self.speedLabel = QtWidgets.QLabel("Animtaion Speed: 1", self)
+
+        self.button_record = QtWidgets.QPushButton('Record', self)
+
         self.slider_speed.setMaximum(100)
         self.slider_speed.setMinimum(1)
         self.slider_speed.setValue(10)
@@ -223,6 +236,7 @@ class Window(QtWidgets.QWidget):
         self.elements.append(self.slider_speed)
         self.elements.append(self.speedLabel)
 
+        self.elements.append(self.button_record)
 
         self.mainLayout = QtWidgets.QGridLayout(self)
         layout = QtWidgets.QGridLayout()
@@ -237,6 +251,8 @@ class Window(QtWidgets.QWidget):
         layoutin2_2 = QtWidgets.QHBoxLayout()
         layoutin2_1.addWidget(self.slider_speed)
         layoutin2_2.addWidget(self.speedLabel)
+
+        layoutin2_1.addWidget(self.button_record)
 
         layout2.addLayout(layoutin2_1)
         layout2.addLayout(layoutin2_2)

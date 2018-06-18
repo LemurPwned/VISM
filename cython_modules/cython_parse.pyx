@@ -60,6 +60,8 @@ def getPlotData(filename):
         cols = header[-1]
         cols = cols.replace("} ", "")
         cols = cols.replace("{", "")
+        cols = cols.replace("MF", "Oxs_MF")
+        cols = cols.replace("PBC", "Oxs_PBC")        
         cols = cols.split("Oxs_")
         del cols[0]
         cols = [x.strip() for x in cols]

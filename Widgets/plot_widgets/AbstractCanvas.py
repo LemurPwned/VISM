@@ -1,19 +1,42 @@
 from AnimatedWidget import AnimatedWidget
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from PyQt5.QtWidgets import QSizePolicy, QPushButton
+from matplotlib.backend_bases import key_press_handler
+from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas)
+from PyQt5.QtWidgets import QSizePolicy
+from PyQt5.Qt import Qt
+
 import time
+import os
 
 
 class AbstractCanvas(AnimatedWidget, FigureCanvas):
-    def __init__(self, parent=None, width=8, height=6, dpi=100):
+    def __init__(self, parent=None, width=8, height=5, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
+        self.canvas = FigureCanvas(self.fig)
+
         FigureCanvas.__init__(self, self.fig)
         FigureCanvas.setSizePolicy(self,
                                    QSizePolicy.Expanding,
                                    QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
+
         self._CANVAS_ALREADY_CREATED_ = False
+        self.subdir = "Canvas" + str(AnimatedWidget.WIDGET_ID)
+        AnimatedWidget.WIDGET_ID += 1
+        self.record = False
+
+    def updateCanvasSettings(self):
+        FigureCanvas.updateGeometry(self)
+        self.canvas.setFocusPolicy(Qt.StrongFocus)
+        self.canvas.setFocus()
+
+    def handleOptionalData(self):
+        super().handleOptionalData()
+        # must handle trigger vals since these are optional
+        try:
+            getattr(self, 'trigger')
+        except NameError:
+            self.trigger = None
 
     def createPlotCanvas(self):
         """
@@ -32,7 +55,27 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
     def loop_guard(self):
         self.i %= self.internal_iterations
 
-    def set_i(self, value, trigger=False):
+    def screenshot_manager(self):
+        """
+        saves the screenshot to the folder specified in screenshot_dir
+        """
+        # fetch dimensions for highest resolution
+        try:
+            if os.path.basename(self.screenshot_dir) != self.subdir:
+                self.screenshot_dir = os.path.join(self.screenshot_dir,
+                                                                self.subdir)
+            self.fig.savefig(os.path.join(self.screenshot_dir,
+                                        str(self.i).zfill(4) + ".png"))
+        except FileNotFoundError:
+            # if basic dir not found, create it and save there
+            os.makedirs(self.screenshot_dir)
+            self.fig.savefig(os.path.join(self.screenshot_dir,
+                                        str(self.i).zfill(4) + ".png"))
+
+    def on_key_press(self, event):
+        key_press_handler(event, self.canvas, self.mpl_nav_toolbar)
+
+    def set_i(self, value, trigger=False, record=False):
         self.i = value
         self.loop_guard()
         self.replot()
@@ -45,3 +88,4 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
             self.loop_guard()
             self.refresh()
             self.replot()
+

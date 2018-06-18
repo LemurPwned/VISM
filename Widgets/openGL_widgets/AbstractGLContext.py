@@ -33,7 +33,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     def __init__(self, parent=None):
         super(AbstractGLContext, self).__init__(parent)
         AbstractGLContext.ANY_GL_WIDGET_IN_VIEW += 1
-
+        self.subdir = "GL" + str(AnimatedWidget.WIDGET_ID)
+        AnimatedWidget.WIDGET_ID += 1
         self.lastPos = QPoint()
         self.setFocusPolicy(Qt.StrongFocus)  # needed if keyboard to be active
 
@@ -80,7 +81,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         yc = int(self.file_header['ynodes'])
         zc = int(self.file_header['znodes'])
         # change drawing function
-        self.color_vectors, self.vectors_list, decimate, self.color = \
+        self.color_vectors, self.vectors_list, decimate = \
                     ColorPolicy.standard_procedure(self.vectors_list,
                                                    self.color_vectors,
                                                    self.iterations,
@@ -89,7 +90,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                                                    self.layer,
                                                    self.vector_set,
                                                    self.decimate,
-                                                   disableDot=self.disableDot)
+                                                   disableDot=self.disableDot,
+                                                   hyperContrast=self.hyperContrast)
         if decimate is not None:
             # this is arbitrary
             self.spacer *= decimate*3
@@ -108,13 +110,13 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         auto centers the structure in widget screen
         """
-        x_fix = (self.file_header['xnodes'] * self.file_header['xbase'] * 1e9) / 2
-        y_fix = (self.file_header['ynodes'] * self.file_header['ybase'] * 1e9) / 2
-        z_fix = (self.file_header['znodes'] * self.file_header['zbase'] * 1e9) / 2
+        self.x_fix = (self.file_header['xnodes'] * self.file_header['xbase'] * 1e9) / 2
+        self.y_fix = (self.file_header['ynodes'] * self.file_header['ybase'] * 1e9) / 2
+        self.z_fix = (self.file_header['znodes'] * self.file_header['zbase'] * 1e9) / 2
         for vec in self.vectors_list:
-            vec[0] -= x_fix
-            vec[1] -= y_fix
-            vec[2] -= z_fix
+            vec[0] -= self.x_fix
+            vec[1] -= self.y_fix
+            vec[2] -= self.z_fix
 
     def initial_transformation(self):
         """
@@ -122,16 +124,15 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         :return:
         """
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
-        self.position = [0, 0 , -50]  # xyz initial
+        self.position = [0, 0 , -150]  # xyz initial
 
     def transformate(self):
         """
         applies rotation and transformation
         """
-        gl.glRotatef(self.rotation[0], 0, 1, 0)  # rotate around y axis
         gl.glRotatef(self.rotation[1], 1, 0, 0)  # rotate around x axis
+        gl.glRotatef(self.rotation[0], 0, 1, 0)  # rotate around y axis
         gl.glRotatef(self.rotation[2], 0, 0, 1)  # rotate around z axis
-        gl.glTranslatef(self.position[0], self.position[1], self.position[2])
 
     def initializeGL(self):
         """
@@ -163,6 +164,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         # Push Matrix onto stack
         gl.glPushMatrix()
+        gl.glTranslatef(*self.position)
         self.transformate()
         self.drawing_function()
         self.text_functionalities()
@@ -181,12 +183,13 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.text_render(AbstractGLContext.TEXT,
                             AbstractGLContext.SELECTED_POS)
 
-    def set_i(self, value, trigger=False):
+    def set_i(self, value, trigger=False, record=False):
         if trigger:
             self.i += 1
         else:
             self.i = value
         self.i %= self.iterations
+        self.record = record
 
     def keyPressEvent(self, event):
         """
@@ -224,38 +227,21 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.display_frames = True
 
     def zoomIn(self):
-        self.steps = 1
-        # SMART SCROLL BETA
-        self.position[0] -= mt.sin(self.rotation[0] * mt.pi / 180) * \
-                            mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
-        self.position[1] += mt.cos(self.rotation[0] * mt.pi / 180) * \
-                            mt.sin(self.rotation[1] * mt.pi / 180) * self.steps
-        self.position[2] += mt.cos(self.rotation[0] * mt.pi / 180) * \
-                            mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
+        self.position[2] += 16 / 8
 
     def zoomOut(self):
-        self.steps = -1
-
-        self.position[0] -= mt.sin(self.rotation[0] * mt.pi / 180) * \
-                            mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
-        self.position[1] += mt.cos(self.rotation[0] * mt.pi / 180) * \
-                            mt.sin(self.rotation[1] * mt.pi / 180) * self.steps
-        self.position[2] += mt.cos(self.rotation[0] * mt.pi / 180) * \
-                            mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
+        self.position[2] -= 16 / 8
 
     def wheelEvent(self, event):
         """
         Handles basic mouse scroll
         """
-        degs = event.angleDelta().y() / 8
-        self.steps = degs / 15
-        # SMART SCROLL BETA
-        self.position[0] -= mt.sin(self.rotation[0] * mt.pi / 180) * \
-                            mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
-        self.position[1] += mt.cos(self.rotation[0] * mt.pi / 180) * \
-                            mt.sin(self.rotation[1] * mt.pi / 180) * self.steps
-        self.position[2] += mt.cos(self.rotation[0] * mt.pi / 180) * \
-                            mt.cos(self.rotation[1] * mt.pi / 180) * self.steps
+        degsx = event.angleDelta().x() / 8
+        degsy = event.angleDelta().y() / 8
+        if (abs(degsx) > abs(degsy)):
+            self.position[0] += event.angleDelta().x() / 8 / 2
+        else:
+            self.position[2] += event.angleDelta().y() / 8 / 2
 
         self.update()
 
@@ -277,23 +263,32 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.lastPos = event.pos()
         if event.buttons() & Qt.LeftButton:
             rotation_speed = 0.5
-            self.rotation[0] += dx * rotation_speed
-            xpos = self.position[0] * mt.cos(dx * rotation_speed * mt.pi / 180) \
-                   - self.position[2] * mt.sin(dx * rotation_speed * mt.pi / 180)
-            zpos = self.position[0] * mt.sin(dx * rotation_speed * mt.pi / 180) \
-                   + self.position[2] * mt.cos(dx * rotation_speed * mt.pi / 180)
-
-            self.position[0] = xpos
-            self.position[2] = zpos
+            if abs(dx) > abs(dy):
+                ang = self.normalize_angle(dx * rotation_speed)
+                self.rotation[0] += ang
+            else:
+                ang = self.normalize_angle(dy * rotation_speed)
+                self.rotation[1] += ang
 
         elif event.buttons() & Qt.RightButton:
             if abs(self.rotation[0])%360 < 90:
                 self.position[0] += dx * 0.2
             else:
                 self.position[0] -= dx * 0.2
-
             self.position[1] -= dy * 0.2
+
         self.update()
+
+    def mouseReleaseEvent(self, event):
+        if event.buttons() & Qt.RightButton:
+            self.lastPos = event.pos()
+
+    def normalize_angle(self, angle):
+        while angle < 0:
+            angle += 360 * 16
+        while angle > 360 * 16:
+            angle -= 360 * 16
+        return angle
 
     def fps_counter(self, initialize=False):
         if initialize:
@@ -341,6 +336,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         # fetch dimensions for highest resolution
         _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
+        if width == 0 or height == 0:
+            width = self.geom[0]
+            height = self.geom[1]
         color = gl.glReadPixels(0, 0,
                                width, height,
                                gl.GL_RGB, gl.GL_UNSIGNED_BYTE)
@@ -348,10 +346,13 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                                                     data=color)
         image = image.transpose(Image.FLIP_TOP_BOTTOM)
         try:
+            if os.path.basename(self.screenshot_dir) != self.subdir:
+                self.screenshot_dir = os.path.join(self.screenshot_dir,
+                                                                self.subdir)
             image.save(os.path.join(self.screenshot_dir,
                                         str(self.i).zfill(4) + ".png"))
         except FileNotFoundError:
             # if basic dir not found, create it and save there
-            os.mkdir(self.screenshot_dir)
+            os.makedirs(self.screenshot_dir)
             image.save(os.path.join(self.screenshot_dir,
                                         str(self.i).zfill(4) + ".png"))

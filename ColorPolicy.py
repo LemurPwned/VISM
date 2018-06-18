@@ -141,7 +141,8 @@ class ColorPolicy:
                             picked_layer='all',
                             vector_set=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                             decimate=1,
-                            disableDot=True):
+                            disableDot=True,
+                            hyperContrast=False):
         """
         this function should be called whenever one of the following is needed:
         - sampling
@@ -157,6 +158,7 @@ class ColorPolicy:
         color = np.array(color)
         outline = np.array(outline)
         outline = ColorPolicy.pad_4f_vertices(color[0], outline)
+
         if type(picked_layer) == int:
             # if single layer is picked modify memory data
             zc = 1
@@ -165,6 +167,21 @@ class ColorPolicy:
             color = color[:, picked_layer:picked_layer+layer_thickness, :]
             outline = outline[picked_layer:picked_layer+layer_thickness]
         # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
+        if hyperContrast:
+            for iteration in range(len(color)):
+                """
+                this is hyper contrast option, enabled via options
+                """
+                for i in range(zc):
+                    mnR = np.mean(color[iteration, i*xc*yc:(i+1)*xc*yc, 0])
+                    mnG = np.mean(color[iteration, i*xc*yc:(i+1)*xc*yc, 1])
+                    mnB = np.mean(color[iteration, i*xc*yc:(i+1)*xc*yc, 2])
+                    color[iteration, i*xc*yc:(i+1)*xc*yc, 0] -= mnR
+                    color[iteration, i*xc*yc:(i+1)*xc*yc, 1] -= mnG
+                    color[iteration, i*xc*yc:(i+1)*xc*yc, 2] -= mnB
+                    color[iteration, i*xc*yc:(i+1)*xc*yc, 0] *= 10e7
+                    color[iteration, i*xc*yc:(i+1)*xc*yc, 1] *= 10e7
+                    color[iteration, i*xc*yc:(i+1)*xc*yc, 2] *= 10e7
         if decimate != 1:
             color = color[:,::decimate,:]
             outline = outline[::decimate, :]
@@ -195,4 +212,4 @@ class ColorPolicy:
         if not decimate:
             assert dotted_color.shape == (iterations, zc*yc*xc, 3)
             assert outline.shape == (zc*yc*xc, 4)
-        return dotted_color, outline, decimate, color
+        return dotted_color, outline, decimate
