@@ -11,6 +11,8 @@ else:
 import sys
 import threading
 
+from workerthreads import *
+
 from PyQt5 import QtWidgets, QtCore
 from Windows.MainWindowTemplate import Ui_MainWindow
 
@@ -100,6 +102,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[1].button.clicked.connect(lambda: self.showChooseWidgetSettings(1))
         self.panes[2].button.clicked.connect(lambda: self.showChooseWidgetSettings(2))
         self.panes[3].button.clicked.connect(lambda: self.showChooseWidgetSettings(3))
+
+    def reset_variables(self):
+        self._LOADED_FLAG_ = False
+        self._BLOCK_ITERABLES_ = True
+        self._BLOCK_STRUCTURES_ = True
+        self._BLOCK_PLOT_ITERABLES_ = True
 
     def refreshScreen(self):
         """weird stuff is happening when u want to update window u need to
@@ -199,6 +207,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self._LOADED_FLAG_ = True
         return 1
 
+    def raise_thread_exception(self, exceptionE):
+        self.reset_variables()
+        self.enablePanes()
+        self.bar.close()
+        
+        x = PopUpWrapper("Error", 
+            msg="Error {}\n{}".format(exceptionE[0], exceptionE[1]), 
+            more="Error window")
+
     def loadDirectoryWrapper(self):
         """Loads whole directory based on Parse class as simple as BHP"""
         if self._LOADED_FLAG_:
@@ -214,17 +231,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             return 0
         else:
             try:
-                t = threading.Thread(target=(lambda: self.loadDirectory(directory)))
-                t.start()
-                for i in range(WidgetHandler.visibleCounter):
-                    self.panes[i].setDisabled(True)
+                self.p = ThreadingWrapper(exceptionAction=self.raise_thread_exception)
+                self.p.collapse_threads(self.loadDirectory, directory)
+
+                self.disablePanes()
 
                 self.bar = ProgressBar(self)
                 self.bar.dumbProgress()
 
-
             except ValueError as e:
-                print(e.print_stack())
                 msg = "Invalid directory: {}. \
                     Error Message {}\nDo you wish to reselect?".format(directory,
                                                                         str(e))
@@ -234,15 +249,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                 self.loadDirectoryWrapper,
                                 quit,
                                 parent=self)
-                return None
+                to_return = None
             except Exception as e:
                 print(e)
-                return None
-
-            self._BLOCK_ITERABLES_ = False
-            self._LOADED_FLAG_ = True
-            self._BLOCK_STRUCTURES_ = False
-            return 1
+                to_return = None
+            else:
+                print("EXECUTED?")
+                self._BLOCK_ITERABLES_ = False
+                self._LOADED_FLAG_ = True
+                self._BLOCK_STRUCTURES_ = False
+                to_return = 1
+            return to_return
 
     def loadDirectory(self, directory):
         rawVectorData, header, plot_data, stages, trigger_list = \
@@ -261,9 +278,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.doh.setDataObject(trigger_list, 'trigger')
         if self.bar != None:
             # self.menubar.setDisabled(False) TODO
-            for i in range(WidgetHandler.visibleCounter):
-                self.panes[i].setDisabled(False)
+            self.enablePanes()
             self.bar.close()
+
+    def enablePanes(self):
+        for i in range(WidgetHandler.visibleCounter):
+            self.panes[i].setDisabled(False)
+
+    def disablePanes(self):
+        for i in range(WidgetHandler.visibleCounter):
+            self.panes[i].setDisabled(True)
 
     def deleteLoadedFiles(self):
         # clearing all widgets it's not a problem even if it does not exist

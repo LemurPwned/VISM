@@ -75,7 +75,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.vectors_list = getLayerOutline(self.file_header)
         self.auto_center()
         # adjust spacing
-        self.spacer = self.spacer*self.scale
+        self.spacer *= self.scale
 
         xc = int(self.file_header['xnodes'])
         yc = int(self.file_header['ynodes'])
@@ -110,13 +110,13 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         auto centers the structure in widget screen
         """
-        self.x_fix = (self.file_header['xnodes'] * self.file_header['xbase'] * 1e9) / 2
-        self.y_fix = (self.file_header['ynodes'] * self.file_header['ybase'] * 1e9) / 2
-        self.z_fix = (self.file_header['znodes'] * self.file_header['zbase'] * 1e9) / 2
+        x_fix = (self.file_header['xnodes'] * self.file_header['xbase'] * 1e9) / 2
+        y_fix = (self.file_header['ynodes'] * self.file_header['ybase'] * 1e9) / 2
+        z_fix = (self.file_header['znodes'] * self.file_header['zbase'] * 1e9) / 2
         for vec in self.vectors_list:
-            vec[0] -= self.x_fix
-            vec[1] -= self.y_fix
-            vec[2] -= self.z_fix
+            vec[0] -= x_fix
+            vec[1] -= y_fix
+            vec[2] -= z_fix
 
     def initial_transformation(self):
         """
