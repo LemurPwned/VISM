@@ -207,15 +207,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self._LOADED_FLAG_ = True
         return 1
 
-    def raise_thread_exception(self, exceptionE):
+    def raise_thread_exception(self):
         self.reset_variables()
         self.enablePanes()
-        self.bar.close()
         
-        x = PopUpWrapper("Error", 
-            msg="Error {}\n{}".format(exceptionE[0], exceptionE[1]), 
-            more="Error window")
-
     def loadDirectoryWrapper(self):
         """Loads whole directory based on Parse class as simple as BHP"""
         if self._LOADED_FLAG_:
@@ -231,13 +226,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             return 0
         else:
             try:
-                self.p = ThreadingWrapper(exceptionAction=self.raise_thread_exception)
+                self.p = ThreadingWrapper(completeAction=None,
+                                          exceptionAction=self.raise_thread_exception, 
+                                          parent=self)
                 self.p.collapse_threads(self.loadDirectory, directory)
-
                 self.disablePanes()
-
-                self.bar = ProgressBar(self)
-                self.bar.dumbProgress()
 
             except ValueError as e:
                 msg = "Invalid directory: {}. \
@@ -276,10 +269,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self._BLOCK_PLOT_ITERABLES_ = True
         if trigger_list is not None:
             self.doh.setDataObject(trigger_list, 'trigger')
-        if self.bar != None:
-            # self.menubar.setDisabled(False) TODO
-            self.enablePanes()
-            self.bar.close()
+        self.enablePanes()
 
     def enablePanes(self):
         for i in range(WidgetHandler.visibleCounter):
