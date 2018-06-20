@@ -47,7 +47,8 @@ class SimplePerfOptions(QWidget, Ui_Dialog):
                         0,
                         self.parseVectors(),
                         0,
-                        0]
+                        0,
+                        False]
         return optionsList
 
     def parseVectors(self):
