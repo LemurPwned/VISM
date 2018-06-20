@@ -2,7 +2,6 @@ from buildVerifier import BuildVerifier
 # verify build
 # execute makefile
 if BuildVerifier.OS_GLOB_SYS == "Windows":
-    print("PLEASE MAKE SURE CYTHON HAS BEEN BUILT AS INDICATED IN GETTING STARTED GUIDE\n")
     pass
 else:
     bv = BuildVerifier()
