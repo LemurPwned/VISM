@@ -86,20 +86,20 @@ class AbstractGLContextDecorators:
 
 class MainContextDecorators:
     def window_resize_fix(qdialog_function):
-        def _window_resize(main_window):
+        def _window_resize(main_window, *args, **kwargs):
             if WidgetCounter.OPENGL_WIDGET:
                 normalWindowSize = main_window.size()
                 main_window.hide()
                 main_window.setWindowState(main_window.windowState())
                 main_window.setFixedSize(main_window.size()-QtCore.QSize(0,1))
                 main_window.show()
-                to_return = qdialog_function(main_window)
+                to_return = qdialog_function(main_window, *args, **kwargs)
                 main_window.hide()
                 main_window.setWindowState(main_window.windowState())
                 main_window.setFixedSize(normalWindowSize);
                 main_window.show()
             else:
-                to_return = qdialog_function(main_window)
+                to_return = qdialog_function(main_window, *args, **kwargs)
             return to_return
         return _window_resize
 

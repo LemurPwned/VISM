@@ -406,7 +406,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         for i in range(WidgetHandler.visibleCounter - 1):
             self.deleteWidget(i+1, False, False)
 
-
     def deleteWidget(self, number, null_delete=False, verbose=True):
         if self.playerWindow:
             if verbose:
@@ -430,7 +429,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         Therefore if cancel was pressed and no widget was created - hence
         null_delete, then do not call
         """
-        if not null_delete: self.panes[number].clearBox()
+        if not null_delete: 
+            self.panes[number].clearBox()
+            self.panes[number].removeWidget(self.panes[number].widget)
         self.panes[number].setUpDefaultBox()
         self.panes[number].button.clicked.connect(\
             lambda: self.showChooseWidgetSettings(number))
