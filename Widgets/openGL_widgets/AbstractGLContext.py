@@ -81,7 +81,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         yc = int(self.file_header['ynodes'])
         zc = int(self.file_header['znodes'])
         # change drawing function
-        self.color_vectors, self.vectors_list, decimate = \
+        self.color_vectors, self.vectors_list, decimate, self.colorX = \
                     ColorPolicy.standard_procedure(self.vectors_list,
                                                    self.color_vectors,
                                                    self.iterations,
