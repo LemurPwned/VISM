@@ -52,7 +52,7 @@ class WidgetHandler:
         self._widget = value
 
     def deleteWidget(self):
-        del(self._widget)
+        self._widget.setParent(None)
 
     def hide(self):
         self._groupBox.hide()
@@ -70,12 +70,11 @@ class WidgetHandler:
         self.button = QtWidgets.QPushButton("Add Widget", self._parent)
         self._visible = True
 
-
     def clearBox(self):
         """Clears whole Widget and leaves just groupBox with layout"""
         if self._groupBox == None:
             raise ValueError('groupBox must be initialized')
-
+    
         for i in range(len(self._groupBox.children())):
             self._groupBox.children()[-1].deleteLater()
 
@@ -90,14 +89,23 @@ class WidgetHandler:
         except:
             raise ValueError("Layout is not proper or argument is not a widget")
 
+    def removeWidget(self, widget):
+        if self._groupBox == None:
+            raise ValueError("GroupBox must be initialized")
+        try:
+            self.deleteWidget()
+            self._layout.removeWidget(widget)
+        except:
+            raise ValueError("Layout is not proper or argument is not a widget")
+        
     def addToolBar(self, toolbar):
         self._toolbar = toolbar
         if self._groupBox == None:
             raise ValueError("GroupBox must be initialized")
-        # try:
-        self._widget.addToolBar(self._toolbar)
-        # except:
-            # raise ValueError("Argument is not a toolbar")
+        try:
+            self._widget.addToolBar(self._toolbar)
+        except:
+            raise ValueError("Argument is not a toolbar")
 
     def setDisabled(self, value):
         self._button.setDisabled(value)

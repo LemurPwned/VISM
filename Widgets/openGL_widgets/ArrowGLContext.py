@@ -42,7 +42,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
     def prerendering_calculation(self):
         super().prerendering_calculation()
         if self.normalize:
-            ArrowGLContext.normalize_specification(self.color_vectors, vbo=True)
+           ArrowGLContext.normalize_specification(self.color_vectors, vbo=True)
         self.structure_vbo = self.regenerate_structure(self.color_vectors)
         self.index_required = self.SIDES*2
         self.indices = self.generate_index()

@@ -23,7 +23,6 @@ class VectorGLContext(AbstractGLContext, QWidget):
         super().__init__()
         super().shareData(**data_dict)
         self.prerendering_calculation()
-        # self.drawing_function = self.slow_arrow_draw
         self.drawing_function = self.vbo_arrow_draw
 
     def prerendering_calculation(self):

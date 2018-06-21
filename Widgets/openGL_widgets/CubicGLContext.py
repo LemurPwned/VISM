@@ -28,7 +28,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
         super().prerendering_calculation()
         if self.normalize:
             CubicGLContext.normalize_specification(self.color_vectors, vbo=True)
-
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw
             self.buffers = None

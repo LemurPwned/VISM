@@ -28,6 +28,7 @@ class PerfOptions(QWidget, Ui_Dialog):
     def initial_options(self, object_type):
         self.default_size = 1
         self.default_averaging = 1
+        self.horizontalSlider_3.setEnabled(True)
         if object_type == 'ArrowGLContext':
             # defaults
             self.default_averaging = 4
@@ -35,6 +36,8 @@ class PerfOptions(QWidget, Ui_Dialog):
             self.default_size = 2
         elif object_type == 'CubicGLContext':
             self.default_size = 5
+            # only one size is allowed
+            self.horizontalSlider_3.setEnabled(False)
         
     def disableDecimate(self):
         self.horizontalSlider_4.setEnabled(False)
@@ -85,7 +88,6 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.horizontalSlider.setSingleStep(1)
 
         # scale
-        self.horizontalSlider_3.setEnabled(True)
         self.horizontalSlider_3.setMaximum(5)
         self.horizontalSlider_3.setMinimum(1)
         self.horizontalSlider_3.setValue(self.default_size)
