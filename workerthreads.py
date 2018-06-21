@@ -81,12 +81,18 @@ class Worker(QRunnable):
 
     @pyqtSlot()
     def run(self):
-        try:
-            result = self.func(*self.args, **self.kwargs)
-        except:
-            traceback.print_exc()
-            exctype, value  = sys.exc_info()[:2]
-            self.signals.exception.emit((exctype, value, 
-                                    traceback.format_exc()))
-        else:
-            self.signals.finished.emit()
+        # try:
+        print("ENTERING")
+        print(self.func.__name__)
+        result = self.func(*self.args, **self.kwargs)
+        print("DONE??")
+        # except:
+        #     print("EXCEPTION")
+        #     traceback.print_exc()
+        #     exctype, value  = sys.exc_info()[:2]
+        #     self.signals.exception.emit((exctype, value, 
+        #                             traceback.format_exc()))
+        # finally:
+        print("FINISHING")
+        self.signals.finished.emit()
+        print("QUIT")

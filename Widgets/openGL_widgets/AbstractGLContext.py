@@ -4,7 +4,7 @@ import OpenGL.GL as gl
 import OpenGL.GLU as glu
 
 from PyQt5.Qt import Qt
-from PyQt5.QtCore import QPoint, QCoreApplication, QSize
+from PyQt5.QtCore import QPoint, QCoreApplication, QSize, QMutex
 
 import math as mt
 from PIL import Image
@@ -65,9 +65,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         normalization procedure
         """
-        return multi_iteration_normalize(color_vectors)
 
-    def prerendering_calculation(self):
+    def prerendering_calculation(self, empty=False):
         """
         Some calculations that take place before object gets rendered
         """
@@ -92,10 +91,13 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                                                    self.decimate,
                                                    disableDot=self.disableDot,
                                                    hyperContrast=self.hyperContrast)
+        if self.normalize:
+            multi_iteration_normalize(self.color_vectors)
+            
         if decimate is not None:
             # this is arbitrary
             self.spacer *= decimate*3
-
+        
     def handleOptionalData(self):
         super().handleOptionalData()
         # must handle iterations since these are optional

@@ -9,6 +9,9 @@ from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 from pattern_types.Patterns import AbstractGLContextDecorators
 
 from ColorPolicy import ColorPolicy
+from workerthreads import *
+
+import time as tm
 
 
 class CubicGLContext(AbstractGLContext, QWidget):
@@ -21,13 +24,17 @@ class CubicGLContext(AbstractGLContext, QWidget):
         self.buffer_len = 0
         self.scale = 5
 
-        self.prerendering_calculation()
+        self.p = ThreadingWrapper(completeAction=None,
+                                exceptionAction=None, 
+                                parent=self)
+
+        self.p.collapse_threads(self.prerendering_calculation,)
+        tm.sleep(10)
+        # self.prerendering_calculation()
         self.drawing_function = self.vbo_cubic_draw
         
     def prerendering_calculation(self):
         super().prerendering_calculation()
-        if self.normalize:
-            CubicGLContext.normalize_specification(self.color_vectors, vbo=True)
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw
             self.buffers = None

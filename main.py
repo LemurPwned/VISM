@@ -246,7 +246,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 print(e)
                 to_return = None
             else:
-                print("EXECUTED?")
                 self._BLOCK_ITERABLES_ = False
                 self._LOADED_FLAG_ = True
                 self._BLOCK_STRUCTURES_ = False

@@ -17,18 +17,30 @@ import OpenGL.GL as gl
 import math as mt
 from multiprocessing import Pool
 from ColorPolicy import ColorPolicy
+from workerthreads import *
+import time as tm
+
 
 class VectorGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict, parent=None):
         super().__init__()
         super().shareData(**data_dict)
-        self.prerendering_calculation()
+        self.dummy_startup_function()
         self.drawing_function = self.vbo_arrow_draw
 
-    def prerendering_calculation(self):
-        super().prerendering_calculation()
-        if self.normalize:
-            VectorGLContext.normalize_specification(self.color_vectors, vbo=True)
+    def dummy_finish_function(self, empty_arg):
+        self.post_processing()
+
+    def dummy_startup_function(self):
+        self.p = ThreadingWrapper(completeAction=self.dummy_finish_function,
+                                  exceptionAction=None, 
+                                  parent=self)
+
+        self.p.collapse_threads(self.prerendering_calculation, False)
+
+        self.pafsaf= False
+
+    def post_processing(self):
         self.interleaved = ColorPolicy.apply_vbo_interleave_format(self.vectors_list,
                                                                    self.color_vectors)
         self.buffers = None
@@ -50,18 +62,6 @@ class VectorGLContext(AbstractGLContext, QWidget):
             if not np.any(color):
                 continue
             self.base_arrow(vector, color)
-
-    def base_arrow(self, vector, color):
-        gl.glColor3f(*color)
-        gl.glBegin(gl.GL_LINES)
-        gl.glVertex3f(*vector)
-        gl.glVertex3f(vector[0]+color[0], vector[1]+color[1],
-                        vector[2]+color[2])
-        gl.glEnd()
-        gl.glBegin(gl.GL_POINTS)
-        gl.glVertex3f(vector[0]+color[0], vector[1]+color[1],
-                        vector[2]+color[2])
-        gl.glEnd()
 
     def standard_vbo_draw(self):
         gl.glEnableClientState(gl.GL_COLOR_ARRAY)
