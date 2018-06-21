@@ -5,7 +5,7 @@ from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 from ColorPolicy import ColorPolicy
 
 from ctypes import c_void_p
-from PyQt5.Qt import Qt
+from PyQt5.Qt import Qt, QApplication
 from PyQt5.QtCore import QPoint, QThread
 
 from cython_modules.color_policy import multi_iteration_normalize
@@ -28,7 +28,7 @@ class VectorGLContext(AbstractGLContext, QWidget):
         self.dummy_startup_function()
         self.drawing_function = self.vbo_arrow_draw
 
-    def dummy_finish_function(self, empty_arg):
+    def dummy_finish_function(self):
         self.post_processing()
 
     def dummy_startup_function(self):
@@ -36,9 +36,9 @@ class VectorGLContext(AbstractGLContext, QWidget):
                                   exceptionAction=None, 
                                   parent=self)
 
-        self.p.collapse_threads(self.prerendering_calculation, False)
-
-        self.pafsaf= False
+        self.p.collapse_threads(self.prerendering_calculation)
+        # while (True):
+        self.p.threadPool.waitForDone(-1)
 
     def post_processing(self):
         self.interleaved = ColorPolicy.apply_vbo_interleave_format(self.vectors_list,

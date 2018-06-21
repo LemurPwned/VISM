@@ -1,11 +1,21 @@
 import traceback
 import sys
-from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot, QRunnable, QThreadPool, QByteArray, Qt
+from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot, QRunnable, QThreadPool, QByteArray, Qt, QThread
 from PyQt5.QtGui import QMovie
 from PyQt5.QtWidgets import QLabel, QSizePolicy
 
 from PopUp import PopUpWrapper
 
+import time 
+import signal
+
+RUN = True
+
+def handle(a, b):
+    print(a, b)
+    global RUN
+    print("handled")
+    RUN = False
 
 class ThreadingWrapper:
     def __init__(self, completeAction=None, exceptionAction=None, parent=None):
@@ -14,6 +24,7 @@ class ThreadingWrapper:
         loading spinner
         """
         self.threadPool = QThreadPool()
+        self.thread_worker = QThread()
         self.exceptionAction = exceptionAction
         self.completeAction = completeAction
         """
@@ -44,12 +55,21 @@ class ThreadingWrapper:
         if exception is caught, then exceptionAction is excecuted and 
         a PopUp displays
         """
-        worker = Worker(func, *args, **kwargs)
-        worker.signals.exception.connect(self.thread_exception)
-        worker.signals.finished.connect(self.thread_complete)
-        self.threadPool.start(worker)
+        # self.worker = ThreadWorker(self, func, *args, **kwargs)
+        self.worker = Worker(func, *args, **kwargs)
+        self.worker.signals.exception.connect(self.thread_exception)
+        self.worker.signals.finished.connect(self.thread_complete)
+        self.threadPool.start(self.worker)
+        # self.worker.moveToThread(self.thread_worker)
+        # self.thread_worker.started.connect(self.worker.start)
+        # self.thread_worker.start()
         self.movie_screen.show()
         self.movie.start()
+        # self.thread_worker.wait()
+        # signal.signal(signal.SIGKILL, handle)
+        # signal.signal(signal.SIGABRT, handle)
+        # while(RUN):
+        #     signal.pause()
 
     def thread_exception(self, exceptionE):
         if self.exceptionAction:
@@ -62,6 +82,7 @@ class ThreadingWrapper:
         self.movie_screen.close()
 
     def thread_complete(self):
+        print("GOT THE SIGNAL!")
         if self.completeAction:
             self.completeAction()
         self.movie.stop()
@@ -70,6 +91,36 @@ class ThreadingWrapper:
 class ExceptionWorker(QObject):
     finished = pyqtSignal()
     exception = pyqtSignal(tuple)
+
+
+class ThreadWorker(QObject):
+    finished = pyqtSignal()
+    exception = pyqtSignal(tuple)   
+
+    def __init__(self, parent, func, *args, **kwargs):
+        # QObject.__init__(self)
+        super(ThreadWorker, self).__init__()
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
+
+    @pyqtSlot()
+    def start(self):
+        try:
+            print("ENTERING")
+            print(self.func.__name__)
+            result = self.func(*self.args, **self.kwargs)
+            print("DONE??")
+        except:
+            print("EXCEPTION")
+            traceback.print_exc()
+            exctype, value  = sys.exc_info()[:2]
+            self.exception.emit((exctype, value, 
+                                    traceback.format_exc()))
+        finally:
+            print("FINISHING")
+            self.finished.emit()
+        print("QUIT")
 
 class Worker(QRunnable):
     def __init__(self, func, *args, **kwargs):
@@ -81,18 +132,18 @@ class Worker(QRunnable):
 
     @pyqtSlot()
     def run(self):
-        # try:
-        print("ENTERING")
-        print(self.func.__name__)
-        result = self.func(*self.args, **self.kwargs)
-        print("DONE??")
-        # except:
-        #     print("EXCEPTION")
-        #     traceback.print_exc()
-        #     exctype, value  = sys.exc_info()[:2]
-        #     self.signals.exception.emit((exctype, value, 
-        #                             traceback.format_exc()))
-        # finally:
-        print("FINISHING")
-        self.signals.finished.emit()
+        try:
+            print("ENTERING")
+            print(self.func.__name__)
+            result = self.func(*self.args, **self.kwargs)
+            print("DONE??")
+        except:
+            print("EXCEPTION")
+            traceback.print_exc()
+            exctype, value  = sys.exc_info()[:2]
+            self.signals.exception.emit((exctype, value, 
+                                    traceback.format_exc()))
+        finally:
+            print("FINISHING")
+            self.signals.finished.emit()
         print("QUIT")
