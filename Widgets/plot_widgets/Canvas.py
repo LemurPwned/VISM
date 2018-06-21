@@ -25,7 +25,6 @@ class Canvas(AbstractCanvas):
         self.graph_data = self.plot_data[self.title].tolist()
         self.internal_iterations = len(self.graph_data)
         self.synchronizedPlot = self.options['synchronizedPlot']
-        self.createPlotCanvas()
 
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
