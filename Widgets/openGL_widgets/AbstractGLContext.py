@@ -156,7 +156,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         glu.gluPerspective(85 * self.steps, aspectRatio, 1, 1000)
         gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glLoadIdentity()
-
+    
+    # @AbstractGLContextDecorators.recording_decorator
     def paintGL(self):
         """
         Clears the buffer and redraws the scene

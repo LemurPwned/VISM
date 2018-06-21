@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
                 QVBoxLayout, QRadioButton, QLabel, QSlider, QPushButton, QMessageBox
 from Windows.SimplePerfOptionsTemplate import Ui_Dialog
 import re
+import numpy as np
 from PopUp import PopUpWrapper
 
 class SimplePerfOptions(QWidget, Ui_Dialog):
@@ -59,11 +60,15 @@ class SimplePerfOptions(QWidget, Ui_Dialog):
         return p
 
     def isVectorEntryValid(self, entry):
-        match_string = '^\[([0-1]),\s([0-1]),\s([0-1])\]'
+        match_string = '^\[([0-1]),\s?([0-1]),\s?([0-1])\]'
         rg = re.compile(match_string)
         m = rg.search(entry)
         if m is not None:
-            return [int(m.group(1)), int(m.group(2)), int(m.group(3))]
+            x = int(m.group(1))
+            y = int(m.group(2))
+            z = int(m.group(3))
+            norm = np.sqrt(x**2 + y**2 + z**2)  
+            return [x/norm, y/norm, z/norm]
         else:
             return False
 
@@ -80,7 +85,7 @@ class SimplePerfOptions(QWidget, Ui_Dialog):
         except ValueError as ve:
             x = PopUpWrapper(
                 title='Invalid format',
-                msg='Vectors must be normalized {}'.format(ve),
+                msg='Vectors must be in format [x,y,z] {}'.format(ve),
                 more='',
                 yesMes=None, parent=self)
             self.show()
