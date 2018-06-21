@@ -28,7 +28,6 @@ class AnimatedWidget():
         pass
 
     def receivedOptions(self):
-        print(self.options)
         self.normalize = self.options[0]
         self.averaging = int(self.options[1])
         self.layer = self.options[2]

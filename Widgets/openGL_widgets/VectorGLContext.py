@@ -27,9 +27,7 @@ class VectorGLContext(AbstractGLContext, QWidget):
 
     def prerendering_calculation(self):
         super().prerendering_calculation()
-        print("QUIT?")
         if self.normalize:
-            print("NORMALIZING?")
             VectorGLContext.normalize_specification(self.color_vectors, vbo=True)
         self.interleaved = ColorPolicy.apply_vbo_interleave_format(self.vectors_list,
                                                                    self.color_vectors)
