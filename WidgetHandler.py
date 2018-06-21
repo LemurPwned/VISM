@@ -93,8 +93,9 @@ class WidgetHandler:
         if self._groupBox == None:
             raise ValueError("GroupBox must be initialized")
         try:
-            self.deleteWidget()
-            self._layout.removeWidget(widget)
+            if self._widget is not None:
+                self.deleteWidget()
+                self._layout.removeWidget(widget)
         except:
             raise ValueError("Layout is not proper or argument is not a widget")
         
