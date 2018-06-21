@@ -65,7 +65,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         normalization procedure
         """
-        multi_iteration_normalize(color_vectors)
+        return multi_iteration_normalize(color_vectors)
 
     def prerendering_calculation(self):
         """

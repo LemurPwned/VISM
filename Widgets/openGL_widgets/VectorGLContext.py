@@ -23,12 +23,13 @@ class VectorGLContext(AbstractGLContext, QWidget):
         super().__init__()
         super().shareData(**data_dict)
         self.prerendering_calculation()
-        # self.drawing_function = self.slow_arrow_draw
         self.drawing_function = self.vbo_arrow_draw
 
     def prerendering_calculation(self):
         super().prerendering_calculation()
+        print("QUIT?")
         if self.normalize:
+            print("NORMALIZING?")
             VectorGLContext.normalize_specification(self.color_vectors, vbo=True)
         self.interleaved = ColorPolicy.apply_vbo_interleave_format(self.vectors_list,
                                                                    self.color_vectors)

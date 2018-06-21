@@ -17,7 +17,7 @@ def asynchronous_pool_order(func, args, object_list, timeout=20):
     :param object_list: is the objects that are iterated
     :param timeout: is the timeout for getting value in multiprocessing
     """
-    pool = Pool()
+    pool = Pool(2)
     output_list = []
     multiple_results = [pool.apply_async(func, (object_list[i], *args))
                         for i in range(len(object_list))]

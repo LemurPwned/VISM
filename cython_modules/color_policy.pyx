@@ -36,7 +36,29 @@ def multi_iteration_normalize(np.ndarray[np.float32_t, ndim=3] color_iterations)
     for i in range(0, ci):
         color_iterations[i] = atomic_normalization(color_iterations[i])
     #np.nan_to_num(color_iterations, copy=False)
-    # return color_iterations
+    #return color_iterations
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def hyper_contrast_calculation(np.ndarray[np.float32_t, ndim=3] color, xc, yc, zc):
+    cdef:
+        int i
+        int iteration
+        int max_it = len(color)
+    for iteration in range(0, max_it):
+        """
+        this is hyper contrast option, enabled via options
+        """
+        for i in range(0, zc):
+            mnR = np.mean(color[iteration, i*xc*yc:(i+1)*xc*yc, 0])
+            mnG = np.mean(color[iteration, i*xc*yc:(i+1)*xc*yc, 1])
+            mnB = np.mean(color[iteration, i*xc*yc:(i+1)*xc*yc, 2])
+            color[iteration, i*xc*yc:(i+1)*xc*yc, 0] -= mnR
+            color[iteration, i*xc*yc:(i+1)*xc*yc, 1] -= mnG
+            color[iteration, i*xc*yc:(i+1)*xc*yc, 2] -= mnB
+            color[iteration, i*xc*yc:(i+1)*xc*yc, 0] *= 10e7
+            color[iteration, i*xc*yc:(i+1)*xc*yc, 1] *= 10e7
+            color[iteration, i*xc*yc:(i+1)*xc*yc, 2] *= 10e7
 
 def generate_arrow_object(origin_circle,
                            rot_matrix,
@@ -109,3 +131,4 @@ def calculate_layer_colors(x, relative_vector=[0, 1, 0], scale=1):
     angle = np.arccos(dot) ** scale
     angle[np.isnan(angle)] = 0  # get rid of NaN expressions
     return angle
+

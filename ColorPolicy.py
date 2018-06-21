@@ -1,6 +1,6 @@
 import numpy as np
 from cython_modules.cython_parse import getLayerOutline
-from cython_modules.color_policy import multi_iteration_dot_product
+from cython_modules.color_policy import multi_iteration_dot_product, hyper_contrast_calculation
 from multiprocessing import Pool
 from multiprocessing_parse import asynchronous_pool_order
 import scipy.signal
@@ -168,20 +168,7 @@ class ColorPolicy:
             outline = outline[picked_layer:picked_layer+layer_thickness]
         # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
         if hyperContrast:
-            for iteration in range(len(color)):
-                """
-                this is hyper contrast option, enabled via options
-                """
-                for i in range(zc):
-                    mnR = np.mean(color[iteration, i*xc*yc:(i+1)*xc*yc, 0])
-                    mnG = np.mean(color[iteration, i*xc*yc:(i+1)*xc*yc, 1])
-                    mnB = np.mean(color[iteration, i*xc*yc:(i+1)*xc*yc, 2])
-                    color[iteration, i*xc*yc:(i+1)*xc*yc, 0] -= mnR
-                    color[iteration, i*xc*yc:(i+1)*xc*yc, 1] -= mnG
-                    color[iteration, i*xc*yc:(i+1)*xc*yc, 2] -= mnB
-                    color[iteration, i*xc*yc:(i+1)*xc*yc, 0] *= 10e7
-                    color[iteration, i*xc*yc:(i+1)*xc*yc, 1] *= 10e7
-                    color[iteration, i*xc*yc:(i+1)*xc*yc, 2] *= 10e7
+            hyper_contrast_calculation(color, xc, yc, zc)
         if decimate != 1:
             color = color[:,::decimate,:]
             outline = outline[::decimate, :]
