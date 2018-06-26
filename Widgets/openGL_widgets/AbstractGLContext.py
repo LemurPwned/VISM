@@ -307,7 +307,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                 self.frames = 0
             self.text_render(str(self.fps))
 
-    def text_render(self, textString, position=(10, 10, 0)):
+    def text_render(self, textString, position=(100, 100, 0)):
         if not AbstractGLContext.PYGAME_INCLUDED:
             pygame.init()
             AbstractGLContext.PYGAME_INCLUDED = True
