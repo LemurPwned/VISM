@@ -24,13 +24,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
         self.buffer_len = 0
         self.scale = 5
 
-        self.p = ThreadingWrapper(completeAction=None,
-                                exceptionAction=None, 
-                                parent=self)
-
-        self.p.collapse_threads(self.prerendering_calculation,)
-        tm.sleep(10)
-        # self.prerendering_calculation()
+        self.prerendering_calculation()
         self.drawing_function = self.vbo_cubic_draw
         
     def prerendering_calculation(self):

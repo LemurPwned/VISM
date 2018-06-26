@@ -8,7 +8,7 @@ from pattern_types.Patterns import AbstractGLContextDecorators
 from ColorPolicy import ColorPolicy
 from ctypes import c_void_p
 from multiprocessing_parse import asynchronous_pool_order
-from cython_modules.color_policy import process_vector_to_vbo
+from cython_modules.color_policy import process_vector_to_vbo, multi_iteration_normalize
 import math
 
 
@@ -41,9 +41,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
 
     def prerendering_calculation(self):
         super().prerendering_calculation()
-        ArrowGLContext.normalize_specification(self.colorX, vbo=True)
-        if self.normalize:
-            ArrowGLContext.normalize_specification(self.color_vectors, vbo=True)
+        multi_iteration_normalize(self.colorX)
         self.structure_vbo = self.regenerate_structure(self.colorX)
         self.index_required = self.SIDES*2
         self.indices = self.generate_index()

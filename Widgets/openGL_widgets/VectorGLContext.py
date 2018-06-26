@@ -25,22 +25,11 @@ class VectorGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict, parent=None):
         super().__init__()
         super().shareData(**data_dict)
-        self.dummy_startup_function()
+        self.prerendering_calculation()
         self.drawing_function = self.vbo_arrow_draw
 
-    def dummy_finish_function(self):
-        self.post_processing()
-
-    def dummy_startup_function(self):
-        self.p = ThreadingWrapper(completeAction=self.dummy_finish_function,
-                                  exceptionAction=None, 
-                                  parent=self)
-
-        self.p.collapse_threads(self.prerendering_calculation)
-        # while (True):
-        self.p.threadPool.waitForDone(-1)
-
-    def post_processing(self):
+    def prerendering_calculation(self):
+        super().prerendering_calculation()
         self.interleaved = ColorPolicy.apply_vbo_interleave_format(self.vectors_list,
                                                                    self.color_vectors)
         self.buffers = None

@@ -65,12 +65,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.receivedOptions()
         self.i = self.current_state
 
-    @classmethod
-    def normalize_specification(cls, color_vectors, vbo=False):
-        """
-        normalization procedure
-        """
-
     def prerendering_calculation(self, empty=False):
         """
         Some calculations that take place before object gets rendered
@@ -345,7 +339,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
     def set_text(self, text):
         self.TEXT = text
-        print("ENTERED ", text)
         if self.TEXT is not None:
             self.RECORD_REGION_SELECTION = True
 
