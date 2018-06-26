@@ -32,7 +32,7 @@
      <x>0</x>
      <y>0</y>
      <width>863</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -66,7 +66,6 @@
     </property>
     <addaction name="actionPerformance"/>
     <addaction name="actionMovie_composer"/>
-    <addaction name="actionText_select"/>
    </widget>
    <widget class="QMenu" name="menuAnimation">
     <property name="title">

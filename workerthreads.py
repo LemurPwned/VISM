@@ -118,9 +118,7 @@ class Worker(QRunnable):
     @pyqtSlot()
     def run(self):
         try:
-            print(self.func.__name__)
             result = self.func(*self.args, **self.kwargs)
-            print("DONE??")
         except:
             traceback.print_exc()
             exctype, value  = sys.exc_info()[:2]

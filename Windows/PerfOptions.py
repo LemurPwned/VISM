@@ -62,14 +62,14 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.label.setText("Averaging: {}".format(self.averaging))
 
     def disableDot(self):
-        self.lineEdit.setEnabled(self.color_disable)
-        self.lineEdit_2.setEnabled(self.color_disable)
-        self.lineEdit_3.setEnabled(self.color_disable)
+        self.lineEdit.setText('[1, 0, 0]')
+        self.lineEdit_2.setText('[0, 1, 0]')
+        self.lineEdit_3.setText('[0, 0, 1]')
         self.color_disable = not self.color_disable
 
     def basicOptions(self):
         # disable coloring
-        self.checkBox_4.stateChanged.connect(self.disableDot)
+        self.pushButton_4.clicked.connect(self.disableDot)
         # these are averagnin and decimate
         self.checkBox_3.stateChanged.connect(self.disableDecimate)
         self.checkBox_2.stateChanged.connect(self.disableAveraging)

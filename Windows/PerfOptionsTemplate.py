@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'Windows/UI_files/PerfOptions.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# Created by: PyQt5 UI code generator 5.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -114,9 +114,6 @@ class Ui_Dialog(object):
         self.label_7.setObjectName("label_7")
         self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_7)
         self.formLayout.setLayout(18, QtWidgets.QFormLayout.LabelRole, self.formLayout_2)
-        self.checkBox_4 = QtWidgets.QCheckBox(self.formLayoutWidget)
-        self.checkBox_4.setObjectName("checkBox_4")
-        self.formLayout.setWidget(18, QtWidgets.QFormLayout.FieldRole, self.checkBox_4)
         self.checkBox_5 = QtWidgets.QCheckBox(self.formLayoutWidget)
         self.checkBox_5.setChecked(True)
         self.checkBox_5.setObjectName("checkBox_5")
@@ -126,6 +123,9 @@ class Ui_Dialog(object):
         self.checkBox_6.setChecked(False)
         self.checkBox_6.setObjectName("checkBox_6")
         self.formLayout.setWidget(9, QtWidgets.QFormLayout.LabelRole, self.checkBox_6)
+        self.pushButton_4 = QtWidgets.QPushButton(self.formLayoutWidget)
+        self.pushButton_4.setObjectName("pushButton_4")
+        self.formLayout.setWidget(18, QtWidgets.QFormLayout.FieldRole, self.pushButton_4)
 
         self.retranslateUi(Dialog)
         self.buttonBox.accepted.connect(Dialog.accept)
@@ -149,9 +149,9 @@ class Ui_Dialog(object):
         self.label_6.setText(_translate("Dialog", "G"))
         self.lineEdit_3.setText(_translate("Dialog", "[0, 0, 1]"))
         self.label_7.setText(_translate("Dialog", "B"))
-        self.checkBox_4.setText(_translate("Dialog", "Disable"))
         self.checkBox_5.setText(_translate("Dialog", "Normalize all vectors?"))
         self.checkBox_6.setText(_translate("Dialog", "Hyper Contrast?"))
+        self.pushButton_4.setText(_translate("Dialog", "Reset"))
 
 
 if __name__ == "__main__":
