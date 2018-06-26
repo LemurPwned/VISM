@@ -1,6 +1,6 @@
 from matplotlib import cm
 import numpy as np
-
+from pattern_types.Patterns import AbstractGLContextDecorators
 from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
 from multiprocessing_parse import asynchronous_pool_order
 from cython_modules.color_policy import multi_iteration_normalize, \
@@ -52,6 +52,7 @@ class CanvasLayer(AbstractCanvas):
         self.plot_axis.set_autoscale_on(False)
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
 
+    @AbstractGLContextDecorators.recording_decorator
     def replot(self):
         self.plot_axis.hpl.set_array(self.colors[self.i])
         self.plot_axis.set_title('{}/{}'.format(self.i, self.iterations))
@@ -92,3 +93,4 @@ class CanvasLayer(AbstractCanvas):
         self.i %= self.iterations
         self.replot()
         self.plot_axis.get_figure().canvas.draw()
+        self.record = record
