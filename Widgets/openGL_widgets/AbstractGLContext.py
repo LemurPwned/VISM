@@ -18,6 +18,7 @@ from ColorPolicy import ColorPolicy
 from pattern_types.Patterns import AbstractGLContextDecorators
 
 from buildVerifier import BuildVerifier
+from Windows.Select import Select
 
 import time
 import pygame
@@ -53,6 +54,10 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.FRAME_BENCHMARK_FLAG = False
         self.FPS_UPDATE_INTERVAL = 0.25
         self.TIME_PASSED = 0.0
+
+        self.TEXT = None
+        self.RECORD_REGION_SELECTION = False
+        self.SELECTED_POS = None
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
@@ -179,10 +184,10 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.fps_counter()
         if self.display_frames:
             self.text_render(str(self.i))
-        if AbstractGLContext.TEXT is not None \
-            and AbstractGLContext.SELECTED_POS is not None:
-            self.text_render(AbstractGLContext.TEXT,
-                            AbstractGLContext.SELECTED_POS)
+        if self.TEXT is not None \
+            and self.SELECTED_POS is not None:
+            self.text_render(self.TEXT,
+                             self.SELECTED_POS)
 
     def set_i(self, value, trigger=False, record=False):
         if trigger:
@@ -249,10 +254,11 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     def mousePressEvent(self, event):
         x = event.x()
         y = event.y()
-        if AbstractGLContext.RECORD_REGION_SELECTION:
+        if self.RECORD_REGION_SELECTION:
             y = self.geom[1] - y
-            AbstractGLContext.SELECTED_POS = (x, y, 0)
-            AbstractGLContext.RECORD_REGION_SELECTION = False
+            self.SELECTED_POS = (x, y, 0)
+            self.RECORD_REGION_SELECTION = False
+            print(self.SELECTED_POS)
 
     def mouseMoveEvent(self, event):
         """
@@ -330,6 +336,16 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             gl.glGetString(gl.GL_VERSION),
             gl.glGetString(gl.GL_SHADING_LANGUAGE_VERSION))
         return info
+
+    def popup_text_selector(self):
+        self.selectionWindow = Select(self)
+        self.selectionWindow.setEventHandler(self.set_text)
+
+    def set_text(self, text):
+        self.TEXT = text
+        print("ENTERED ", text)
+        if self.TEXT is not None:
+            self.RECORD_REGION_SELECTION = True
 
     def screenshot_manager(self):
         """

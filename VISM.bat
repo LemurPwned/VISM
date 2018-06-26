@@ -20,8 +20,6 @@ if not defined PYTHON_INST (
 	@echo %PYTHON_INST%
 )
 @echo.
-
-
 @echo Building cython modules...
 CD cython_modules
 @echo on
