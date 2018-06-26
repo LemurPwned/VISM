@@ -2,7 +2,6 @@ from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
                 QVBoxLayout, QRadioButton, QLabel, QSlider, QPushButton, QMessageBox
 from Windows.SelectTemplate import Ui_Dialog
 from PopUp import PopUpWrapper
-from widget_counter import WidgetCounter
 from buildVerifier import BuildVerifier
 
 class Select(QWidget, Ui_Dialog):
@@ -20,18 +19,10 @@ class Select(QWidget, Ui_Dialog):
         self.show()
 
     def accept(self):
-        if WidgetCounter.OPENGL_WIDGET:
-            self.text = self.lineEdit.text()
-            # enable recording
-            self.hide()
-            self.eventHandler(self.text)
-        else:
-            x = PopUpWrapper(
-                title='No OpenGL widget',
-                msg='Please select OpenGL widget first',
-                more='Not changed',
-                yesMes=None)
-            self.close()
+        self.text = self.lineEdit.text()
+        # enable recording
+        self.eventHandler(self.text)
+        self.close()
 
     def reject(self):
         if self.eventHandler is not None:

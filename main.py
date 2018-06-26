@@ -33,7 +33,7 @@ from video_utils.video_composer import Movie
 from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas,
                                     NavigationToolbar2QT as NavigationToolbar)
 from pattern_types.Patterns import MainContextDecorators
-
+from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
