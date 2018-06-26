@@ -21,9 +21,7 @@ class Select(QWidget, Ui_Dialog):
 
     def accept(self):
         if WidgetCounter.OPENGL_WIDGET:
-            print("Selected text")
             self.text = self.lineEdit.text()
-            print("THIS IS {}".format(self.text))
             # enable recording
             self.hide()
             self.eventHandler(self.text)
