@@ -19,7 +19,6 @@ from multiprocessing_parse import MultiprocessingParse
 
 from Windows.ChooseWidget import ChooseWidget
 from Windows.PlayerWindow import PlayerWindow
-from Windows.Select import Select
 
 from WidgetHandler import WidgetHandler
 
@@ -84,8 +83,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionWindow3Delete.triggered.connect(lambda: self.deleteWidget(3))
         self.actionDeleteAllWindows.triggered.connect(lambda: self.deleteAllWidgets())
 
-        self.actionText_select.triggered.connect(self.selectText)
-
         # VIEW SUBMENU
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
         self.action2_Windows_Grid.triggered.connect(self.make2WindowsGrid)
@@ -139,9 +136,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                         'Proper files not found in current screenshot directory: {}'.format(self.screenshot_dir),
                     more='',
                     yesMes=None, parent=self)
-
-    def selectText(self):
-        self.selectionWindow = Select(self)
 
     @MainContextDecorators.window_resize_fix
     def promptDirectory(self):

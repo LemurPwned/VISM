@@ -13,7 +13,8 @@
                       "toolbar" : [["Reset", "initial_transformation"],
                                    ["Zoom in", "zoomIn"],
                                    ["Zoom out", "zoomOut"],
-                                   ["Screenshot", "screenshot_manager"]]
+                                   ["Screenshot", "screenshot_manager"],
+                                   ["Text", "popup_text_selector"]]
                       },
     "VectorGLContext": {
                       "alias": "3D_VECTOR",
@@ -28,7 +29,8 @@
                       "toolbar" : [["Reset", "initial_transformation"],
                                    ["Zoom in", "zoomIn"],
                                    ["Zoom out", "zoomOut"],
-                                   ["Screenshot", "screenshot_manager"]]
+                                   ["Screenshot", "screenshot_manager"],
+                                   ["Text", "popup_text_selector"]]
                       },
 
     "ArrowGLContext": {
@@ -45,7 +47,8 @@
                       "toolbar" : [["Reset", "initial_transformation"],
                                                    ["Zoom in", "zoomIn"],
                                                    ["Zoom out", "zoomOut"],
-                                                   ["Screenshot", "screenshot_manager"]]
+                                                   ["Screenshot", "screenshot_manager"],
+                                                   ["Text", "popup_text_selector"]]
                       },
     "Canvas":         {
                         "alias": "2D_Matplotlib",
