@@ -214,7 +214,7 @@ def subsample(xc, yc, zc, subsample=2):
     layer_skip = None
     list_length = xc*yc*zc
     for i in range(list_length):
-        if xskip%subsample and yskip%subsample and zskip%subsample:
+        if (not xskip%subsample) and (not yskip%subsample) and (not zskip%subsample):
             index_mask.append(i)
         xskip+=1
         if xskip%xc == 0:

@@ -156,7 +156,7 @@ class ColorPolicy:
         @return: dotted_color, outline, decimate - return decimating factor,
                     color after dot product (or not) and layer(s) outline
         """
-        subsampling = 2
+        subsampling = 8
         color = np.array(color)
         outline = np.array(outline)
         print(color.shape)
@@ -170,7 +170,7 @@ class ColorPolicy:
         zc = int(zc)
         color = color[:, index_list, :]
         print(color.shape)
-        outline = outline[index_list[:xc*yc*zc], :]
+        outline = outline[index_list, :]
         print(outline.shape)
         outline = ColorPolicy.pad_4f_vertices(color[0], outline)
 
@@ -200,8 +200,8 @@ class ColorPolicy:
                 # zero these random indices for each iteration
                 color[i, mask, :] = 0
             # at this point the shape should be conserved (iterations, zc*yc*xc, 3)
-        if not decimate:
-            assert color.shape == (iterations, zc*yc*xc, 3)
+        # if not decimate:
+            # assert color.shape == (iterations, zc*yc*xc, 3)
         vector_set = np.array(vector_set).astype(np.float32)
         if not disableDot:
             dotted_color = asynchronous_pool_order(multi_iteration_dot_product,
@@ -211,7 +211,7 @@ class ColorPolicy:
         dotted_color = np.array(dotted_color)
         outline = np.array(outline)
         # this should have shape (iterations, zc*yc*xc, 3)
-        if not decimate:
-            assert dotted_color.shape == (iterations, zc*yc*xc, 3)
-            assert outline.shape == (zc*yc*xc, 4)
+        # if not decimate:
+            # assert dotted_color.shape == (iterations, zc*yc*xc, 3)
+            # assert outline.shape == (zc*yc*xc, 4)
         return dotted_color, outline, decimate, np.array(color)
