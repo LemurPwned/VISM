@@ -206,6 +206,29 @@ def genCubes(layer_outline, spacer):
                                     for x in layer_outline]).flatten()
     return layer_cubed, len(layer_cubed)/3
 
+def subsample(xc, yc, zc, subsample=2):
+    xskip = 0
+    yskip = 0
+    zskip = 0
+    index_mask = []
+    layer_skip = None
+    list_length = xc*yc*zc
+    for i in range(list_length):
+        if xskip%subsample and yskip%subsample and zskip%subsample:
+            index_mask.append(i)
+        xskip+=1
+        if xskip%xc == 0:
+            yskip+=1
+            xskip = 0
+            if yskip%yc == 0:           
+                if layer_skip is None:
+                    layer_skip = i     
+                zskip+=1
+                yskip = 0
+    if layer_skip is None:
+        layer_skip = i
+    return np.array(index_mask, dtype=np.int), layer_skip
+
 def cube(vec, spacer=0.1):
     vertex_list =[
         vec[0]+spacer, vec[1], vec[2]+spacer,

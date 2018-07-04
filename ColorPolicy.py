@@ -1,6 +1,7 @@
 import numpy as np
-from cython_modules.cython_parse import getLayerOutline
-from cython_modules.color_policy import multi_iteration_dot_product, hyper_contrast_calculation
+from cython_modules.cython_parse import getLayerOutline, subsample  
+from cython_modules.color_policy import multi_iteration_dot_product, \
+                                        hyper_contrast_calculation
 from multiprocessing import Pool
 from multiprocessing_parse import asynchronous_pool_order
 import scipy.signal
@@ -155,8 +156,22 @@ class ColorPolicy:
         @return: dotted_color, outline, decimate - return decimating factor,
                     color after dot product (or not) and layer(s) outline
         """
+        subsampling = 2
         color = np.array(color)
         outline = np.array(outline)
+        print(color.shape)
+        index_list, zskip = subsample(xc, yc, zc, subsample=subsampling)
+        print(index_list.shape, zskip)
+        xc /= subsampling
+        zc /= subsampling
+        yc /= subsampling
+        xc = int(xc)
+        yc = int(yc)
+        zc = int(zc)
+        color = color[:, index_list, :]
+        print(color.shape)
+        outline = outline[index_list[:xc*yc*zc], :]
+        print(outline.shape)
         outline = ColorPolicy.pad_4f_vertices(color[0], outline)
 
         if type(picked_layer) == int:
