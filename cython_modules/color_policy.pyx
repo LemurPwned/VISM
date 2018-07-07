@@ -73,20 +73,21 @@ def generate_arrow_object(origin_circle,
     org_cone_rot = cone_co_rot
     for i in range(sides-1):
         # bottom triangle - cylinder
-        vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot))
         # bottom triangle - cone
-        vbo.extend(origin_circle+rot_matrix.dot(cone_co_rot+height))
         # top triangle -cylinder
-        vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot+height))
         # top triangle -cone
-        vbo.extend(origin_circle+rot_matrix.dot(height*1.5))
+        vbo.extend([origin_circle+rot_matrix.dot(cylinder_co_rot), 
+                    origin_circle+rot_matrix.dot(cone_co_rot+height),
+                    origin_circle+rot_matrix.dot(cylinder_co_rot+height),
+                    origin_circle+rot_matrix.dot(height*1.5)])
+
         cylinder_co_rot = t_rotation.dot(cylinder_co_rot)
         cone_co_rot = t_rotation.dot(cone_co_rot)
 
-    vbo.extend(origin_circle+rot_matrix.dot(org_cyl_rot))
-    vbo.extend(origin_circle+rot_matrix.dot(org_cone_rot+height))
-    vbo.extend(origin_circle+rot_matrix.dot(org_cyl_rot+height))
-    vbo.extend(origin_circle+rot_matrix.dot(height*1.5))
+    vbo.extend([origin_circle+rot_matrix.dot(org_cyl_rot),
+                origin_circle+rot_matrix.dot(org_cone_rot+height),
+                origin_circle+rot_matrix.dot(org_cyl_rot+height),
+                origin_circle+rot_matrix.dot(height*1.5)])
     return vbo
 
 
