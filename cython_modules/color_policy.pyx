@@ -112,7 +112,14 @@ def process_vector_to_vbo(iteration,
     for vector, color in zip(vectors_list, iteration):
         if color.any():
             try:
-                rot_matrix = construct_rotation_matrix(color)
+                cos_x_rot = color[1]
+                cos_y_rot = color[0]/math.sqrt(1 - math.pow(color[2],2))
+                sin_x_rot = math.sin(math.acos(cos_x_rot))  # radian input
+                sin_y_rot = math.sin(math.acos(cos_y_rot))
+                rot_matrix = np.array([[cos_y_rot, 0, sin_y_rot],
+                     [sin_y_rot*sin_x_rot, cos_x_rot, -sin_x_rot*cos_y_rot],
+                     [-cos_x_rot*sin_y_rot, sin_x_rot, sin_x_rot*cos_y_rot]])
+        
                 local_vbo.extend(generate_arrow_object(np.array(vector[0:3]),
                                                        rot_matrix,
                                                        cylinder_co_rot,

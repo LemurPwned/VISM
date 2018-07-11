@@ -19,20 +19,20 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         super().shareData(**data_dict)
         self.DEFAULT_RADIUS = 0.25*self.scale
         self.CYLINDER_CO_ROT = np.array([self.DEFAULT_RADIUS,
-                                         self.DEFAULT_RADIUS, 0])
+                                         self.DEFAULT_RADIUS, 0], dtype=np.float16)
         self.CONE_CO_ROT = np.array([2*self.DEFAULT_RADIUS, 
-                                     2*self.DEFAULT_RADIUS, 0])
-        self.HEIGHT = np.array([0, 0, 3])
+                                     2*self.DEFAULT_RADIUS, 0], dtype=np.float16)
+        self.HEIGHT = np.array([0, 0, 3], dtype=np.float16)
         self.ZERO_ROT = np.array([[1, 0, 0],
                                   [0, 1, 0],
-                                  [0, 0, 1]])
+                                  [0, 0, 1]], dtype=np.float16)
         self.SIDES = 16
         theta = 2*np.pi/self.SIDES
         c = np.cos(theta)
         s = np.sin(theta)
         self.T_ROTATION = np.array([[c, -s, 0], 
                                     [s, c, 0], 
-                                    [0, 0, 1]])
+                                    [0, 0, 1]], dtype=np.float16)
 
         self.ZERO_PAD = [np.nan for x in range(self.SIDES*4*3)]
         self.drawing_function = self.vbo_arrow_draw

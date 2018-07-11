@@ -157,8 +157,8 @@ class ColorPolicy:
                     color after dot product (or not) and layer(s) outline
         """
         subsampling = 4
-        color = np.array(color)
-        outline = np.array(outline)
+        color = np.array(color, dtype=np.float32)
+        outline = np.array(outline, dtype=np.float32)
         print(color.shape)
         index_list, zskip = subsample(xc, yc, zc, subsample=subsampling)
         print(index_list.shape, zskip)
@@ -207,10 +207,10 @@ class ColorPolicy:
                                                     (vector_set,), color)
         else:
             dotted_color = color
-        dotted_color = np.array(dotted_color)
-        outline = np.array(outline)
+        dotted_color = np.array(dotted_color, dtype=np.float32)
+        outline = np.array(outline, dtype=np.float32)
         # this should have shape (iterations, zc*yc*xc, 3)
         # if not decimate:
             # assert dotted_color.shape == (iterations, zc*yc*xc, 3)
             # assert outline.shape == (zc*yc*xc, 4)
-        return dotted_color, outline, decimate, np.array(color)
+        return dotted_color, outline, decimate, np.array(color, dtype=np.float32)
