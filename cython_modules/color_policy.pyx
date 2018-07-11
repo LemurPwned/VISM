@@ -60,45 +60,6 @@ def hyper_contrast_calculation(np.ndarray[np.float32_t, ndim=3] color, xc, yc, z
             color[iteration, i*xc*yc:(i+1)*xc*yc, 1] *= 10e7
             color[iteration, i*xc*yc:(i+1)*xc*yc, 2] *= 10e7
 
-def generate_arrow_object(origin_circle,
-                           rot_matrix,
-                           cylinder_co_rot,
-                           cone_co_rot,
-                           t_rotation,
-                           height,
-                           sides):
-    # no faces for now
-    vbo = []
-    org_cyl_rot = cylinder_co_rot
-    org_cone_rot = cone_co_rot
-    for i in range(sides-1):
-        # bottom triangle - cylinder
-        vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot))
-        # bottom triangle - cone
-        vbo.extend(origin_circle+rot_matrix.dot(cone_co_rot+height))
-        # top triangle -cylinder
-        vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot+height))
-        # top triangle -cone
-        vbo.extend(origin_circle+rot_matrix.dot(height*1.5))
-        cylinder_co_rot = t_rotation.dot(cylinder_co_rot)
-        cone_co_rot = t_rotation.dot(cone_co_rot)
-
-    vbo.extend(origin_circle+rot_matrix.dot(org_cyl_rot))
-    vbo.extend(origin_circle+rot_matrix.dot(org_cone_rot+height))
-    vbo.extend(origin_circle+rot_matrix.dot(org_cyl_rot+height))
-    vbo.extend(origin_circle+rot_matrix.dot(height*1.5))
-    return vbo
-
-
-def construct_rotation_matrix(vector):
-    cos_x_rot = vector[1]
-    cos_y_rot = vector[0]/math.sqrt(1 - math.pow(vector[2],2))
-    sin_x_rot = math.sin(math.acos(cos_x_rot))  # radian input
-    sin_y_rot = math.sin(math.acos(cos_y_rot))
-    return np.array([[cos_y_rot, 0, sin_y_rot],
-                     [sin_y_rot*sin_x_rot, cos_x_rot, -sin_x_rot*cos_y_rot],
-                     [-cos_x_rot*sin_y_rot, sin_x_rot, sin_x_rot*cos_y_rot]])
-
 def process_vector_to_vbo(iteration,
                           vectors_list,
                           org_cyl_rot,
