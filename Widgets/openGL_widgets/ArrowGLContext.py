@@ -11,6 +11,7 @@ from multiprocessing_parse import asynchronous_pool_order
 from cython_modules.color_policy import process_vector_to_vbo, multi_iteration_normalize
 import math
 
+from PopUp import PopUpWrapper
 
 class ArrowGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict, parent):
@@ -19,20 +20,20 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         super().shareData(**data_dict)
         self.DEFAULT_RADIUS = 0.25*self.scale
         self.CYLINDER_CO_ROT = np.array([self.DEFAULT_RADIUS,
-                                         self.DEFAULT_RADIUS, 0], dtype=np.float16)
+                                         self.DEFAULT_RADIUS, 0])
         self.CONE_CO_ROT = np.array([2*self.DEFAULT_RADIUS, 
-                                     2*self.DEFAULT_RADIUS, 0], dtype=np.float16)
-        self.HEIGHT = np.array([0, 0, 3], dtype=np.float16)
+                                     2*self.DEFAULT_RADIUS, 0])
+        self.HEIGHT = np.array([0, 0, 3])
         self.ZERO_ROT = np.array([[1, 0, 0],
                                   [0, 1, 0],
-                                  [0, 0, 1]], dtype=np.float16)
+                                  [0, 0, 1]])
         self.SIDES = 16
         theta = 2*np.pi/self.SIDES
         c = np.cos(theta)
         s = np.sin(theta)
         self.T_ROTATION = np.array([[c, -s, 0], 
                                     [s, c, 0], 
-                                    [0, 0, 1]], dtype=np.float16)
+                                    [0, 0, 1]])
 
         self.ZERO_PAD = [np.nan for x in range(self.SIDES*4*3)]
         self.drawing_function = self.vbo_arrow_draw
@@ -72,6 +73,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
     def create_vbo(self):
         buffers = gl.glGenBuffers(3)
         # vertices buffer
+
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[0])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
                         np.array(self.structure_vbo[self.i],
@@ -146,11 +148,11 @@ class ArrowGLContext(AbstractGLContext, QWidget):
     def regenerate_structure(self, colors_list):
         iterative_vbo = asynchronous_pool_order(process_vector_to_vbo, (
                                                 self.vectors_list, self.CYLINDER_CO_ROT,
-                                                                   self.CONE_CO_ROT,
-                                                                   self.T_ROTATION,
-                                                                   self.HEIGHT,
-                                                                   self.SIDES,
-                                                                   self.ZERO_PAD), 
+                                                                self.CONE_CO_ROT,
+                                                                self.T_ROTATION,
+                                                                self.HEIGHT,
+                                                                self.SIDES,
+                                                                self.ZERO_PAD), 
                                                 colors_list)
         self.n = len(self.vectors_list)
         return np.array(iterative_vbo)

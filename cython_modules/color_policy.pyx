@@ -73,21 +73,20 @@ def generate_arrow_object(origin_circle,
     org_cone_rot = cone_co_rot
     for i in range(sides-1):
         # bottom triangle - cylinder
+        vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot))
         # bottom triangle - cone
+        vbo.extend(origin_circle+rot_matrix.dot(cone_co_rot+height))
         # top triangle -cylinder
+        vbo.extend(origin_circle+rot_matrix.dot(cylinder_co_rot+height))
         # top triangle -cone
-        vbo.extend([origin_circle+rot_matrix.dot(cylinder_co_rot), 
-                    origin_circle+rot_matrix.dot(cone_co_rot+height),
-                    origin_circle+rot_matrix.dot(cylinder_co_rot+height),
-                    origin_circle+rot_matrix.dot(height*1.5)])
-
+        vbo.extend(origin_circle+rot_matrix.dot(height*1.5))
         cylinder_co_rot = t_rotation.dot(cylinder_co_rot)
         cone_co_rot = t_rotation.dot(cone_co_rot)
 
-    vbo.extend([origin_circle+rot_matrix.dot(org_cyl_rot),
-                origin_circle+rot_matrix.dot(org_cone_rot+height),
-                origin_circle+rot_matrix.dot(org_cyl_rot+height),
-                origin_circle+rot_matrix.dot(height*1.5)])
+    vbo.extend(origin_circle+rot_matrix.dot(org_cyl_rot))
+    vbo.extend(origin_circle+rot_matrix.dot(org_cone_rot+height))
+    vbo.extend(origin_circle+rot_matrix.dot(org_cyl_rot+height))
+    vbo.extend(origin_circle+rot_matrix.dot(height*1.5))
     return vbo
 
 
@@ -102,8 +101,8 @@ def construct_rotation_matrix(vector):
 
 def process_vector_to_vbo(iteration,
                           vectors_list,
-                          org_cyl_rot,
-                          org_cone_rot,
+                          cylinder_co_rot,
+                          cone_co_rot,
                           t_rotation,
                           height,
                           sides,
@@ -117,38 +116,15 @@ def process_vector_to_vbo(iteration,
                 sin_x_rot = math.sin(math.acos(cos_x_rot))  # radian input
                 sin_y_rot = math.sin(math.acos(cos_y_rot))
                 rot_matrix = np.array([[cos_y_rot, 0, sin_y_rot],
-                     [sin_y_rot*sin_x_rot, cos_x_rot, -sin_x_rot*cos_y_rot],
-                     [-cos_x_rot*sin_y_rot, sin_x_rot, sin_x_rot*cos_y_rot]])
-
-                vbo = []
-                cylinder_co_rot = org_cyl_rot
-                cone_co_rot = org_cone_rot
-                origin_circle = np.array(vector[0:3])
-                for i in range(sides-1):
-                    # bottom triangle - cylinder
-                    # bottom triangle - cone
-                    # top triangle -cylinder
-                    # top triangle -cone
-                    vbo.extend([origin_circle+rot_matrix.dot(cylinder_co_rot), 
-                                origin_circle+rot_matrix.dot(cone_co_rot+height),
-                                origin_circle+rot_matrix.dot(cylinder_co_rot+height),
-                                origin_circle+rot_matrix.dot(height*1.5)])
-
-                    cylinder_co_rot = t_rotation.dot(cylinder_co_rot)
-                    cone_co_rot = t_rotation.dot(cone_co_rot)
-
-                vbo.extend([origin_circle+rot_matrix.dot(org_cyl_rot),
-                            origin_circle+rot_matrix.dot(org_cone_rot+height),
-                            origin_circle+rot_matrix.dot(org_cyl_rot+height),
-                            origin_circle+rot_matrix.dot(height*1.5)])
-                local_vbo.extend(vbo)
-                # local_vbo.extend(generate_arrow_object(np.array(vector[0:3]),
-                #                                        rot_matrix,
-                #                                        cylinder_co_rot,
-                #                                        cone_co_rot,
-                #                                        t_rotation,
-                #                                        height,
-                #                                        sides))
+                                       [sin_y_rot*sin_x_rot, cos_x_rot, -sin_x_rot*cos_y_rot],
+                                        [-cos_x_rot*sin_y_rot, sin_x_rot, sin_x_rot*cos_y_rot]])
+                local_vbo.extend(generate_arrow_object(np.array(vector[0:3]),
+                                                       rot_matrix,
+                                                       cylinder_co_rot,
+                                                       cone_co_rot,
+                                                       t_rotation,
+                                                       height,
+                                                       sides))
             except:
                 local_vbo.extend(zero_pad)
         else:
@@ -161,4 +137,3 @@ def calculate_layer_colors(x, relative_vector=[0, 1, 0], scale=1):
     angle = np.arccos(dot) ** scale
     angle[np.isnan(angle)] = 0  # get rid of NaN expressions
     return angle
-

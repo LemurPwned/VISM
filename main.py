@@ -16,7 +16,8 @@ from PyQt5 import QtWidgets, QtCore
 from Windows.MainWindowTemplate import Ui_MainWindow
 
 from multiprocessing_parse import MultiprocessingParse
-
+from multiprocessing import TimeoutError
+ 
 from Windows.ChooseWidget import ChooseWidget
 from Windows.PlayerWindow import PlayerWindow
 
@@ -363,10 +364,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.doh.setDataObject(options, 'options')
         self.doh.setDataObject(self.screenshot_dir, 'screenshot_dir')
 
-        self.panes[self.current_pane].addWidget(\
-                self.sp.build_chain(self.current_widget_alias, self.doh, self))
+        try:
+            self.panes[self.current_pane].addWidget(\
+                    self.sp.build_chain(self.current_widget_alias, self.doh, self))
+        except (MemoryError, TimeoutError) as e:
+            x = PopUpWrapper("Unsufficient resource", msg="You ran out of memory for this calculation" 
+                    + "or timeout appeared. "+"It is suggested to increase subsampling or decrease resolution",
+                    more="You can do that in settings menu")
+            deleteWidget(self.current_panem, null_delete=True)
+            self.refreshScreen()
+            return
         self.constructWidgetToolbar(self.panes[self.current_pane])
         # that fixes the problem of having not all slots filled in groupBox
+
+        
         if self.playerWindow != None:
             self.refreshIterators()
         self.propagate_resize()
