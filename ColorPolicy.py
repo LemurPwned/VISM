@@ -156,21 +156,22 @@ class ColorPolicy:
         @return: dotted_color, outline, decimate - return decimating factor,
                     color after dot product (or not) and layer(s) outline
         """
-        subsampling = 4
+        subsampling = 1
         color = np.array(color)
         outline = np.array(outline)
-        print(color.shape)
-        index_list, zskip = subsample(xc, yc, zc, subsample=subsampling)
-        print(index_list.shape, zskip)
-        xc = xc//subsampling
-        zc = zc//subsampling
-        yc = yc//subsampling
+        if subsampling != 1:
+            print(color.shape)
+            index_list, zskip = subsample(xc, yc, zc, subsample=subsampling)
+            print(index_list.shape, zskip)
+            xc = xc//subsampling
+            zc = zc//subsampling
+            yc = yc//subsampling
 
-        print(xc,yc,zc, xc*yc*zc)
-        color = color[:, index_list, :]
-        print(color.shape)
-        outline = outline[index_list, :]
-        print(outline.shape)
+            print(xc,yc,zc, xc*yc*zc)
+            color = color[:, index_list, :]
+            print(color.shape)
+            outline = outline[index_list, :]
+            print(outline.shape)
         outline = ColorPolicy.pad_4f_vertices(color[0], outline)
 
         if type(picked_layer) == int:

@@ -153,6 +153,6 @@ class ArrowGLContext(AbstractGLContext, QWidget):
                                                                 self.HEIGHT,
                                                                 self.SIDES,
                                                                 self.ZERO_PAD), 
-                                                colors_list)
+                                                colors_list, timeout=2)
         self.n = len(self.vectors_list)
         return np.array(iterative_vbo)
