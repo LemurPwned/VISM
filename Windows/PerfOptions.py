@@ -19,7 +19,7 @@ class PerfOptions(QWidget, Ui_Dialog):
             self.checkBox.setChecked(True)
 
         self.decimate = 1
-        self.averaging = 1
+        self.subsampling = 1
         self.initial_options(object_type)
 
         self.basicOptions()
@@ -29,37 +29,32 @@ class PerfOptions(QWidget, Ui_Dialog):
 
     def initial_options(self, object_type):
         self.default_size = 1
-        self.default_averaging = 1
+        self.default_subsampling = 1
         self.horizontalSlider_3.setEnabled(True)
-        if object_type == 'ArrowGLContext':
-            # defaults
-            self.default_averaging = 4
-            self.decimate = 1
-            self.default_size = 2
-        elif object_type == 'CubicGLContext':
+        if object_type == 'CubicGLContext':
             self.default_size = 5
             # only one size is allowed
             self.horizontalSlider_3.setEnabled(False)
         
     def disableDecimate(self):
         self.horizontalSlider_4.setEnabled(False)
-        # enable averaging
+        # enable subsampling
         self.horizontalSlider.setEnabled(True)
 
         self.decimate = 1
-        self.averaging = self.horizontalSlider.value()
-        self.label.setText("Averaging: {}".format(self.averaging))
+        self.subsampling = self.horizontalSlider.value()
+        self.label.setText("Subsampling: {}".format(self.subsampling))
         self.label_8.setText("Decimate: {}".format(self.decimate))
 
-    def disableAveraging(self):
+    def disablesubsampling(self):
         self.horizontalSlider.setEnabled(False)
         # enable decimate
         self.horizontalSlider_4.setEnabled(True)
 
-        self.averaging = 1
+        self.subsampling = 1
         self.decimate = self.horizontalSlider_4.value()
         self.label_8.setText("Decimate: {}".format(self.decimate))
-        self.label.setText("Averaging: {}".format(self.averaging))
+        self.label.setText("Subsampling: {}".format(self.subsampling))
 
     def disableDot(self):
         self.lineEdit.setText('[1, 0, 0]')
@@ -72,21 +67,21 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.pushButton_4.clicked.connect(self.disableDot)
         # these are averagnin and decimate
         self.checkBox_3.stateChanged.connect(self.disableDecimate)
-        self.checkBox_2.stateChanged.connect(self.disableAveraging)
+        self.checkBox_2.stateChanged.connect(self.disablesubsampling)
 
         # check decimate: decimate is checkbox 2 and slider 4
         self.checkBox_2.setChecked(False)
         self.checkBox_3.setChecked(True)
 
-        self.horizontalSlider.valueChanged.connect(self.averagingChange)
+        self.horizontalSlider.valueChanged.connect(self.subsamplingChange)
         self.horizontalSlider_2.valueChanged.connect(self.layerChange)
         self.horizontalSlider_3.valueChanged.connect(self.sizeChange)
         self.horizontalSlider_4.valueChanged.connect(self.decimateChange)
 
-        # averaging
+        # subsampling
         self.horizontalSlider.setMaximum(5)
         self.horizontalSlider.setMinimum(1)
-        self.horizontalSlider.setValue(self.default_averaging)
+        self.horizontalSlider.setValue(self.default_subsampling)
         self.horizontalSlider.setSingleStep(1)
 
         # scale
@@ -116,9 +111,9 @@ class PerfOptions(QWidget, Ui_Dialog):
         val = self.horizontalSlider_2.value()
         self.label_3.setText("Layer: {}".format(val))
 
-    def averagingChange(self):
-        self.averaging = self.horizontalSlider.value()
-        self.label.setText("Averaging: {}".format(self.averaging))
+    def subsamplingChange(self):
+        self.subsampling = self.horizontalSlider.value()
+        self.label.setText("Subsampling: {}".format(self.subsampling))
 
     def decimateChange(self):
         self.decimate = self.horizontalSlider_4.value()
@@ -129,20 +124,20 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.label_4.setText("Size: {}".format(val))
 
     def optionsVerifier(self):
-        # order as follows: color scheme, averaging, layer
+        # order as follows: color scheme, subsampling, layer
         # checkBox_5 is normalize
         if self.checkBox.isChecked():
-                optionsList = [ self.checkBox_5.isChecked(),
-                                self.averaging,
-                                'all',
-                                self.horizontalSlider_3.value(),
-                                self.parseVectors(),
-                                self.decimate,
-                                self.color_disable,
-                                self.checkBox_6.isChecked()]
+            optionsList = [ self.checkBox_5.isChecked(),
+                            self.subsampling,
+                            'all',
+                            self.horizontalSlider_3.value(),
+                            self.parseVectors(),
+                            self.decimate,
+                            self.color_disable,
+                            self.checkBox_6.isChecked()]
         else:
             optionsList = [ self.checkBox_5.isChecked(),
-                            self.averaging,
+                            self.subsampling,
                             self.horizontalSlider_2.value(),
                             self.horizontalSlider_3.value(),
                             self.parseVectors(),

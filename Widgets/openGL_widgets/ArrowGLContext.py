@@ -27,7 +27,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         self.ZERO_ROT = np.array([[1, 0, 0],
                                   [0, 1, 0],
                                   [0, 0, 1]])
-        self.SIDES = 16
+        self.SIDES = self.decimate
         theta = 2*np.pi/self.SIDES
         c = np.cos(theta)
         s = np.sin(theta)
@@ -153,6 +153,6 @@ class ArrowGLContext(AbstractGLContext, QWidget):
                                                                 self.HEIGHT,
                                                                 self.SIDES,
                                                                 self.ZERO_PAD), 
-                                                colors_list, timeout=2)
+                                                colors_list, timeout=60)
         self.n = len(self.vectors_list)
         return np.array(iterative_vbo)

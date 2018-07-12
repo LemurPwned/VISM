@@ -156,10 +156,10 @@ class ColorPolicy:
         @return: dotted_color, outline, decimate - return decimating factor,
                     color after dot product (or not) and layer(s) outline
         """
-        subsampling = 1
+        subsampling = averaging  # thats a wrapper - refactor later
         color = np.array(color)
         outline = np.array(outline)
-        if subsampling != 1:
+        if subsampling > 1:
             print(color.shape)
             index_list, zskip = subsample(xc, yc, zc, subsample=subsampling)
             print(index_list.shape, zskip)
@@ -184,22 +184,22 @@ class ColorPolicy:
         # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
         if hyperContrast:
             hyper_contrast_calculation(color, xc, yc, zc)
-        if decimate != 1:
-            color = color[:,::decimate,:]
-            outline = outline[::decimate, :]
-        if averaging != 1:
-            averaging_intensity = float(1/averaging)
-            # generate mask of shape (zc*yc*xc, 3)
-            # take n random numbers (1/averaging)*size
-            # step one: generate list of all indices
-            mask = np.arange(xc*yc*zc)
-            np.random.shuffle(mask)
-            mask = mask[:int(len(mask)*averaging_intensity)]
-            # now mask is a subset of unqiue, random indices
-            for i in range(iterations):
-                # zero these random indices for each iteration
-                color[i, mask, :] = 0
-            # at this point the shape should be conserved (iterations, zc*yc*xc, 3)
+        # if decimate != 1:
+        #     color = color[:,::decimate,:]
+        #     outline = outline[::decimate, :]
+        # if averaging != 1:
+        #     averaging_intensity = float(1/averaging)
+        #     # generate mask of shape (zc*yc*xc, 3)
+        #     # take n random numbers (1/averaging)*size
+        #     # step one: generate list of all indices
+        #     mask = np.arange(xc*yc*zc)
+        #     np.random.shuffle(mask)
+        #     mask = mask[:int(len(mask)*averaging_intensity)]
+        #     # now mask is a subset of unqiue, random indices
+        #     for i in range(iterations):
+        #         # zero these random indices for each iteration
+        #         color[i, mask, :] = 0
+        #     # at this point the shape should be conserved (iterations, zc*yc*xc, 3)
         if not decimate:
             assert color.shape == (iterations, zc*yc*xc, 3)
         vector_set = np.array(vector_set).astype(np.float32)

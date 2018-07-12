@@ -21,7 +21,6 @@ def multi_iteration_dot_product(np.ndarray[np.float32_t, ndim=2] color_iteration
         color_iteration[i] = atomic_dot_product(color_iteration[i], vec_set)
     return color_iteration
 
-
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def atomic_normalization(np.ndarray[np.float32_t, ndim=2] color_vector):
