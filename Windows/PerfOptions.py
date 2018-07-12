@@ -34,7 +34,7 @@ class PerfOptions(QWidget, Ui_Dialog):
         if object_type == 'CubicGLContext':
             self.default_size = 5
             # only one size is allowed
-            self.horizontalSlider_3.setEnabled(False)
+            self.horizontalSlider_3.setEnabled(True)
         
     def disableDecimate(self):
         self.horizontalSlider_4.setEnabled(False)

@@ -201,8 +201,8 @@ def decode_byte_size(byte_format_specification):
         raise TypeError("Unknown byte specification {}".format(
                                             str(byte_format_specification)))
 
-def genCubes(layer_outline, spacer):
-    layer_cubed = np.array([cube2(x, spacer)
+def genCubes(layer_outline, spacer, dims):
+    layer_cubed = np.array([cube2(x, spacer, dims)
                                     for x in layer_outline]).flatten()
     return layer_cubed, len(layer_cubed)/3
 
@@ -229,7 +229,7 @@ def subsample(xc, yc, zc, subsample=2):
         layer_skip = i
     return np.array(index_mask, dtype=np.int), layer_skip
 
-def cube(vec, spacer=0.1):
+def cube(vec, spacer=0.1, dims=(0.1, 0.1, 0.1)):
     vertex_list =[
         vec[0]+spacer, vec[1], vec[2]+spacer,
         vec[0], vec[1], vec[2]+spacer,
@@ -262,38 +262,39 @@ def cube(vec, spacer=0.1):
         vec[0], vec[1]+spacer, vec[2]]
     return vertex_list
 
-def cube2(vec, spacer=0.1):
+def cube2(vec, spacer=0.1, dims=(0.1, 0.1, 0.1)):
     if vec.any():
         vertex_list =[
-            vec[0]+spacer, vec[1], vec[2]+spacer, vec[3],
-            vec[0], vec[1], vec[2]+spacer, vec[3],
-            vec[0], vec[1]+spacer, vec[2]+spacer, vec[3],
-            vec[0]+spacer, vec[1]+spacer, vec[2]+spacer, vec[3],
+            # TOP FACE
+            vec[0]+dims[0], vec[1], vec[2]+dims[2], vec[3],
+            vec[0], vec[1], vec[2]+dims[2], vec[3],
+            vec[0], vec[1]+dims[1], vec[2]+dims[2], vec[3],
+            vec[0]+dims[0], vec[1]+dims[1], vec[2]+dims[2], vec[3],
             #BOTTOM FACE
-            vec[0]+spacer, vec[1], vec[2], vec[3],
+            vec[0]+dims[0], vec[1], vec[2], vec[3],
             vec[0], vec[1], vec[2], vec[3],
-            vec[0], vec[1]+spacer, vec[2], vec[3],
-            vec[0]+spacer, vec[1]+spacer, vec[2], vec[3],
+            vec[0], vec[1]+dims[1], vec[2], vec[3],
+            vec[0]+dims[0], vec[1]+dims[1], vec[2], vec[3],
             #FRONT FACE
-            vec[0]+spacer, vec[1]+spacer, vec[2]+spacer, vec[3],
-            vec[0], vec[1]+spacer, vec[2]+spacer, vec[3],
-            vec[0], vec[1]+spacer, vec[2], vec[3],
-            vec[0]+spacer, vec[1]+spacer, vec[2], vec[3],
+            vec[0]+dims[0], vec[1]+dims[1], vec[2]+dims[2], vec[3],
+            vec[0], vec[1]+dims[1], vec[2]+dims[2], vec[3],
+            vec[0], vec[1]+dims[1], vec[2], vec[3],
+            vec[0]+dims[0], vec[1]+dims[1], vec[2], vec[3],
             #BACK FACE
-            vec[0]+spacer, vec[1], vec[2]+spacer, vec[3],
-            vec[0], vec[1], vec[2]+spacer, vec[3],
+            vec[0]+dims[0], vec[1], vec[2]+dims[2], vec[3],
+            vec[0], vec[1], vec[2]+dims[2], vec[3],
             vec[0], vec[1], vec[2], vec[3],
-            vec[0]+spacer, vec[1], vec[2], vec[3],
+            vec[0]+dims[0], vec[1], vec[2], vec[3],
             #RIGHT FACE
-            vec[0]+spacer, vec[1], vec[2]+spacer, vec[3],
-            vec[0]+spacer, vec[1]+spacer, vec[2]+spacer, vec[3],
-            vec[0]+spacer, vec[1]+spacer, vec[2], vec[3],
-            vec[0]+spacer, vec[1], vec[2], vec[3],
+            vec[0]+dims[0], vec[1], vec[2]+dims[2], vec[3],
+            vec[0]+dims[0], vec[1]+dims[1], vec[2]+dims[2], vec[3],
+            vec[0]+dims[0], vec[1]+dims[1], vec[2], vec[3],
+            vec[0]+dims[0], vec[1], vec[2], vec[3],
             #LEFT FACE
-            vec[0], vec[1]+spacer, vec[2]+spacer, vec[3],
-            vec[0], vec[1], vec[2]+spacer, vec[3],
+            vec[0], vec[1]+dims[1], vec[2]+dims[2], vec[3],
+            vec[0], vec[1], vec[2]+dims[2], vec[3],
             vec[0], vec[1], vec[2], vec[3],
-            vec[0], vec[1]+spacer, vec[2], vec[3]]
+            vec[0], vec[1]+dims[1], vec[2], vec[3]]
         return vertex_list
     else:
         return np.zeros(96)
