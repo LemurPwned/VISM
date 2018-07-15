@@ -22,7 +22,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
         self.vertices = 0
         self.buffers = None
         self.buffer_len = 0
-        # self.scale = 5
 
         self.prerendering_calculation()
         self.drawing_function = self.vbo_cubic_draw
