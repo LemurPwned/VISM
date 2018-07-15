@@ -35,8 +35,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
             dims = (self.file_header['xbase']*1e9,
                     self.file_header['ybase']*1e9,
                     self.file_header['zbase']*1e9)
-            self.vectors_list, self.vertices = genCubes(self.vectors_list,
-                                                                    self.spacer, dims)
+            self.vectors_list, self.vertices = genCubes(self.vectors_list, dims)
             self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors)
 
             # TODO: temporary fix, dont know why x4, should not be multiplied

@@ -200,4 +200,4 @@ class ColorPolicy:
             assert outline.shape == (zc*yc*xc, 4)
         assert dotted_color.shape == (iterations, zc*xc*yc, 3)
         assert color.shape == (iterations, zc*xc*yc, 3)
-        return dotted_color, outline, decimate, np.array(color)
+        return dotted_color, outline, np.array(color)

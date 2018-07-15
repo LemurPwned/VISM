@@ -25,10 +25,6 @@ import pygame
 
 class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     PYGAME_INCLUDED = False
-    RECORD_REGION_SELECTION = False
-    SELECTED_POS = None
-    TEXT = None
-
     ANY_GL_WIDGET_IN_VIEW = 0
 
     def __init__(self, parent=None):
@@ -45,7 +41,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.function_select = 'fast'
         self.background = [0.5, 0.5, 0.5]
         self.record = False
-        self.spacer = 0.2
         self.steps = 1
 
         self.display_frames = False
@@ -73,13 +68,12 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.vectors_list = getLayerOutline(self.file_header)
         self.auto_center()
         # adjust spacing
-        self.spacer *= self.scale
 
         xc = int(self.file_header['xnodes'])
         yc = int(self.file_header['ynodes'])
         zc = int(self.file_header['znodes'])
         # change drawing function
-        self.color_vectors, self.vectors_list, decimate, self.colorX = \
+        self.color_vectors, self.vectors_list, self.colorX = \
                     ColorPolicy.standard_procedure(self.vectors_list,
                                                    self.color_vectors,
                                                    self.iterations,
@@ -92,10 +86,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                                                    hyperContrast=self.hyperContrast)
         if self.normalize:
             multi_iteration_normalize(self.color_vectors)
-            
-        if decimate is not None:
-            # this is arbitrary
-            self.spacer *= decimate*3
         
     def handleOptionalData(self):
         super().handleOptionalData()

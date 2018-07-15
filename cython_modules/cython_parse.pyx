@@ -3,6 +3,7 @@ import pandas as pd
 import struct
 cimport cython
 
+
 def getFileHeader(filename):
     """
     .omf format reader
@@ -29,12 +30,14 @@ def getFileHeader(filename):
     f.close()
     return file_header
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def normalized(array, axis=-1, order=2):
     l2 = np.atleast_1d(np.linalg.norm(array, order, axis))
     l2[l2==0] = 1
     return array / np.expand_dims(l2, axis)
+
 
 def getPlotData(filename):
     """
@@ -84,6 +87,7 @@ def getPlotData(filename):
     else:
         raise ValueError("Unsupported extension {}".format(filename))
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def getRawVectors(filename):
@@ -127,6 +131,7 @@ def getLayerOutline(file_header, unit_scaler=1e9):
             for z in range(zc) for y in range(yc) for x in range(xc)]
     return layers_outline
 
+
 def process_header(headers):
   """
   processes the header of each .omf file and return base_data dict
@@ -144,6 +149,7 @@ def process_header(headers):
           except:
               final_header[components[0]] = components[1]
   return final_header
+
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -201,10 +207,11 @@ def decode_byte_size(byte_format_specification):
         raise TypeError("Unknown byte specification {}".format(
                                             str(byte_format_specification)))
 
-def genCubes(layer_outline, spacer, dims):
-    layer_cubed = np.array([cube2(x, spacer, dims)
+def genCubes(layer_outline, dims):
+    layer_cubed = np.array([cube2(x, dims)
                                     for x in layer_outline]).flatten()
     return layer_cubed, len(layer_cubed)/3
+
 
 def subsample(xc, yc, zc, subsample=2):
     xskip = 0
@@ -229,40 +236,47 @@ def subsample(xc, yc, zc, subsample=2):
         layer_skip = i
     return np.array(index_mask, dtype=np.int), layer_skip
 
-def cube(vec, spacer=0.1, dims=(0.1, 0.1, 0.1)):
+
+def cube(vec, dims=(0.1, 0.1, 0.1)):
     vertex_list =[
-        vec[0]+spacer, vec[1], vec[2]+spacer,
-        vec[0], vec[1], vec[2]+spacer,
-        vec[0], vec[1]+spacer, vec[2]+spacer,
-        vec[0]+spacer, vec[1]+spacer, vec[2]+spacer,
+        # TOP FACE
+        vec[0]+dims[0], vec[1], vec[2]+dims[2],
+        vec[0], vec[1], vec[2]+dims[2],
+        vec[0], vec[1]+dims[1], vec[2]+dims[2],
+        vec[0]+dims[0], vec[1]+dims[1], vec[2]+dims[2],
         #BOTTOM FACE
-        vec[0]+spacer, vec[1], vec[2],
+        vec[0]+dims[0], vec[1], vec[2],
         vec[0], vec[1], vec[2],
-        vec[0], vec[1]+spacer, vec[2],
-        vec[0]+spacer, vec[1]+spacer, vec[2],
+        vec[0], vec[1]+dims[1], vec[2],
+        vec[0]+dims[0], vec[1]+dims[1], vec[2],
         #FRONT FACE
-        vec[0]+spacer, vec[1]+spacer, vec[2]+spacer,
-        vec[0], vec[1]+spacer, vec[2]+spacer,
-        vec[0], vec[1]+spacer, vec[2],
-        vec[0]+spacer, vec[1]+spacer, vec[2],
+        vec[0]+dims[0], vec[1]+dims[1], vec[2]+dims[2],
+        vec[0], vec[1]+dims[1], vec[2]+dims[2],
+        vec[0], vec[1]+dims[1], vec[2],
+        vec[0]+dims[0], vec[1]+dims[1], vec[2],
         #BACK FACE
-        vec[0]+spacer, vec[1], vec[2]+spacer,
-        vec[0], vec[1], vec[2]+spacer,
+        vec[0]+dims[0], vec[1], vec[2]+dims[2],
+        vec[0], vec[1], vec[2]+dims[2],
         vec[0], vec[1], vec[2],
-        vec[0]+spacer, vec[1], vec[2],
+        vec[0]+dims[0], vec[1], vec[2],
         #RIGHT FACE
-        vec[0]+spacer, vec[1], vec[2]+spacer,
-        vec[0]+spacer, vec[1]+spacer, vec[2]+spacer,
-        vec[0]+spacer, vec[1]+spacer, vec[2],
-        vec[0]+spacer, vec[1], vec[2],
+        vec[0]+dims[0], vec[1], vec[2]+dims[2],
+        vec[0]+dims[0], vec[1]+dims[1], vec[2]+dims[2],
+        vec[0]+dims[0], vec[1]+dims[1], vec[2],
+        vec[0]+dims[0], vec[1], vec[2],
         #LEFT FACE
-        vec[0], vec[1]+spacer, vec[2]+spacer,
-        vec[0], vec[1], vec[2]+spacer,
+        vec[0], vec[1]+dims[1], vec[2]+dims[2],
+        vec[0], vec[1], vec[2]+dims[2],
         vec[0], vec[1], vec[2],
-        vec[0], vec[1]+spacer, vec[2]]
+        vec[0], vec[1]+dims[1], vec[2]]
     return vertex_list
 
-def cube2(vec, spacer=0.1, dims=(0.1, 0.1, 0.1)):
+
+def cube2(vec, dims=(0.1, 0.1, 0.1)):
+    """
+    Generates cube. In opposition to cube function, this 
+    can generate cubes of any opacity
+    """
     if vec.any():
         vertex_list =[
             # TOP FACE

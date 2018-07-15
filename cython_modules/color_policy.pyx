@@ -94,8 +94,6 @@ def process_vector_to_vbo(iteration,
                 origin_circle = np.array(vector[0:3])
                 cylinder_co_rot = org_cyl_rot
                 cone_co_rot = org_cone_rot
-                # org_cyl_rot = cylinder_co_rot
-                # org_cone_rot = cone_co_rot
                 for i in range(sides-1):
                     # bottom triangle - cylinder
                     vbo.extend([origin_circle+rot_matrix.dot(cylinder_co_rot),
