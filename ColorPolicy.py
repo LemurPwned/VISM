@@ -13,76 +13,7 @@ class ColorPolicy:
         self.averaging_kernel = None
         self.flat_av_kernel = None
         self.mask = None
-
-        self.kernel_size = self.set_kernel_size(3, 2)
-
-    def set_kernel_size(self, kernel_size, dim):
-        """
-        adjusts the kernel size for a specific array
-        This function does not return anything, it sets kernels for
-        Color Policy object
-        :param kernel_size: is the target kernel size for an array
-        """
-        self.kernel_size = kernel_size
-        if dim == 2:
-            self.averaging_kernel = np.ones((self.kernel_size,
-                                        self.kernel_size))*(1/(self.kernel_size**2))
-        elif dim == 3:
-            self.averaging_kernel = np.ones((self.kernel_size, self.kernel_size,
-                                        self.kernel_size))*(1/(self.kernel_size**2))
-        else:
-            raise ValueError("Higher dimensional kernels are not supported")
-        self.flat_av_kernel = np.ravel(
-                            np.ones((self.kernel_size, 1))*(1/self.kernel_size))
-
-
-    def linear_convolution(self, matrix):
-        """
-        performs the linear convlolution on color data given the kernel
-        that is defaulted in a Color Policy object upon which the function calls
-        :param matrix: matrix to be convoluted
-        :return new_color_matrix: returns new color matrix
-        """
-        pool = Pool()
-        multiple_results = [pool.apply_async(self.composite_convolution,
-                            (np.array(m), self.averaging_kernel))
-                            for m in matrix]
-        new_color_matrix = []
-        for result in multiple_results:
-            convolved_array = result.get(timeout=20)
-            new_color_matrix.append(convolved_array)
-        return new_color_matrix
-
-    def composite_convolution(self, composite_matrix, kernel):
-        """
-        performs composite convolution, uses atomic convolutions
-        on a composite matrix
-        Note that composite matrix is 2D matrix
-        :param composite_matrix: matrix to be convoluted
-        :param kernel: kernel that is used during convolution
-        :return resultant_matrix: returns convolved complex matrix
-        """
-        resultant_matrix = np.zeros(composite_matrix.shape)
-        for i in range(3):
-            resultant_matrix[1:-1,1:-1, i] = self.conv2d(composite_matrix[:,:, i],
-            kernel)
-        return resultant_matrix
-
-    def atomic_convolution(self, vecA, vecB):
-        """
-        convolves simply two vectors
-        :param vecA: vector 1
-        :param vecB: vector 2
-        :return convolution result
-        """
-        return np.convolve(vecA, vecB, 'same')
-
-    def conv2d(self, a, f):
-        s = f.shape + tuple(np.subtract(a.shape, f.shape) + 1)
-        strd = np.lib.stride_tricks.as_strided
-        subM = strd(a, shape = s, strides = a.strides * 2)
-        return np.einsum('ij,ijkl->kl', f, subM)
-
+        
     @staticmethod
     def apply_vbo_format(color_array, k=24):
         """
@@ -103,6 +34,9 @@ class ColorPolicy:
 
     @staticmethod
     def interleave(color_iteration, vector_array):
+        """
+        uses OpenGl interleaving techniques to construct VBO array
+        """
         interleaved = []
         for v, c in zip(vector_array, color_iteration):
             # here add extra one for 4f visibility feature
@@ -127,6 +61,10 @@ class ColorPolicy:
 
     @staticmethod
     def pad_4f_vertices(color_iteration, vector_array):
+        """
+        this padding is used to add opacity for each vector in color matrix
+        it is mostly used to hide null/NaN objects
+        """
         assert color_iteration.shape == vector_array.shape
         vector_array = vector_array.reshape(color_iteration.shape)
         new_vector_list = np.zeros((vector_array.shape[0], 4))
@@ -160,18 +98,12 @@ class ColorPolicy:
         color = np.array(color)
         outline = np.array(outline)
         if subsampling > 1:
-            print(color.shape)
-            index_list, zskip = subsample(xc, yc, zc, subsample=subsampling)
-            print(index_list.shape, zskip)
+            index_list = subsample(xc, yc, zc, subsample=subsampling)
             xc = xc//subsampling
             zc = zc//subsampling
             yc = yc//subsampling
-
-            print(xc,yc,zc, xc*yc*zc)
             color = color[:, index_list, :]
-            print(color.shape)
             outline = outline[index_list, :]
-            print(outline.shape)
         outline = ColorPolicy.pad_4f_vertices(color[0], outline)
 
         if type(picked_layer) == int:

@@ -43,11 +43,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
     def prerendering_calculation(self):
         super().prerendering_calculation()
         multi_iteration_normalize(self.colorX)
-        print(self.colorX.shape, self.vectors_list.shape)
         self.structure_vbo = self.regenerate_structure(self.colorX)
-        print("STRUCT {}, {}, {}".format(len(self.structure_vbo), 
-                                         len(self.structure_vbo[27]),
-                                         len(self.structure_vbo[0])))
         self.index_required = self.SIDES*2
         self.indices = self.generate_index()
         self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors, 
@@ -60,10 +56,6 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         self.__FLOAT_BYTE_SIZE__ = 8
 
     def generate_index(self):
-        # try:
-        #     indices = np.loadtxt('savespace/index.obj', delimiter=';', dtype='uint32')
-        #     return indices[:self.n]
-        # except FileNotFoundError:
         indices = []
         for n in range(self.n):
             start_index = n*self.index_required+3

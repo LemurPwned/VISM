@@ -166,6 +166,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
     @AbstractGLContextDecorators.systemDisable
     def text_functionalities(self):
+        """
+        handles text display across OpenGl contexts
+        """
         self.frames +=1
         self.fps_counter()
         if self.display_frames:
@@ -298,6 +301,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.text_render(str(self.fps))
 
     def text_render(self, textString, position=(100, 100, 0)):
+        """
+        renders a textstring into an OpenGl scene
+        """
         if not AbstractGLContext.PYGAME_INCLUDED:
             pygame.init()
             AbstractGLContext.PYGAME_INCLUDED = True

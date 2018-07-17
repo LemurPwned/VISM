@@ -8,12 +8,21 @@ cimport cython
 @cython.wraparound(False)
 def atomic_dot_product(np.ndarray[np.float32_t, ndim=1] color_vector,
                        np.ndarray[np.float32_t, ndim=2] relative_vector_set):
+    """
+    dot product to be performed on a slice of an color array and 
+    a selected vector set 
+    (note this is a time slice not a spatial slice)
+    """
     return [np.dot(color_vector, vector) for vector in relative_vector_set]
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def multi_iteration_dot_product(np.ndarray[np.float32_t, ndim=2] color_iteration,
                                 np.ndarray[np.float32_t, ndim=2] vec_set):
+    """
+    dot product to be performed on an array of color matrices and 
+    a selected vector set (each vector for each of 3 dimensions)
+    """
     cdef:
         int i
         int ci = color_iteration.shape[0]
@@ -24,11 +33,18 @@ def multi_iteration_dot_product(np.ndarray[np.float32_t, ndim=2] color_iteration
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def atomic_normalization(np.ndarray[np.float32_t, ndim=2] color_vector):
+    """
+    normalization to be performed on a slice of an color array
+    (note this is a time slice not a spatial slice)
+    """
     return color_vector/np.linalg.norm(color_vector, axis=1, keepdims=True)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def multi_iteration_normalize(np.ndarray[np.float32_t, ndim=3] color_iterations):
+    """
+    normalization to be performed on an array of color matrices
+    """
     cdef:
         int i
         int ci = color_iterations.shape[0]
@@ -40,6 +56,14 @@ def multi_iteration_normalize(np.ndarray[np.float32_t, ndim=3] color_iterations)
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def hyper_contrast_calculation(np.ndarray[np.float32_t, ndim=3] color, xc, yc, zc):
+    """
+    this function increases contrast for a given color array
+    using linear contrast increase algorithm
+    @param color: normalized color array
+    @param xc: number of cells in x direction
+    @param yc: number of cells in y direction
+    @param zc: number of cells in z direction
+    """
     cdef:
         int i
         int iteration
@@ -69,6 +93,23 @@ def process_vector_to_vbo(iteration,
                           height,
                           sides,
                           zero_pad):
+    """
+    creates the arrows basing for each point in color array
+    rotation matrix (arrow rotation) is calculated based on
+    the magnetisation vector (its unnormalized form)
+    @param iteration: current color matrix - normalized in shape (xc*yc*zc) 
+                        where xc, yc, zc are numbers of cells in a given direction
+    @param vectors_list: baseline for vector drawing - essentially marks the 
+                        position of each arrow
+    @param org_cyl_rot: original cyllindrical matrix
+    @param org_cone_rot: original cone matrix 
+    @param t_rotation: initial rotation
+    @param height: height of an arrow
+    @param sides: resolution (number of steps around a circle) - the 
+                    greater this number, the more smoothed edges a
+                    cyllinder will have
+    @param zero_pad: array to be put if dot_product or rotation is null matrix
+    """
     local_vbo = []
     for vector, color in zip(vectors_list, iteration):
         if color.any():
@@ -118,6 +159,13 @@ def process_vector_to_vbo(iteration,
     return local_vbo
 
 def calculate_layer_colors(x, relative_vector=[0, 1, 0], scale=1):
+    """
+    used by LayerCanvas to calculate matplotlib heatmap
+    Uses dot product on a SINGLE relative vector
+    @param x: iterative matrix of colors
+    @param relative_vector: vector, for which a dot product is calculated against x elements
+    @param scale: can be used to increase sensitivity of small dot products
+    """
     dot = np.array([np.inner(i, relative_vector) for i in x])
     angle = np.arccos(dot) ** scale
     angle[np.isnan(angle)] = 0  # get rid of NaN expressions

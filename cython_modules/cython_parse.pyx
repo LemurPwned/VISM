@@ -42,8 +42,8 @@ def normalized(array, axis=-1, order=2):
 def getPlotData(filename):
     """
     Reads .odt of .txt file
-    @param filename is .odt file path
-    @return dataFrame and stages number
+    @param: filename is .odt file path
+    @return: dataFrame and stages number
     """
     if filename.endswith('.txt'):
         df = pd.read_table(filename)
@@ -93,7 +93,7 @@ def getPlotData(filename):
 def getRawVectors(filename):
     """
     processes a .omf filename into a numpy array of vectors
-    @param .omf text file
+    @param: .omf text file
     @return returns raw_vectors from fortran lists
     """
     raw_vectors = []
@@ -111,14 +111,10 @@ def getLayerOutline(file_header, unit_scaler=1e9):
     """
     constructs the vector outline of each layer, this is a shell that
     colors function operate on (masking)
-    @param file_header is a dictionary form .omf file
-    @param unit_scaler is a unit scaler of dictionary, it indicates
+    @param: file_header is a dictionary form .omf file
+    @param: unit_scaler is a unit scaler of dictionary, it indicates
             how much a value stored in a dictionary should be
             multiplied to get a proper unit scale
-    @param averaging determines how many vectors to skip before taking the
-            next one. Must be alligned with other averaging parameters in
-            functions like getRawVectors
-    @param layer_skip determines if just one layer should be plotted
     @return returns a proper list of vectors creating layer outlines
     """
     xc = int(file_header['xnodes'])
@@ -135,6 +131,7 @@ def getLayerOutline(file_header, unit_scaler=1e9):
 def process_header(headers):
   """
   processes the header of each .omf file and return base_data dict
+  @param: headers specifies header from .omf file
   """
   final_header = {}
   headers = headers.replace(' ', "")
@@ -154,6 +151,9 @@ def process_header(headers):
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def binary_format_reader(filename):
+  """
+  Reads binary formatted .omf or .ovf files
+  """
   header_part = ""
   rawVectorData = None
   header = None
@@ -191,6 +191,9 @@ def standard_vertex_mode(f, k, struct_object, buff):
 
 
 def decode_byte_size(byte_format_specification):
+    """
+    infers byte format based on IEEE header format specification 
+    """
     if byte_format_specification == b'# Begin: Data Binary 4\n':
         # float precision - 4 bytes
         fmt = 'f'
@@ -212,13 +215,22 @@ def genCubes(layer_outline, dims):
                                     for x in layer_outline]).flatten()
     return layer_cubed, len(layer_cubed)/3
 
-
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def subsample(xc, yc, zc, subsample=2):
+    """
+    creates subsampling index list given number of 
+    nodes in each direction and with subsampling given with subsample
+    Algorithms subsamples a Fortran-ordered list (row major order)
+    @param xc: nodes (cells) in x direction
+    @param yc: nodes (cells) in y direction
+    @param zc: nodes (cells) in z direction
+    @param subsample: nth cell is taken in a given direction if n = subsampling
+    """
     xskip = 0
     yskip = 0
     zskip = 0
     index_mask = []
-    layer_skip = None
     list_length = xc*yc*zc
     for i in range(list_length):
         if (not xskip%subsample) and (not yskip%subsample) and (not zskip%subsample):
@@ -228,16 +240,18 @@ def subsample(xc, yc, zc, subsample=2):
             yskip+=1
             xskip = 0
             if yskip%yc == 0:           
-                if layer_skip is None:
-                    layer_skip = i     
                 zskip+=1
                 yskip = 0
-    if layer_skip is None:
-        layer_skip = i
-    return np.array(index_mask, dtype=np.int), layer_skip
+    return np.array(index_mask, dtype=np.int)
 
 
 def cube(vec, dims=(0.1, 0.1, 0.1)):
+    """
+    Generates a cuboid with a dimensions specified 
+    with front face bottom left corner at vec position
+    @param vec: coordinates of face bottom left vertex
+    @param dims: dimensions of cuboid (x, y, z)
+    """
     vertex_list =[
         # TOP FACE
         vec[0]+dims[0], vec[1], vec[2]+dims[2],
