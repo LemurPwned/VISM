@@ -13,18 +13,18 @@ import threading
 from workerthreads import *
 
 from PyQt5 import QtWidgets, QtCore
-from Windows.MainWindowTemplate import Ui_MainWindow
+
+# template imports
+from Windows.Templates.MainWindowTemplate import Ui_MainWindow
+from Windows.ChooseWidget import ChooseWidget
+from Windows.PlayerWindow import PlayerWindow
 
 from multiprocessing_parse import MultiprocessingParse
 from multiprocessing import TimeoutError
 
-from Windows.ChooseWidget import ChooseWidget
-from Windows.PlayerWindow import PlayerWindow
-
 from WidgetHandler import WidgetHandler
 
 from PopUp import PopUpWrapper
-from Windows.Progress import ProgressBar
 
 from settingsMediator.settingsPrompter import SettingsPrompter
 from settingsMediator.settingsLoader import DataObjectHolder
@@ -34,7 +34,9 @@ from video_utils.video_composer import Movie
 from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas,
                                     NavigationToolbar2QT as NavigationToolbar)
 from pattern_types.Patterns import MainContextDecorators
+
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
+from Windows.Progress import ProgressBar
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
