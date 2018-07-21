@@ -268,9 +268,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
         elif event.buttons() & Qt.RightButton:
             if abs(self.rotation[0])%360 < 90:
-                self.position[0] += dx * 0.2
-            else:
                 self.position[0] -= dx * 0.2
+            else:
+                self.position[0] += dx * 0.2
             self.position[1] -= dy * 0.2
 
         self.update()
