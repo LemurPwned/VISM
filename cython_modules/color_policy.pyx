@@ -130,14 +130,13 @@ def process_vector_to_vbo(iteration,
                 rot_matrix = np.array([[cos_y_rot, 0, sin_y_rot],
                         [sin_y_rot*sin_x_rot, cos_x_rot, -sin_x_rot*cos_y_rot],
                         [-cos_x_rot*sin_y_rot, sin_x_rot, sin_x_rot*cos_y_rot]])
-
-                vbo = []
+            
                 origin_circle = np.array(vector[0:3])
                 cylinder_co_rot = org_cyl_rot
-                cone_co_rot = org_cone_rot
+                cone_co_rot = org_cone_rot               
                 for i in range(sides-1):
                     # bottom triangle - cylinder
-                    vbo.extend([origin_circle+rot_matrix.dot(cylinder_co_rot),
+                    local_vbo.extend([origin_circle+rot_matrix.dot(cylinder_co_rot),
                     # bottom triangle - cone
                                 origin_circle+rot_matrix.dot(cone_co_rot+height),
                     # top triangle -cylinder
@@ -147,11 +146,12 @@ def process_vector_to_vbo(iteration,
                     cylinder_co_rot = t_rotation.dot(cylinder_co_rot)
                     cone_co_rot = t_rotation.dot(cone_co_rot)
 
-                vbo.extend([origin_circle+rot_matrix.dot(org_cyl_rot),
+                local_vbo.extend([origin_circle+rot_matrix.dot(org_cyl_rot),
                             origin_circle+rot_matrix.dot(org_cone_rot+height),
                             origin_circle+rot_matrix.dot(org_cyl_rot+height),
                             origin_circle+rot_matrix.dot(height*1.5)])
-                local_vbo.extend(vbo)
+                # local_vbo.extend(vbo)
+                                
             except KeyError:
                 local_vbo.extend(zero_pad)
         else:

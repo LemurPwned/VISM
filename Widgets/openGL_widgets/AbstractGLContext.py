@@ -132,6 +132,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         gl.glClearColor(*self.background, 0)
         gl.glEnable(gl.GL_DEPTH_TEST)
         gl.glEnable(gl.GL_POLYGON_SMOOTH)
+        self.initial_transformation()
 
     def resizeGL(self, w, h):
         """
@@ -148,7 +149,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glLoadIdentity()
     
-    # @AbstractGLContextDecorators.recording_decorator
     def paintGL(self):
         """
         Clears the buffer and redraws the scene
@@ -267,14 +267,10 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                 self.rotation[1] += ang
 
         elif event.buttons() & Qt.RightButton:
-            if abs(self.rotation[0])%360 < 90:
-                self.position[0] -= dx * 0.2
-            else:
-                self.position[0] += dx * 0.2
-            self.position[1] -= dy * 0.2
-
+            self.position[0] += dx * 0.4 
+            self.position[1] -= dy * 0.4 
         self.update()
-
+    
     def mouseReleaseEvent(self, event):
         if event.buttons() & Qt.RightButton:
             self.lastPos = event.pos()
