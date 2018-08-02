@@ -71,7 +71,6 @@
     <property name="title">
      <string>Animation</string>
     </property>
-    <addaction name="actionAnimation"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>

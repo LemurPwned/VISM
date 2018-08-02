@@ -179,10 +179,17 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                              self.SELECTED_POS)
 
     def set_i(self, value, trigger=False, record=False):
+        """
+        saving the previous configuration for the sake 
+        of documentation. Idk where bug occurred, 
+        that was working fine previously
         if trigger:
             self.i += 1
+            # print(self.i)
         else:
             self.i = value
+        """
+        self.i = value
         self.i %= self.iterations
         self.record = record
 

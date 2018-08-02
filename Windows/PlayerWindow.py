@@ -175,8 +175,10 @@ class WorkerObject:
                     tm.sleep(1/self._speed)
                     if self.running:
                         self._iterator += 1
+                        self._iterator %= self.trig_len
                         for i in self.widgetIterators:
-                            i(k, trigger=True, record=PlayerWindow.RECORD)
+                            i(self.trigger[self._iterator], 
+                                trigger=True, record=PlayerWindow.RECORD)
                     if not self.running:
                         break
 

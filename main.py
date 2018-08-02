@@ -369,7 +369,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         try:
             self.panes[self.current_pane].addWidget(\
                     self.sp.build_chain(self.current_widget_alias, self.doh, self))
-        except (MemoryError, TimeoutError) as e:
+        except (MemoryError, TimeoutError):
             x = PopUpWrapper("Insufficient resource", msg="You ran out of memory for this calculation" 
                     + "or timeout appeared. "+"It is suggested to increase subsampling or decrease resolution",
                     more="You can do that in settings menu")
@@ -379,7 +379,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.constructWidgetToolbar(self.panes[self.current_pane])
         # that fixes the problem of having not all slots filled in groupBox
 
-        
         if self.playerWindow != None:
             self.refreshIterators()
         self.propagate_resize()
