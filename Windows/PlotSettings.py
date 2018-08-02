@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
                 QVBoxLayout, QRadioButton, QLabel, QSlider, QPushButton, \
                 QColorDialog
 from PyQt5 import QtCore, QtGui
-from Windows.PlotSettingsTemplate import Ui_PlotSettings
+from Windows.Templates.PlotSettingsTemplate import Ui_PlotSettings
 import numpy as np
 from pattern_types.Patterns import MainContextDecorators
 

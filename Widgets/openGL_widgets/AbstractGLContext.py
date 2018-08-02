@@ -25,10 +25,6 @@ import pygame
 
 class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     PYGAME_INCLUDED = False
-    RECORD_REGION_SELECTION = False
-    SELECTED_POS = None
-    TEXT = None
-
     ANY_GL_WIDGET_IN_VIEW = 0
 
     def __init__(self, parent=None):
@@ -45,7 +41,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.function_select = 'fast'
         self.background = [0.5, 0.5, 0.5]
         self.record = False
-        self.spacer = 0.2
         self.steps = 1
 
         self.display_frames = False
@@ -73,13 +68,12 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.vectors_list = getLayerOutline(self.file_header)
         self.auto_center()
         # adjust spacing
-        self.spacer *= self.scale
 
         xc = int(self.file_header['xnodes'])
         yc = int(self.file_header['ynodes'])
         zc = int(self.file_header['znodes'])
         # change drawing function
-        self.color_vectors, self.vectors_list, decimate, self.colorX = \
+        self.color_vectors, self.vectors_list, self.colorX = \
                     ColorPolicy.standard_procedure(self.vectors_list,
                                                    self.color_vectors,
                                                    self.iterations,
@@ -92,10 +86,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                                                    hyperContrast=self.hyperContrast)
         if self.normalize:
             multi_iteration_normalize(self.color_vectors)
-            
-        if decimate is not None:
-            # this is arbitrary
-            self.spacer *= decimate*3
         
     def handleOptionalData(self):
         super().handleOptionalData()
@@ -142,6 +132,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         gl.glClearColor(*self.background, 0)
         gl.glEnable(gl.GL_DEPTH_TEST)
         gl.glEnable(gl.GL_POLYGON_SMOOTH)
+        self.initial_transformation()
 
     def resizeGL(self, w, h):
         """
@@ -158,7 +149,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glLoadIdentity()
     
-    # @AbstractGLContextDecorators.recording_decorator
     def paintGL(self):
         """
         Clears the buffer and redraws the scene
@@ -176,6 +166,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
     @AbstractGLContextDecorators.systemDisable
     def text_functionalities(self):
+        """
+        handles text display across OpenGl contexts
+        """
         self.frames +=1
         self.fps_counter()
         if self.display_frames:
@@ -274,14 +267,10 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                 self.rotation[1] += ang
 
         elif event.buttons() & Qt.RightButton:
-            if abs(self.rotation[0])%360 < 90:
-                self.position[0] += dx * 0.2
-            else:
-                self.position[0] -= dx * 0.2
-            self.position[1] -= dy * 0.2
-
+            self.position[0] += dx * 0.4 
+            self.position[1] -= dy * 0.4 
         self.update()
-
+    
     def mouseReleaseEvent(self, event):
         if event.buttons() & Qt.RightButton:
             self.lastPos = event.pos()
@@ -308,6 +297,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.text_render(str(self.fps))
 
     def text_render(self, textString, position=(100, 100, 0)):
+        """
+        renders a textstring into an OpenGl scene
+        """
         if not AbstractGLContext.PYGAME_INCLUDED:
             pygame.init()
             AbstractGLContext.PYGAME_INCLUDED = True

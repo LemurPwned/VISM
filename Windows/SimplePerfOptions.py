@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
                 QVBoxLayout, QRadioButton, QLabel, QSlider, QPushButton, QMessageBox
-from Windows.SimplePerfOptionsTemplate import Ui_Dialog
+from Windows.Templates.SimplePerfOptionsTemplate import Ui_Dialog
 import re
 import numpy as np
 from PopUp import PopUpWrapper

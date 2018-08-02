@@ -22,7 +22,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
         self.vertices = 0
         self.buffers = None
         self.buffer_len = 0
-        self.scale = 5
 
         self.prerendering_calculation()
         self.drawing_function = self.vbo_cubic_draw
@@ -33,8 +32,10 @@ class CubicGLContext(AbstractGLContext, QWidget):
             self.drawing_function = self.vbo_cubic_draw
             self.buffers = None
             # if vbo drawing is selected, do additional processing
-            self.vectors_list, self.vertices = genCubes(self.vectors_list,
-                                                                    self.spacer)
+            dims = (self.file_header['xbase']*1e9,
+                    self.file_header['ybase']*1e9,
+                    self.file_header['zbase']*1e9)
+            self.vectors_list, self.vertices = genCubes(self.vectors_list, dims)
             self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors)
 
             # TODO: temporary fix, dont know why x4, should not be multiplied
@@ -87,49 +88,3 @@ class CubicGLContext(AbstractGLContext, QWidget):
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
-    @AbstractGLContextDecorators.recording_decorator
-    def slower_cubic_draw(self):
-        for vector, color in zip(self.vectors_list, self.color_vectors[self.i]):
-            gl.glColor3f(*color)
-            self.draw_cube(vector)
-
-    def draw_cube(self, vec):
-        """
-        draws basic cubes separated by spacer value
-        :param vec (x,y,z) coordinate specifying bottom left face corner
-        """
-        # TOP FACE
-        gl.glBegin(gl.GL_QUADS)
-        gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2] + self.spacer)
-        gl.glVertex3f(vec[0], vec[1], vec[2] + self.spacer)
-        gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2] + self.spacer)
-        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2] + \
-                    self.spacer)
-        # BOTTOM FACE
-        gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2])
-        gl.glVertex3f(vec[0], vec[1], vec[2])
-        gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2])
-        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2])
-        # FRONT FACE
-        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2] + \
-                    self.spacer)
-        gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2] + self.spacer)
-        gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2])
-        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2])
-        # BACK FACE
-        gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2] + self.spacer)
-        gl.glVertex3f(vec[0], vec[1], vec[2] + self.spacer)
-        gl.glVertex3f(vec[0], vec[1], vec[2])
-        gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2])
-        # RIGHT FACE
-        gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2] + self.spacer)
-        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2] + \
-                    self.spacer)
-        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2])
-        gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2])
-        # LEFT FACE
-        gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2] + self.spacer)
-        gl.glVertex3f(vec[0], vec[1], vec[2] + self.spacer)
-        gl.glVertex3f(vec[0], vec[1], vec[2])
-        gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2])
-        gl.glEnd()

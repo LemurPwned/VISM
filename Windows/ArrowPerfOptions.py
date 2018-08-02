@@ -5,12 +5,13 @@ from Windows.SimplePerfOptions import SimplePerfOptions
 from PopUp import PopUpWrapper
 import re
 import numpy as np
+import traceback
 
 
-class PerfOptions(QWidget, Ui_Dialog):
+class ArrowPerfOptions(QWidget, Ui_Dialog):
     def __init__(self, layer_size=None, object_type='None', parent=None):
-        super(PerfOptions, self).__init__()
-        self.setWindowTitle("Perfomance Options")
+        super(ArrowPerfOptions, self).__init__()
+        self.setWindowTitle("Arrow Perfomance Options")
         self.setupUi(self)
         self.loaded = True
         self.layer_size = layer_size['znodes']
@@ -18,43 +19,13 @@ class PerfOptions(QWidget, Ui_Dialog):
             self.checkBox.setEnabled(False)
             self.checkBox.setChecked(True)
 
-        self.decimate = 1
-        self.subsampling = 1
-        self.initial_options(object_type)
+        self.resolution = 16
+        self.subsampling = 0
 
         self.basicOptions()
         self.show()
         self.options = None
         self.color_disable = False
-
-    def initial_options(self, object_type):
-        self.default_size = 1
-        self.default_subsampling = 1
-        self.horizontalSlider_3.setEnabled(True)
-        if object_type == 'CubicGLContext':
-            self.default_size = 5
-            # only one size is allowed
-            self.horizontalSlider_3.setEnabled(True)
-        
-    def disableDecimate(self):
-        self.horizontalSlider_4.setEnabled(False)
-        # enable subsampling
-        self.horizontalSlider.setEnabled(True)
-
-        self.decimate = 1
-        self.subsampling = self.horizontalSlider.value()
-        self.label.setText("Subsampling: {}".format(self.subsampling))
-        self.label_8.setText("Decimate: {}".format(self.decimate))
-
-    def disablesubsampling(self):
-        self.horizontalSlider.setEnabled(False)
-        # enable decimate
-        self.horizontalSlider_4.setEnabled(True)
-
-        self.subsampling = 1
-        self.decimate = self.horizontalSlider_4.value()
-        self.label_8.setText("Decimate: {}".format(self.decimate))
-        self.label.setText("Subsampling: {}".format(self.subsampling))
 
     def disableDot(self):
         self.lineEdit.setText('[1, 0, 0]')
@@ -63,26 +34,29 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.color_disable = not self.color_disable
 
     def basicOptions(self):
+        # defaults
+        self.default_size = 2
+        # no decimation but subsampling
+        # no subsampling but resolution
+        self.arrow_label = True
+        self.label_8.setText("Resolution {}".format(self.resolution))
+        self.label.setText("Subsampling {}".format(self.subsampling))
+
         # disable coloring
         self.pushButton_4.clicked.connect(self.disableDot)
-        # these are averagnin and decimate
-        self.checkBox_3.stateChanged.connect(self.disableDecimate)
-        self.checkBox_2.stateChanged.connect(self.disablesubsampling)
 
-        # check decimate: decimate is checkbox 2 and slider 4
-        self.checkBox_2.setChecked(False)
+        # check resolution: resolution is checkbox 2 and slider 4
+        self.checkBox_2.setChecked(True)
         self.checkBox_3.setChecked(True)
-
-        self.horizontalSlider.valueChanged.connect(self.subsamplingChange)
-        self.horizontalSlider_2.valueChanged.connect(self.layerChange)
-        self.horizontalSlider_3.valueChanged.connect(self.sizeChange)
-        self.horizontalSlider_4.valueChanged.connect(self.decimateChange)
+        self.checkBox_2.setVisible(False)
+        self.checkBox_3.setVisible(False)
 
         # subsampling
-        self.horizontalSlider.setMaximum(5)
-        self.horizontalSlider.setMinimum(1)
-        self.horizontalSlider.setValue(self.default_subsampling)
-        self.horizontalSlider.setSingleStep(1)
+        self.horizontalSlider.setEnabled(True)
+        self.horizontalSlider.setSingleStep(2)
+        self.horizontalSlider.setMaximum(16)
+        self.horizontalSlider.setMinimum(0)
+        self.horizontalSlider.setValue(self.subsampling)
 
         # scale
         self.horizontalSlider_3.setMaximum(5)
@@ -90,12 +64,12 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.horizontalSlider_3.setValue(self.default_size)
         self.horizontalSlider_3.setSingleStep(1)
 
-        # decimate
+        # resolution
         self.horizontalSlider_4.setEnabled(True)
-        self.horizontalSlider_4.setMaximum(5)
-        self.horizontalSlider_4.setMinimum(1)
-        self.horizontalSlider_4.setValue(1)
-        self.horizontalSlider_4.setSingleStep(1)
+        self.horizontalSlider_4.setSingleStep(4)
+        self.horizontalSlider_4.setMaximum(32)
+        self.horizontalSlider_4.setMinimum(4)
+        self.horizontalSlider_4.setValue(self.resolution)
 
         # layer
         if not self.loaded:
@@ -107,6 +81,11 @@ class PerfOptions(QWidget, Ui_Dialog):
             self.horizontalSlider_2.setValue(3)
             self.horizontalSlider_2.setSingleStep(1)
 
+        self.horizontalSlider.valueChanged.connect(self.subsamplingChange)
+        self.horizontalSlider_2.valueChanged.connect(self.layerChange)
+        self.horizontalSlider_3.valueChanged.connect(self.sizeChange)
+        self.horizontalSlider_4.valueChanged.connect(self.resolutionChange)
+
     def layerChange(self):
         val = self.horizontalSlider_2.value()
         self.label_3.setText("Layer: {}".format(val))
@@ -115,9 +94,9 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.subsampling = self.horizontalSlider.value()
         self.label.setText("Subsampling: {}".format(self.subsampling))
 
-    def decimateChange(self):
-        self.decimate = self.horizontalSlider_4.value()
-        self.label_8.setText("Decimate: {}".format(self.decimate))
+    def resolutionChange(self):
+        self.resolution = self.horizontalSlider_4.value()
+        self.label_8.setText("Resolution {}".format(self.resolution))
 
     def sizeChange(self):
         val = self.horizontalSlider_3.value()
@@ -132,7 +111,7 @@ class PerfOptions(QWidget, Ui_Dialog):
                             'all',
                             self.horizontalSlider_3.value(),
                             self.parseVectors(),
-                            self.decimate,
+                            self.resolution,
                             self.color_disable,
                             self.checkBox_6.isChecked()]
         else:
@@ -141,7 +120,7 @@ class PerfOptions(QWidget, Ui_Dialog):
                             self.horizontalSlider_2.value(),
                             self.horizontalSlider_3.value(),
                             self.parseVectors(),
-                            self.decimate,
+                            self.resolution,
                             self.color_disable,
                             self.checkBox_6.isChecked()]
         return optionsList
@@ -182,6 +161,7 @@ class PerfOptions(QWidget, Ui_Dialog):
                 self.eventHandler(self.options)
             self.close()
         except ValueError as e:
+            traceback.print_exc()
             x = PopUpWrapper(
                 title='Invalid format',
                 msg='Vectors must be in format [x,y,z] {}'.format(e),

@@ -23,11 +23,6 @@ class BuildVerifier:
                 "webpage to build cython manually")
         if error_msg in cython_traceback:
             print(type(cython_traceback))
-            catcher = '(-{55,60})(.*)(-{55,60})'
-            # catcher = ''
-            print(catcher)
-            cutout_error = re.compile(catcher)
-            m = cutout_error.match(cython_traceback)
             print(cython_traceback)
             self.cleanup_procedure()
             raise ValueError("Invalid cython build")
