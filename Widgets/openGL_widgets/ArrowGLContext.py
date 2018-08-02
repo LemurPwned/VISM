@@ -94,7 +94,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
             try:
                 gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, 
-                                    len(self.structure_vbo[self.i]),
+                                    len(self.structure_vbo[self.i])*12,
                                     np.array(self.structure_vbo[self.i],
                                     dtype='float32').flatten())
             except ValueError as e:
