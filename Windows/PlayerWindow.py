@@ -50,11 +50,8 @@ class PlayerWindow(QtCore.QObject):
             print(msg)
             for element in self.gui.elements:
                 element.setEnabled(False)
-
             return False
-
         return True
-
 
     def reloadGui(self):
         if self.checkForErrors():

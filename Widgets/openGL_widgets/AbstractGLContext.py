@@ -32,7 +32,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         AbstractGLContext.ANY_GL_WIDGET_IN_VIEW += 1
         self.subdir = "GL" + str(AnimatedWidget.WIDGET_ID)
         AnimatedWidget.WIDGET_ID += 1
-        self.lastPos = QPoint()
         self.setFocusPolicy(Qt.StrongFocus)  # needed if keyboard to be active
 
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
@@ -133,6 +132,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         gl.glEnable(gl.GL_DEPTH_TEST)
         gl.glEnable(gl.GL_POLYGON_SMOOTH)
         self.initial_transformation()
+        _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
+        self.lastPos = QPoint(int(width/2), int(height/2))
 
     def resizeGL(self, w, h):
         """
@@ -244,7 +245,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.position[0] += event.angleDelta().x() / 8 / 2
         else:
             self.position[2] += event.angleDelta().y() / 8 / 2
-
         self.update()
 
     def mousePressEvent(self, event):
@@ -272,15 +272,14 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             else:
                 ang = self.normalize_angle(dy * rotation_speed)
                 self.rotation[1] += ang
-
         elif event.buttons() & Qt.RightButton:
             self.position[0] += dx * 0.4 
             self.position[1] -= dy * 0.4 
         self.update()
     
-    def mouseReleaseEvent(self, event):
-        if event.buttons() & Qt.RightButton:
-            self.lastPos = event.pos()
+    # def mouseReleaseEvent(self, event):
+    #     if event.buttons() & Qt.RightButton:
+    #         self.lastPos = event.pos()
 
     def normalize_angle(self, angle):
         while angle < 0:
