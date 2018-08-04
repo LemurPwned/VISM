@@ -463,6 +463,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                     geom = (self.panes[i].groupBox.width(),
                             self.panes[i].groupBox.height())
                     self.panes[i].widget.on_resize_geometry_reset(geom)
+                    self.panes[i].widget.initial_transformation()
                 except (AttributeError, RuntimeError) as ae:
                     pass
                     # allow this, should implement this function but pass anyway

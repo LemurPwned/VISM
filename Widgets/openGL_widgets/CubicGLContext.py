@@ -1,5 +1,6 @@
 import OpenGL.GL as gl
 import numpy as np
+import time as tm
 
 from PyQt5.QtWidgets import QWidget
 
@@ -9,9 +10,7 @@ from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 from pattern_types.Patterns import AbstractGLContextDecorators
 
 from ColorPolicy import ColorPolicy
-from workerthreads import *
 
-import time as tm
 
 
 class CubicGLContext(AbstractGLContext, QWidget):
@@ -37,7 +36,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
                     self.file_header['zbase']*1e9)
             self.vectors_list, self.vertices = genCubes(self.vectors_list, dims)
             self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors)
-
+            self.normals = compute_normals_cubes(self.vectors_list)
             # TODO: temporary fix, dont know why x4, should not be multiplied
             # at all!
             self.buffer_len = len(self.color_vectors[0])*4
@@ -76,10 +75,15 @@ class CubicGLContext(AbstractGLContext, QWidget):
     def draw_vbo(self):
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
         gl.glEnableClientState(gl.GL_COLOR_ARRAY)
+
+
         # bind vertex buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
         gl.glVertexPointer(4, gl.GL_FLOAT, 0, None)
         # bind color buffer
+        gl.glColorMaterial(gl.GL_FRONT, gl.GL_DIFFUSE);
+        gl.glEnable(gl.GL_COLOR_MATERIAL);
+        
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
         gl.glColorPointer(3, gl.GL_FLOAT, 0, None)
 
@@ -88,3 +92,24 @@ class CubicGLContext(AbstractGLContext, QWidget):
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
+def compute_normals_cubes(vertex_values):  
+    """
+    each cube has 8 faces. there is cube_number*8 faces in total
+    each face is composed of 4 vertices
+    """
+    print(len(vertex_values))
+    v_length = len(vertex_values)-9
+    max_range = int(len(vertex_values)/3)
+    normals_vbo = np.ndarray(shape=(max_range, 3), dtype=np.float32)
+    faces_number = int(len(vertex_values)/3/4) # div by 3 to get a vertex number, div by 4 to get face number
+    normal = np.array([0,0,0], dtype=np.float32)
+    i = 0
+    while(i < v_length-9):
+        # normal += (1/8)*np.cross(vertex_values[i+3:i+6] - vertex_values[i:i+3],
+        #                                    vertex_values[i+6:i+9] - vertex_values[i:i+3])
+        # if i%faces_number==0 and i >0:
+        #     normals_vbo[i, :] = normal
+        #     normal = np.array([0,0,0])
+        i += 9
+    print(i)
+    return normals_vbo

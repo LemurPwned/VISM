@@ -115,6 +115,11 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
         self.position = [0, 0 , -150]  # xyz initial
+        # reset translational view
+        _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
+        width = self.geom[0]
+        height = self.geom[1]
+        self.lastPos = QPoint(int(width/2), int(height/2))
 
     def transformate(self):
         """
@@ -129,11 +134,18 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         Initializes openGL context and scenery
         """
         gl.glClearColor(*self.background, 0)
+        
         gl.glEnable(gl.GL_DEPTH_TEST)
         gl.glEnable(gl.GL_POLYGON_SMOOTH)
+
+        gl.glEnable(gl.GL_LIGHTING)
+
+        gl.glLightModelf(gl.GL_LIGHT_MODEL_TWO_SIDE, 0.1)
+
+        gl.glEnable(gl.GL_LIGHT0)
+        gl.glEnable(gl.GL_LIGHT1)
+
         self.initial_transformation()
-        _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
-        self.lastPos = QPoint(int(width/2), int(height/2))
 
     def resizeGL(self, w, h):
         """

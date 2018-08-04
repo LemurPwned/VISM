@@ -115,6 +115,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
         gl.glEnableClientState(gl.GL_COLOR_ARRAY)
 
+        gl.glEnable(gl.GL_COLOR_MATERIAL)
         # bind color buffer
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.buffers[2])
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])

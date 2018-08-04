@@ -158,6 +158,24 @@ def process_vector_to_vbo(iteration,
             local_vbo.extend(zero_pad)
     return local_vbo
 
+def compute_normals_cubes(vertex_values, cube_number):  
+    """
+    each cube has 8 faces. there is cube_number*8 faces in total
+    each face is composed of 4 vertices
+    """
+    cdef:
+        float normal_value = 0.0
+        int max_range = len(vertex_values)/3
+        int vertices_per_face = 4 # cubes have 6 faces, each face - 4 vertices,
+    normals_vbo = np.ndarray((max_range, 3), dtype='float32')
+    for i in range(0, max_range):
+        normal_value += np.cross(vertex_values[i+1] - vertex_values[i],
+                                 vertex_values[i+2] - vertex_values[i])
+        if i%vertices_per_face == 0 and i > 0:
+            normals_vbo[i] = normal_value
+            normal_value = 0
+    return normals_vbo
+
 def calculate_layer_colors(x, relative_vector=[0, 1, 0], scale=1):
     """
     used by LayerCanvas to calculate matplotlib heatmap
