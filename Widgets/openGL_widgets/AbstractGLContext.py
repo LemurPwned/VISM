@@ -52,6 +52,15 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.TEXT = None
         self.RECORD_REGION_SELECTION = False
         self.SELECTED_POS = None
+        
+        """ 
+        left mouse must be separately registered
+        because right clicks and left clicks with 
+        large distance between current and last position
+        can lead to rapid rotations 
+        """
+        self.registered_left_mouse = False
+        self.registered_left_mouse_pos = None
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
@@ -140,9 +149,10 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
         gl.glEnable(gl.GL_LIGHTING)
 
-        gl.glLightModelf(gl.GL_LIGHT_MODEL_TWO_SIDE, 0.1)
+        # gl.glLightModelf(gl.GL_LIGHT_MODEL_TWO_SIDE, 0.1)
 
         gl.glEnable(gl.GL_LIGHT0)
+        gl.glLightfv(gl.GL_LIGHT1, gl.GL_POSITION, [0, 0, -1, 0])
         gl.glEnable(gl.GL_LIGHT1)
 
         self.initial_transformation()
@@ -277,21 +287,26 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         dy = event.y() - self.lastPos.y()
         self.lastPos = event.pos()
         if event.buttons() & Qt.LeftButton:
-            rotation_speed = 0.5
-            if abs(dx) > abs(dy):
-                ang = self.normalize_angle(dx * rotation_speed)
-                self.rotation[0] += ang
-            else:
-                ang = self.normalize_angle(dy * rotation_speed)
-                self.rotation[1] += ang
+            if self.registered_left_mouse:
+                dx = event.x() - self.registered_left_mouse_pos.x()
+                dy = event.y() - self.registered_left_mouse_pos.y()
+                rotation_speed = 0.5
+                if abs(dx) > abs(dy):
+                    ang = self.normalize_angle(dx * rotation_speed)
+                    self.rotation[0] += ang
+                else:
+                    ang = self.normalize_angle(dy * rotation_speed)
+                    self.rotation[1] += ang
+            self.registered_left_mouse = True
+            self.registered_left_mouse_pos = event.pos()
         elif event.buttons() & Qt.RightButton:
             self.position[0] += dx * 0.4 
             self.position[1] -= dy * 0.4 
         self.update()
     
-    # def mouseReleaseEvent(self, event):
-    #     if event.buttons() & Qt.RightButton:
-    #         self.lastPos = event.pos()
+    def mouseReleaseEvent(self, event):
+        if self.registered_left_mouse:
+            self.registered_left_mouse = False
 
     def normalize_angle(self, angle):
         while angle < 0:
