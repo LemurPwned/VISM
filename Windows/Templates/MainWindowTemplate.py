@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'Windows/UI_files/MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.10
+# Created by: PyQt5 UI code generator 5.9
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -15,7 +15,7 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.gridLayoutWidget.setGeometry(QtCore.QRect(0, 0, 861, 641))
+        self.gridLayoutWidget.setGeometry(QtCore.QRect(-220, -120, 861, 641))
         self.gridLayoutWidget.setObjectName("gridLayoutWidget")
         self.gridLayout = QtWidgets.QGridLayout(self.gridLayoutWidget)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
@@ -32,8 +32,6 @@ class Ui_MainWindow(object):
         self.menuView.setObjectName("menuView")
         self.menuOptions = QtWidgets.QMenu(self.menubar)
         self.menuOptions.setObjectName("menuOptions")
-        self.menuAnimation = QtWidgets.QMenu(self.menubar)
-        self.menuAnimation.setObjectName("menuAnimation")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -82,12 +80,10 @@ class Ui_MainWindow(object):
         self.menuView.addAction(self.action4_Windows_Grid)
         self.menuOptions.addAction(self.actionPerformance)
         self.menuOptions.addAction(self.actionMovie_composer)
-        self.menuAnimation.addAction(self.actionAnimation)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menuOptions.menuAction())
-        self.menubar.addAction(self.menuAnimation.menuAction())
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -99,7 +95,6 @@ class Ui_MainWindow(object):
         self.menuEdit.setTitle(_translate("MainWindow", "Edit"))
         self.menuView.setTitle(_translate("MainWindow", "View"))
         self.menuOptions.setTitle(_translate("MainWindow", "Options"))
-        self.menuAnimation.setTitle(_translate("MainWindow", "Animation"))
         self.actionLoad_File.setText(_translate("MainWindow", "Load File"))
         self.actionLoad_Directory.setText(_translate("MainWindow", "Load Directory"))
         self.action1_Window_Grid.setText(_translate("MainWindow", "Window Grid"))

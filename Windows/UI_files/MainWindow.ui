@@ -17,8 +17,8 @@
    <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>0</y>
+      <x>-220</x>
+      <y>-120</y>
       <width>861</width>
       <height>641</height>
      </rect>
@@ -67,16 +67,10 @@
     <addaction name="actionPerformance"/>
     <addaction name="actionMovie_composer"/>
    </widget>
-   <widget class="QMenu" name="menuAnimation">
-    <property name="title">
-     <string>Animation</string>
-    </property>
-   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menuOptions"/>
-   <addaction name="menuAnimation"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionLoad_File">

@@ -131,6 +131,7 @@ class WorkerObject:
             self._TRIGGER_ = False
             self.trig_len = 0
             self.play = self.standard_play
+            self.reset=False
 
         def passTriggerList(self, trigger):
             self.trigger = trigger
@@ -152,6 +153,7 @@ class WorkerObject:
 
         def resetIterator(self):
             self._iterator = 0
+            self.reset=True
 
         def startWork(self):
             self.play()
@@ -168,14 +170,16 @@ class WorkerObject:
 
         def trigger_play(self):
             while(True):
-                for k in self.trigger:
+                for _ in self.trigger:
                     tm.sleep(1/self._speed)
                     if self.running:
                         self._iterator += 1
                         self._iterator %= self.trig_len
                         for i in self.widgetIterators:
-                            i(self._iterator, 
-                                trigger=True, record=PlayerWindow.RECORD)
+                            i(self.trigger[self._iterator], 
+                                trigger=True, record=PlayerWindow.RECORD,
+                                reset=self.reset)
+                        self.reset = False
                     if not self.running:
                         break
 

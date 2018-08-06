@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
                 QVBoxLayout, QRadioButton, QLabel, QSlider, QPushButton, QMessageBox
-from Windows.Templates.PerfOptionsTemplate import Ui_Dialog
-from Windows.SimplePerfOptions import SimplePerfOptions
+from Windows.Templates.ArrowPerfOptionsTemplate import Ui_Dialog
 from PopUp import PopUpWrapper
 import re
 import numpy as np
@@ -45,12 +44,6 @@ class ArrowPerfOptions(QWidget, Ui_Dialog):
         # disable coloring
         self.pushButton_4.clicked.connect(self.disableDot)
 
-        # check resolution: resolution is checkbox 2 and slider 4
-        self.checkBox_2.setChecked(True)
-        self.checkBox_3.setChecked(True)
-        self.checkBox_2.setVisible(False)
-        self.checkBox_3.setVisible(False)
-
         # subsampling
         self.horizontalSlider.setEnabled(True)
         self.horizontalSlider.setSingleStep(2)
@@ -58,7 +51,7 @@ class ArrowPerfOptions(QWidget, Ui_Dialog):
         self.horizontalSlider.setMinimum(0)
         self.horizontalSlider.setValue(self.subsampling)
 
-        # scale
+        # size
         self.horizontalSlider_3.setMaximum(5)
         self.horizontalSlider_3.setMinimum(1)
         self.horizontalSlider_3.setValue(self.default_size)
@@ -111,18 +104,18 @@ class ArrowPerfOptions(QWidget, Ui_Dialog):
                             'all',
                             self.horizontalSlider_3.value(),
                             self.parseVectors(),
-                            self.resolution,
                             self.color_disable,
-                            self.checkBox_6.isChecked()]
+                            self.checkBox_6.isChecked(),
+                            self.resolution]
         else:
             optionsList = [ self.checkBox_5.isChecked(),
                             self.subsampling,
                             self.horizontalSlider_2.value(),
                             self.horizontalSlider_3.value(),
                             self.parseVectors(),
-                            self.resolution,
                             self.color_disable,
-                            self.checkBox_6.isChecked()]
+                            self.checkBox_6.isChecked(),
+                            self.resolution]
         return optionsList
 
     def parseVectors(self):
