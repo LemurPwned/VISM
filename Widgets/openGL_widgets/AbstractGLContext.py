@@ -145,16 +145,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         
         gl.glEnable(gl.GL_DEPTH_TEST)
         gl.glEnable(gl.GL_POLYGON_SMOOTH)
-
-        gl.glEnable(gl.GL_LIGHTING)
-
-        # gl.glLightModelf(gl.GL_LIGHT_MODEL_TWO_SIDE, 0.1)
-
-        gl.glEnable(gl.GL_LIGHT0)
-        gl.glLightfv(gl.GL_LIGHT1, gl.GL_POSITION, [-1, 0, -1, 0.5])
-        # gl.glEnable(gl.GL_LIGHT1)
-        # gl.glLightfv(gl.GL_LIGHT1, gl.GL_POSITION, [0, 0, 1, 0])
-
         self.initial_transformation()
 
     def resizeGL(self, w, h):
@@ -202,17 +192,16 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                              self.SELECTED_POS)
 
     def set_i(self, value, trigger=False, record=False):
-        """
-        saving the previous configuration for the sake 
-        of documentation. Idk where bug occurred, 
-        that was working fine previously
+        # saving the previous configuration for the sake 
+        # of documentation. Idk where bug occurred, 
+        # that was working fine previously
         if trigger:
-            self.i += 1
-            # print(self.i)
+            if value == 1:
+                self.i = 0
+            else:
+                self.i += 1
         else:
-            self.i = value
-        """
-        self.i = value
+            self.i = value        
         self.i %= self.iterations
         self.record = record
 

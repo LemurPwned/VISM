@@ -37,7 +37,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
                     self.file_header['zbase']*1e9)
             self.vectors_list, self.vertices = genCubes(self.vectors_list, dims)
             self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors)
-            self.normals = compute_normals_cubes(self.vectors_list)
+            # self.normals = compute_normals_cubes(self.vectors_list)
             # print(self.normals)
             # TODO: temporary fix, dont know why x4, should not be multiplied
             # at all!
@@ -46,7 +46,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
             self.drawing_function = self.slower_cubic_draw
 
     def create_vbo(self):
-        buffers = gl.glGenBuffers(3)
+        buffers = gl.glGenBuffers(2)
         # vertices buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[0])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
@@ -59,12 +59,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
                         np.array(self.color_vectors[self.i],
                         dtype='float32').flatten(),
                         gl.GL_DYNAMIC_DRAW)
-        # normal buffer
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[2])
-        gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                        np.array(self.vectors_list,
-                        dtype='float32').flatten(),
-                        gl.GL_ARRAY_BUFFER)
         return buffers
 
     def vbo_cubic_draw(self):
@@ -83,18 +77,11 @@ class CubicGLContext(AbstractGLContext, QWidget):
     def draw_vbo(self):
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
         gl.glEnableClientState(gl.GL_COLOR_ARRAY)
-        gl.glEnableClientState(gl.GL_NORMAL_ARRAY)
-
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[2])
-        # gl.glNormalPointer(3, gl.GL_FLOAT, 0, ctypes.c_void_p(0))
-
         # bind vertex buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
         gl.glVertexPointer(4, gl.GL_FLOAT, 0, ctypes.c_void_p(0))
         # bind color buffer
 
-        gl.glColorMaterial(gl.GL_FRONT_AND_BACK, gl.GL_DIFFUSE)
-        gl.glEnable(gl.GL_COLOR_MATERIAL)
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
         gl.glColorPointer(3, gl.GL_FLOAT, 0, ctypes.c_void_p(0))
 
@@ -102,7 +89,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
 
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
-        gl.glDisableClientState(gl.GL_NORMAL_ARRAY)
 
 def compute_normals_cubes(vertex_values):  
     """

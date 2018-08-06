@@ -174,7 +174,7 @@ class WorkerObject:
                         self._iterator += 1
                         self._iterator %= self.trig_len
                         for i in self.widgetIterators:
-                            i(self.trigger[self._iterator], 
+                            i(self._iterator, 
                                 trigger=True, record=PlayerWindow.RECORD)
                     if not self.running:
                         break

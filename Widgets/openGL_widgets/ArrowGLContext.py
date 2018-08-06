@@ -94,7 +94,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
             try:
                 gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, 
-                                    len(self.structure_vbo[self.i])*4,
+                                    len(self.structure_vbo[self.i])*12,
                                     np.array(self.structure_vbo[self.i],
                                     dtype='float32').flatten())
             except ValueError as e:
@@ -160,5 +160,4 @@ class ArrowGLContext(AbstractGLContext, QWidget):
                                                         self.SIDES,
                                                         self.ZERO_PAD))
         self.n = len(self.vectors_list)
-        print(iterative_vbo[0][0:10], len(iterative_vbo[0]))
         return iterative_vbo

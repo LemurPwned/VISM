@@ -113,10 +113,8 @@ def process_vector_to_vbo(iteration,
     """
     cdef:
         int iteration_len = len(iteration)
-    local_vbo = []
-    #zero_pad = [[np.nan, np.nan, np.nan] for x in range(sides*4)]
+        int p = 0
     local_vbo = np.ndarray((iteration_len*sides*4+1, 3), dtype=np.float32)
-    p = 0       
     for j in range(0, iteration_len):
         if iteration[j].any():
             cos_x_rot = iteration[j, 1]
@@ -152,10 +150,6 @@ def process_vector_to_vbo(iteration,
             local_vbo[p+2, :] = origin_circle+rot_matrix.dot(org_cyl_rot+height) 
             local_vbo[p+3, :] = origin_circle+rot_matrix.dot(height*1.5)  
             p+=4                  
-            
-    print(len(local_vbo), len(local_vbo[i]))
-    print(iteration_len, sides)
-    print(p)
     return local_vbo
 
 def compute_normals_cubes(vertex_values, cube_number):  
