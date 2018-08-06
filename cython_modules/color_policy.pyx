@@ -27,7 +27,7 @@ def multi_iteration_dot_product(np.ndarray[np.float32_t, ndim=2] color_iteration
         int i
         int ci = color_iteration.shape[0]
     for i in range(0, ci):
-        color_iteration[i] = atomic_dot_product(color_iteration[i], vec_set)
+        color_iteration[i] = [np.dot(color_iteration[i], vector) for vector in vec_set]
     return color_iteration
 
 @cython.boundscheck(False)
@@ -49,7 +49,8 @@ def multi_iteration_normalize(np.ndarray[np.float32_t, ndim=3] color_iterations)
         int i
         int ci = color_iterations.shape[0]
     for i in range(0, ci):
-        color_iterations[i] = atomic_normalization(color_iterations[i])
+        color_iterations[i] = color_iterations[i]/np.linalg.norm(color_iterations[i], 
+                                                    axis=1, keepdims=True)
     #np.nan_to_num(color_iterations, copy=False)
     #return color_iterations
 
@@ -110,52 +111,51 @@ def process_vector_to_vbo(iteration,
                     cyllinder will have
     @param zero_pad: array to be put if dot_product or rotation is null matrix
     """
+    cdef:
+        int iteration_len = len(iteration)
     local_vbo = []
-    for vector, color in zip(vectors_list, iteration):
-        if color.any():
+    #zero_pad = [[np.nan, np.nan, np.nan] for x in range(sides*4)]
+    local_vbo = np.ndarray((iteration_len*sides*4+1, 3), dtype=np.float32)
+    p = 0       
+    for j in range(0, iteration_len):
+        if iteration[j].any():
+            cos_x_rot = iteration[j, 1]
+            cos_y_rot = iteration[j, 0]/math.sqrt(1 - math.pow(iteration[j, 2],2))
+            # values very close to zero might generate some errors
+            # mainly because they exceed acos domain
             try:
-                cos_x_rot = color[1]
-                cos_y_rot = color[0]/math.sqrt(1 - math.pow(color[2],2))
-                # values very close to zero might generate some errors
-                # mainly because they exceed acos domain
-                try:
-                    sin_x_rot = math.sin(math.acos(cos_x_rot))  # radian input
-                except ValueError:
-                    sin_x_rot = 1
-                try:
-                    sin_y_rot = math.sin(math.acos(cos_y_rot))
-                except ValueError:
-                    sin_y_rot = 1
-                
-                rot_matrix = np.array([[cos_y_rot, 0, sin_y_rot],
-                        [sin_y_rot*sin_x_rot, cos_x_rot, -sin_x_rot*cos_y_rot],
-                        [-cos_x_rot*sin_y_rot, sin_x_rot, sin_x_rot*cos_y_rot]])
+                sin_x_rot = math.sin(math.acos(cos_x_rot))  # radian input
+            except ValueError:
+                sin_x_rot = 1
+            try:
+                sin_y_rot = math.sin(math.acos(cos_y_rot))
+            except ValueError:
+                sin_y_rot = 1
             
-                origin_circle = np.array(vector[0:3])
-                cylinder_co_rot = org_cyl_rot
-                cone_co_rot = org_cone_rot               
-                for i in range(sides-1):
-                    # bottom triangle - cylinder
-                    local_vbo.extend([origin_circle+rot_matrix.dot(cylinder_co_rot),
-                    # bottom triangle - cone
-                                origin_circle+rot_matrix.dot(cone_co_rot+height),
-                    # top triangle -cylinder
-                                origin_circle+rot_matrix.dot(cylinder_co_rot+height),
-                    # top triangle -cone
-                                origin_circle+rot_matrix.dot(height*1.5)])
-                    cylinder_co_rot = t_rotation.dot(cylinder_co_rot)
-                    cone_co_rot = t_rotation.dot(cone_co_rot)
-
-                local_vbo.extend([origin_circle+rot_matrix.dot(org_cyl_rot),
-                            origin_circle+rot_matrix.dot(org_cone_rot+height),
-                            origin_circle+rot_matrix.dot(org_cyl_rot+height),
-                            origin_circle+rot_matrix.dot(height*1.5)])
-                # local_vbo.extend(vbo)
-                                
-            except KeyError:
-                local_vbo.extend(zero_pad)
-        else:
-            local_vbo.extend(zero_pad)
+            rot_matrix = np.array([[cos_y_rot, 0, sin_y_rot],
+                    [sin_y_rot*sin_x_rot, cos_x_rot, -sin_x_rot*cos_y_rot],
+                    [-cos_x_rot*sin_y_rot, sin_x_rot, sin_x_rot*cos_y_rot]])
+        
+            origin_circle = np.array(vectors_list[j, 0:3])
+            cylinder_co_rot = org_cyl_rot
+            cone_co_rot = org_cone_rot        
+            for i in range(sides-1):                    
+                local_vbo[p, :] =   origin_circle+rot_matrix.dot(cylinder_co_rot) 
+                local_vbo[p+1, :] = origin_circle+rot_matrix.dot(cone_co_rot+height)
+                local_vbo[p+2, :] = origin_circle+rot_matrix.dot(cylinder_co_rot+height) 
+                local_vbo[p+3, :] = origin_circle+rot_matrix.dot(height*1.5) 
+                p+=4 
+                cylinder_co_rot = t_rotation.dot(cylinder_co_rot)
+                cone_co_rot = t_rotation.dot(cone_co_rot)
+            local_vbo[p, :] = origin_circle+rot_matrix.dot(org_cyl_rot) 
+            local_vbo[p+1, :] = origin_circle+rot_matrix.dot(org_cone_rot+height)
+            local_vbo[p+2, :] = origin_circle+rot_matrix.dot(org_cyl_rot+height) 
+            local_vbo[p+3, :] = origin_circle+rot_matrix.dot(height*1.5)  
+            p+=4                  
+            
+    print(len(local_vbo), len(local_vbo[i]))
+    print(iteration_len, sides)
+    print(p)
     return local_vbo
 
 def compute_normals_cubes(vertex_values, cube_number):  

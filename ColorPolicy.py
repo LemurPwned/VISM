@@ -8,12 +8,7 @@ import scipy.signal
 from copy import deepcopy
 
 
-class ColorPolicy:
-    def __init__(self):
-        self.averaging_kernel = None
-        self.flat_av_kernel = None
-        self.mask = None
-        
+class ColorPolicy:      
     @staticmethod
     def apply_vbo_format(color_array, k=24):
         """
@@ -49,15 +44,6 @@ class ColorPolicy:
     @staticmethod
     def color_matrix_flatten(vector, times):
         return np.repeat(vector, times, axis=0).flatten()
-
-    def convolutional_averaging(self, matrix, kernel_size, dim=2):
-        """
-        averages using convolution
-        """
-        self.kernel_size = self.set_kernel_size(kernel_size, dim)
-        # firstly average the color matrix with kernel
-        matrix = self.linear_convolution(matrix)
-        return np.array(matrix)
 
     @staticmethod
     def pad_4f_vertices(color_iteration, vector_array):
@@ -120,8 +106,10 @@ class ColorPolicy:
             assert color.shape == (iterations, zc*yc*xc, 3)
         vector_set = np.array(vector_set).astype(np.float32)
         if not disableDot:
-            dotted_color = asynchronous_pool_order(multi_iteration_dot_product,
-                                                    (vector_set,), color)
+            dotted_color = np.ndarray((iterations, zc*xc*yc, 3), dtype=np.float32)
+            for i in range(0, iterations):
+                dotted_color[i, :, :] = multi_iteration_dot_product(color[i], 
+                                                                    vector_set)
         else:
             dotted_color = color
         dotted_color = np.array(dotted_color)

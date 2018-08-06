@@ -38,7 +38,7 @@ class Window(QWidget):
                         "geom": (800, 400)
         }
         self.glWidget = ArrowGLContext(data_dict, self)
-
+        # self.glWidget = CubicGLContext(data_dict, self)
         mainLayout = QHBoxLayout()
         mainLayout.addWidget(self.glWidget)
         self.setLayout(mainLayout)

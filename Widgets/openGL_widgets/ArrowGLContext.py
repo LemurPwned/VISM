@@ -94,7 +94,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
             try:
                 gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, 
-                                    len(self.structure_vbo[self.i])*12,
+                                    len(self.structure_vbo[self.i])*4,
                                     np.array(self.structure_vbo[self.i],
                                     dtype='float32').flatten())
             except ValueError as e:
@@ -114,7 +114,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
     def draw_vbo(self):
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
         gl.glEnableClientState(gl.GL_COLOR_ARRAY)
-
+        gl.glColorMaterial(gl.GL_FRONT_AND_BACK, gl.GL_DIFFUSE)
         gl.glEnable(gl.GL_COLOR_MATERIAL)
         # bind color buffer
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.buffers[2])
@@ -145,14 +145,20 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
     def regenerate_structure(self, colors_list):
-        iterative_vbo = asynchronous_pool_order(process_vector_to_vbo, (
-                                                self.vectors_list, 
-                                                                self.CYLINDER_CO_ROT,
-                                                                self.CONE_CO_ROT,
-                                                                self.T_ROTATION,
-                                                                self.HEIGHT,
-                                                                self.SIDES,
-                                                                self.ZERO_PAD), 
-                                                colors_list, timeout=60)
+        deep_dim = 25600
+        iterative_vbo = np.ndarray((len(colors_list), 
+                                    deep_dim), 
+                                    dtype='float32')
+        iterative_vbo = []
+        for i in range(0, self.iterations):
+            iterative_vbo.append(process_vector_to_vbo(colors_list[i],
+                                                        self.vectors_list, 
+                                                        self.CYLINDER_CO_ROT,
+                                                        self.CONE_CO_ROT,
+                                                        self.T_ROTATION,
+                                                        self.HEIGHT,
+                                                        self.SIDES,
+                                                        self.ZERO_PAD))
         self.n = len(self.vectors_list)
-        return np.array(iterative_vbo)
+        print(iterative_vbo[0][0:10], len(iterative_vbo[0]))
+        return iterative_vbo

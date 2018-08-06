@@ -125,7 +125,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
         self.position = [0, 0 , -150]  # xyz initial
         # reset translational view
-        _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
         width = self.geom[0]
         height = self.geom[1]
         self.lastPos = QPoint(int(width/2), int(height/2))
@@ -152,8 +151,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         # gl.glLightModelf(gl.GL_LIGHT_MODEL_TWO_SIDE, 0.1)
 
         gl.glEnable(gl.GL_LIGHT0)
-        gl.glLightfv(gl.GL_LIGHT1, gl.GL_POSITION, [0, 0, -1, 0])
-        gl.glEnable(gl.GL_LIGHT1)
+        gl.glLightfv(gl.GL_LIGHT1, gl.GL_POSITION, [-1, 0, -1, 0.5])
+        # gl.glEnable(gl.GL_LIGHT1)
+        # gl.glLightfv(gl.GL_LIGHT1, gl.GL_POSITION, [0, 0, 1, 0])
 
         self.initial_transformation()
 
