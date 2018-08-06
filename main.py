@@ -77,9 +77,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionLoad_Directory.triggered.connect(self.loadDirectoryWrapper)
         self.actionLoad_File.triggered.connect(self.loadFile)
 
+        # ANIMATION MENU
+        # self.actionAnimation.triggered.connect(self.showAnimationSettings)
+        # self.menuAnimation.connect(self.showAnimationSettings)
+        self.playerAction = self.menubar.addAction("Player")
+        self.playerAction.triggered.connect(self.showAnimationSettings)
         # EDIT SUBMENU
-        self.actionAnimation.triggered.connect(self.showAnimationSettings)
-
         self.actionWindow0Delete.triggered.connect(lambda: self.deleteWidget(0))
         self.actionWindow1Delete.triggered.connect(lambda: self.deleteWidget(1))
         self.actionWindow2Delete.triggered.connect(lambda: self.deleteWidget(2))

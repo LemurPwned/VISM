@@ -85,11 +85,10 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                     ColorPolicy.standard_procedure(self.vectors_list,
                                                    self.color_vectors,
                                                    self.iterations,
-                                                   self.averaging,
+                                                   self.subsampling,
                                                    xc, yc, zc,
                                                    self.layer,
                                                    self.vector_set,
-                                                   self.decimate,
                                                    disableDot=self.disableDot,
                                                    hyperContrast=self.hyperContrast)
         if self.normalize:
@@ -191,12 +190,14 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.text_render(self.TEXT,
                              self.SELECTED_POS)
 
-    def set_i(self, value, trigger=False, record=False):
+    def set_i(self, value, trigger=False, record=False, reset=1):
         # saving the previous configuration for the sake 
         # of documentation. Idk where bug occurred, 
         # that was working fine previously
         if trigger:
-            if value == 1:
+            # this is due to the fact that reset is on 0
+            # some animations can last longer in 3d than in graph
+            if reset:
                 self.i = 0
             else:
                 self.i += 1

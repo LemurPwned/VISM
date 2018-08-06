@@ -27,7 +27,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         self.ZERO_ROT = np.array([[1, 0, 0],
                                   [0, 1, 0],
                                   [0, 0, 1]])
-        self.SIDES = self.decimate
+        self.SIDES = self.resolution
         theta = 2*np.pi/self.SIDES
         c = np.cos(theta)
         s = np.sin(theta)

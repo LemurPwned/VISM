@@ -29,10 +29,16 @@ class AnimatedWidget():
 
     def receivedOptions(self):
         self.normalize = self.options[0]
-        self.averaging = int(self.options[1])
+        self.subsampling = int(self.options[1])
+        if self.subsampling == 0:
+            self.subsampling = 1
         self.layer = self.options[2]
         self.scale = int(self.options[3])
         self.vector_set = self.options[4]
-        self.decimate = int(self.options[5])
-        self.disableDot = self.options[6]
-        self.hyperContrast = self.options[7]
+        self.disableDot = self.options[5]
+        self.hyperContrast = self.options[6]
+        try:    
+            # only arrows have resolution
+            self.resolution = self.options[7]
+        except IndexError:
+            pass

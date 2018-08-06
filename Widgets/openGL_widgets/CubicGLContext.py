@@ -31,8 +31,8 @@ class CubicGLContext(AbstractGLContext, QWidget):
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw
             self.buffers = None
-            dims = (self.file_header['xbase']*1e9*self.averaging,
-                    self.file_header['ybase']*1e9*self.averaging,
+            dims = (self.file_header['xbase']*1e9*self.subsampling,
+                    self.file_header['ybase']*1e9*self.subsampling,
                     self.file_header['zbase']*1e9)
             self.vectors_list, self.vertices = genCubes(self.vectors_list, dims)
             self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors)

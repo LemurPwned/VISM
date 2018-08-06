@@ -85,9 +85,12 @@ class CanvasLayer(AbstractCanvas):
         dx, dy = np.meshgrid(x, y)
         return copy_color_vectors, dx, dy
 
-    def set_i(self, value, trigger=False, record=False):
+    def set_i(self, value, trigger=False, record=False, reset=1):
         if trigger:
-            self.i += 1
+            if reset:
+                self.i = 0
+            else:
+                self.i += 1
         else:
             self.i = value
         self.i %= self.iterations

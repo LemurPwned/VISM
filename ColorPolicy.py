@@ -62,27 +62,25 @@ class ColorPolicy:
         return new_vector_list
 
     @staticmethod
-    def standard_procedure(outline, color, iterations, averaging, xc, yc, zc,
+    def standard_procedure(outline, color, iterations, subsampling, xc, yc, zc,
                             picked_layer='all',
                             vector_set=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-                            decimate=1,
                             disableDot=True,
                             hyperContrast=False):
         """
         this function should be called whenever one of the following is needed:
         - sampling
-        - decimation (pseudosampling)
         - dot product calculation
         @param: disableDot - if True, dot product is omitted
         @param: vector_set - set of 3 vectors used to calculate R, G, B
                 components using dot product (valid if disableDot is False)
         @param: picked_layer - determines which layer or all to calculate
-        @return: dotted_color, outline, decimate - return decimating factor,
+        @return: dotted_color, outline, raw_color - return decimating factor,
                     color after dot product (or not) and layer(s) outline
         """
-        subsampling = averaging  # thats a wrapper - refactor later
         color = np.array(color)
         outline = np.array(outline)
+        print(subsampling)
         if subsampling > 1:
             index_list = subsample(xc, yc, zc, subsample=subsampling)
             xc = xc//subsampling
@@ -102,8 +100,7 @@ class ColorPolicy:
         # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
         if hyperContrast:
             hyper_contrast_calculation(color, xc, yc, zc)
-        if not decimate:
-            assert color.shape == (iterations, zc*yc*xc, 3)
+        assert color.shape == (iterations, zc*yc*xc, 3)
         vector_set = np.array(vector_set).astype(np.float32)
         if not disableDot:
             dotted_color = np.ndarray((iterations, zc*xc*yc, 3), dtype=np.float32)
@@ -115,9 +112,7 @@ class ColorPolicy:
         dotted_color = np.array(dotted_color)
         outline = np.array(outline)
         # this should have shape (iterations, zc*yc*xc, 3)
-        if not decimate:
-            assert dotted_color.shape == (iterations, zc*yc*xc, 3)
-            assert outline.shape == (zc*yc*xc, 4)
+        assert outline.shape == (zc*yc*xc, 4)
         assert dotted_color.shape == (iterations, zc*xc*yc, 3)
         assert color.shape == (iterations, zc*xc*yc, 3)
         return dotted_color, outline, np.array(color)

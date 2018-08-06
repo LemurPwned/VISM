@@ -62,7 +62,7 @@ class Canvas(AbstractCanvas):
                                     mode='constant', constant_values=(np.nan,)))
         self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
 
-    def set_i(self, value, trigger=False, record=False):
+    def set_i(self, value, trigger=False, record=False, reset=False):
         if self.triggered:
             self.i += 1
         else:
