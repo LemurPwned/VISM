@@ -145,19 +145,17 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
     def regenerate_structure(self, colors_list):
-        deep_dim = 25600
-        iterative_vbo = np.ndarray((len(colors_list), 
-                                    deep_dim), 
+        col_len = len(colors_list)
+        iterative_vbo = np.ndarray((col_len, 
+                                    len(self.vectors_list)*self.SIDES*4,3), 
                                     dtype='float32')
-        iterative_vbo = []
         for i in range(0, self.iterations):
-            iterative_vbo.append(process_vector_to_vbo(colors_list[i],
+            iterative_vbo[i, :] = process_vector_to_vbo(colors_list[i],
                                                         self.vectors_list, 
                                                         self.CYLINDER_CO_ROT,
                                                         self.CONE_CO_ROT,
                                                         self.T_ROTATION,
                                                         self.HEIGHT,
-                                                        self.SIDES,
-                                                        self.ZERO_PAD))
+                                                        self.SIDES)
         self.n = len(self.vectors_list)
         return iterative_vbo

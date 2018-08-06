@@ -80,9 +80,9 @@ def hyper_contrast_calculation(np.ndarray[np.float32_t, ndim=3] color, xc, yc, z
             color[iteration, i*xc*yc:(i+1)*xc*yc, 0] -= mnR
             color[iteration, i*xc*yc:(i+1)*xc*yc, 1] -= mnG
             color[iteration, i*xc*yc:(i+1)*xc*yc, 2] -= mnB
-            color[iteration, i*xc*yc:(i+1)*xc*yc, 0] *= 10e7
-            color[iteration, i*xc*yc:(i+1)*xc*yc, 1] *= 10e7
-            color[iteration, i*xc*yc:(i+1)*xc*yc, 2] *= 10e7
+            color[iteration, i*xc*yc:(i+1)*xc*yc, 0] *= 10e5
+            color[iteration, i*xc*yc:(i+1)*xc*yc, 1] *= 10e5
+            color[iteration, i*xc*yc:(i+1)*xc*yc, 2] *= 10e5
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -92,8 +92,7 @@ def process_vector_to_vbo(iteration,
                           org_cone_rot,
                           t_rotation,
                           height,
-                          sides,
-                          zero_pad):
+                          sides):
     """
     creates the arrows basing for each point in color array
     rotation matrix (arrow rotation) is calculated based on
@@ -114,7 +113,8 @@ def process_vector_to_vbo(iteration,
     cdef:
         int iteration_len = len(iteration)
         int p = 0
-    local_vbo = np.ndarray((iteration_len*sides*4+1, 3), dtype=np.float32)
+        int j, i
+    local_vbo = np.ndarray((iteration_len*sides*4, 3), dtype=np.float32)
     for j in range(0, iteration_len):
         if iteration[j].any():
             cos_x_rot = iteration[j, 1]
@@ -124,32 +124,37 @@ def process_vector_to_vbo(iteration,
             try:
                 sin_x_rot = math.sin(math.acos(cos_x_rot))  # radian input
             except ValueError:
-                sin_x_rot = 1
+                sin_x_rot = 0
             try:
                 sin_y_rot = math.sin(math.acos(cos_y_rot))
             except ValueError:
-                sin_y_rot = 1
+                sin_y_rot = 0
             
             rot_matrix = np.array([[cos_y_rot, 0, sin_y_rot],
                     [sin_y_rot*sin_x_rot, cos_x_rot, -sin_x_rot*cos_y_rot],
                     [-cos_x_rot*sin_y_rot, sin_x_rot, sin_x_rot*cos_y_rot]])
-        
             origin_circle = np.array(vectors_list[j, 0:3])
             cylinder_co_rot = org_cyl_rot
             cone_co_rot = org_cone_rot        
-            for i in range(sides-1):                    
+            for i in range(sides-1):      
+                # bottom triangle - cylinder              
                 local_vbo[p, :] =   origin_circle+rot_matrix.dot(cylinder_co_rot) 
+                # bottom triangle - cone
                 local_vbo[p+1, :] = origin_circle+rot_matrix.dot(cone_co_rot+height)
-                local_vbo[p+2, :] = origin_circle+rot_matrix.dot(cylinder_co_rot+height) 
+                # top triangle - cylinder
+                local_vbo[p+2, :] = origin_circle+rot_matrix.dot(cylinder_co_rot+height)
+                # top triangle - cone  (cone tip)
                 local_vbo[p+3, :] = origin_circle+rot_matrix.dot(height*1.5) 
                 p+=4 
                 cylinder_co_rot = t_rotation.dot(cylinder_co_rot)
                 cone_co_rot = t_rotation.dot(cone_co_rot)
+            # last ones are to cover the circle (end up in the starting point)
+            # this is required by the way graphics card wants to join the points
             local_vbo[p, :] = origin_circle+rot_matrix.dot(org_cyl_rot) 
             local_vbo[p+1, :] = origin_circle+rot_matrix.dot(org_cone_rot+height)
             local_vbo[p+2, :] = origin_circle+rot_matrix.dot(org_cyl_rot+height) 
             local_vbo[p+3, :] = origin_circle+rot_matrix.dot(height*1.5)  
-            p+=4                  
+            p+=4     
     return local_vbo
 
 def compute_normals_cubes(vertex_values, cube_number):  

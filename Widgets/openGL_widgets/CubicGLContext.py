@@ -31,14 +31,11 @@ class CubicGLContext(AbstractGLContext, QWidget):
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw
             self.buffers = None
-            # if vbo drawing is selected, do additional processing
             dims = (self.file_header['xbase']*1e9*self.averaging,
                     self.file_header['ybase']*1e9*self.averaging,
                     self.file_header['zbase']*1e9)
             self.vectors_list, self.vertices = genCubes(self.vectors_list, dims)
             self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors)
-            # self.normals = compute_normals_cubes(self.vectors_list)
-            # print(self.normals)
             # TODO: temporary fix, dont know why x4, should not be multiplied
             # at all!
             self.buffer_len = len(self.color_vectors[0])*4
