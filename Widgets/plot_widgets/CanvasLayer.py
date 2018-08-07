@@ -86,14 +86,9 @@ class CanvasLayer(AbstractCanvas):
         return copy_color_vectors, dx, dy
 
     def set_i(self, value, trigger=False, record=False, reset=1):
-        if trigger:
-            if reset:
-                self.i = 0
-            else:
-                self.i += 1
-        else:
-            self.i = value
+        self.i = value      
         self.i %= self.iterations
+        self.record = record
         self.replot()
         self.plot_axis.get_figure().canvas.draw()
         self.record = record
