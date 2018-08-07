@@ -314,7 +314,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             if ((ctime - self.TIME_PASSED) > \
                                     self.FPS_UPDATE_INTERVAL):
                 self.fps = int(self.frames/(ctime - self.TIME_PASSED))
-                _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
                 self.TIME_PASSED = ctime
                 self.frames = 0
             self.text_render(str(self.fps))
