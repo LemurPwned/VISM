@@ -63,8 +63,8 @@ class Canvas(AbstractCanvas):
         self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
 
     def set_i(self, value, trigger=False, record=False, reset=False):
-        if self.triggered:
-            self.i += 1
+        if trigger:
+            self.i = self.trigger[value]
         else:
             self.i = value
         self.i %= self.internal_iterations

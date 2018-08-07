@@ -194,15 +194,16 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         # saving the previous configuration for the sake 
         # of documentation. Idk where bug occurred, 
         # that was working fine previously
-        if trigger:
-            # this is due to the fact that reset is on 0
-            # some animations can last longer in 3d than in graph
-            if reset:
-                self.i = 0
-            else:
-                self.i += 1
-        else:
-            self.i = value        
+        # if trigger:
+        #     # this is due to the fact that reset is on 0
+        #     # some animations can last longer in 3d than in graph
+        #     if reset:
+        #         self.i = 0
+        #     else:
+        #         self.i += 1
+        # else:
+        #     self.i = value  
+        self.i = value      
         self.i %= self.iterations
         self.record = record
 
@@ -266,7 +267,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             y = self.geom[1] - y
             self.SELECTED_POS = (x, y, 0)
             self.RECORD_REGION_SELECTION = False
-            print(self.SELECTED_POS)
 
     def mouseMoveEvent(self, event):
         """

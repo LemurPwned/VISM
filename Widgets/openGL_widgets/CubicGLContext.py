@@ -100,11 +100,15 @@ def compute_normals_cubes(vertex_values):
     normal = np.array([0,0,0], dtype=np.float32)
     i = 0
     while(i < v_length-9):
+        """
+        given triangle with vertices A, B, C, any normal computed
+        on the face plane is determined by a result of a 
+        cross product which is (B - A) x (C - A) resulting in a normal
+        """
         normal += (1/8)*np.cross(vertex_values[i+3:i+6] - vertex_values[i:i+3],
                                            vertex_values[i+6:i+9] - vertex_values[i:i+3])
         if i%faces_number==0 and i >0:
             normals_vbo[i, :] = normal
             normal = np.array([0,0,0])
         i += 9
-    print(i)
     return normals_vbo.flatten()

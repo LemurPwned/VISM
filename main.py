@@ -38,6 +38,7 @@ from pattern_types.Patterns import MainContextDecorators
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 from Windows.Progress import ProgressBar
 
+
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -78,8 +79,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionLoad_File.triggered.connect(self.loadFile)
 
         # ANIMATION MENU
-        # self.actionAnimation.triggered.connect(self.showAnimationSettings)
-        # self.menuAnimation.connect(self.showAnimationSettings)
         self.playerAction = self.menubar.addAction("Player")
         self.playerAction.triggered.connect(self.showAnimationSettings)
         # EDIT SUBMENU
