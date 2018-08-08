@@ -91,4 +91,3 @@ class CanvasLayer(AbstractCanvas):
         self.record = record
         self.replot()
         self.plot_axis.get_figure().canvas.draw()
-        self.record = record
