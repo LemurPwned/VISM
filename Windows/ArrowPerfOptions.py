@@ -164,8 +164,13 @@ class ArrowPerfOptions(QWidget, Ui_Dialog):
 
     def reject(self):
         self.eventHandler(None)
-        self.close()
+        self.deleteLater()
 
     def getOptions(self):
         if self.options is not None:
             return self.options
+
+    def closeEvent(self, event):
+        self.options = None
+        self.eventHandler(None)
+        self.close()

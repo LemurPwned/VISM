@@ -80,7 +80,6 @@ class ColorPolicy:
         """
         color = np.array(color)
         outline = np.array(outline)
-        print(subsampling)
         if subsampling > 1:
             index_list = subsample(xc, yc, zc, subsample=subsampling)
             xc = xc//subsampling

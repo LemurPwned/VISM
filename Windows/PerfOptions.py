@@ -148,9 +148,15 @@ class PerfOptions(QWidget, Ui_Dialog):
             self.show()
 
     def reject(self):
+        self.options = None
         self.eventHandler(None)
-        self.close()
+        self.deleteLater()
 
     def getOptions(self):
         if self.options is not None:
             return self.options
+
+    def closeEvent(self, event):
+        self.options = None
+        self.eventHandler(None)
+        self.close()
