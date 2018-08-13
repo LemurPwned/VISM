@@ -69,7 +69,7 @@ class ArrowPerfOptions(QWidget, Ui_Dialog):
             self.horizontalSlider_2.setEnabled(False)
         elif self.loaded:
             self.horizontalSlider_2.setEnabled(True)
-            self.horizontalSlider_2.setMaximum(self.layer_size)
+            self.horizontalSlider_2.setMaximum(self.layer_size-1)
             self.horizontalSlider_2.setMinimum(0)
             self.horizontalSlider_2.setValue(3)
             self.horizontalSlider_2.setSingleStep(1)

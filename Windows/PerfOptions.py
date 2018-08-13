@@ -13,7 +13,7 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.setWindowTitle("Perfomance Options")
         self.setupUi(self)
         self.loaded = True
-        self.layer_size = layer_size['znodes']
+        self.layer_size = layer_size['znodes'] 
         if self.layer_size == 1:
             self.checkBox.setEnabled(False)
             self.checkBox.setChecked(True)
@@ -66,7 +66,7 @@ class PerfOptions(QWidget, Ui_Dialog):
             self.horizontalSlider_2.setEnabled(False)
         elif self.loaded:
             self.horizontalSlider_2.setEnabled(True)
-            self.horizontalSlider_2.setMaximum(self.layer_size)
+            self.horizontalSlider_2.setMaximum(self.layer_size-1)
             self.horizontalSlider_2.setMinimum(0)
             self.horizontalSlider_2.setValue(3)
             self.horizontalSlider_2.setSingleStep(1)
@@ -157,6 +157,5 @@ class PerfOptions(QWidget, Ui_Dialog):
             return self.options
 
     def closeEvent(self, event):
-        self.options = None
         self.eventHandler(None)
-        self.close()
+        self.deleteLater()
