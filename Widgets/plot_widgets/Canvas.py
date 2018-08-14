@@ -8,23 +8,27 @@ class Canvas(AbstractCanvas):
         super().__init__(self)
         self.shareData(**data_dict)
         self.i = self.current_state
-        self.triggered = False
+        self.triggered = True
         self.createPlotCanvas()
 
     def construct_triggered_plot(self):
         if self.trigger is not None and self.options['one_one']:
-            self.triggered = True
+            self.triggered = False
             # shorter list
             self.plot_data = self.plot_data.iloc[self.trigger]
+            """
+            this displays only datapoints that match exactly the 
+            view on the 3D animation i.e. one-one plot
+            """
             self.options['line_style'] = 'None'
 
     def createPlotCanvas(self):
         self.title = self.options['column']
         self.construct_triggered_plot()
-
         self.graph_data = self.plot_data[self.title].tolist()
         self.internal_iterations = len(self.graph_data)
         self.synchronizedPlot = self.options['synchronizedPlot']
+        self.one_onePlot = self.options['one_one']
 
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
@@ -48,14 +52,16 @@ class Canvas(AbstractCanvas):
         self.plot_axis.set_autoscale_on(False)
         self.plot_axis.set_xlabel(xlabl)
         self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
-        if self.synchronizedPlot == False:
+        if self.synchronizedPlot == False and not self.one_onePlot:
             self.plot_axis.plot(self.graph_data)
 
     @AbstractGLContextDecorators.recording_decorator
     def replot(self):
-        if self.synchronizedPlot == False:
+        if self.synchronizedPlot == False and not self.one_onePlot:
+            """
+            instant plot cannot obstruct one-one plot
+            """
             return
-        
         self.i %= self.internal_iterations
         self.plot_axis.hpl.set_ydata(np.pad(self.graph_data[:self.i],
                                         (0, self.internal_iterations - self.i),
@@ -63,7 +69,7 @@ class Canvas(AbstractCanvas):
         self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
 
     def set_i(self, value, trigger=False, record=False, reset=False):
-        if trigger:
+        if trigger and self.triggered:
             self.i = self.trigger[value]
         else:
             self.i = value
