@@ -27,7 +27,8 @@ class Window(QWidget):
         # rawVectorData, header, _, stages, _ = \
         #                     MultiprocessingParse.readFolder(directory)
         rawVectorData, header = MultiprocessingParse.readFile(os.path.join(directory, filename))
-        self.options = [True, 2, 3, 3, [[1, 0, 0], [0, 1, 0], [0, 0, 1]], 16, False, True]
+        self.options = [True, 2, 3, 3, 
+        [[0, 0, 0], [0, 0, -1], [0, 0, 0]], False, False, 16]
         data_dict = {
                         "color_vectors" : rawVectorData,
                         "file_header": header,
@@ -37,8 +38,8 @@ class Window(QWidget):
                         "current_state": 0,
                         "geom": (800, 400)
         }
-        self.glWidget = ArrowGLContext(data_dict, self)
-        # self.glWidget = CubicGLContext(data_dict, self)
+        # self.glWidget = ArrowGLContext(data_dict, self)
+        self.glWidget = CubicGLContext(data_dict, self)
         mainLayout = QHBoxLayout()
         mainLayout.addWidget(self.glWidget)
         self.setLayout(mainLayout)

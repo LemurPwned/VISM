@@ -113,20 +113,24 @@ class PerfOptions(QWidget, Ui_Dialog):
         for v in [vector1, vector2, vector3]:
             p = self.isVectorEntryValid(v)
             if not p:
-                raise ValueError("Invalid entry in vector specification")
+                raise IOError("Invalid entry in vector specification")
             result_group.append(p)
         return result_group
 
     def isVectorEntryValid(self, entry):
-        match_string = '^\[([0-1]),\s?([0-1]),\s?([0-1])\]'
+        match_string = '^\[(-?[0-1]),\s?(-?[0-1]),\s?(-?[0-1])\]'
         rg = re.compile(match_string)
         m = rg.search(entry)
         if m is not None:
+            print(m.group(1), m.group(2), m.group(3))
             x = int(m.group(1))
             y = int(m.group(2))
             z = int(m.group(3))
             norm = np.sqrt(x**2 + y**2 + z**2)  
-            return [x/norm, y/norm, z/norm]
+            xval = x/norm if x != 0 else 0
+            yval = y/norm if y != 0 else 0
+            zval = z/norm if z != 0 else 0
+            return [xval, yval, zval]
         else:
             return False
 
@@ -140,7 +144,7 @@ class PerfOptions(QWidget, Ui_Dialog):
             if self.options is not None:
                 self.eventHandler(self.options)
             self.close()
-        except ValueError as e:
+        except IOError as e:
             x = PopUpWrapper(
                 title='Invalid format',
                 msg='Vectors must be in format [x,y,z] {}'.format(e),

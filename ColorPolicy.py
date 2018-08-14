@@ -112,11 +112,11 @@ class ColorPolicy:
             raise AssertionError(subsample)
 
         if subsampling > 1:
-            print(xc, yc, zc, xc//subsampling, yc//subsampling, zc//subsampling)
+            # print(xc, yc, zc, xc//subsampling, yc//subsampling, zc//subsampling)
             index_list = subsample(xc, yc, zc, subsample=subsampling)
-            xc = xc//subsampling
-            zc = zc//subsampling
-            yc = yc//subsampling
+            if xc > 1: xc = xc//subsampling
+            if zc > 1: zc = zc//subsampling
+            if yc > 1: yc = yc//subsampling
             color = color[:, index_list, :]
             outline = outline[index_list, :]
             expected_color_shape = (iterations, zc*xc*yc, 3)
@@ -126,13 +126,15 @@ class ColorPolicy:
         # opacity has been added so change expected shapes
         expected_outline_shape = (zc*xc*yc, 4)
 
-        if type(picked_layer) == int:
+        if type(picked_layer) == int or zc == 1:
             # if single layer is picked modify memory data
-            zc = 1
             layer_thickness = xc*yc
-            picked_layer = picked_layer*layer_thickness
-            color = color[:, picked_layer:picked_layer+layer_thickness, :]
-            outline = outline[picked_layer:picked_layer+layer_thickness]
+            if zc != 1:
+                zc = 1
+                picked_layer = picked_layer*layer_thickness
+                color = color[:, picked_layer:picked_layer+layer_thickness, :]
+                outline = outline[picked_layer:picked_layer+layer_thickness]
+            # print(xc, yc, zc)
             expected_color_shape = (iterations, zc*xc*yc, 3)
             expected_outline_shape = (zc*xc*yc, 3)
             # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
@@ -146,13 +148,11 @@ class ColorPolicy:
             raise AssertionError(msg)
 
         vector_set = np.array(vector_set).astype(np.float32)
-        if not disableDot:
-            dotted_color = np.ndarray((iterations, zc*xc*yc, 3), dtype=np.float32)
-            for i in range(0, iterations):
-                dotted_color[i, :, :] = multi_iteration_dot_product(color[i], 
-                                                                    vector_set)
-        else:
-            dotted_color = color
+
+        dotted_color = np.ndarray((iterations, zc*xc*yc, 3), dtype=np.float32)
+        for i in range(0, iterations):
+            dotted_color[i, :, :] = multi_iteration_dot_product(color[i], 
+                                                                vector_set)
         dotted_color = np.array(dotted_color)
         outline = np.array(outline)
         # this should have shape (iterations, zc*yc*xc, 3)
