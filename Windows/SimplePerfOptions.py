@@ -1,11 +1,12 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
                 QVBoxLayout, QRadioButton, QLabel, QSlider, QPushButton, QMessageBox
 from Windows.Templates.SimplePerfOptionsTemplate import Ui_Dialog
+from Windows.GeneralPerf import GeneralPerf
 import re
 import numpy as np
 from PopUp import PopUpWrapper
 
-class SimplePerfOptions(QWidget, Ui_Dialog):
+class SimplePerfOptions(QWidget, Ui_Dialog, GeneralPerf):
     def __init__(self, layer_size=None, parent=None):
         super(SimplePerfOptions, self).__init__()
         self.setWindowTitle("Simple Perfomance Options")
@@ -34,11 +35,6 @@ class SimplePerfOptions(QWidget, Ui_Dialog):
             self.horizontalSlider_2.setEnabled(False)
             self.picked_layer = 0
 
-    def layerChange(self):
-        val = self.horizontalSlider_2.value()
-        self.picked_layer = val
-        self.label_3.setText("Layer: {}".format(val))
-
     def optionsVerifier(self):
         # order as follows: color scheme, averaging, layer
         # checkBox_5 is normalize
@@ -50,52 +46,3 @@ class SimplePerfOptions(QWidget, Ui_Dialog):
                         0,
                         False]
         return optionsList
-
-    def parseVectors(self):
-        vector1 = self.lineEdit.text()
-        p = self.isVectorEntryValid(vector1)
-        if not p:
-            raise ValueError("Invalid entry in vector specification")
-        return p
-
-    def isVectorEntryValid(self, entry):
-        match_string = '^\[(-?[0-1]),\s?(-?[0-1]),\s?(-?[0-1])\]'
-        rg = re.compile(match_string)
-        m = rg.search(entry)
-        if m is not None:
-            x = int(m.group(1))
-            y = int(m.group(2))
-            z = int(m.group(3))
-            norm = np.sqrt(x**2 + y**2 + z**2)  
-            xval = x/norm if x != 0 else 0
-            yval = y/norm if y != 0 else 0
-            zval = z/norm if z != 0 else 0
-            return [xval, yval, zval]
-        else:
-            return False
-
-    def setEventHandler(self, handler):
-        self.eventHandler = handler
-
-    def accept(self):
-        self.hide()
-        try:
-            self.options = self.optionsVerifier()
-            if self.options is not None:
-                self.eventHandler(self.options)
-            self.close()
-        except ValueError as ve:
-            x = PopUpWrapper(
-                title='Invalid format',
-                msg='Vectors must be in format [x,y,z] {}'.format(ve),
-                more='',
-                yesMes=None, parent=self)
-            self.show()
-        
-    def reject(self):
-        self.eventHandler(None)
-        self.deleteLater()
-
-    def getOptions(self):
-        if self.options is not None:
-            return self.options

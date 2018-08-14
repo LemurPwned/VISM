@@ -117,7 +117,7 @@ class ColorPolicy:
             print(xc, yc, zc, xc//subsampling, yc//subsampling, zc//subsampling)
             index_list = subsample(xc, yc, zc, subsample=subsampling)
             if xc > 1: xc = xc//subsampling
-            if zc > 1: zc = zc//subsampling
+            if zc > 1: zc = zc//subsampling 
             if yc > 1: yc = yc//subsampling
             print("Index list", len(index_list))
             color = color[:, index_list, :]
@@ -156,7 +156,6 @@ class ColorPolicy:
 
         # normalize all vectors
         multi_iteration_normalize(color)
-
         if color_policy_type == 'Standard':
             for i in range(0, iterations):
                 color[i, :, :] = multi_iteration_cross_color(color[i], 
@@ -165,10 +164,7 @@ class ColorPolicy:
                                                                     vector_set[2])
         else:
             for i in range(0, iterations):
-                color[i, :, :] = multi_iteration_dot_product(color[i], 
-                                                                    vector_set[0],
-                                                                    vector_set[1],
-                                                                    vector_set[2])
+                color[i, :, :] = multi_iteration_dot_product(color[i], vector_set)
         color = np.array(color)
         outline = np.array(outline)
         # this should have shape (iterations, zc*yc*xc, 3)
@@ -191,4 +187,4 @@ class ColorPolicy:
                                                             color.shape)
             raise AssertionError(msg)
 
-        return original_color, outline, original_color
+        return color, outline, original_color

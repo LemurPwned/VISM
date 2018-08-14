@@ -5,9 +5,10 @@ from Windows.SimplePerfOptions import SimplePerfOptions
 from PopUp import PopUpWrapper
 import re
 import numpy as np
+from Windows.GeneralPerf import GeneralPerf
 
 
-class PerfOptions(QWidget, Ui_Dialog):
+class PerfOptions(QWidget, Ui_Dialog, GeneralPerf):
     def __init__(self, layer_size=None, object_type='None', parent=None):
         super(PerfOptions, self).__init__()
         self.setWindowTitle("Perfomance Options")
@@ -18,16 +19,7 @@ class PerfOptions(QWidget, Ui_Dialog):
             self.checkBox.setEnabled(False)
             self.checkBox.setChecked(True)
 
-        self.subsampling = 0
-
-        self.options = None
-        self.toDelete = False
-
-        self.color_selection = 'Standard'
-        self.comboBox.activated[str].connect(self.changeColorPolicy)
-        # self.comboBox.setCurrentText('Standard')
-        self.changeColorPolicy(self.color_selection)
-
+        self.general_initialization()
         self.initial_options(object_type)
 
         self.basicOptions()
@@ -41,11 +33,6 @@ class PerfOptions(QWidget, Ui_Dialog):
             self.default_size = 5
             # only one size is allowed
             self.horizontalSlider_3.setEnabled(True)
-
-    def reset(self):
-        self.lineEdit.setText('[1, 0, 0]')
-        self.lineEdit_2.setText('[0, 1, 0]')
-        self.lineEdit_3.setText('[0, 0, 1]')
 
     def basicOptions(self):
         self.label.setText("Subsampling: {}".format(self.subsampling*2))
@@ -78,18 +65,6 @@ class PerfOptions(QWidget, Ui_Dialog):
             self.horizontalSlider_2.setValue(3)
             self.horizontalSlider_2.setSingleStep(1)
 
-    def layerChange(self):
-        val = self.horizontalSlider_2.value()
-        self.label_3.setText("Layer: {}".format(val))
-
-    def subsamplingChange(self):
-        self.subsampling = self.horizontalSlider.value()*2
-        self.label.setText("Subsampling: {}".format(self.subsampling))
-
-    def sizeChange(self):
-        val = self.horizontalSlider_3.value()
-        self.label_4.setText("Size: {}".format(val))
-
     def optionsVerifier(self):
         # order as follows: color scheme, subsampling, layer
         # checkBox_5 is normalize
@@ -111,71 +86,3 @@ class PerfOptions(QWidget, Ui_Dialog):
                             self.checkBox_6.isChecked()]
         return optionsList
 
-    def parseVectors(self):
-        vector1 = self.lineEdit.text()
-        vector2 = self.lineEdit_2.text()
-        vector3 = self.lineEdit_3.text()
-        result_group = []
-        for v in [vector1, vector2, vector3]:
-            p = self.isVectorEntryValid(v)
-            if not p:
-                raise IOError("Invalid entry in vector specification")
-            result_group.append(p)
-        return result_group
-
-    def isVectorEntryValid(self, entry):
-        match_string = '^\[(-?[0-1]),\s?(-?[0-1]),\s?(-?[0-1])\]'
-        rg = re.compile(match_string)
-        m = rg.search(entry)
-        if m is not None:
-            x = int(m.group(1))
-            y = int(m.group(2))
-            z = int(m.group(3))
-            norm = np.sqrt(x**2 + y**2 + z**2)  
-            xval = x/norm if x != 0 else 0
-            yval = y/norm if y != 0 else 0
-            zval = z/norm if z != 0 else 0
-            return [xval, yval, zval]
-        else:
-            return False
-
-    def setEventHandler(self, handler):
-        self.eventHandler = handler
-
-    def accept(self):
-        self.hide()
-        try:
-            self.options = self.optionsVerifier()
-            if self.options is not None:
-                self.eventHandler(self.options)
-            self.close()
-        except IOError as e:
-            x = PopUpWrapper(
-                title='Invalid format',
-                msg='Vectors must be in format [x,y,z] {}'.format(e),
-                more='',
-                yesMes=None, parent=self)
-            self.show()
-
-    def reject(self):
-        self.options = None
-        self.eventHandler(None)
-        self.toDelete = True
-        self.deleteLater()
-
-    def getOptions(self):
-        if self.options is not None:
-            return self.options
-
-    def changeColorPolicy(self, text):
-        print(text)
-        if text == 'Standard':
-            self.color_selection = 'Standard'
-            self.label_5.setText('D')
-            self.label_6.setText('C+')
-            self.label_7.setText('C-')  
-        else:
-            self.color_selection = 'RGB policy'
-            self.label_5.setText('R')
-            self.label_6.setText('G')
-            self.label_7.setText('B')

@@ -241,7 +241,6 @@ def subsample(xc, yc, zc, subsample=2):
             xskip = 0
             if yskip%yc == 0:           
                 zskip+=1
-                print("SHALOM<", xskip, yskip, zskip)
                 yskip = 0
     return np.array(index_mask, dtype=np.int)
 
