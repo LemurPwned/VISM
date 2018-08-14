@@ -226,7 +226,7 @@
      <item row="2" column="0" colspan="2">
       <widget class="QSlider" name="horizontalSlider">
        <property name="minimum">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="maximum">
         <number>4</number>
@@ -238,7 +238,7 @@
         <number>1</number>
        </property>
        <property name="value">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>

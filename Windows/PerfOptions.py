@@ -35,7 +35,7 @@ class PerfOptions(QWidget, Ui_Dialog, GeneralPerf):
             self.horizontalSlider_3.setEnabled(True)
 
     def basicOptions(self):
-        self.label.setText("Subsampling: {}".format(self.subsampling*2))
+        self.label.setText("Subsampling: {}".format(self.subsampling))
 
         # disable coloring
         self.pushButton_4.clicked.connect(self.reset)
@@ -44,8 +44,8 @@ class PerfOptions(QWidget, Ui_Dialog, GeneralPerf):
         self.horizontalSlider_3.valueChanged.connect(self.sizeChange)
 
         # subsampling
-        self.horizontalSlider.setMaximum(4)
-        self.horizontalSlider.setMinimum(0)
+        self.horizontalSlider.setMaximum(8)
+        self.horizontalSlider.setMinimum(1)
         self.horizontalSlider.setValue(self.subsampling)
         self.horizontalSlider.setSingleStep(1)
 

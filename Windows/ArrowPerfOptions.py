@@ -20,7 +20,7 @@ class ArrowPerfOptions(QWidget, Ui_Dialog, GeneralPerf):
             self.checkBox.setChecked(True)
 
         self.resolution = 16
-        self.subsampling = 0
+        self.subsampling = 1
         self.general_initialization()
         self.basicOptions()
         self.show()
@@ -39,9 +39,9 @@ class ArrowPerfOptions(QWidget, Ui_Dialog, GeneralPerf):
 
         # subsampling
         self.horizontalSlider.setEnabled(True)
-        self.horizontalSlider.setSingleStep(2)
+        self.horizontalSlider.setSingleStep(1)
         self.horizontalSlider.setMaximum(16)
-        self.horizontalSlider.setMinimum(0)
+        self.horizontalSlider.setMinimum(1)
         self.horizontalSlider.setValue(self.subsampling)
 
         # size

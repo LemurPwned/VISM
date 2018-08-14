@@ -89,7 +89,7 @@ class ColorPolicy:
         """
         color = np.array(color)
         outline = np.array(outline)
-
+        print("SUBSAMPLING: {}".format(subsampling))
         expected_color_shape = (zc*xc*yc, 3) if iterations == 1 else (iterations, zc*xc*yc, 3)
         expected_outline_shape = (zc*xc*yc, 3)
 
@@ -114,12 +114,10 @@ class ColorPolicy:
             raise AssertionError(subsample)
 
         if subsampling > 1:
-            print(xc, yc, zc, xc//subsampling, yc//subsampling, zc//subsampling)
             index_list = subsample(xc, yc, zc, subsample=subsampling)
-            if xc > 1: xc = xc//subsampling
-            if zc > 1: zc = zc//subsampling 
-            if yc > 1: yc = yc//subsampling
-            print("Index list", len(index_list))
+            if xc > 1: xc = xc//subsampling if xc%subsampling == 0 else xc//subsampling +1
+            if yc > 1: yc = yc//subsampling if yc%subsampling == 0 else yc//subsampling +1
+            if zc > 1: zc = zc//subsampling if zc%subsampling == 0 else zc//subsampling +1
             color = color[:, index_list, :]
             outline = outline[index_list, :]
             expected_color_shape = (iterations, zc*xc*yc, 3)
@@ -128,7 +126,6 @@ class ColorPolicy:
         outline = ColorPolicy.pad_4f_vertices(color[0], outline)
         # opacity has been added so change expected shapes
         expected_outline_shape = (zc*xc*yc, 4)
-        print(xc, yc, zc)
         if type(picked_layer) == int or zc == 1:
             # if single layer is picked modify memory data
             layer_thickness = xc*yc
@@ -137,7 +134,6 @@ class ColorPolicy:
                 picked_layer = picked_layer*layer_thickness
                 color = color[:, picked_layer:picked_layer+layer_thickness, :]
                 outline = outline[picked_layer:picked_layer+layer_thickness]
-            print(xc, yc, zc)
             expected_color_shape = (iterations, zc*xc*yc, 3)
             expected_outline_shape = (zc*xc*yc, 3)
             # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized

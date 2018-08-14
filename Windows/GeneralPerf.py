@@ -5,9 +5,8 @@ from PopUp import PopUpWrapper
 
 
 class GeneralPerf:
-
     def general_initialization(self):
-        self.subsampling = 0
+        self.subsampling = 1
         self.options = None
         self.color_selection = 'Standard'
         self.comboBox.activated[str].connect(self.changeColorPolicy)
