@@ -156,6 +156,7 @@ class PerfOptions(QWidget, Ui_Dialog):
         if self.options is not None:
             return self.options
 
-    # def closeEvent(self, event):
-    #     self.eventHandler(None)
-    #     self.deleteLater()
+    def closeEvent(self, event):
+        return
+        self.eventHandler(None)
+        self.deleteLater()
