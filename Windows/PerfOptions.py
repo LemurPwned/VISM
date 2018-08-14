@@ -19,13 +19,20 @@ class PerfOptions(QWidget, Ui_Dialog):
             self.checkBox.setChecked(True)
 
         self.subsampling = 0
+
+        self.options = None
+        self.toDelete = False
+
+        self.color_selection = 'Standard'
+        self.comboBox.activated[str].connect(self.changeColorPolicy)
+        # self.comboBox.setCurrentText('Standard')
+        self.changeColorPolicy(self.color_selection)
+
         self.initial_options(object_type)
 
         self.basicOptions()
         self.show()
-        self.options = None
-        self.color_disable = False
-        self.toDelete = False
+
 
     def initial_options(self, object_type):
         self.default_size = 1
@@ -35,17 +42,16 @@ class PerfOptions(QWidget, Ui_Dialog):
             # only one size is allowed
             self.horizontalSlider_3.setEnabled(True)
 
-    def disableDot(self):
+    def reset(self):
         self.lineEdit.setText('[1, 0, 0]')
         self.lineEdit_2.setText('[0, 1, 0]')
         self.lineEdit_3.setText('[0, 0, 1]')
-        self.color_disable = not self.color_disable
 
     def basicOptions(self):
         self.label.setText("Subsampling: {}".format(self.subsampling*2))
 
         # disable coloring
-        self.pushButton_4.clicked.connect(self.disableDot)
+        self.pushButton_4.clicked.connect(self.reset)
         self.horizontalSlider.valueChanged.connect(self.subsamplingChange)
         self.horizontalSlider_2.valueChanged.connect(self.layerChange)
         self.horizontalSlider_3.valueChanged.connect(self.sizeChange)
@@ -93,7 +99,7 @@ class PerfOptions(QWidget, Ui_Dialog):
                             'all',
                             self.horizontalSlider_3.value(),
                             self.parseVectors(),
-                            self.color_disable,
+                            self.color_selection,
                             self.checkBox_6.isChecked()]
         else:
             optionsList = [ self.checkBox_5.isChecked(),
@@ -101,7 +107,7 @@ class PerfOptions(QWidget, Ui_Dialog):
                             self.horizontalSlider_2.value(),
                             self.horizontalSlider_3.value(),
                             self.parseVectors(),
-                            self.color_disable,
+                            self.color_selection,
                             self.checkBox_6.isChecked()]
         return optionsList
 
@@ -122,7 +128,6 @@ class PerfOptions(QWidget, Ui_Dialog):
         rg = re.compile(match_string)
         m = rg.search(entry)
         if m is not None:
-            print(m.group(1), m.group(2), m.group(3))
             x = int(m.group(1))
             y = int(m.group(2))
             z = int(m.group(3))
@@ -162,3 +167,15 @@ class PerfOptions(QWidget, Ui_Dialog):
         if self.options is not None:
             return self.options
 
+    def changeColorPolicy(self, text):
+        print(text)
+        if text == 'Standard':
+            self.color_selection = 'Standard'
+            self.label_5.setText('D')
+            self.label_6.setText('C+')
+            self.label_7.setText('C-')  
+        else:
+            self.color_selection = 'RGB policy'
+            self.label_5.setText('R')
+            self.label_6.setText('G')
+            self.label_7.setText('B')

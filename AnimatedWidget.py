@@ -35,7 +35,7 @@ class AnimatedWidget():
         self.layer = self.options[2]
         self.scale = int(self.options[3])
         self.vector_set = self.options[4]
-        self.disableDot = self.options[5]
+        self.color_policy_type = self.options[5]
         self.hyperContrast = self.options[6]
         try:    
             # only arrows have resolution

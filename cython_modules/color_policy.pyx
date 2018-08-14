@@ -32,6 +32,31 @@ def multi_iteration_dot_product(np.ndarray[np.float32_t, ndim=2] color_iteration
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+def multi_iteration_cross_color(np.ndarray[np.float32_t, ndim=2] color_iteration,
+                                np.ndarray[np.float32_t, ndim=1] user_vector,
+                                np.ndarray[np.float32_t, ndim=1] negative_color, 
+                                np.ndarray[np.float32_t, ndim=1] positive_color):
+    """
+    s is dot product
+    positive color is when s > 0
+    negative color is when s < 0
+    """
+    cdef:
+        float s
+        int i
+        int ci = color_iteration.shape[0]
+    white = np.array([1, 1, 1], np.float32)
+    for i in range(0, ci):
+        s = np.dot(color_iteration[i], user_vector)
+        abs_s = np.abs(s)
+        if s > 0:
+            color_iteration[i] = abs_s*positive_color + (1-abs_s)*white
+        else:
+            color_iteration[i] = abs_s*negative_color + (1-abs_s)*white
+    return color_iteration
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def atomic_normalization(np.ndarray[np.float32_t, ndim=2] color_vector):
     """
     normalization to be performed on a slice of an color array

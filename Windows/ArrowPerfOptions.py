@@ -24,9 +24,10 @@ class ArrowPerfOptions(QWidget, Ui_Dialog):
         self.basicOptions()
         self.show()
         self.options = None
-        self.color_disable = False
+        self.color_selection = 'Standard'
+        self.comboBox.setCurrentIndex(0)
 
-    def disableDot(self):
+    def reset(self):
         self.lineEdit.setText('[1, 0, 0]')
         self.lineEdit_2.setText('[0, 1, 0]')
         self.lineEdit_3.setText('[0, 0, 1]')
@@ -42,7 +43,7 @@ class ArrowPerfOptions(QWidget, Ui_Dialog):
         self.label.setText("Subsampling {}".format(self.subsampling))
 
         # disable coloring
-        self.pushButton_4.clicked.connect(self.disableDot)
+        self.pushButton_4.clicked.connect(self.reset)
 
         # subsampling
         self.horizontalSlider.setEnabled(True)
@@ -104,7 +105,7 @@ class ArrowPerfOptions(QWidget, Ui_Dialog):
                             'all',
                             self.horizontalSlider_3.value(),
                             self.parseVectors(),
-                            self.color_disable,
+                            self.color_selection,
                             self.checkBox_6.isChecked(),
                             self.resolution]
         else:
@@ -113,7 +114,7 @@ class ArrowPerfOptions(QWidget, Ui_Dialog):
                             self.horizontalSlider_2.value(),
                             self.horizontalSlider_3.value(),
                             self.parseVectors(),
-                            self.color_disable,
+                            self.color_selection,
                             self.checkBox_6.isChecked(),
                             self.resolution]
         return optionsList
@@ -126,7 +127,7 @@ class ArrowPerfOptions(QWidget, Ui_Dialog):
         for v in [vector1, vector2, vector3]:
             p = self.isVectorEntryValid(v)
             if not p:
-                raise ValueError("Invalid entry in vector specification")
+                raise IOError("Invalid entry in vector specification")
             result_group.append(p)
         return result_group
 
@@ -135,7 +136,6 @@ class ArrowPerfOptions(QWidget, Ui_Dialog):
         rg = re.compile(match_string)
         m = rg.search(entry)
         if m is not None:
-            print(m.group(1), m.group(2), m.group(3))
             x = int(m.group(1))
             y = int(m.group(2))
             z = int(m.group(3))
@@ -157,7 +157,7 @@ class ArrowPerfOptions(QWidget, Ui_Dialog):
             if self.options is not None:
                 self.eventHandler(self.options)
             self.close()
-        except ValueError as e:
+        except IOError as e:
             traceback.print_exc()
             x = PopUpWrapper(
                 title='Invalid format',
@@ -173,3 +173,15 @@ class ArrowPerfOptions(QWidget, Ui_Dialog):
     def getOptions(self):
         if self.options is not None:
             return self.options
+
+    def activated(self, text):
+        if text == 'Standard':
+            self.color_selection = 'Standard'
+            self.label_5.setText('D')
+            self.label_6.setText('C+')
+            self.label_7.setText('C-')  
+        else:
+            self.color_selection = 'RGB policy'
+            self.label_5.setText('R')
+            self.label_6.setText('G')
+            self.label_7.setText('B')

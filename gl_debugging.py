@@ -27,8 +27,14 @@ class Window(QWidget):
         # rawVectorData, header, _, stages, _ = \
         #                     MultiprocessingParse.readFolder(directory)
         rawVectorData, header = MultiprocessingParse.readFile(os.path.join(directory, filename))
+        """
+        new cross color
+        user vector 1st
+        positive vector 2nd
+        negative vector 3rd
+        """
         self.options = [True, 2, 3, 3, 
-        [[0, 0, 0], [0, 0, -1], [0, 0, 0]], False, False, 16]
+        [[0, 1, 0], [0, 0, 1], [0, 1, 0]], False, False, 16]
         data_dict = {
                         "color_vectors" : rawVectorData,
                         "file_header": header,

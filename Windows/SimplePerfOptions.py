@@ -63,7 +63,6 @@ class SimplePerfOptions(QWidget, Ui_Dialog):
         rg = re.compile(match_string)
         m = rg.search(entry)
         if m is not None:
-            print(m.group(1), m.group(2), m.group(3))
             x = int(m.group(1))
             y = int(m.group(2))
             z = int(m.group(3))

@@ -1,7 +1,9 @@
 import numpy as np
 from cython_modules.cython_parse import getLayerOutline, subsample  
 from cython_modules.color_policy import multi_iteration_dot_product, \
-                                        hyper_contrast_calculation
+                                        hyper_contrast_calculation, \
+                                        multi_iteration_cross_color, \
+                                        multi_iteration_normalize
 from multiprocessing import Pool
 from multiprocessing_parse import asynchronous_pool_order
 import scipy.signal
@@ -72,7 +74,7 @@ class ColorPolicy:
     def standard_procedure(outline, color, iterations, subsampling, xc, yc, zc,
                             picked_layer='all',
                             vector_set=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-                            disableDot=True,
+                            color_policy_type='Standard',
                             hyperContrast=False):
         """
         this function should be called whenever one of the following is needed:
@@ -112,11 +114,12 @@ class ColorPolicy:
             raise AssertionError(subsample)
 
         if subsampling > 1:
-            # print(xc, yc, zc, xc//subsampling, yc//subsampling, zc//subsampling)
+            print(xc, yc, zc, xc//subsampling, yc//subsampling, zc//subsampling)
             index_list = subsample(xc, yc, zc, subsample=subsampling)
             if xc > 1: xc = xc//subsampling
             if zc > 1: zc = zc//subsampling
             if yc > 1: yc = yc//subsampling
+            print("Index list", len(index_list))
             color = color[:, index_list, :]
             outline = outline[index_list, :]
             expected_color_shape = (iterations, zc*xc*yc, 3)
@@ -125,7 +128,7 @@ class ColorPolicy:
         outline = ColorPolicy.pad_4f_vertices(color[0], outline)
         # opacity has been added so change expected shapes
         expected_outline_shape = (zc*xc*yc, 4)
-
+        print(xc, yc, zc)
         if type(picked_layer) == int or zc == 1:
             # if single layer is picked modify memory data
             layer_thickness = xc*yc
@@ -134,7 +137,7 @@ class ColorPolicy:
                 picked_layer = picked_layer*layer_thickness
                 color = color[:, picked_layer:picked_layer+layer_thickness, :]
                 outline = outline[picked_layer:picked_layer+layer_thickness]
-            # print(xc, yc, zc)
+            print(xc, yc, zc)
             expected_color_shape = (iterations, zc*xc*yc, 3)
             expected_outline_shape = (zc*xc*yc, 3)
             # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
@@ -148,12 +151,25 @@ class ColorPolicy:
             raise AssertionError(msg)
 
         vector_set = np.array(vector_set).astype(np.float32)
+        # copy original color for arrows
+        original_color = np.copy(color)
 
-        dotted_color = np.ndarray((iterations, zc*xc*yc, 3), dtype=np.float32)
-        for i in range(0, iterations):
-            dotted_color[i, :, :] = multi_iteration_dot_product(color[i], 
-                                                                vector_set)
-        dotted_color = np.array(dotted_color)
+        # normalize all vectors
+        multi_iteration_normalize(color)
+
+        if color_policy_type == 'Standard':
+            for i in range(0, iterations):
+                color[i, :, :] = multi_iteration_cross_color(color[i], 
+                                                                    vector_set[0],
+                                                                    vector_set[1],
+                                                                    vector_set[2])
+        else:
+            for i in range(0, iterations):
+                color[i, :, :] = multi_iteration_dot_product(color[i], 
+                                                                    vector_set[0],
+                                                                    vector_set[1],
+                                                                    vector_set[2])
+        color = np.array(color)
         outline = np.array(outline)
         # this should have shape (iterations, zc*yc*xc, 3)
         try:
@@ -163,10 +179,10 @@ class ColorPolicy:
                                                             outline.shape)
             raise AssertionError(msg)
         try:
-            assert dotted_color.shape == expected_color_shape
+            assert original_color.shape == expected_color_shape
         except AssertionError:
             msg = "invalid shape expected {} was {}".format(expected_color_shape, 
-                                                            dotted_color.shape)
+                                                            original_color.shape)
             raise AssertionError(msg)
         try:
             assert color.shape == expected_color_shape
@@ -175,4 +191,4 @@ class ColorPolicy:
                                                             color.shape)
             raise AssertionError(msg)
 
-        return dotted_color, outline, np.array(color)
+        return original_color, outline, original_color

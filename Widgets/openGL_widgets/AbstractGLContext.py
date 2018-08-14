@@ -89,10 +89,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
                                                    xc, yc, zc,
                                                    self.layer,
                                                    self.vector_set,
-                                                   disableDot=self.disableDot,
-                                                   hyperContrast=self.hyperContrast)
-        if self.normalize:
-            multi_iteration_normalize(self.color_vectors)
+                                                   color_policy_type=self.color_policy_type,
+                                                   hyperContrast=self.hyperContrast)            
         
     def handleOptionalData(self):
         super().handleOptionalData()
