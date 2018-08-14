@@ -87,20 +87,44 @@ class ColorPolicy:
         """
         color = np.array(color)
         outline = np.array(outline)
+
+        expected_color_shape = (zc*xc*yc, 3) if iterations == 1 else (iterations, zc*xc*yc, 3)
+        expected_outline_shape = (zc*xc*yc, 3)
+
+        try:
+            assert color.shape == (iterations, zc*yc*xc, 3)
+        except AssertionError:
+            msg = "invalid shape expected {} was {}".format(expected_color_shape, 
+                                                            color.shape)
+            raise AssertionError(msg)
+
+        try:
+            assert outline.shape == (zc*yc*xc, 3)
+        except AssertionError:
+            msg = "invalid shape expected {} was {}".format(expected_outline_shape, 
+                                                            outline.shape)
+            raise AssertionError(msg)
+
         try:
             assert subsampling >= 1
         except AssertionError:
             msg = "Subsampling must be greater than or equal to one"
-            raise ValueError(subsample)
+            raise AssertionError(subsample)
 
         if subsampling > 1:
+            print(xc, yc, zc, xc//subsampling, yc//subsampling, zc//subsampling)
             index_list = subsample(xc, yc, zc, subsample=subsampling)
             xc = xc//subsampling
             zc = zc//subsampling
             yc = yc//subsampling
             color = color[:, index_list, :]
             outline = outline[index_list, :]
+            expected_color_shape = (iterations, zc*xc*yc, 3)
+            expected_outline_shape = (zc*xc*yc, 3)
+
         outline = ColorPolicy.pad_4f_vertices(color[0], outline)
+        # opacity has been added so change expected shapes
+        expected_outline_shape = (zc*xc*yc, 4)
 
         if type(picked_layer) == int:
             # if single layer is picked modify memory data
@@ -109,15 +133,17 @@ class ColorPolicy:
             picked_layer = picked_layer*layer_thickness
             color = color[:, picked_layer:picked_layer+layer_thickness, :]
             outline = outline[picked_layer:picked_layer+layer_thickness]
-        # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
+            expected_color_shape = (iterations, zc*xc*yc, 3)
+            expected_outline_shape = (zc*xc*yc, 3)
+            # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
         if hyperContrast:
             hyper_contrast_calculation(color, xc, yc, zc)
         try:
-            assert color.shape == (iterations, zc*yc*xc, 3)
+            assert color.shape == expected_color_shape
         except AssertionError:
-            msg = "invalid shape expected {} was {}".format((iterations, zc*xc*yc, 3), 
+            msg = "invalid shape expected {} was {}".format(expected_color_shape, 
                                                             color.shape)
-            raise ValueError(msg)
+            raise AssertionError(msg)
 
         vector_set = np.array(vector_set).astype(np.float32)
         if not disableDot:
@@ -133,19 +159,20 @@ class ColorPolicy:
         try:
             assert outline.shape == (zc*yc*xc, 4)
         except AssertionError:
-            msg = "invalid shape expected {} was {}".format((zc*yc*xc, 4), 
+            msg = "invalid shape expected {} was {}".format(expected_outline_shape, 
                                                             outline.shape)
-            raise ValueError(msg)
+            raise AssertionError(msg)
         try:
-            assert dotted_color.shape == (iterations, zc*xc*yc, 3)
+            assert dotted_color.shape == expected_color_shape
         except AssertionError:
-            msg = "invalid shape expected {} was {}".format((iterations, zc*xc*yc, 3), 
+            msg = "invalid shape expected {} was {}".format(expected_color_shape, 
                                                             dotted_color.shape)
-            raise ValueError(msg)
+            raise AssertionError(msg)
         try:
-            assert color.shape == (iterations, zc*xc*yc, 3)
+            assert color.shape == expected_color_shape
         except AssertionError:
-            msg = "invalid shape expected {} was {}".format((iterations, zc*xc*yc, 3), 
+            msg = "invalid shape expected {} was {}".format(expected_color_shape, 
                                                             color.shape)
-            raise ValueError(msg)
+            raise AssertionError(msg)
+
         return dotted_color, outline, np.array(color)

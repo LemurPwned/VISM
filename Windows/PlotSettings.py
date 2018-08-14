@@ -175,10 +175,10 @@ class PlotSettings(QWidget, Ui_PlotSettings):
     def getOptions(self):
         return self.ret
 
-    def closeEvent(self, event):
-        self.options = None
-        self.eventHandler(None)
-        self.close()
+    # def closeEvent(self, event):
+    #     self.options = None
+    #     self.eventHandler(None)
+    #     self.close()
 
 '''maybe it's stupid but it works if, we want to return some value from
 our class without using signals we can create function which we pass to o
