@@ -25,6 +25,7 @@ class PerfOptions(QWidget, Ui_Dialog):
         self.show()
         self.options = None
         self.color_disable = False
+        self.toDelete = False
 
     def initial_options(self, object_type):
         self.default_size = 1
@@ -150,6 +151,7 @@ class PerfOptions(QWidget, Ui_Dialog):
     def reject(self):
         self.options = None
         self.eventHandler(None)
+        self.toDelete = True
         self.deleteLater()
 
     def getOptions(self):
@@ -157,6 +159,4 @@ class PerfOptions(QWidget, Ui_Dialog):
             return self.options
 
     def closeEvent(self, event):
-        return
-        self.eventHandler(None)
-        self.deleteLater()
+        event.ignore()
