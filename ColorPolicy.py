@@ -51,7 +51,14 @@ class ColorPolicy:
         this padding is used to add opacity for each vector in color matrix
         it is mostly used to hide null/NaN objects
         """
-        assert color_iteration.shape == vector_array.shape
+        try:
+            assert color_iteration.shape == vector_array.shape
+        except AssertionError:
+            msg = "Color and vector dimensions must match. Not matching with" + \
+                    "color {} and vector {}".format(color_iteration.shape, 
+                    vector_array.shape)
+            raise ValueError(msg)
+
         vector_array = vector_array.reshape(color_iteration.shape)
         new_vector_list = np.zeros((vector_array.shape[0], 4))
         for i in range(vector_array.shape[0]):
@@ -80,6 +87,12 @@ class ColorPolicy:
         """
         color = np.array(color)
         outline = np.array(outline)
+        try:
+            assert subsampling >= 1
+        except AssertionError:
+            msg = "Subsampling must be greater than or equal to one"
+            raise ValueError(subsample)
+
         if subsampling > 1:
             index_list = subsample(xc, yc, zc, subsample=subsampling)
             xc = xc//subsampling
@@ -99,7 +112,13 @@ class ColorPolicy:
         # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
         if hyperContrast:
             hyper_contrast_calculation(color, xc, yc, zc)
-        assert color.shape == (iterations, zc*yc*xc, 3)
+        try:
+            assert color.shape == (iterations, zc*yc*xc, 3)
+        except AssertionError:
+            msg = "invalid shape expected {} was {}".format((iterations, zc*xc*yc, 3), 
+                                                            color.shape)
+            raise ValueError(msg)
+
         vector_set = np.array(vector_set).astype(np.float32)
         if not disableDot:
             dotted_color = np.ndarray((iterations, zc*xc*yc, 3), dtype=np.float32)
@@ -111,7 +130,22 @@ class ColorPolicy:
         dotted_color = np.array(dotted_color)
         outline = np.array(outline)
         # this should have shape (iterations, zc*yc*xc, 3)
-        assert outline.shape == (zc*yc*xc, 4)
-        assert dotted_color.shape == (iterations, zc*xc*yc, 3)
-        assert color.shape == (iterations, zc*xc*yc, 3)
+        try:
+            assert outline.shape == (zc*yc*xc, 4)
+        except AssertionError:
+            msg = "invalid shape expected {} was {}".format((zc*yc*xc, 4), 
+                                                            outline.shape)
+            raise ValueError(msg)
+        try:
+            assert dotted_color.shape == (iterations, zc*xc*yc, 3)
+        except AssertionError:
+            msg = "invalid shape expected {} was {}".format((iterations, zc*xc*yc, 3), 
+                                                            dotted_color.shape)
+            raise ValueError(msg)
+        try:
+            assert color.shape == (iterations, zc*xc*yc, 3)
+        except AssertionError:
+            msg = "invalid shape expected {} was {}".format((iterations, zc*xc*yc, 3), 
+                                                            color.shape)
+            raise ValueError(msg)
         return dotted_color, outline, np.array(color)
