@@ -310,7 +310,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             # animation is running and this is may be not first window
             if self.playerWindow.worker.running:
                 PopUpWrapper("Alert",
-                             "You may loose calculation!" +
+                             "You may lose calculation!" +
                              " If you proceed animation will be restarted!", \
                              None,
                              QtWidgets.QMessageBox.Yes, \
@@ -431,7 +431,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         if self.playerWindow:
             if verbose:
                 PopUpWrapper("Alert",
-                    "You may loose calculation!", \
+                    "You may lose calculation!", \
                     "If you proceed animation will be restarted and widget \
                     will be deleted!", \
                     QtWidgets.QMessageBox.Yes, \
