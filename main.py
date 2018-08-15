@@ -189,7 +189,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             QtWidgets.QMessageBox.No, self.refreshScreen, self.loadFile)
             return 0
 
-        if ".odt" in fileLoaded:
+        if ".odt" in fileLoaded or ".txt":
             self.doh.passListObject(('plot_data', 'iterations'),
                                         *MultiprocessingParse.readFile(fileLoaded))
             self._BLOCK_ITERABLES_ = False
@@ -200,8 +200,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                         *MultiprocessingParse.readFile(fileLoaded))
             self._BLOCK_STRUCTURES_ = False
         else:
-            raise ValueError("main.py/loadFile: File format is not supported!")
-
+            msg = "Invalid file: {}.".format(fileLoaded)
+            PopUpWrapper("Invalid file", msg, None, QtWidgets.QMessageBox.Yes,
+                            QtWidgets.QMessageBox.No, self.refreshScreen,
+                            self.loadDirectoryWrapper, parent=self)
+            self._LOADED_FLAG_ = False
+            return -1
         self._LOADED_FLAG_ = True
         return 1
 

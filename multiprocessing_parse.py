@@ -131,7 +131,7 @@ class MultiprocessingParse:
             if .odt - odt_data, stages
             if .omf || .ovf - rawVectorData, header
         """
-        if ".odt" in path:
+        if ".odt" in path or ".txt" in path:
             odt_data, stages = getPlotData(path)
             return odt_data, stages
 
