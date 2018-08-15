@@ -89,7 +89,6 @@ class ColorPolicy:
         """
         color = np.array(color)
         outline = np.array(outline)
-        print("SUBSAMPLING: {}".format(subsampling))
         expected_color_shape = (zc*xc*yc, 3) if iterations == 1 else (iterations, zc*xc*yc, 3)
         expected_outline_shape = (zc*xc*yc, 3)
 
@@ -112,20 +111,11 @@ class ColorPolicy:
         except AssertionError:
             msg = "Subsampling must be greater than or equal to one"
             raise AssertionError(subsample)
-
-        if subsampling > 1:
-            index_list = subsample(xc, yc, zc, subsample=subsampling)
-            if xc > 1: xc = xc//subsampling if xc%subsampling == 0 else xc//subsampling +1
-            if yc > 1: yc = yc//subsampling if yc%subsampling == 0 else yc//subsampling +1
-            if zc > 1: zc = zc//subsampling if zc%subsampling == 0 else zc//subsampling +1
-            color = color[:, index_list, :]
-            outline = outline[index_list, :]
-            expected_color_shape = (iterations, zc*xc*yc, 3)
-            expected_outline_shape = (zc*xc*yc, 3)
-
-        outline = ColorPolicy.pad_4f_vertices(color[0], outline)
-        # opacity has been added so change expected shapes
-        expected_outline_shape = (zc*xc*yc, 4)
+        """
+        layer pick must be before subsampling because otherwise
+        we might subsample (and thus remove) a layer that we 
+        want to pick
+        """
         if type(picked_layer) == int or zc == 1:
             # if single layer is picked modify memory data
             layer_thickness = xc*yc
@@ -136,13 +126,25 @@ class ColorPolicy:
                 outline = outline[picked_layer:picked_layer+layer_thickness]
             expected_color_shape = (iterations, zc*xc*yc, 3)
             expected_outline_shape = (zc*xc*yc, 3)
-            # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
+        if subsampling > 1:
+            index_list = subsample(xc, yc, zc, subsample=subsampling)
+            if xc > 1: xc = xc//subsampling if xc%subsampling == 0 else xc//subsampling +1
+            if yc > 1: yc = yc//subsampling if yc%subsampling == 0 else yc//subsampling +1
+            if zc > 1: zc = zc//subsampling if zc%subsampling == 0 else zc//subsampling +1
+            color = color[:, index_list, :]
+            outline = outline[index_list, :]
+            expected_color_shape = (iterations, zc*xc*yc, 3)
+            expected_outline_shape = (zc*xc*yc, 3)
+        outline = ColorPolicy.pad_4f_vertices(color[0], outline)
+        # opacity has been added so change expected shapes
+        expected_outline_shape = (zc*xc*yc, 4)
+        # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
         if hyperContrast:
             hyper_contrast_calculation(color, xc, yc, zc)
         try:
             assert color.shape == expected_color_shape
         except AssertionError:
-            msg = "invalid shape expected {} was {}".format(expected_color_shape, 
+            msg = "invalid shape color expected {} was {}".format(expected_color_shape, 
                                                             color.shape)
             raise AssertionError(msg)
 
@@ -167,20 +169,20 @@ class ColorPolicy:
         try:
             assert outline.shape == (zc*yc*xc, 4)
         except AssertionError:
-            msg = "invalid shape expected {} was {}".format(expected_outline_shape, 
-                                                            outline.shape)
+            msg = "invalid shape outline expected {} was {}".format(expected_outline_shape, 
+                                                                    outline.shape)
             raise AssertionError(msg)
         try:
             assert original_color.shape == expected_color_shape
         except AssertionError:
-            msg = "invalid shape expected {} was {}".format(expected_color_shape, 
-                                                            original_color.shape)
+            msg = "invalid color shape expected {} was {}".format(expected_color_shape, 
+                                                                original_color.shape)
             raise AssertionError(msg)
         try:
             assert color.shape == expected_color_shape
         except AssertionError:
-            msg = "invalid shape expected {} was {}".format(expected_color_shape, 
-                                                            color.shape)
+            msg = "invalid color shape expected {} was {}".format(expected_color_shape, 
+                                                                  color.shape)
             raise AssertionError(msg)
 
         return color, outline, original_color
