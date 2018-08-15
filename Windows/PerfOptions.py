@@ -86,3 +86,4 @@ class PerfOptions(QWidget, Ui_Dialog, GeneralPerf):
                             self.checkBox_6.isChecked()]
         return optionsList
 
+

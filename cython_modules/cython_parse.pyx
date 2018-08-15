@@ -61,7 +61,7 @@ def getPlotData(filename):
             lines = f.readlines()
         f.close()
         cols = header[-1]
-        cols = cols.replace("} ", "")
+        cols = cols.replace("}", "")
         cols = cols.replace("{", "")
         cols = cols.replace("MF", "Oxs_MF")
         cols = cols.replace("PBC", "Oxs_PBC")        
