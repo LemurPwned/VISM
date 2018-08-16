@@ -97,6 +97,12 @@ class WidgetHandler:
                 self.deleteWidget()
                 self._layout.removeWidget(widget)
         except:
+            return
+            """
+            leaving for the sake of documenatation
+            this execption is not actually exception 
+            but a RuntimeWarning
+            """
             raise ValueError("Layout is not proper or argument is not a widget")
         
     def addToolBar(self, toolbar):
