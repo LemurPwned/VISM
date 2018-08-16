@@ -6,6 +6,7 @@ from PopUp import PopUpWrapper
 
 class GeneralPerf:
     def general_initialization(self):
+        self.toDelete = False
         self.subsampling = 1
         self.options = None
         self.color_selection = 'Standard'
@@ -61,7 +62,8 @@ class GeneralPerf:
             self.options = self.optionsVerifier()
             if self.options is not None:
                 self.eventHandler(self.options)
-            self.close()
+            self.toDelete = True
+            self.deleteLater()
         except IOError as e:
             x = PopUpWrapper(
                 title='Invalid format',
@@ -73,6 +75,7 @@ class GeneralPerf:
     def reject(self):
         self.options = None
         self.eventHandler(None)
+        self.toDelete = True
         self.deleteLater()
 
     def getOptions(self):
@@ -95,3 +98,11 @@ class GeneralPerf:
             self.label_5.setText('R')
             self.label_6.setText('G')
             self.label_7.setText('B')
+
+    def closeEvent(self, event):
+        if self.toDelete:
+            self.toDelete = False
+            event.accept()
+        else:
+            self.eventHandler(None)
+            event.accept()

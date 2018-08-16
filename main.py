@@ -189,7 +189,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             QtWidgets.QMessageBox.No, self.refreshScreen, self.loadFile)
             return 0
 
-        if ".odt" in fileLoaded or ".txt":
+        if ".odt" in fileLoaded or ".txt" in fileLoaded:
             self.doh.passListObject(('plot_data', 'iterations'),
                                         *MultiprocessingParse.readFile(fileLoaded))
             self._BLOCK_ITERABLES_ = False

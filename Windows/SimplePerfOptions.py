@@ -14,6 +14,7 @@ class SimplePerfOptions(QWidget, Ui_Dialog, GeneralPerf):
         self.loaded = True
         self.layer_size = layer_size['znodes']
 
+        self.toDelete = False
         self.basicOptions()
         self.show()
         self.options = None
@@ -33,14 +34,24 @@ class SimplePerfOptions(QWidget, Ui_Dialog, GeneralPerf):
         # only a single layer is available
         if self.layer_size == 1:
             self.horizontalSlider_2.setEnabled(False)
-            self.picked_layer = 0
+            self.horizontalSlider_2.setValue(0)
+
+    def parseVectors(self):
+        """
+        override since there is just a single vector
+        """
+        vector1 = self.lineEdit.text()
+        p = self.isVectorEntryValid(vector1)
+        if not p:
+            raise ValueError("Invalid entry in vector specification")
+        return p
 
     def optionsVerifier(self):
         # order as follows: color scheme, averaging, layer
         # checkBox_5 is normalize
         optionsList = [ self.checkBox_5.isChecked(),
                         0,
-                        self.picked_layer,
+                        self.horizontalSlider_2.value(),
                         0,
                         self.parseVectors(),
                         0,
