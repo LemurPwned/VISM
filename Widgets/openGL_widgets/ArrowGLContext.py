@@ -56,6 +56,14 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         self.__FLOAT_BYTE_SIZE__ = 8
 
     def generate_index(self):
+        """
+        this constructs the index list for vbos in order 
+        to reduce memory needed to generate all vertices
+        If one vertex repeats in a structure, instead of copying
+        it, the number is assigend that is then later copied.
+        The GPU can then take this index and fetch the correct vertex
+        Note: index must be uint32
+        """
         indices = []
         for n in range(self.n):
             start_index = n*self.index_required+3

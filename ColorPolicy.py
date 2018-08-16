@@ -33,6 +33,9 @@ class ColorPolicy:
     def interleave(color_iteration, vector_array):
         """
         uses OpenGl interleaving techniques to construct VBO array
+        in this case interleaving pattern is:
+        VVVCCCO where V is vertex coordinate, C is color coordinte and 
+        O is opacity
         """
         interleaved = []
         for v, c in zip(vector_array, color_iteration):
