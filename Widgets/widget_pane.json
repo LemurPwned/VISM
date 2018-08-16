@@ -69,7 +69,8 @@
                         "required": ["iterations", "current_state", "options",
                                      "plot_data", "geom", "screenshot_dir"],
                         "optional": ["trigger"],
-                        "iterable_type": "plot"
+                        "iterable_type": "plot",
+                        "toolbar": null
                       },
     "CanvasLayer": {
                         "alias": "2D_Layer",
