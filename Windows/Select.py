@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
                 QVBoxLayout, QRadioButton, QLabel, QSlider, QPushButton, QMessageBox
 from Windows.Templates.SelectTemplate import Ui_Dialog
-from PopUp import PopUpWrapper
-from buildVerifier import BuildVerifier
+from util_tools.PopUp import PopUpWrapper
+from util_tools.buildVerifier import BuildVerifier
 
 class Select(QWidget, Ui_Dialog):
     def __init__(self, parent=None):

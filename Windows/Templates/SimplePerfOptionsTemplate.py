@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Windows/UI_files/SimplePerfOptions.ui'
+# Form implementation generated from reading ui file '../Windows/UI_files/SimplePerfOptions.ui'
 #
 # Created by: PyQt5 UI code generator 5.9
 #

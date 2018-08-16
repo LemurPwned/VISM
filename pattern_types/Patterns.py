@@ -1,5 +1,5 @@
 import inspect
-from buildVerifier import BuildVerifier
+from util_tools.buildVerifier import BuildVerifier
 from widget_counter import WidgetCounter
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt

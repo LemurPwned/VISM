@@ -11,7 +11,7 @@ from multiprocessing_parse import asynchronous_pool_order
 from cython_modules.color_policy import process_vector_to_vbo, multi_iteration_normalize
 import math
 
-from PopUp import PopUpWrapper
+from util_tools.PopUp import PopUpWrapper
 
 class ArrowGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict, parent):

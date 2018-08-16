@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Windows/UI_files/Select.ui'
+# Form implementation generated from reading ui file '../Windows/UI_files/Select.ui'
 #
 # Created by: PyQt5 UI code generator 5.9
 #

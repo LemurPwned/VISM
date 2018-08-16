@@ -4,7 +4,7 @@ from Windows.Templates.SimplePerfOptionsTemplate import Ui_Dialog
 from Windows.GeneralPerf import GeneralPerf
 import re
 import numpy as np
-from PopUp import PopUpWrapper
+from util_tools.PopUp import PopUpWrapper
 
 class SimplePerfOptions(QWidget, Ui_Dialog, GeneralPerf):
     def __init__(self, layer_size=None, parent=None):

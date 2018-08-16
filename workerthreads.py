@@ -1,21 +1,14 @@
 import traceback
 import sys
+import os
 from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot, QRunnable, QThreadPool, QByteArray, Qt, QThread
 from PyQt5.QtGui import QMovie
 from PyQt5.QtWidgets import QLabel, QSizePolicy
 
-from PopUp import PopUpWrapper
+from util_tools.PopUp import PopUpWrapper
 
 import time 
 import signal
-
-RUN = True
-
-def handle(a, b):
-    print(a, b)
-    global RUN
-    print("handled")
-    RUN = False
 
 class ThreadingWrapper:
     def __init__(self, completeAction=None, exceptionAction=None, parent=None):
@@ -30,7 +23,7 @@ class ThreadingWrapper:
         """
         part below sets up loading bar
         """
-        self.movie = QMovie('red_big.gif')
+        self.movie = QMovie(os.path.join('util_tools', 'red_big.gif'))
         self.movie.setCacheMode(QMovie.CacheAll)
         self.movie.setSpeed(100)
 
@@ -104,8 +97,10 @@ class ThreadWorker(QObject):
             exctype, value  = sys.exc_info()[:2]
             self.exception.emit((exctype, value, 
                                     traceback.format_exc()))
+            result = None
         finally:
             self.finished.emit()
+            return result
 
 class Worker(QRunnable):
     def __init__(self, func, *args, **kwargs):
@@ -124,5 +119,7 @@ class Worker(QRunnable):
             exctype, value  = sys.exc_info()[:2]
             self.signals.exception.emit((exctype, value, 
                                     traceback.format_exc()))
+            result = None
         finally:
             self.signals.finished.emit()
+            return result

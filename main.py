@@ -1,4 +1,4 @@
-from buildVerifier import BuildVerifier
+from util_tools.buildVerifier import BuildVerifier
 # verify build
 # execute makefile
 if BuildVerifier.OS_GLOB_SYS == "Windows":
@@ -24,7 +24,7 @@ from multiprocessing import TimeoutError
 
 from WidgetHandler import WidgetHandler
 
-from PopUp import PopUpWrapper
+from util_tools.PopUp import PopUpWrapper
 
 from settingsMediator.settingsPrompter import SettingsPrompter
 from settingsMediator.settingsLoader import DataObjectHolder

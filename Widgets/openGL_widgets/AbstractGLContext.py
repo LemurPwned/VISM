@@ -17,7 +17,7 @@ from cython_modules.cython_parse import getLayerOutline, genCubes
 from ColorPolicy import ColorPolicy
 from pattern_types.Patterns import AbstractGLContextDecorators
 
-from buildVerifier import BuildVerifier
+from util_tools.buildVerifier import BuildVerifier
 from Windows.Select import Select
 
 import time
