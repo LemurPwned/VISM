@@ -10,7 +10,7 @@ from cython_modules.cython_parse import getLayerOutline, genCubes
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 from pattern_types.Patterns import AbstractGLContextDecorators
 
-from ColorPolicy import ColorPolicy
+from processing.ColorPolicy import ColorPolicy
 
 
 

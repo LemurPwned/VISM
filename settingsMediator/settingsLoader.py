@@ -3,7 +3,7 @@ import imp
 import glob
 import json
 from pattern_types.Patterns import Singleton, DataObjectHolderProxy
-from widget_counter import WidgetCounter
+from pattern_types.widget_counter import WidgetCounter
 
 class DataObjectHolder(metaclass=Singleton):
     def __init__(self):

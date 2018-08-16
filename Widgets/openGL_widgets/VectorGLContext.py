@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget
 
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 
-from ColorPolicy import ColorPolicy
+from processing.ColorPolicy import ColorPolicy
 
 from ctypes import c_void_p
 from PyQt5.Qt import Qt, QApplication
@@ -16,8 +16,6 @@ import OpenGL.GLU as glu
 import OpenGL.GL as gl
 import math as mt
 from multiprocessing import Pool
-from ColorPolicy import ColorPolicy
-from workerthreads import *
 import time as tm
 
 

@@ -1,7 +1,7 @@
 import numpy as np
 from pyqtgraph import PlotWidget
 import pyqtgraph as pg
-from AnimatedWidget import AnimatedWidget
+from Widgets.AnimatedWidget import AnimatedWidget
 
 class Canvas2Dupgraded(PlotWidget, AnimatedWidget):
     def __init__(self, parent=None, data_dict=None):

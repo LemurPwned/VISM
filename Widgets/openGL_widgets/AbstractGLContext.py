@@ -1,4 +1,4 @@
-from AnimatedWidget import AnimatedWidget
+from Widgets.AnimatedWidget import AnimatedWidget
 from PyQt5.QtWidgets import QOpenGLWidget
 import OpenGL.GL as gl
 import OpenGL.GLU as glu
@@ -14,7 +14,7 @@ import numpy as np
 
 from cython_modules.color_policy import multi_iteration_normalize
 from cython_modules.cython_parse import getLayerOutline, genCubes
-from ColorPolicy import ColorPolicy
+from processing.ColorPolicy import ColorPolicy
 from pattern_types.Patterns import AbstractGLContextDecorators
 
 from util_tools.buildVerifier import BuildVerifier

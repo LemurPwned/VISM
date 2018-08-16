@@ -10,7 +10,7 @@ else:
 import sys
 import threading
 
-from workerthreads import *
+from processing.workerthreads import *
 
 from PyQt5 import QtWidgets, QtCore
 
@@ -19,10 +19,10 @@ from Windows.Templates.MainWindowTemplate import Ui_MainWindow
 from Windows.ChooseWidget import ChooseWidget
 from Windows.PlayerWindow import PlayerWindow
 
-from multiprocessing_parse import MultiprocessingParse
+from processing.multiprocessing_parse import MultiprocessingParse
 from multiprocessing import TimeoutError
 
-from WidgetHandler import WidgetHandler
+from Widgets.WidgetHandler import WidgetHandler
 
 from util_tools.PopUp import PopUpWrapper
 
