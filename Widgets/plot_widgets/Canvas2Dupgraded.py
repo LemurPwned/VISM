@@ -51,7 +51,8 @@ class Canvas2Dupgraded(AbstractCanvas):
         when another widget is promoted, this window must resize too
         this means resetting the graph unfortunately
         """
-        self.plotWidget.setGeometry(0, 0, geom[0]-60, geom[1]-60)
+        self.geom = geom
+        self.plotWidget.setGeometry(0, 0, self.geom[0]-60, self.geom[1]-60)
 
     def set_i(self, value, trigger=False, record=False, reset=False):
         if trigger and self.triggered:
@@ -61,3 +62,4 @@ class Canvas2Dupgraded(AbstractCanvas):
         self._i %= self.internal_iterations
         self.plotData.setData(self.null_data[:self._i], self.graph_data[:self._i])
         pg.QtGui.QApplication.processEvents()
+        self.plotWidget.setGeometry(0, 0, self.geom[0]-60, self.geom[1]-60)

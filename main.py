@@ -468,7 +468,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             self.panes[i].groupBox.height())
                     self.panes[i].widget.on_resize_geometry_reset(geom)
                     self.panes[i].widget.initial_transformation()
-                except (AttributeError, RuntimeError) as ae:
+                except (AttributeError, RuntimeError, NameError) as ae:
                     pass
                     # allow this, should implement this function but pass anyway
         self.refreshScreen()
@@ -490,8 +490,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[3].hide()
         WidgetHandler.visibleCounter = 1
 
-        self.propagate_resize()
         self.refreshScreen()
+        self.propagate_resize()
 
         self.actionWindow1Delete.setDisabled(True)
         self.actionWindow2Delete.setDisabled(True)
@@ -504,8 +504,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[3].hide()
         WidgetHandler.visibleCounter = 2
 
-        self.propagate_resize()
         self.refreshScreen()
+        self.propagate_resize()
 
         self.actionWindow1Delete.setDisabled(False)
         self.actionWindow2Delete.setDisabled(True)
@@ -518,8 +518,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[3].show()
         WidgetHandler.visibleCounter = 4
 
-        self.propagate_resize()
         self.refreshScreen()
+        self.propagate_resize()
         self.actionWindow1Delete.setDisabled(False)
         self.actionWindow2Delete.setDisabled(False)
         self.actionWindow3Delete.setDisabled(False)
