@@ -2,7 +2,7 @@ from matplotlib import cm
 import numpy as np
 from pattern_types.Patterns import AbstractGLContextDecorators
 from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
-from multiprocessing_parse import asynchronous_pool_order
+from processing.multiprocessing_parse import asynchronous_pool_order
 from cython_modules.color_policy import multi_iteration_normalize, \
                                         multi_iteration_dot_product, \
                                         calculate_layer_colors

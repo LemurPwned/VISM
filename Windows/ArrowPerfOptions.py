@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
                 QVBoxLayout, QRadioButton, QLabel, QSlider, QPushButton, QMessageBox
 from Windows.Templates.ArrowPerfOptionsTemplate import Ui_Dialog
 from Windows.GeneralPerf import GeneralPerf
-from PopUp import PopUpWrapper
+from util_tools.PopUp import PopUpWrapper
 import re
 import numpy as np
 import traceback

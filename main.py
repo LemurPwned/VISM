@@ -1,4 +1,4 @@
-from buildVerifier import BuildVerifier
+from util_tools.buildVerifier import BuildVerifier
 # verify build
 # execute makefile
 if BuildVerifier.OS_GLOB_SYS == "Windows":
@@ -10,7 +10,7 @@ else:
 import sys
 import threading
 
-from workerthreads import *
+from processing.workerthreads import *
 
 from PyQt5 import QtWidgets, QtCore
 
@@ -19,12 +19,12 @@ from Windows.Templates.MainWindowTemplate import Ui_MainWindow
 from Windows.ChooseWidget import ChooseWidget
 from Windows.PlayerWindow import PlayerWindow
 
-from multiprocessing_parse import MultiprocessingParse
+from processing.multiprocessing_parse import MultiprocessingParse
 from multiprocessing import TimeoutError
 
-from WidgetHandler import WidgetHandler
+from Widgets.WidgetHandler import WidgetHandler
 
-from PopUp import PopUpWrapper
+from util_tools.PopUp import PopUpWrapper
 
 from settingsMediator.settingsPrompter import SettingsPrompter
 from settingsMediator.settingsLoader import DataObjectHolder

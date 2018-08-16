@@ -5,13 +5,13 @@ from PyQt5.QtWidgets import QWidget
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 from pattern_types.Patterns import AbstractGLContextDecorators
 
-from ColorPolicy import ColorPolicy
+from processing.ColorPolicy import ColorPolicy
 from ctypes import c_void_p
-from multiprocessing_parse import asynchronous_pool_order
+from processing.multiprocessing_parse import asynchronous_pool_order
 from cython_modules.color_policy import process_vector_to_vbo, multi_iteration_normalize
 import math
 
-from PopUp import PopUpWrapper
+from util_tools.PopUp import PopUpWrapper
 
 class ArrowGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict, parent):

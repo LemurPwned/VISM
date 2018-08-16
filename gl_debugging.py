@@ -10,7 +10,7 @@ from Widgets.openGL_widgets.ArrowGLContext import ArrowGLContext
 import OpenGL.GL as gl
 import OpenGL.GLU as glu
 import os 
-from multiprocessing_parse import MultiprocessingParse
+from processing.multiprocessing_parse import MultiprocessingParse
 
 class Window(QWidget):
 

@@ -1,6 +1,6 @@
 import numpy as np
 import pyqtgraph.opengl as gl
-from AnimatedWidget import AnimatedWidget
+from Widgets.AnimatedWidget import AnimatedWidget
 
 class Structure3DScatterWidget(gl.GLViewWidget, AnimatedWidget):
     def __init__(self):

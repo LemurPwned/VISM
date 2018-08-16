@@ -84,9 +84,10 @@ class WidgetHandler:
 
         if self._groupBox == None:
             raise ValueError("GroupBox must be initialized")
-        self._layout.addWidget(widget)
-        # except:
-        #     raise ValueError("Layout is not proper or argument is not a widget")
+        try:
+            self._layout.addWidget(widget)
+        except:
+            raise ValueError("Layout is not proper or argument is not a widget")
 
     def removeWidget(self, widget):
         if self._groupBox == None:
