@@ -44,9 +44,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         super(MainWindow, self).__init__()
         self.doh = DataObjectHolder()
         self.sp = SettingsPrompter(None)
-        
         self.plot_data = ""
         self.setupUi(self)
+        # we cannot add menu actions from QT Designer level
+        self.playerAction = self.menubar.addAction("Player")
         self.setWindowTitle("ESE - Early Spins Environment")
         app = QtCore.QCoreApplication.instance()
         screen_resolution = app.desktop().screenGeometry()
@@ -60,8 +61,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self._BLOCK_ITERABLES_ = True
         self._BLOCK_STRUCTURES_ = True
         self._BLOCK_PLOT_ITERABLES_ = True
-
-        self.actionAnimation.setDisabled(self._BLOCK_ITERABLES_)
 
         # keeps all widgets in list of library object that handles Widgets
         self.panes = []
@@ -79,7 +78,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionLoad_File.triggered.connect(self.loadFile)
 
         # ANIMATION MENU
-        self.playerAction = self.menubar.addAction("Player")
         self.playerAction.triggered.connect(self.showAnimationSettings)
         # EDIT SUBMENU
         self.actionWindow0Delete.triggered.connect(lambda: self.deleteWidget(0))
@@ -116,7 +114,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.resize(self.width() - 1, self.height())
         self.resize(self.width() + 1, self.height())
 
-        self.actionAnimation.setDisabled(self._BLOCK_ITERABLES_)
+        self.playerAction.setDisabled(self._BLOCK_ITERABLES_)
 
     def resizeEvent(self, event):
         """What happens when window is resized"""
@@ -450,7 +448,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         """
         null delete explanation:
         for some unknown reason if clearBox() is called on the pane
-        that has no widget that causes a major bug
+        that has no widget, it causes a major bug
         Therefore if cancel was pressed and no widget was created - hence
         null_delete, then do not call
         """
