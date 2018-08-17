@@ -38,6 +38,25 @@ def normalized(array, axis=-1, order=2):
     l2[l2==0] = 1
     return array / np.expand_dims(l2, axis)
 
+def parseODTColumn(line):
+    cols = []
+    line = line.replace('# Columns: ', '')
+    while line != "":
+        if line[0] == '{':
+            patch = line[1:line.index('}')]
+            if patch != '':
+                cols.append(patch)
+            line = line[line.index('}')+1:]
+        else:
+            try:
+                patch = line[:line.index(' ')]
+                if patch != '':
+                    cols.append(patch)
+                line = line[line.index(' ')+1:]
+            except ValueError:
+                line = ""
+                break
+    return cols
 
 def getPlotData(filename):
     """
@@ -61,13 +80,7 @@ def getPlotData(filename):
             lines = f.readlines()
         f.close()
         cols = header[-1]
-        cols = cols.replace("}", "")
-        cols = cols.replace("{", "")
-        cols = cols.replace("MF", "Oxs_MF")
-        cols = cols.replace("PBC", "Oxs_PBC")        
-        cols = cols.split("Oxs_")
-        del cols[0]
-        cols = [x.strip() for x in cols]
+        cols = parseODTColumn(cols)
         dataset = []
         lines = [x.strip() for x in lines]
         lines = [x.split(' ') for x in lines]

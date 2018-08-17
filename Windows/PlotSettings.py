@@ -113,10 +113,14 @@ class PlotSettings(QWidget, Ui_PlotSettings):
 
         # set default for comboBox X axis - time or iteration
         try:
-            indx = list(plotOptions.columns.values).index('TimeDriver::Simulation time')
+            indx = list(plotOptions.columns.values).index('Oxs_TimeDriver::Simulation time')
             self.comboBox5[self.GroupCounter].setCurrentIndex(indx)
         except ValueError:
-            pass
+            try:
+                indx = list(plotOptions.columns.values).index('Oxs_MinDriver::Iteration')
+                self.comboBox5[self.GroupCounter].setCurrentIndex(indx)
+            except ValueError:
+                pass
             
         self.radioButton.append(QRadioButton("Run synchronized with Animation",
                                                                         self))
