@@ -34,8 +34,9 @@ class Canvas2Dupgraded(AbstractCanvas):
             self.options['line_style'] = 'None'
 
     def createPlotCanvas(self):
-        self.null_data = np.array([i for i in range(self.internal_iterations)])
+        self.null_data = self.plot_data[self.options['xcolumn']].tolist()
         self.plotWidget.setTitle(self.title)
+        self.plotWidget.setLabel('bottom', self.options['xcolumn'])
         self.plotWidget.setGeometry(0, 0, self.geom[0]-60, self.geom[1]-60)
         self.plotWidget.setXRange(0, self.internal_iterations)
         self.plotWidget.setYRange(np.min(self.graph_data), np.max(self.graph_data),

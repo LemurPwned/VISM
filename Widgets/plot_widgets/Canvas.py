@@ -24,6 +24,7 @@ class Canvas(AbstractCanvas):
 
     def createPlotCanvas(self):
         self.title = self.options['column']
+        self.xcol = self.options['xcolumn']
         self.construct_triggered_plot()
         self.graph_data = self.plot_data[self.title].tolist()
         self.internal_iterations = len(self.graph_data)
@@ -32,13 +33,17 @@ class Canvas(AbstractCanvas):
 
         self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
+        self.null_data = self.plot_data[self.xcol].tolist()
+        """
+        Previous setup called for Time or iteration on the xaxis
+        this is no longer a case
         xlabl = "Time"
         try:
             self.null_data = self.plot_data['TimeDriver::Simulation time'].tolist()
         except KeyError:
             self.null_data = [x for x in range(self.internal_iterations)]
             xlabl = "Iteration"
-
+        """
         self.plot_axis.hpl = self.plot_axis.plot(self.null_data,
                                         self.graph_data[0:self.i] + \
                                         self.null_data[self.i:],
@@ -47,10 +52,10 @@ class Canvas(AbstractCanvas):
                                         marker=self.options['marker'],
                                         markerfacecolor=self.options['marker_color'],
                                         markersize=self.options['marker_size'])[0]
-        self.plot_axis.axis([0, np.max(self.null_data), np.min(self.graph_data),
-                             np.max(self.graph_data)])
+        self.plot_axis.axis([np.min(self.null_data), np.max(self.null_data), 
+                             np.min(self.graph_data),np.max(self.graph_data)])
         self.plot_axis.set_autoscale_on(False)
-        self.plot_axis.set_xlabel(xlabl)
+        self.plot_axis.set_xlabel(self.xcol)
         self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
         if self.synchronizedPlot == False and not self.one_onePlot:
             self.plot_axis.plot(self.graph_data)
@@ -63,6 +68,9 @@ class Canvas(AbstractCanvas):
             """
             return
         self.i %= self.internal_iterations
+        self.plot_axis.hpl.set_xdata(np.pad(self.null_data[:self.i],
+                                    (0, self.internal_iterations - self.i),
+                                    mode='constant', constant_values=(np.nan,)))     
         self.plot_axis.hpl.set_ydata(np.pad(self.graph_data[:self.i],
                                         (0, self.internal_iterations - self.i),
                                     mode='constant', constant_values=(np.nan,)))
