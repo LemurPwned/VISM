@@ -1,59 +1,61 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
                 QVBoxLayout, QRadioButton, QLabel, QSlider, QPushButton, QMessageBox
-from Windows.Templates.PerfOptionsTemplate import Ui_Dialog
-from Windows.SimplePerfOptions import SimplePerfOptions
+from Windows.Templates.ArrowPerfOptionsTemplate import Ui_Dialog
+from Windows.GeneralPerf import GeneralPerf
 from util_tools.PopUp import PopUpWrapper
 import re
 import numpy as np
-from Windows.GeneralPerf import GeneralPerf
+import traceback
 
 
-class PerfOptions(QWidget, Ui_Dialog, GeneralPerf):
+class ArrowPerfOptions(QWidget, Ui_Dialog, GeneralPerf):
     def __init__(self, layer_size=None, object_type='None', parent=None):
-        super(PerfOptions, self).__init__()
-        self.setWindowTitle("Perfomance Options")
+        super(ArrowPerfOptions, self).__init__()
+        self.setWindowTitle("Arrow Perfomance Options")
         self.setupUi(self)
         self.loaded = True
-        self.layer_size = layer_size['znodes'] 
+        self.layer_size = layer_size['znodes']
         if self.layer_size == 1:
             self.checkBox.setEnabled(False)
             self.checkBox.setChecked(True)
 
+        self.resolution = 16
+        self.subsampling = 1
         self.general_initialization()
-        self.initial_options(object_type)
-
         self.basicOptions()
         self.show()
 
-
-    def initial_options(self, object_type):
-        self.default_size = 1
-        self.horizontalSlider_3.setEnabled(True)
-        if object_type == 'CubicGLContext':
-            self.default_size = 5
-            # only one size is allowed
-            self.horizontalSlider_3.setEnabled(True)
-
     def basicOptions(self):
-        self.label.setText("Subsampling: {}".format(self.subsampling))
+        # defaults
+        self.default_size = 2
+        # no decimation but subsampling
+        # no subsampling but resolution
+        self.arrow_label = True
+        self.label_8.setText("Resolution {}".format(self.resolution))
+        self.label.setText("Subsampling {}".format(self.subsampling))
 
         # disable coloring
         self.pushButton_4.clicked.connect(self.reset)
-        self.horizontalSlider.valueChanged.connect(self.subsamplingChange)
-        self.horizontalSlider_2.valueChanged.connect(self.layerChange)
-        self.horizontalSlider_3.valueChanged.connect(self.sizeChange)
 
         # subsampling
-        self.horizontalSlider.setMaximum(8)
+        self.horizontalSlider.setEnabled(True)
+        self.horizontalSlider.setSingleStep(1)
+        self.horizontalSlider.setMaximum(16)
         self.horizontalSlider.setMinimum(1)
         self.horizontalSlider.setValue(self.subsampling)
-        self.horizontalSlider.setSingleStep(1)
 
-        # scale
+        # size
         self.horizontalSlider_3.setMaximum(5)
         self.horizontalSlider_3.setMinimum(1)
         self.horizontalSlider_3.setValue(self.default_size)
         self.horizontalSlider_3.setSingleStep(1)
+
+        # resolution
+        self.horizontalSlider_4.setEnabled(True)
+        self.horizontalSlider_4.setSingleStep(4)
+        self.horizontalSlider_4.setMaximum(32)
+        self.horizontalSlider_4.setMinimum(4)
+        self.horizontalSlider_4.setValue(self.resolution)
 
         # layer
         if not self.loaded:
@@ -65,6 +67,15 @@ class PerfOptions(QWidget, Ui_Dialog, GeneralPerf):
             self.horizontalSlider_2.setValue(3)
             self.horizontalSlider_2.setSingleStep(1)
 
+        self.horizontalSlider.valueChanged.connect(self.subsamplingChange)
+        self.horizontalSlider_2.valueChanged.connect(self.layerChange)
+        self.horizontalSlider_3.valueChanged.connect(self.sizeChange)
+        self.horizontalSlider_4.valueChanged.connect(self.resolutionChange)
+
+    def resolutionChange(self):
+        self.resolution = self.horizontalSlider_4.value()
+        self.label_8.setText("Resolution {}".format(self.resolution))
+
     def optionsVerifier(self):
         # order as follows: color scheme, subsampling, layer
         # checkBox_5 is normalize
@@ -75,7 +86,8 @@ class PerfOptions(QWidget, Ui_Dialog, GeneralPerf):
                             self.horizontalSlider_3.value(),
                             self.parseVectors(),
                             self.color_selection,
-                            self.checkBox_6.isChecked()]
+                            self.checkBox_6.isChecked(),
+                            self.resolution]
         else:
             optionsList = [ self.checkBox_5.isChecked(),
                             self.subsampling,
@@ -83,7 +95,6 @@ class PerfOptions(QWidget, Ui_Dialog, GeneralPerf):
                             self.horizontalSlider_3.value(),
                             self.parseVectors(),
                             self.color_selection,
-                            self.checkBox_6.isChecked()]
+                            self.checkBox_6.isChecked(),
+                            self.resolution]
         return optionsList
-
-

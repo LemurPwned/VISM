@@ -1,4 +1,4 @@
-from AnimatedWidget import AnimatedWidget
+from Widgets.AnimatedWidget import AnimatedWidget
 from PyQt5.QtWidgets import QOpenGLWidget
 import OpenGL.GL as gl
 import OpenGL.GLU as glu
@@ -14,10 +14,10 @@ import numpy as np
 
 from cython_modules.color_policy import multi_iteration_normalize
 from cython_modules.cython_parse import getLayerOutline, genCubes
-from ColorPolicy import ColorPolicy
+from processing.ColorPolicy import ColorPolicy
 from pattern_types.Patterns import AbstractGLContextDecorators
 
-from buildVerifier import BuildVerifier
+from util_tools.buildVerifier import BuildVerifier
 from Windows.Select import Select
 
 import time
@@ -25,10 +25,6 @@ import pygame
 
 class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     PYGAME_INCLUDED = False
-    RECORD_REGION_SELECTION = False
-    SELECTED_POS = None
-    TEXT = None
-
     ANY_GL_WIDGET_IN_VIEW = 0
 
     def __init__(self, parent=None):
@@ -36,7 +32,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         AbstractGLContext.ANY_GL_WIDGET_IN_VIEW += 1
         self.subdir = "GL" + str(AnimatedWidget.WIDGET_ID)
         AnimatedWidget.WIDGET_ID += 1
-        self.lastPos = QPoint()
         self.setFocusPolicy(Qt.StrongFocus)  # needed if keyboard to be active
 
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
@@ -45,7 +40,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.function_select = 'fast'
         self.background = [0.5, 0.5, 0.5]
         self.record = False
-        self.spacer = 0.2
         self.steps = 1
 
         self.display_frames = False
@@ -58,6 +52,15 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.TEXT = None
         self.RECORD_REGION_SELECTION = False
         self.SELECTED_POS = None
+        
+        """ 
+        left mouse must be separately registered
+        because right clicks and left clicks with 
+        large distance between current and last position
+        can lead to rapid rotations 
+        """
+        self.registered_left_mouse = False
+        self.registered_left_mouse_pos = None
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
@@ -73,29 +76,21 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.vectors_list = getLayerOutline(self.file_header)
         self.auto_center()
         # adjust spacing
-        self.spacer *= self.scale
 
         xc = int(self.file_header['xnodes'])
         yc = int(self.file_header['ynodes'])
         zc = int(self.file_header['znodes'])
         # change drawing function
-        self.color_vectors, self.vectors_list, decimate, self.colorX = \
+        self.color_vectors, self.vectors_list, self.colorX = \
                     ColorPolicy.standard_procedure(self.vectors_list,
                                                    self.color_vectors,
                                                    self.iterations,
-                                                   self.averaging,
+                                                   self.subsampling,
                                                    xc, yc, zc,
                                                    self.layer,
                                                    self.vector_set,
-                                                   self.decimate,
-                                                   disableDot=self.disableDot,
-                                                   hyperContrast=self.hyperContrast)
-        if self.normalize:
-            multi_iteration_normalize(self.color_vectors)
-            
-        if decimate is not None:
-            # this is arbitrary
-            self.spacer *= decimate*3
+                                                   color_policy_type=self.color_policy_type,
+                                                   hyperContrast=self.hyperContrast)            
         
     def handleOptionalData(self):
         super().handleOptionalData()
@@ -126,6 +121,10 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
         self.position = [0, 0 , -150]  # xyz initial
+        # reset translational view
+        width = self.geom[0]
+        height = self.geom[1]
+        self.lastPos = QPoint(int(width/2), int(height/2))
 
     def transformate(self):
         """
@@ -140,8 +139,10 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         Initializes openGL context and scenery
         """
         gl.glClearColor(*self.background, 0)
+        
         gl.glEnable(gl.GL_DEPTH_TEST)
         gl.glEnable(gl.GL_POLYGON_SMOOTH)
+        self.initial_transformation()
 
     def resizeGL(self, w, h):
         """
@@ -158,7 +159,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glLoadIdentity()
     
-    # @AbstractGLContextDecorators.recording_decorator
     def paintGL(self):
         """
         Clears the buffer and redraws the scene
@@ -176,6 +176,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
     @AbstractGLContextDecorators.systemDisable
     def text_functionalities(self):
+        """
+        handles text display across OpenGl contexts
+        """
         self.frames +=1
         self.fps_counter()
         if self.display_frames:
@@ -185,11 +188,20 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.text_render(self.TEXT,
                              self.SELECTED_POS)
 
-    def set_i(self, value, trigger=False, record=False):
-        if trigger:
-            self.i += 1
-        else:
-            self.i = value
+    def set_i(self, value, trigger=False, record=False, reset=1):
+        # saving the previous configuration for the sake 
+        # of documentation. Idk where bug occurred, 
+        # that was working fine previously
+        # if trigger:
+        #     # this is due to the fact that reset is on 0
+        #     # some animations can last longer in 3d than in graph
+        #     if reset:
+        #         self.i = 0
+        #     else:
+        #         self.i += 1
+        # else:
+        #     self.i = value  
+        self.i = value      
         self.i %= self.iterations
         self.record = record
 
@@ -244,7 +256,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.position[0] += event.angleDelta().x() / 8 / 2
         else:
             self.position[2] += event.angleDelta().y() / 8 / 2
-
         self.update()
 
     def mousePressEvent(self, event):
@@ -254,7 +265,6 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             y = self.geom[1] - y
             self.SELECTED_POS = (x, y, 0)
             self.RECORD_REGION_SELECTION = False
-            print(self.SELECTED_POS)
 
     def mouseMoveEvent(self, event):
         """
@@ -265,26 +275,26 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         dy = event.y() - self.lastPos.y()
         self.lastPos = event.pos()
         if event.buttons() & Qt.LeftButton:
-            rotation_speed = 0.5
-            if abs(dx) > abs(dy):
-                ang = self.normalize_angle(dx * rotation_speed)
-                self.rotation[0] += ang
-            else:
-                ang = self.normalize_angle(dy * rotation_speed)
-                self.rotation[1] += ang
-
+            if self.registered_left_mouse:
+                dx = event.x() - self.registered_left_mouse_pos.x()
+                dy = event.y() - self.registered_left_mouse_pos.y()
+                rotation_speed = 0.5
+                if abs(dx) > abs(dy):
+                    ang = self.normalize_angle(dx * rotation_speed)
+                    self.rotation[0] += ang
+                else:
+                    ang = self.normalize_angle(dy * rotation_speed)
+                    self.rotation[1] += ang
+            self.registered_left_mouse = True
+            self.registered_left_mouse_pos = event.pos()
         elif event.buttons() & Qt.RightButton:
-            if abs(self.rotation[0])%360 < 90:
-                self.position[0] += dx * 0.2
-            else:
-                self.position[0] -= dx * 0.2
-            self.position[1] -= dy * 0.2
-
+            self.position[0] += dx * 0.4 
+            self.position[1] -= dy * 0.4 
         self.update()
-
+    
     def mouseReleaseEvent(self, event):
-        if event.buttons() & Qt.RightButton:
-            self.lastPos = event.pos()
+        if self.registered_left_mouse:
+            self.registered_left_mouse = False
 
     def normalize_angle(self, angle):
         while angle < 0:
@@ -302,12 +312,14 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             if ((ctime - self.TIME_PASSED) > \
                                     self.FPS_UPDATE_INTERVAL):
                 self.fps = int(self.frames/(ctime - self.TIME_PASSED))
-                _, _, width, height = gl.glGetIntegerv(gl.GL_VIEWPORT)
                 self.TIME_PASSED = ctime
                 self.frames = 0
             self.text_render(str(self.fps))
 
     def text_render(self, textString, position=(100, 100, 0)):
+        """
+        renders a textstring into an OpenGl scene
+        """
         if not AbstractGLContext.PYGAME_INCLUDED:
             pygame.init()
             AbstractGLContext.PYGAME_INCLUDED = True

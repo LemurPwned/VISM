@@ -1,4 +1,4 @@
-from AnimatedWidget import AnimatedWidget
+from Widgets.AnimatedWidget import AnimatedWidget
 from matplotlib.figure import Figure
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas)

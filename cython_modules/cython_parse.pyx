@@ -3,6 +3,7 @@ import pandas as pd
 import struct
 cimport cython
 
+
 def getFileHeader(filename):
     """
     .omf format reader
@@ -29,6 +30,7 @@ def getFileHeader(filename):
     f.close()
     return file_header
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def normalized(array, axis=-1, order=2):
@@ -36,11 +38,31 @@ def normalized(array, axis=-1, order=2):
     l2[l2==0] = 1
     return array / np.expand_dims(l2, axis)
 
+def parseODTColumn(line):
+    cols = []
+    line = line.replace('# Columns: ', '')
+    while line != "":
+        if line[0] == '{':
+            patch = line[1:line.index('}')]
+            if patch != '':
+                cols.append(patch)
+            line = line[line.index('}')+1:]
+        else:
+            try:
+                patch = line[:line.index(' ')]
+                if patch != '':
+                    cols.append(patch)
+                line = line[line.index(' ')+1:]
+            except ValueError:
+                line = ""
+                break
+    return cols
+
 def getPlotData(filename):
     """
     Reads .odt of .txt file
-    @param filename is .odt file path
-    @return dataFrame and stages number
+    @param: filename is .odt file path
+    @return: dataFrame and stages number
     """
     if filename.endswith('.txt'):
         df = pd.read_table(filename)
@@ -58,13 +80,7 @@ def getPlotData(filename):
             lines = f.readlines()
         f.close()
         cols = header[-1]
-        cols = cols.replace("} ", "")
-        cols = cols.replace("{", "")
-        cols = cols.replace("MF", "Oxs_MF")
-        cols = cols.replace("PBC", "Oxs_PBC")        
-        cols = cols.split("Oxs_")
-        del cols[0]
-        cols = [x.strip() for x in cols]
+        cols = parseODTColumn(cols)
         dataset = []
         lines = [x.strip() for x in lines]
         lines = [x.split(' ') for x in lines]
@@ -84,12 +100,13 @@ def getPlotData(filename):
     else:
         raise ValueError("Unsupported extension {}".format(filename))
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def getRawVectors(filename):
     """
     processes a .omf filename into a numpy array of vectors
-    @param .omf text file
+    @param: .omf text file
     @return returns raw_vectors from fortran lists
     """
     raw_vectors = []
@@ -107,14 +124,10 @@ def getLayerOutline(file_header, unit_scaler=1e9):
     """
     constructs the vector outline of each layer, this is a shell that
     colors function operate on (masking)
-    @param file_header is a dictionary form .omf file
-    @param unit_scaler is a unit scaler of dictionary, it indicates
+    @param: file_header is a dictionary form .omf file
+    @param: unit_scaler is a unit scaler of dictionary, it indicates
             how much a value stored in a dictionary should be
             multiplied to get a proper unit scale
-    @param averaging determines how many vectors to skip before taking the
-            next one. Must be alligned with other averaging parameters in
-            functions like getRawVectors
-    @param layer_skip determines if just one layer should be plotted
     @return returns a proper list of vectors creating layer outlines
     """
     xc = int(file_header['xnodes'])
@@ -127,9 +140,11 @@ def getLayerOutline(file_header, unit_scaler=1e9):
             for z in range(zc) for y in range(yc) for x in range(xc)]
     return layers_outline
 
+
 def process_header(headers):
   """
   processes the header of each .omf file and return base_data dict
+  @param: headers specifies header from .omf file
   """
   final_header = {}
   headers = headers.replace(' ', "")
@@ -145,9 +160,13 @@ def process_header(headers):
               final_header[components[0]] = components[1]
   return final_header
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def binary_format_reader(filename):
+  """
+  Reads binary formatted .omf or .ovf files
+  """
   header_part = ""
   rawVectorData = None
   header = None
@@ -185,6 +204,9 @@ def standard_vertex_mode(f, k, struct_object, buff):
 
 
 def decode_byte_size(byte_format_specification):
+    """
+    infers byte format based on IEEE header format specification 
+    """
     if byte_format_specification == b'# Begin: Data Binary 4\n':
         # float precision - 4 bytes
         fmt = 'f'
@@ -201,76 +223,119 @@ def decode_byte_size(byte_format_specification):
         raise TypeError("Unknown byte specification {}".format(
                                             str(byte_format_specification)))
 
-def genCubes(layer_outline, spacer):
-    layer_cubed = np.array([cube2(x, spacer)
+def genCubes(layer_outline, dims):
+    layer_cubed = np.array([cube2(x, dims)
                                     for x in layer_outline]).flatten()
     return layer_cubed, len(layer_cubed)/3
 
-def cube(vec, spacer=0.1):
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def subsample(xc, yc, zc, subsample=2):
+    """
+    creates subsampling index list given number of 
+    nodes in each direction and with subsampling given with subsample
+    Algorithms subsamples a Fortran-ordered list (row major order)
+    @param xc: nodes (cells) in x direction
+    @param yc: nodes (cells) in y direction
+    @param zc: nodes (cells) in z direction
+    @param subsample: nth cell is taken in a given direction if n = subsampling
+    """
+    xskip = 0
+    yskip = 0
+    zskip = 0
+    index_mask = []
+    list_length = xc*yc*zc
+    for i in range(list_length):
+        if (not xskip%subsample) and (not yskip%subsample) and (not zskip%subsample):
+            index_mask.append(i)
+        xskip+=1
+        if xskip%xc == 0:
+            yskip+=1
+            xskip = 0
+            if yskip%yc == 0:           
+                zskip+=1
+                yskip = 0
+    return np.array(index_mask, dtype=np.int)
+
+
+def cube(vec, dims=(0.1, 0.1, 0.1)):
+    """
+    Generates a cuboid with a dimensions specified 
+    with front face bottom left corner at vec position
+    @param vec: coordinates of face bottom left vertex
+    @param dims: dimensions of cuboid (x, y, z)
+    """
     vertex_list =[
-        vec[0]+spacer, vec[1], vec[2]+spacer,
-        vec[0], vec[1], vec[2]+spacer,
-        vec[0], vec[1]+spacer, vec[2]+spacer,
-        vec[0]+spacer, vec[1]+spacer, vec[2]+spacer,
+        # TOP FACE
+        vec[0]+dims[0], vec[1], vec[2]+dims[2],
+        vec[0], vec[1], vec[2]+dims[2],
+        vec[0], vec[1]+dims[1], vec[2]+dims[2],
+        vec[0]+dims[0], vec[1]+dims[1], vec[2]+dims[2],
         #BOTTOM FACE
-        vec[0]+spacer, vec[1], vec[2],
+        vec[0]+dims[0], vec[1], vec[2],
         vec[0], vec[1], vec[2],
-        vec[0], vec[1]+spacer, vec[2],
-        vec[0]+spacer, vec[1]+spacer, vec[2],
+        vec[0], vec[1]+dims[1], vec[2],
+        vec[0]+dims[0], vec[1]+dims[1], vec[2],
         #FRONT FACE
-        vec[0]+spacer, vec[1]+spacer, vec[2]+spacer,
-        vec[0], vec[1]+spacer, vec[2]+spacer,
-        vec[0], vec[1]+spacer, vec[2],
-        vec[0]+spacer, vec[1]+spacer, vec[2],
+        vec[0]+dims[0], vec[1]+dims[1], vec[2]+dims[2],
+        vec[0], vec[1]+dims[1], vec[2]+dims[2],
+        vec[0], vec[1]+dims[1], vec[2],
+        vec[0]+dims[0], vec[1]+dims[1], vec[2],
         #BACK FACE
-        vec[0]+spacer, vec[1], vec[2]+spacer,
-        vec[0], vec[1], vec[2]+spacer,
+        vec[0]+dims[0], vec[1], vec[2]+dims[2],
+        vec[0], vec[1], vec[2]+dims[2],
         vec[0], vec[1], vec[2],
-        vec[0]+spacer, vec[1], vec[2],
+        vec[0]+dims[0], vec[1], vec[2],
         #RIGHT FACE
-        vec[0]+spacer, vec[1], vec[2]+spacer,
-        vec[0]+spacer, vec[1]+spacer, vec[2]+spacer,
-        vec[0]+spacer, vec[1]+spacer, vec[2],
-        vec[0]+spacer, vec[1], vec[2],
+        vec[0]+dims[0], vec[1], vec[2]+dims[2],
+        vec[0]+dims[0], vec[1]+dims[1], vec[2]+dims[2],
+        vec[0]+dims[0], vec[1]+dims[1], vec[2],
+        vec[0]+dims[0], vec[1], vec[2],
         #LEFT FACE
-        vec[0], vec[1]+spacer, vec[2]+spacer,
-        vec[0], vec[1], vec[2]+spacer,
+        vec[0], vec[1]+dims[1], vec[2]+dims[2],
+        vec[0], vec[1], vec[2]+dims[2],
         vec[0], vec[1], vec[2],
-        vec[0], vec[1]+spacer, vec[2]]
+        vec[0], vec[1]+dims[1], vec[2]]
     return vertex_list
 
-def cube2(vec, spacer=0.1):
+
+def cube2(vec, dims=(0.1, 0.1, 0.1)):
+    """
+    Generates cube. In opposition to cube function, this 
+    can generate cubes of any opacity
+    """
     if vec.any():
         vertex_list =[
-            vec[0]+spacer, vec[1], vec[2]+spacer, vec[3],
-            vec[0], vec[1], vec[2]+spacer, vec[3],
-            vec[0], vec[1]+spacer, vec[2]+spacer, vec[3],
-            vec[0]+spacer, vec[1]+spacer, vec[2]+spacer, vec[3],
+            # TOP FACE
+            vec[0]+dims[0], vec[1], vec[2]+dims[2], vec[3],
+            vec[0], vec[1], vec[2]+dims[2], vec[3],
+            vec[0], vec[1]+dims[1], vec[2]+dims[2], vec[3],
+            vec[0]+dims[0], vec[1]+dims[1], vec[2]+dims[2], vec[3],
             #BOTTOM FACE
-            vec[0]+spacer, vec[1], vec[2], vec[3],
+            vec[0]+dims[0], vec[1], vec[2], vec[3],
             vec[0], vec[1], vec[2], vec[3],
-            vec[0], vec[1]+spacer, vec[2], vec[3],
-            vec[0]+spacer, vec[1]+spacer, vec[2], vec[3],
+            vec[0], vec[1]+dims[1], vec[2], vec[3],
+            vec[0]+dims[0], vec[1]+dims[1], vec[2], vec[3],
             #FRONT FACE
-            vec[0]+spacer, vec[1]+spacer, vec[2]+spacer, vec[3],
-            vec[0], vec[1]+spacer, vec[2]+spacer, vec[3],
-            vec[0], vec[1]+spacer, vec[2], vec[3],
-            vec[0]+spacer, vec[1]+spacer, vec[2], vec[3],
+            vec[0]+dims[0], vec[1]+dims[1], vec[2]+dims[2], vec[3],
+            vec[0], vec[1]+dims[1], vec[2]+dims[2], vec[3],
+            vec[0], vec[1]+dims[1], vec[2], vec[3],
+            vec[0]+dims[0], vec[1]+dims[1], vec[2], vec[3],
             #BACK FACE
-            vec[0]+spacer, vec[1], vec[2]+spacer, vec[3],
-            vec[0], vec[1], vec[2]+spacer, vec[3],
+            vec[0]+dims[0], vec[1], vec[2]+dims[2], vec[3],
+            vec[0], vec[1], vec[2]+dims[2], vec[3],
             vec[0], vec[1], vec[2], vec[3],
-            vec[0]+spacer, vec[1], vec[2], vec[3],
+            vec[0]+dims[0], vec[1], vec[2], vec[3],
             #RIGHT FACE
-            vec[0]+spacer, vec[1], vec[2]+spacer, vec[3],
-            vec[0]+spacer, vec[1]+spacer, vec[2]+spacer, vec[3],
-            vec[0]+spacer, vec[1]+spacer, vec[2], vec[3],
-            vec[0]+spacer, vec[1], vec[2], vec[3],
+            vec[0]+dims[0], vec[1], vec[2]+dims[2], vec[3],
+            vec[0]+dims[0], vec[1]+dims[1], vec[2]+dims[2], vec[3],
+            vec[0]+dims[0], vec[1]+dims[1], vec[2], vec[3],
+            vec[0]+dims[0], vec[1], vec[2], vec[3],
             #LEFT FACE
-            vec[0], vec[1]+spacer, vec[2]+spacer, vec[3],
-            vec[0], vec[1], vec[2]+spacer, vec[3],
+            vec[0], vec[1]+dims[1], vec[2]+dims[2], vec[3],
+            vec[0], vec[1], vec[2]+dims[2], vec[3],
             vec[0], vec[1], vec[2], vec[3],
-            vec[0], vec[1]+spacer, vec[2], vec[3]]
+            vec[0], vec[1]+dims[1], vec[2], vec[3]]
         return vertex_list
     else:
         return np.zeros(96)

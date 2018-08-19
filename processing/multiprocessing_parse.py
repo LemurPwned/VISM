@@ -131,7 +131,7 @@ class MultiprocessingParse:
             if .odt - odt_data, stages
             if .omf || .ovf - rawVectorData, header
         """
-        if ".odt" in path:
+        if ".odt" in path or ".txt" in path:
             odt_data, stages = getPlotData(path)
             return odt_data, stages
 
@@ -163,7 +163,6 @@ class MultiprocessingParse:
 
         files_in_directory, ext = MultiprocessingParse.guess_file_type(
                                                                     directory)
-        # ext_files = glob.glob(os.path.join(directory, '*' + ext[0]))
         test_file = os.path.join(directory, files_in_directory[0])
 
         stages = len(files_in_directory)
@@ -182,11 +181,24 @@ class MultiprocessingParse:
             print(stages0, stages)
             if stages0 != stages:
                 if stages0 > stages:
+                    """
+                    stages0 is number of row entries in plot_file e.g. .odt
+                    stages is number of vector files e.g. .omf
+                    So if stages0 > stages that means that plot datapoints
+                    are more dense than animation. For example, each of the 
+                    animation frames should get more than one datapoints 
+                    of the plot: 1 frame has 0-22 plot datapoints, 
+                    2 frame 23-40 etc. Intervals are not always equal!
+                    """
                     trigger_list = MultiprocessingParse.\
                                         compose_trigger_list(files_in_directory,
                                                                     plot_data)
                     stages = len(trigger_list)
                 elif stages0 < stages:
+                    """
+                    for now we assume that there cannot be more than one 
+                    video frames per one data plot
+                    """
                     raise ValueError("Odt cannot have fewer stages that files")
         else:
             plot_data = None

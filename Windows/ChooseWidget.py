@@ -6,10 +6,9 @@ class ChooseWidget(QtWidgets.QWidget):
     def __init__(self, number, blockStructures=False, blockIterables=False,
                     blockPlotIterables=False, parent=None):
         super(ChooseWidget, self).__init__()
-        self.__WIDGET_LOC__ = "Windows/widget_pane.json"
+        self.__WIDGET_LOC__ = "Widgets/widget_pane.json"
         self.json_file_handler = None
-        self.alias_list = ["3D cubes", "3D arrows", "2D plot", "2D layer plot",
-                           "Better 2D plot"]
+
         self._BLOCK_STRUCTURES_ = blockStructures
         self._BLOCK_ITERABLES_ = blockIterables
         if not self._BLOCK_ITERABLES_:
@@ -43,7 +42,7 @@ class ChooseWidget(QtWidgets.QWidget):
                     self.close()
                     return
         else:
-            print("JSON FILE NOT LOADED!")
+            raise FileNotFoundError("widget_pane.json was not found in {}".format(self.__WIDGET_LOC__))
             if self.list.currentItem().text() == "3D cubes":
                 self.handler([self.number, "3D_CUBIC"])
             elif self.list.currentItem().text() == "2D plot":

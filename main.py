@@ -1,4 +1,4 @@
-from buildVerifier import BuildVerifier
+from util_tools.buildVerifier import BuildVerifier
 # verify build
 # execute makefile
 if BuildVerifier.OS_GLOB_SYS == "Windows":
@@ -10,20 +10,21 @@ else:
 import sys
 import threading
 
-from workerthreads import *
+from processing.workerthreads import *
 
 from PyQt5 import QtWidgets, QtCore
-from Windows.MainWindowTemplate import Ui_MainWindow
 
-from multiprocessing_parse import MultiprocessingParse
-
+# template imports
+from Windows.Templates.MainWindowTemplate import Ui_MainWindow
 from Windows.ChooseWidget import ChooseWidget
 from Windows.PlayerWindow import PlayerWindow
 
-from WidgetHandler import WidgetHandler
+from processing.multiprocessing_parse import MultiprocessingParse
+from multiprocessing import TimeoutError
 
-from PopUp import PopUpWrapper
-from Windows.Progress import ProgressBar
+from Widgets.WidgetHandler import WidgetHandler
+
+from util_tools.PopUp import PopUpWrapper
 
 from settingsMediator.settingsPrompter import SettingsPrompter
 from settingsMediator.settingsLoader import DataObjectHolder
@@ -33,16 +34,20 @@ from video_utils.video_composer import Movie
 from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas,
                                     NavigationToolbar2QT as NavigationToolbar)
 from pattern_types.Patterns import MainContextDecorators
+
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
+from Windows.Progress import ProgressBar
+
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.doh = DataObjectHolder()
         self.sp = SettingsPrompter(None)
-        
         self.plot_data = ""
         self.setupUi(self)
+        # we cannot add menu actions from QT Designer level
+        self.playerAction = self.menubar.addAction("Player")
         self.setWindowTitle("ESE - Early Spins Environment")
         app = QtCore.QCoreApplication.instance()
         screen_resolution = app.desktop().screenGeometry()
@@ -56,8 +61,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self._BLOCK_ITERABLES_ = True
         self._BLOCK_STRUCTURES_ = True
         self._BLOCK_PLOT_ITERABLES_ = True
-
-        self.actionAnimation.setDisabled(self._BLOCK_ITERABLES_)
 
         # keeps all widgets in list of library object that handles Widgets
         self.panes = []
@@ -74,9 +77,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.actionLoad_Directory.triggered.connect(self.loadDirectoryWrapper)
         self.actionLoad_File.triggered.connect(self.loadFile)
 
+        # ANIMATION MENU
+        self.playerAction.triggered.connect(self.showAnimationSettings)
         # EDIT SUBMENU
-        self.actionAnimation.triggered.connect(self.showAnimationSettings)
-
         self.actionWindow0Delete.triggered.connect(lambda: self.deleteWidget(0))
         self.actionWindow1Delete.triggered.connect(lambda: self.deleteWidget(1))
         self.actionWindow2Delete.triggered.connect(lambda: self.deleteWidget(2))
@@ -111,7 +114,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.resize(self.width() - 1, self.height())
         self.resize(self.width() + 1, self.height())
 
-        self.actionAnimation.setDisabled(self._BLOCK_ITERABLES_)
+        self.playerAction.setDisabled(self._BLOCK_ITERABLES_)
 
     def resizeEvent(self, event):
         """What happens when window is resized"""
@@ -184,7 +187,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                             QtWidgets.QMessageBox.No, self.refreshScreen, self.loadFile)
             return 0
 
-        if ".odt" in fileLoaded:
+        if ".odt" in fileLoaded or ".txt" in fileLoaded:
             self.doh.passListObject(('plot_data', 'iterations'),
                                         *MultiprocessingParse.readFile(fileLoaded))
             self._BLOCK_ITERABLES_ = False
@@ -195,8 +198,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                         *MultiprocessingParse.readFile(fileLoaded))
             self._BLOCK_STRUCTURES_ = False
         else:
-            raise ValueError("main.py/loadFile: File format is not supported!")
-
+            msg = "Invalid file: {}.".format(fileLoaded)
+            PopUpWrapper("Invalid file", msg, None, QtWidgets.QMessageBox.Yes,
+                            QtWidgets.QMessageBox.No, self.refreshScreen,
+                            self.loadDirectoryWrapper, parent=self)
+            self._LOADED_FLAG_ = False
+            return -1
         self._LOADED_FLAG_ = True
         return 1
 
@@ -305,7 +312,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             # animation is running and this is may be not first window
             if self.playerWindow.worker.running:
                 PopUpWrapper("Alert",
-                             "You may loose calculation!" +
+                             "You may lose calculation!" +
                              " If you proceed animation will be restarted!", \
                              None,
                              QtWidgets.QMessageBox.Yes, \
@@ -363,10 +370,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.doh.setDataObject(options, 'options')
         self.doh.setDataObject(self.screenshot_dir, 'screenshot_dir')
 
-        self.panes[self.current_pane].addWidget(\
+        try:
+            self.panes[self.current_pane].addWidget(\
                 self.sp.build_chain(self.current_widget_alias, self.doh, self))
+        except (MemoryError, TimeoutError):
+            x = PopUpWrapper("Insufficient resource", msg="You ran out of memory for this calculation" 
+                    + "or timeout appeared. "+"It is suggested to increase subsampling or decrease resolution",
+                    more="You can do that in settings menu")
+            self.deleteWidget(self.current_pane, null_delete=True)
+            self.refreshScreen()
+            return
         self.constructWidgetToolbar(self.panes[self.current_pane])
         # that fixes the problem of having not all slots filled in groupBox
+
         if self.playerWindow != None:
             self.refreshIterators()
         self.propagate_resize()
@@ -417,7 +433,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         if self.playerWindow:
             if verbose:
                 PopUpWrapper("Alert",
-                    "You may loose calculation!", \
+                    "You may lose calculation!", \
                     "If you proceed animation will be restarted and widget \
                     will be deleted!", \
                     QtWidgets.QMessageBox.Yes, \
@@ -432,7 +448,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         """
         null delete explanation:
         for some unknown reason if clearBox() is called on the pane
-        that has no widget that causes a major bug
+        that has no widget, it causes a major bug
         Therefore if cancel was pressed and no widget was created - hence
         null_delete, then do not call
         """
@@ -451,7 +467,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                     geom = (self.panes[i].groupBox.width(),
                             self.panes[i].groupBox.height())
                     self.panes[i].widget.on_resize_geometry_reset(geom)
-                except (AttributeError, RuntimeError) as ae:
+                    self.panes[i].widget.initial_transformation()
+                except (AttributeError, RuntimeError, NameError) as ae:
                     pass
                     # allow this, should implement this function but pass anyway
         self.refreshScreen()
@@ -473,8 +490,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[3].hide()
         WidgetHandler.visibleCounter = 1
 
-        self.propagate_resize()
         self.refreshScreen()
+        self.propagate_resize()
 
         self.actionWindow1Delete.setDisabled(True)
         self.actionWindow2Delete.setDisabled(True)
@@ -487,8 +504,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[3].hide()
         WidgetHandler.visibleCounter = 2
 
-        self.propagate_resize()
         self.refreshScreen()
+        self.propagate_resize()
 
         self.actionWindow1Delete.setDisabled(False)
         self.actionWindow2Delete.setDisabled(True)
@@ -501,8 +518,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.panes[3].show()
         WidgetHandler.visibleCounter = 4
 
-        self.propagate_resize()
         self.refreshScreen()
+        self.propagate_resize()
         self.actionWindow1Delete.setDisabled(False)
         self.actionWindow2Delete.setDisabled(False)
         self.actionWindow3Delete.setDisabled(False)

@@ -21,7 +21,7 @@ class PlayerWindow(QtCore.QObject):
             self.worker.moveToThread(self.worker_thread)
             self.worker_thread.start()
         else:
-            #worker already exists, load it's data
+            # worker already exists, load it's data
             if self.worker.running:
                 self.gui.button_start.setText("Pause")
 
@@ -50,11 +50,8 @@ class PlayerWindow(QtCore.QObject):
             print(msg)
             for element in self.gui.elements:
                 element.setEnabled(False)
-
             return False
-
         return True
-
 
     def reloadGui(self):
         if self.checkForErrors():
@@ -90,7 +87,6 @@ class PlayerWindow(QtCore.QObject):
             self.gui.button_start.setText("Play")
 
     def forceWorkerReset(self):
-        # if self.worker_thread.isRunning():
         self.worker.running = False
         self.gui.button_start.setText("Play")
         self.worker.resetIterator()
@@ -134,6 +130,7 @@ class WorkerObject:
             self._TRIGGER_ = False
             self.trig_len = 0
             self.play = self.standard_play
+            self.reset=False
 
         def passTriggerList(self, trigger):
             self.trigger = trigger
@@ -155,6 +152,7 @@ class WorkerObject:
 
         def resetIterator(self):
             self._iterator = 0
+            self.reset=True
 
         def startWork(self):
             self.play()
@@ -171,12 +169,16 @@ class WorkerObject:
 
         def trigger_play(self):
             while(True):
-                for k in self.trigger:
+                for _ in self.trigger:
                     tm.sleep(1/self._speed)
                     if self.running:
                         self._iterator += 1
+                        self._iterator %= self.trig_len
                         for i in self.widgetIterators:
-                            i(k, trigger=True, record=PlayerWindow.RECORD)
+                            i(self._iterator, trigger=True, 
+                              record=PlayerWindow.RECORD,
+                              reset=self.reset)
+                        self.reset = False
                     if not self.running:
                         break
 
@@ -185,7 +187,7 @@ class WorkerObject:
             if self._TRIGGER_:
                 self._iterator %= self.trig_len
                 for i in self.widgetIterators:
-                    i(self.trigger[self._iterator], trigger=True)
+                    i(self._iterator, trigger=True)
             else:
                 for i in self.widgetIterators:
                     i(self._iterator)
@@ -227,7 +229,6 @@ class Window(QtWidgets.QWidget):
         self.slider_speed.setMinimum(1)
         self.slider_speed.setValue(10)
         self.slider_speed.setSingleStep(1)
-        #self.label_status = QtWidgets.QLabel('test', self)
 
         self.elements.append(self.button_start)
         self.elements.append(self.button_stop)
@@ -244,7 +245,6 @@ class Window(QtWidgets.QWidget):
         layout.addWidget(self.button_start,0,1)
         layout.addWidget(self.button_stop,0,2)
         layout.addWidget(self.button_nextFrame,0,3)
-        #layout.addWidget(self.label_status)
 
         layout2 = QtWidgets.QVBoxLayout()
         layoutin2_1 = QtWidgets.QHBoxLayout()

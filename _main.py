@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from main import MainWindow
-from multiprocessing_parse import MultiprocessingParse
+from processing.multiprocessing_parse import MultiprocessingParse
 from Canvas import Canvas
 from CanvasLayer import CanvasLayer
 from openGLContext import OpenGLContext

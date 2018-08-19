@@ -1,5 +1,7 @@
 import OpenGL.GL as gl
 import numpy as np
+import time as tm
+import ctypes
 
 from PyQt5.QtWidgets import QWidget
 
@@ -8,10 +10,8 @@ from cython_modules.cython_parse import getLayerOutline, genCubes
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 from pattern_types.Patterns import AbstractGLContextDecorators
 
-from ColorPolicy import ColorPolicy
-from workerthreads import *
+from processing.ColorPolicy import ColorPolicy
 
-import time as tm
 
 
 class CubicGLContext(AbstractGLContext, QWidget):
@@ -22,7 +22,6 @@ class CubicGLContext(AbstractGLContext, QWidget):
         self.vertices = 0
         self.buffers = None
         self.buffer_len = 0
-        self.scale = 5
 
         self.prerendering_calculation()
         self.drawing_function = self.vbo_cubic_draw
@@ -32,11 +31,11 @@ class CubicGLContext(AbstractGLContext, QWidget):
         if self.function_select == 'fast':
             self.drawing_function = self.vbo_cubic_draw
             self.buffers = None
-            # if vbo drawing is selected, do additional processing
-            self.vectors_list, self.vertices = genCubes(self.vectors_list,
-                                                                    self.spacer)
+            dims = (self.file_header['xbase']*1e9*self.subsampling,
+                    self.file_header['ybase']*1e9*self.subsampling,
+                    self.file_header['zbase']*1e9)
+            self.vectors_list, self.vertices = genCubes(self.vectors_list, dims)
             self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors)
-
             # TODO: temporary fix, dont know why x4, should not be multiplied
             # at all!
             self.buffer_len = len(self.color_vectors[0])*4
@@ -77,59 +76,39 @@ class CubicGLContext(AbstractGLContext, QWidget):
         gl.glEnableClientState(gl.GL_COLOR_ARRAY)
         # bind vertex buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
-        gl.glVertexPointer(4, gl.GL_FLOAT, 0, None)
+        gl.glVertexPointer(4, gl.GL_FLOAT, 0, ctypes.c_void_p(0))
         # bind color buffer
+
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
-        gl.glColorPointer(3, gl.GL_FLOAT, 0, None)
+        gl.glColorPointer(3, gl.GL_FLOAT, 0, ctypes.c_void_p(0))
 
         gl.glDrawArrays(gl.GL_QUADS, 0, int(self.vertices))
 
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
-    @AbstractGLContextDecorators.recording_decorator
-    def slower_cubic_draw(self):
-        for vector, color in zip(self.vectors_list, self.color_vectors[self.i]):
-            gl.glColor3f(*color)
-            self.draw_cube(vector)
-
-    def draw_cube(self, vec):
+def compute_normals_cubes(vertex_values):  
+    """
+    each cube has 8 faces. there is cube_number*8 faces in total
+    each face is composed of 4 vertices
+    """
+    print(len(vertex_values))
+    v_length = int(len(vertex_values)/3)-9
+    max_range = int(len(vertex_values)/3)
+    normals_vbo = np.ndarray(shape=(max_range, 3), dtype=np.float32)
+    faces_number = int(len(vertex_values)/3/4) # div by 3 to get a vertex number, div by 4 to get face number
+    normal = np.array([0,0,0], dtype=np.float32)
+    i = 0
+    while(i < v_length-9):
         """
-        draws basic cubes separated by spacer value
-        :param vec (x,y,z) coordinate specifying bottom left face corner
+        given triangle with vertices A, B, C, any normal computed
+        on the face plane is determined by a result of a 
+        cross product which is (B - A) x (C - A) resulting in a normal
         """
-        # TOP FACE
-        gl.glBegin(gl.GL_QUADS)
-        gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2] + self.spacer)
-        gl.glVertex3f(vec[0], vec[1], vec[2] + self.spacer)
-        gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2] + self.spacer)
-        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2] + \
-                    self.spacer)
-        # BOTTOM FACE
-        gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2])
-        gl.glVertex3f(vec[0], vec[1], vec[2])
-        gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2])
-        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2])
-        # FRONT FACE
-        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2] + \
-                    self.spacer)
-        gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2] + self.spacer)
-        gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2])
-        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2])
-        # BACK FACE
-        gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2] + self.spacer)
-        gl.glVertex3f(vec[0], vec[1], vec[2] + self.spacer)
-        gl.glVertex3f(vec[0], vec[1], vec[2])
-        gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2])
-        # RIGHT FACE
-        gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2] + self.spacer)
-        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2] + \
-                    self.spacer)
-        gl.glVertex3f(vec[0] + self.spacer, vec[1] + self.spacer, vec[2])
-        gl.glVertex3f(vec[0] + self.spacer, vec[1], vec[2])
-        # LEFT FACE
-        gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2] + self.spacer)
-        gl.glVertex3f(vec[0], vec[1], vec[2] + self.spacer)
-        gl.glVertex3f(vec[0], vec[1], vec[2])
-        gl.glVertex3f(vec[0], vec[1] + self.spacer, vec[2])
-        gl.glEnd()
+        normal += (1/8)*np.cross(vertex_values[i+3:i+6] - vertex_values[i:i+3],
+                                           vertex_values[i+6:i+9] - vertex_values[i:i+3])
+        if i%faces_number==0 and i >0:
+            normals_vbo[i, :] = normal
+            normal = np.array([0,0,0])
+        i += 9
+    return normals_vbo.flatten()

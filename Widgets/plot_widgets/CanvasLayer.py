@@ -2,7 +2,7 @@ from matplotlib import cm
 import numpy as np
 from pattern_types.Patterns import AbstractGLContextDecorators
 from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
-from multiprocessing_parse import asynchronous_pool_order
+from processing.multiprocessing_parse import asynchronous_pool_order
 from cython_modules.color_policy import multi_iteration_normalize, \
                                         multi_iteration_dot_product, \
                                         calculate_layer_colors
@@ -85,12 +85,9 @@ class CanvasLayer(AbstractCanvas):
         dx, dy = np.meshgrid(x, y)
         return copy_color_vectors, dx, dy
 
-    def set_i(self, value, trigger=False, record=False):
-        if trigger:
-            self.i += 1
-        else:
-            self.i = value
+    def set_i(self, value, trigger=False, record=False, reset=1):
+        self.i = value      
         self.i %= self.iterations
+        self.record = record
         self.replot()
         self.plot_axis.get_figure().canvas.draw()
-        self.record = record

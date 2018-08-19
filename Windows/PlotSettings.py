@@ -1,9 +1,9 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
                 QVBoxLayout, QRadioButton, QLabel, QSlider, QPushButton, \
-                QColorDialog
+                QColorDialog, QSplitter
 from PyQt5 import QtCore, QtGui
-from Windows.PlotSettingsTemplate import Ui_PlotSettings
+from Windows.Templates.PlotSettingsTemplate import Ui_PlotSettings
 import numpy as np
 from pattern_types.Patterns import MainContextDecorators
 
@@ -12,6 +12,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.saved_parent = parent
         super(PlotSettings, self).__init__()
         self.setupUi(self)
+        self.toDelete = False
         self.GroupCounter = 0
         if len(plotOptions) == 0:
             self.showMessage("There is no data to show. Load data with File > Load Directory")
@@ -22,21 +23,21 @@ class PlotSettings(QWidget, Ui_PlotSettings):
             self.comboBox2 = []
             self.comboBox3 = []
             self.comboBox4 = []
-
+            self.comboBox5 = []
             self.radioButton = []
 
-            for i in range(gridSize):
+            for _ in range(gridSize):
                 self.additionalSetup(plotOptions)
 
         if parent != None:
             self.setGeometry(parent.width()/2 - 350/2,
                              parent.height()/2 - 400/2,
-                             300, 400)
+                             300, 500)
         else:
             app = QtCore.QCoreApplication.instance()
             screen_resolution = app.desktop().screenGeometry()
             width, height = screen_resolution.width(), screen_resolution.height()
-            self.setGeometry((width - 300)/2, (height - 400)/2, 300, 400)
+            self.setGeometry((width - 300)/2, (height - 400)/2, 300, 500)
         self.eventListeners()
         self.setWindowTitle("Plot Settings")
         self.gridLayout_2.addWidget(self.buttonBox, 4, 0, 1, 2)
@@ -75,9 +76,10 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         groupBox = QGroupBox("Plot"+str(self.GroupCounter), self)
         groupLayout = QVBoxLayout(self) #layout to put in group
 
-        self.comboBox.append(QComboBox(self))
-        self.comboBox3.append(QComboBox(self))
-        self.comboBox4.append(QComboBox(self))
+        self.comboBox.append(QComboBox(self)) # holds options
+        self.comboBox5.append(QComboBox(self))
+        self.comboBox3.append(QComboBox(self)) # holds markers
+        self.comboBox4.append(QComboBox(self)) # holds lines
 
 
         #set options
@@ -101,20 +103,35 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         self.slider_markersize.setMinimum(1)
         self.slider_markersize.setValue(3)
         self.slider_markersize.setSingleStep(1)
-        for option in plotOptions:
+        for option in plotOptions.columns:
             self.comboBox[self.GroupCounter].addItem(option)
+            self.comboBox5[self.GroupCounter].addItem(option)
         for marker in markerOptions:
             self.comboBox3[self.GroupCounter].addItem(marker)
         for line in linestyleOptions:
             self.comboBox4[self.GroupCounter].addItem(line)
 
+        # set default for comboBox X axis - time or iteration
+        try:
+            indx = list(plotOptions.columns.values).index('Oxs_TimeDriver::Simulation time')
+            self.comboBox5[self.GroupCounter].setCurrentIndex(indx)
+        except ValueError:
+            try:
+                indx = list(plotOptions.columns.values).index('Oxs_MinDriver::Iteration')
+                self.comboBox5[self.GroupCounter].setCurrentIndex(indx)
+            except ValueError:
+                pass
+            
         self.radioButton.append(QRadioButton("Run synchronized with Animation",
                                                                         self))
         self.radioButton[self.GroupCounter*2].setChecked(True)
         self.radioButton.append(QRadioButton("Show Plot", self))
         self.radioButton.append(QRadioButton("1-1 synchronize", self))
 
+        groupLayout.addWidget(QLabel("Y axis"))
         groupLayout.addWidget(self.comboBox[self.GroupCounter])
+        groupLayout.addWidget(QLabel("X axis"))
+        groupLayout.addWidget(self.comboBox5[self.GroupCounter])
         groupLayout.addWidget(self.colorButton)
         groupLayout.addWidget(self.markerOptions_label)
         groupLayout.addWidget(self.comboBox3[self.GroupCounter])
@@ -156,6 +173,7 @@ class PlotSettings(QWidget, Ui_PlotSettings):
         i = 0
         param_dict = {
                         'column': self.comboBox[i].currentText(),
+                        'xcolumn': self.comboBox5[i].currentText(),
                         'synchronizedPlot': self.radioButton[i*2].isChecked(),
                         'color': self.color,
                         'line_style': self.comboBox4[i].currentText(),
@@ -166,14 +184,25 @@ class PlotSettings(QWidget, Ui_PlotSettings):
                      }
         self.ret = param_dict
         self.eventHandler(self.ret)
-        self.close()
+        self.toDelete = True
+        self.deleteLater()
 
     def reject(self):
         self.eventHandler(None)
-        self.close()
+        self.toDelete = True
+        self.deleteLater()
 
     def getOptions(self):
         return self.ret
+
+    def closeEvent(self, event):
+        if self.toDelete:
+            self.toDelete = False
+            event.accept()
+        else:
+            self.eventHandler(None)
+            event.accept()
+
 
 '''maybe it's stupid but it works if, we want to return some value from
 our class without using signals we can create function which we pass to o

@@ -1,6 +1,6 @@
 {
     "CubicGLContext": {
-                      "alias": "3D_CUBIC",
+                      "alias": "3D CUBIC",
                       "object": "CubicGLContext",
                       "object_type": "3d_object",
                       "settings": ["PerfOptions", "file_header",
@@ -8,7 +8,7 @@
                       "required": ["current_state", "options",
                                    "file_header", "color_vectors",
                                    "screenshot_dir", "geom"],
-                      "optional": ["iterations"],
+                      "optional": ["iterations", "trigger"],
                       "iterable_type": "structure",
                       "toolbar" : [["Reset", "initial_transformation"],
                                    ["Zoom in", "zoomIn"],
@@ -16,33 +16,16 @@
                                    ["Screenshot", "screenshot_manager"],
                                    ["Text", "popup_text_selector"]]
                       },
-    "VectorGLContext": {
-                      "alias": "3D_VECTOR",
-                      "object": "VectorGLContext",
-                      "object_type": "3d_object",
-                      "settings": ["PerfOptions", "file_header"],
-                      "required": ["current_state", "options",
-                                   "file_header","color_vectors",
-                                   "screenshot_dir", "geom"],
-                      "optional": ["iterations"],
-                      "iterable_type": "structure",
-                      "toolbar" : [["Reset", "initial_transformation"],
-                                   ["Zoom in", "zoomIn"],
-                                   ["Zoom out", "zoomOut"],
-                                   ["Screenshot", "screenshot_manager"],
-                                   ["Text", "popup_text_selector"]]
-                      },
-
     "ArrowGLContext": {
-                      "alias": "3D_ARROW",
+                      "alias": "3D ARROW",
                       "object": "ArrowGLContext",
                       "object_type": "3d_object",
-                      "settings": ["PerfOptions", "file_header", 
+                      "settings": ["ArrowPerfOptions", "file_header", 
                                    "object_alias"],
                       "required": ["current_state", "options",
                                    "file_header","color_vectors",
                                    "screenshot_dir", "geom"],
-                      "optional": ["iterations"],
+                      "optional": ["iterations", "trigger"],
                       "iterable_type": "structure",
                       "toolbar" : [["Reset", "initial_transformation"],
                                                    ["Zoom in", "zoomIn"],
@@ -50,8 +33,24 @@
                                                    ["Screenshot", "screenshot_manager"],
                                                    ["Text", "popup_text_selector"]]
                       },
+    "VectorGLContext": {
+                      "alias": "3D VECTOR",
+                      "object": "VectorGLContext",
+                      "object_type": "3d_object",
+                      "settings": ["PerfOptions", "file_header"],
+                      "required": ["current_state", "options",
+                                    "file_header","color_vectors",
+                                    "screenshot_dir", "geom"],
+                      "optional": ["iterations"],
+                      "iterable_type": "structure",
+                      "toolbar" : [["Reset", "initial_transformation"],
+                                    ["Zoom in", "zoomIn"],
+                                    ["Zoom out", "zoomOut"],
+                                    ["Screenshot", "screenshot_manager"],
+                                    ["Text", "popup_text_selector"]]
+                      },
     "Canvas":         {
-                        "alias": "2D_Matplotlib",
+                        "alias": "2D Matplotlib",
                         "object": "Canvas",
                         "object_type": "2d_object",
                         "settings": ["PlotSettings", "plot_data"],
@@ -62,17 +61,18 @@
                         "toolbar": "NavigationToolbar"
                         },
     "Canvas2Dupgraded": {
-                        "alias": "2D_BetterPlot",
+                        "alias": "2D PyQT",
                         "object": "Canvas2Dupgraded",
                         "object_type": "2d_object",
                         "settings": ["PlotSettings", "plot_data"],
                         "required": ["iterations", "current_state", "options",
                                      "plot_data", "geom", "screenshot_dir"],
                         "optional": ["trigger"],
-                        "iterable_type": "plot"
+                        "iterable_type": "plot",
+                        "toolbar": null
                       },
     "CanvasLayer": {
-                        "alias": "2D_Layer",
+                        "alias": "2D Layer",
                         "object": "CanvasLayer",
                         "object_type": "2d_object",
                         "settings": ["SimplePerfOptions", "file_header"],

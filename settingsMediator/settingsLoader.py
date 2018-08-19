@@ -3,7 +3,7 @@ import imp
 import glob
 import json
 from pattern_types.Patterns import Singleton, DataObjectHolderProxy
-from widget_counter import WidgetCounter
+from pattern_types.widget_counter import WidgetCounter
 
 class DataObjectHolder(metaclass=Singleton):
     def __init__(self):
@@ -27,7 +27,7 @@ class DataObjectHolder(metaclass=Singleton):
 
 class SettingsInterface:
     def __init__(self):
-        self.__WIDGET_LOC__ = "Windows/widget_pane.json"
+        self.__WIDGET_LOC__ = "Widgets/widget_pane.json"
         self.widget_pane_handler = json.load(open(self.__WIDGET_LOC__))
 
     def evaluate_string_as_class_object(self, obj_str, object_type,
