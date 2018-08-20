@@ -138,10 +138,19 @@ class ColorPolicy:
             outline = outline[index_list, :]
             expected_color_shape = (iterations, zc*xc*yc, 3)
             expected_outline_shape = (zc*xc*yc, 3)
+
+        """
+        change that line below
+        it might happen that first iteration is not representative?
+        """
         outline = ColorPolicy.pad_4f_vertices(color[0], outline)
         # opacity has been added so change expected shapes
         expected_outline_shape = (zc*xc*yc, 4)
-        # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized
+
+        # copy original color for arrows
+        multi_iteration_normalize(color)
+        original_color = np.copy(color)
+
         if hyperContrast:
             hyper_contrast_calculation(color, xc, yc, zc)
         try:
@@ -150,19 +159,15 @@ class ColorPolicy:
             msg = "invalid shape color expected {} was {}".format(expected_color_shape, 
                                                             color.shape)
             raise AssertionError(msg)
-
+        # input is in form (iterations, zc*yc*xc, 3) and vectors are normalized        
         vector_set = np.array(vector_set).astype(np.float32)
-        # copy original color for arrows
-        original_color = np.copy(color)
-
         # normalize all vectors
-        multi_iteration_normalize(color)
         if color_policy_type == 'Standard':
             for i in range(0, iterations):
                 color[i, :, :] = multi_iteration_cross_color(color[i], 
                                                                     vector_set[0],
-                                                                    vector_set[1],
-                                                                    vector_set[2])
+                                                                    vector_set[2],
+                                                                    vector_set[1])
         else:
             for i in range(0, iterations):
                 color[i, :, :] = multi_iteration_dot_product(color[i], vector_set)

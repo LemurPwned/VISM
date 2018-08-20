@@ -28,6 +28,7 @@ class AnimatedWidget():
         pass
 
     def receivedOptions(self):
+        print(self.options)
         self.normalize = self.options[0]
         self.subsampling = int(self.options[1])
         if self.subsampling == 0:

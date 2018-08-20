@@ -143,7 +143,7 @@ def process_vector_to_vbo(iteration,
     for j in range(0, iteration_len):
         if iteration[j].any():
             cos_x_rot = iteration[j, 1]
-            cos_y_rot = iteration[j, 0]/math.sqrt(1 - math.pow(iteration[j, 2],2))
+            cos_y_rot = iteration[j, 0]/math.sqrt(1 - math.pow(iteration[j, 2], 2))
             # values very close to zero might generate some errors
             # mainly because they exceed acos domain
             try:
