@@ -56,12 +56,12 @@ class MultiprocessingParse:
             m = regex.search(os.path.basename(filename))
             if m is None:
                 raise AttributeError
-            column_name = driver_class +'::Iteration'
+            column_name = 'Oxs_' + driver_class +'::Iteration'
         except AttributeError:
             driver_class = 'TimeDriver'
             match_string = '(^.*)(Oxs_' + driver_class + \
                                 '-Magnetization-)([0-9]{2})(-)(.*)(.omf)'
-            column_name = driver_class +'::Iteration'
+            column_name = 'Oxs_' + driver_class +'::Iteration'
             regex = re.compile(match_string)
         for filename in files:
             m = regex.search(os.path.basename(filename))
