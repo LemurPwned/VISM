@@ -23,3 +23,6 @@ A.Kozioł-Rachwał, W. Skowroński
 *Interlayer exchange coupling, dipolar coupling and magnetoresistance in Fe/MgO/Fe trilayers with a subnanometer MgO barrier*
 Journal of Magnetism and Magnetic Materials 424C:189
 Feb 2017
+
+### Issues and problems
+If you have encountered any problem with VISM, do not hesistate to create an issue or write an email. Your feedback is highly appreciated since VISM is still a work in progress.
