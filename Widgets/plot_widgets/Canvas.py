@@ -44,21 +44,28 @@ class Canvas(AbstractCanvas):
             self.null_data = [x for x in range(self.internal_iterations)]
             xlabl = "Iteration"
         """
-        self.plot_axis.hpl = self.plot_axis.plot(self.null_data,
-                                        self.graph_data[0:self.i] + \
-                                        self.null_data[self.i:],
+        if self.synchronizedPlot == False and not self.one_onePlot:
+            self.plot_axis.plot(self.null_data, self.graph_data,
                                         color=self.options['color'],
                                         linestyle=self.options['line_style'],
                                         marker=self.options['marker'],
                                         markerfacecolor=self.options['marker_color'],
-                                        markersize=self.options['marker_size'])[0]
+                                        markersize=self.options['marker_size'])
+        else:
+            self.plot_axis.hpl = self.plot_axis.plot(self.null_data,
+                                            self.graph_data[0:self.i] + \
+                                            self.null_data[self.i:],
+                                            color=self.options['color'],
+                                            linestyle=self.options['line_style'],
+                                            marker=self.options['marker'],
+                                            markerfacecolor=self.options['marker_color'],
+                                            markersize=self.options['marker_size'])[0]
         self.plot_axis.axis([np.min(self.null_data), np.max(self.null_data), 
                              np.min(self.graph_data),np.max(self.graph_data)])
         self.plot_axis.set_autoscale_on(False)
         self.plot_axis.set_xlabel(self.xcol)
         self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
-        if self.synchronizedPlot == False and not self.one_onePlot:
-            self.plot_axis.plot(self.graph_data)
+
 
     @AbstractGLContextDecorators.recording_decorator
     def replot(self):

@@ -185,3 +185,5 @@ class ArrowGLContext(AbstractGLContext, QWidget):
                                                         self.SIDES)
         self.n = len(self.vectors_list)
         return iterative_vbo
+
+
