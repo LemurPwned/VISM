@@ -8,7 +8,7 @@ from pattern_types.Patterns import AbstractGLContextDecorators
 from processing.ColorPolicy import ColorPolicy
 from ctypes import c_void_p
 from processing.multiprocessing_parse import asynchronous_pool_order
-from cython_modules.color_policy import multi_iteration_normalize
+from cython_modules.color_policy import multi_iteration_normalize, process_vector_to_vbo
 from cython_modules.cython_parse import getLayerOutline
 import math
 
@@ -114,18 +114,6 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         return buffers
 
     def vbo_arrow_draw(self):
-        gl.glLineWidth(5)
-        gl.glBegin(gl.GL_LINES)
-        gl.glColor3f(1, 0, 0)
-        gl.glVertex3f(0, 0, 0)
-        gl.glVertex3f(1, 0, 0)
-        gl.glColor3f(0, 1, 0)
-        gl.glVertex3f(0, 0, 0)
-        gl.glVertex3f(0, 1, 0)
-        gl.glColor3f(0, 0, 1)
-        gl.glVertex3f(0, 0, 0)
-        gl.glVertex3f(0, 0, 1)
-        gl.glEnd()
         if self.buffers is None:
             self.buffers = self.create_vbo()
         else:
@@ -182,95 +170,13 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
-    def process_vector_to_vbo(self, iteration,
-                                    vectors_list,
-                                    org_cyl_rot,
-                                    org_cone_rot,
-                                    t_rotation,
-                                    height,
-                                    sides):
-        """
-        creates the arrows basing for each point in color array
-        rotation matrix (arrow rotation) is calculated based on
-        the magnetisation vector (its unnormalized form)
-        @param iteration: current color matrix - normalized in shape (xc*yc*zc) 
-                            where xc, yc, zc are numbers of cells in a given direction
-        @param vectors_list: baseline for vector drawing - essentially marks the 
-                            position of each arrow
-        @param org_cyl_rot: original cyllindrical matrix
-        @param org_cone_rot: original cone matrix 
-        @param t_rotation: initial rotation
-        @param height: height of an arrow
-        @param sides: resolution (number of steps around a circle) - the 
-                        greater this number, the more smoothed edges a
-                        cyllinder will have
-        @param zero_pad: array to be put if dot_product or rotation is null matrix
-        """
-        iteration_len = len(iteration)
-        p = 0
-        local_vbo = np.ndarray((iteration_len*sides*4, 3), dtype=np.float32)
-        for j in range(0, iteration_len):
-            if iteration[j].any():
-                mag = math.sqrt(math.pow(iteration[j,0], 2)
-                                +math.pow(iteration[j,1], 2)
-                                +math.pow(iteration[j,2], 2))
-                phi = math.acos(iteration[j, 2]/mag) # z rotation
-                theta = math.atan2(iteration[j, 1], iteration[j, 0]) # y rotation
-
-                ct = math.cos(theta)
-                st = math.sin(theta)
-                cp = math.cos(phi)
-                sp = math.sin(phi)
-
-                # rot_matrix = self.ZERO_ROT
-                # x_rot = np.array([
-                #     [1, 0 , 0],
-                #     [0, cp, -sp],
-                #     [0, sp, cp]
-                # ])
-                # z_rot = np.array([
-                #     [ct, -st , 0],
-                #     [st, ct, 0],
-                #     [0, 0, 1]
-                # ])
-                # # perform in the order Z_ROT x X_ROT as firstly we rotate x, then Z
-                rot_matrix = np.array([
-                    [ct, -st*cp, st*sp],
-                    [st, cp*ct, -sp*ct],
-                    [0, sp, cp]
-                ])
-                origin_circle = np.array(vectors_list[j, 0:3])
-                cylinder_co_rot = org_cyl_rot
-                cone_co_rot = org_cone_rot        
-                for _ in range(sides-1):      
-                    # bottom triangle - cylinder              
-                    local_vbo[p, :] = origin_circle+rot_matrix.dot(cylinder_co_rot) 
-                    # bottom triangle - cone
-                    local_vbo[p+1, :] = origin_circle+rot_matrix.dot(cone_co_rot+height)
-                    # top triangle - cylinder
-                    local_vbo[p+2, :] = origin_circle+rot_matrix.dot(cylinder_co_rot+height)
-                    # top triangle - cone  (cone tip)
-                    local_vbo[p+3, :] = origin_circle+rot_matrix.dot(height*1.5) 
-                    p+=4 
-                    cylinder_co_rot = t_rotation.dot(cylinder_co_rot)
-                    cone_co_rot = t_rotation.dot(cone_co_rot)
-                # last ones are to cover the circle (end up in the starting point)
-                # this is required by the way graphics card wants to join the points
-                
-                local_vbo[p, :] = origin_circle+rot_matrix.dot(org_cyl_rot) 
-                local_vbo[p+1, :] = origin_circle+rot_matrix.dot(org_cone_rot+height)
-                local_vbo[p+2, :] = origin_circle+rot_matrix.dot(org_cyl_rot+height) 
-                local_vbo[p+3, :] = origin_circle+rot_matrix.dot(height*1.5)  
-                p+=4     
-        return local_vbo
-
     def regenerate_structure(self, colors_list):
         col_len = len(colors_list)
         iterative_vbo = np.ndarray((col_len, 
                                     len(self.vectors_list)*self.SIDES*4,3), 
                                     dtype='float32')
         for i in range(0, self.iterations):
-            iterative_vbo[i, :] = self.process_vector_to_vbo(colors_list[i],
+            iterative_vbo[i, :] = process_vector_to_vbo(colors_list[i],
                                                         self.vectors_list, 
                                                         self.CYLINDER_CO_ROT,
                                                         self.CONE_CO_ROT,

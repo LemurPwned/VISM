@@ -12,6 +12,7 @@ class GeneralPerf:
         self.color_selection = 'Standard'
         self.comboBox.activated[str].connect(self.changeColorPolicy)
         self.changeColorPolicy(self.color_selection)
+        self.reset()
 
     def layerChange(self):
         val = self.horizontalSlider_2.value()
@@ -83,9 +84,14 @@ class GeneralPerf:
             return self.options
 
     def reset(self):
-        self.lineEdit.setText('[1, 0, 0]')
-        self.lineEdit_2.setText('[0, 1, 0]')
-        self.lineEdit_3.setText('[0, 0, 1]')
+        if self.color_selection == 'RGB policy':
+            self.lineEdit.setText('[1, 0, 0]')
+            self.lineEdit_2.setText('[0, 1, 0]')
+            self.lineEdit_3.setText('[0, 0, 1]')
+        elif self.color_selection == 'Standard':
+            self.lineEdit.setText('[1, 0, 0]')
+            self.lineEdit_2.setText('[1, 0, 0]')
+            self.lineEdit_3.setText('[0, 0, 1]')
 
     def changeColorPolicy(self, text):
         if text == 'Standard':

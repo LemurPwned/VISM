@@ -17,7 +17,7 @@ def asynchronous_pool_order(func, args, object_list, timeout=20):
     :param object_list: is the objects that are iterated
     :param timeout: is the timeout for getting value in multiprocessing
     """
-    pool = Pool(2)
+    pool = Pool()
     output_list = []
     multiple_results = [pool.apply_async(func, (object_list[i], *args))
                         for i in range(len(object_list))]
@@ -68,7 +68,7 @@ class MultiprocessingParse:
             if m is not None:
                 st.append(int(m.groups()[4]))
             else:
-                print(filename)
+                print("Regex trigger list mismatch {}".format(filename))
         trigger_list = plot_data.index[plot_data[column_name].isin(st)]
         try:
             assert len(files) == len(trigger_list)

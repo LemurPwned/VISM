@@ -142,28 +142,28 @@ def process_vector_to_vbo(iteration,
     local_vbo = np.ndarray((iteration_len*sides*4, 3), dtype=np.float32)
     for j in range(0, iteration_len):
         if iteration[j].any():
-            cos_x_rot = iteration[j, 1]
-            cos_y_rot = iteration[j, 0]/math.sqrt(1 - math.pow(iteration[j, 2], 2))
-            # values very close to zero might generate some errors
-            # mainly because they exceed acos domain
-            try:
-                sin_x_rot = math.sin(math.acos(cos_x_rot))  # radian input
-            except ValueError:
-                sin_x_rot = 0
-            try:
-                sin_y_rot = math.sin(math.acos(cos_y_rot))
-            except ValueError:
-                sin_y_rot = 0
-            
-            rot_matrix = np.array([[cos_y_rot, 0, sin_y_rot],
-                    [sin_y_rot*sin_x_rot, cos_x_rot, -sin_x_rot*cos_y_rot],
-                    [-cos_x_rot*sin_y_rot, sin_x_rot, sin_x_rot*cos_y_rot]])
+            mag = math.sqrt(math.pow(iteration[j,0], 2)
+                            +math.pow(iteration[j,1], 2)
+                            +math.pow(iteration[j,2], 2))
+            phi = math.acos(iteration[j, 2]/mag) # z rotation
+            theta = math.atan2(iteration[j, 1], iteration[j, 0]) # y rotation
+
+            ct = math.cos(theta)
+            st = math.sin(theta)
+            cp = math.cos(phi)
+            sp = math.sin(phi)
+            # perform in the order Z_ROT x X_ROT as firstly we rotate x, then Z
+            rot_matrix = np.array([
+                [ct, -st*cp, st*sp],
+                [st, cp*ct, -sp*ct],
+                [0, sp, cp]
+            ])
             origin_circle = np.array(vectors_list[j, 0:3])
             cylinder_co_rot = org_cyl_rot
             cone_co_rot = org_cone_rot        
-            for i in range(sides-1):      
+            for _ in range(sides-1):      
                 # bottom triangle - cylinder              
-                local_vbo[p, :] =   origin_circle+rot_matrix.dot(cylinder_co_rot) 
+                local_vbo[p, :] = origin_circle+rot_matrix.dot(cylinder_co_rot) 
                 # bottom triangle - cone
                 local_vbo[p+1, :] = origin_circle+rot_matrix.dot(cone_co_rot+height)
                 # top triangle - cylinder
