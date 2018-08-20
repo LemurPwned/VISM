@@ -49,12 +49,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         # we cannot add menu actions from QT Designer level
         self.playerAction = self.menubar.addAction("Player")
         self.setWindowTitle("ESE - Early Spins Environment")
-        # app = QtCore.QCoreApplication.instance()
-        # screen_resolution = app.desktop().screenGeometry()
-        # self.scr_width, self.scr_height = screen_resolution.width(), screen_resolution.height()
-        # self.setGeometry((self.scr_width - self.width()) / 2,
-        #                  (self.scr_height - self.height()) / 2, 1200, 768)
-        # self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height())
+        app = QtCore.QCoreApplication.instance()
+        screen_resolution = app.desktop().screenGeometry()
+        self.scr_width, self.scr_height = screen_resolution.width(), screen_resolution.height()
+        self.setGeometry((self.scr_width - self.width()) / 2,
+                         (self.scr_height - self.height()) / 2, 1200, 768)
+        self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height())
         # By default all options are locked and they
         # will be unlocked according to data loaded.
         self._BLOCK_ITERABLES_ = True
