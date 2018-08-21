@@ -27,7 +27,7 @@ def multi_iteration_dot_product(np.ndarray[np.float32_t, ndim=2] color_iteration
         int i
         int ci = color_iteration.shape[0]
     for i in range(0, ci):
-        color_iteration[i] = [np.dot(color_iteration[i], vector) for vector in vec_set]
+        color_iteration[i] = [0.5*(np.dot(color_iteration[i], vector)+1) for vector in vec_set]
     return color_iteration
 
 @cython.boundscheck(False)

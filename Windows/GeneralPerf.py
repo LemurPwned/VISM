@@ -12,7 +12,6 @@ class GeneralPerf:
         self.color_selection = 'Standard'
         self.comboBox.activated[str].connect(self.changeColorPolicy)
         self.changeColorPolicy(self.color_selection)
-        self.reset()
 
     def layerChange(self):
         val = self.horizontalSlider_2.value()
@@ -104,6 +103,7 @@ class GeneralPerf:
             self.label_5.setText('R')
             self.label_6.setText('G')
             self.label_7.setText('B')
+        self.reset()
 
     def closeEvent(self, event):
         if self.toDelete:
