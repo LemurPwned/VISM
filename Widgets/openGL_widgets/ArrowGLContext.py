@@ -14,17 +14,19 @@ import math
 
 from util_tools.PopUp import PopUpWrapper
 
+
 class ArrowGLContext(AbstractGLContext, QWidget):
     def __init__(self, data_dict, parent):
         self.cld = parent
         super().__init__()
         super().shareData(**data_dict)
+        self.ARR_HEIGHT = self.height
         self.DEFAULT_RADIUS = 0.25*self.scale
         self.CYLINDER_CO_ROT = np.array([self.DEFAULT_RADIUS,
                                          self.DEFAULT_RADIUS, 0])
-        self.CONE_CO_ROT = np.array([2*self.DEFAULT_RADIUS, 
+        self.CONE_CO_ROT = np.array([2*self.DEFAULT_RADIUS,
                                      2*self.DEFAULT_RADIUS, 0])
-        self.HEIGHT = np.array([0, 0, 3])
+        self.HEIGHT = np.array([0, 0, self.ARR_HEIGHT])
         self.ZERO_ROT = np.array([[1, 0, 0],
                                   [0, 1, 0],
                                   [0, 0, 1]])
@@ -32,8 +34,8 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         theta = 2*np.pi/self.SIDES
         c = np.cos(theta)
         s = np.sin(theta)
-        self.T_ROTATION = np.array([[c, -s, 0], 
-                                    [s, c, 0], 
+        self.T_ROTATION = np.array([[c, -s, 0],
+                                    [s, c, 0],
                                     [0, 0, 1]])
 
         self.ZERO_PAD = [np.nan for x in range(self.SIDES*4*3)]
@@ -51,20 +53,20 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         zc = int(self.file_header['znodes'])
         # change drawing function
         self.color_vectors, self.vectors_list, self.original_color = \
-                    ColorPolicy.standard_procedure(self.vectors_list,
-                                                   self.color_vectors,
-                                                   self.iterations,
-                                                   self.subsampling,
-                                                   xc, yc, zc,
-                                                   self.layer,
-                                                   self.vector_set,
-                                                   color_policy_type=self.color_policy_type,
-                                                   hyperContrast=self.hyperContrast)
+            ColorPolicy.standard_procedure(self.vectors_list,
+                                           self.color_vectors,
+                                           self.iterations,
+                                           self.subsampling,
+                                           xc, yc, zc,
+                                           self.layer,
+                                           self.vector_set,
+                                           color_policy_type=self.color_policy_type,
+                                           hyperContrast=self.hyperContrast)
         # multi_iteration_normalize(self.colorX)
         self.structure_vbo = self.regenerate_structure(self.original_color)
         self.index_required = self.SIDES*2
         self.indices = self.generate_index()
-        self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors, 
+        self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors,
                                                           k=(self.index_required))
         self.buffers = None
         # pad the color
@@ -97,13 +99,13 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[0])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
                         np.array(self.structure_vbo[self.i],
-                        dtype='float32').flatten(),
+                                 dtype='float32').flatten(),
                         gl.GL_DYNAMIC_DRAW)
         # color buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
                         np.array(self.color_vectors[self.i],
-                        dtype='float32').flatten(),
+                                 dtype='float32').flatten(),
                         gl.GL_DYNAMIC_DRAW)
 
         # # index buffer
@@ -119,21 +121,22 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         else:
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
             try:
-                gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, 
-                                    len(self.structure_vbo[self.i])*12,
-                                    np.array(self.structure_vbo[self.i],
-                                    dtype='float32').flatten())
+                gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0,
+                                   len(self.structure_vbo[self.i])*12,
+                                   np.array(self.structure_vbo[self.i],
+                                            dtype='float32').flatten())
             except ValueError as e:
-                print(e) # watch out for setting array element with a sequence erorr
-                print(len(self.structure_vbo[self.i]), len(self.structure_vbo[self.i][0]))
+                print(e)  # watch out for setting array element with a sequence erorr
+                print(len(self.structure_vbo[self.i]), len(
+                    self.structure_vbo[self.i][0]))
 
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
             # later move to set_i function so that reference changes
             # does not cause buffer rebinding
-            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, 
+            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0,
                                self.color_buffer_len*4,
                                np.array(self.color_vectors[self.i],
-                               dtype='float32').flatten())
+                                        dtype='float32').flatten())
         self.draw_vbo()
 
     @AbstractGLContextDecorators.recording_decorator
@@ -154,7 +157,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
         gl.glVertexPointer(3, gl.GL_FLOAT, 3*self.__FLOAT_BYTE_SIZE__, None)
         gl.glDrawElements(gl.GL_TRIANGLES,
                           len(self.indices),
-                          gl.GL_UNSIGNED_INT, 
+                          gl.GL_UNSIGNED_INT,
                           None)
 
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.buffers[2])
@@ -172,12 +175,12 @@ class ArrowGLContext(AbstractGLContext, QWidget):
 
     def regenerate_structure(self, colors_list):
         col_len = len(colors_list)
-        iterative_vbo = np.ndarray((col_len, 
-                                    len(self.vectors_list)*self.SIDES*4,3), 
-                                    dtype='float32')
+        iterative_vbo = np.ndarray((col_len,
+                                    len(self.vectors_list)*self.SIDES*4, 3),
+                                   dtype='float32')
         for i in range(0, self.iterations):
             iterative_vbo[i, :] = process_vector_to_vbo(colors_list[i],
-                                                        self.vectors_list, 
+                                                        self.vectors_list,
                                                         self.CYLINDER_CO_ROT,
                                                         self.CONE_CO_ROT,
                                                         self.T_ROTATION,
@@ -185,5 +188,3 @@ class ArrowGLContext(AbstractGLContext, QWidget):
                                                         self.SIDES)
         self.n = len(self.vectors_list)
         return iterative_vbo
-
-

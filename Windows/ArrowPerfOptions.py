@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
-                QVBoxLayout, QRadioButton, QLabel, QSlider, QPushButton, QMessageBox
+    QVBoxLayout, QRadioButton, QLabel, QSlider, QPushButton, QMessageBox
 from Windows.Templates.ArrowPerfOptionsTemplate import Ui_Dialog
 from Windows.GeneralPerf import GeneralPerf
 from util_tools.PopUp import PopUpWrapper
@@ -21,6 +21,7 @@ class ArrowPerfOptions(QWidget, Ui_Dialog, GeneralPerf):
 
         self.resolution = 16
         self.subsampling = 1
+        self.height = 3
         self.general_initialization()
         self.basicOptions()
         self.show()
@@ -31,6 +32,7 @@ class ArrowPerfOptions(QWidget, Ui_Dialog, GeneralPerf):
         # no decimation but subsampling
         # no subsampling but resolution
         self.arrow_label = True
+        self.label_9.setText("Height {}".format(self.height))
         self.label_8.setText("Resolution {}".format(self.resolution))
         self.label.setText("Subsampling {}".format(self.subsampling))
 
@@ -45,7 +47,7 @@ class ArrowPerfOptions(QWidget, Ui_Dialog, GeneralPerf):
         self.horizontalSlider.setValue(self.subsampling)
 
         # size
-        self.horizontalSlider_3.setMaximum(5)
+        self.horizontalSlider_3.setMaximum(8)
         self.horizontalSlider_3.setMinimum(1)
         self.horizontalSlider_3.setValue(self.default_size)
         self.horizontalSlider_3.setSingleStep(1)
@@ -56,6 +58,13 @@ class ArrowPerfOptions(QWidget, Ui_Dialog, GeneralPerf):
         self.horizontalSlider_4.setMaximum(32)
         self.horizontalSlider_4.setMinimum(4)
         self.horizontalSlider_4.setValue(self.resolution)
+
+        # height
+        self.horizontalSlider_5.setEnabled(True)
+        self.horizontalSlider_5.setSingleStep(1)
+        self.horizontalSlider_5.setMaximum(6)
+        self.horizontalSlider_5.setMinimum(1)
+        self.horizontalSlider_5.setValue(self.height)
 
         # layer
         if not self.loaded:
@@ -71,6 +80,11 @@ class ArrowPerfOptions(QWidget, Ui_Dialog, GeneralPerf):
         self.horizontalSlider_2.valueChanged.connect(self.layerChange)
         self.horizontalSlider_3.valueChanged.connect(self.sizeChange)
         self.horizontalSlider_4.valueChanged.connect(self.resolutionChange)
+        self.horizontalSlider_5.valueChanged.connect(self.heightChange)
+
+    def heightChange(self):
+        self.height = self.horizontalSlider_5.value()
+        self.label_9.setText("Height {}".format(self.height))
 
     def resolutionChange(self):
         self.resolution = self.horizontalSlider_4.value()
@@ -80,21 +94,23 @@ class ArrowPerfOptions(QWidget, Ui_Dialog, GeneralPerf):
         # order as follows: color scheme, subsampling, layer
         # checkBox_5 is normalize
         if self.checkBox.isChecked():
-            optionsList = [ self.checkBox_5.isChecked(),
-                            self.subsampling,
-                            'all',
-                            self.horizontalSlider_3.value(),
-                            self.parseVectors(),
-                            self.color_selection,
-                            self.checkBox_6.isChecked(),
-                            self.resolution]
+            optionsList = [self.checkBox_5.isChecked(),
+                           self.subsampling,
+                           'all',
+                           self.horizontalSlider_3.value(),
+                           self.parseVectors(),
+                           self.color_selection,
+                           self.checkBox_6.isChecked(),
+                           self.resolution,
+                           self.height]
         else:
-            optionsList = [ self.checkBox_5.isChecked(),
-                            self.subsampling,
-                            self.horizontalSlider_2.value(),
-                            self.horizontalSlider_3.value(),
-                            self.parseVectors(),
-                            self.color_selection,
-                            self.checkBox_6.isChecked(),
-                            self.resolution]
+            optionsList = [self.checkBox_5.isChecked(),
+                           self.subsampling,
+                           self.horizontalSlider_2.value(),
+                           self.horizontalSlider_3.value(),
+                           self.parseVectors(),
+                           self.color_selection,
+                           self.checkBox_6.isChecked(),
+                           self.resolution,
+                           self.height]
         return optionsList

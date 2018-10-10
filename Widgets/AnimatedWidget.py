@@ -1,5 +1,6 @@
 class AnimatedWidget():
     WIDGET_ID = 0
+
     def shareData(self, **kwargs):
         """
         @param **kwargs are the arguments to be passed to the main widget
@@ -37,9 +38,10 @@ class AnimatedWidget():
         self.vector_set = self.options[4]
         self.color_policy_type = self.options[5]
         self.hyperContrast = self.options[6]
-        try:    
+        try:
             # only arrows have resolution
             self.resolution = self.options[7]
+            self.height = self.options[8]
         except IndexError:
             pass
 
