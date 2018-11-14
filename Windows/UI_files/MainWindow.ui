@@ -66,6 +66,7 @@
     </property>
     <addaction name="actionPerformance"/>
     <addaction name="actionMovie_composer"/>
+    <addaction name="actionBackground"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -151,6 +152,11 @@
   <action name="actionDeleteAllWindows">
    <property name="text">
     <string>Delete all Windows</string>
+   </property>
+  </action>
+  <action name="actionBackground">
+   <property name="text">
+    <string>Background</string>
    </property>
   </action>
  </widget>

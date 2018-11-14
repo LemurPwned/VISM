@@ -84,11 +84,15 @@ class ArrowPerfOptions(QWidget, Ui_Dialog, GeneralPerf):
 
     def heightChange(self):
         self.height = self.horizontalSlider_5.value()
-        self.label_9.setText("Height {}".format(self.height))
+        self.label_9.setText("Height: {}".format(self.height))
 
     def resolutionChange(self):
         self.resolution = self.horizontalSlider_4.value()
-        self.label_8.setText("Resolution {}".format(self.resolution))
+        self.label_8.setText("Resolution: {}".format(self.resolution))
+
+    def sizeChange(self):
+        val = self.horizontalSlider_3.value()
+        self.label_4.setText("Size (radius): {}".format(val))
 
     def optionsVerifier(self):
         # order as follows: color scheme, subsampling, layer

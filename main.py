@@ -256,6 +256,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         rawVectorData, header, plot_data, stages, trigger_list = \
                             MultiprocessingParse.readFolder(directory)
 
+        print(f"STAGES {stages}")
         self.doh.passListObject(('color_vectors', 'file_header',
                                  'iterations'),
                                 rawVectorData, header, stages)

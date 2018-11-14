@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'Windows/UI_files/MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# Created by: PyQt5 UI code generator 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -68,6 +68,8 @@ class Ui_MainWindow(object):
         self.actionText_select.setObjectName("actionText_select")
         self.actionDeleteAllWindows = QtWidgets.QAction(MainWindow)
         self.actionDeleteAllWindows.setObjectName("actionDeleteAllWindows")
+        self.actionBackground = QtWidgets.QAction(MainWindow)
+        self.actionBackground.setObjectName("actionBackground")
         self.menuFile.addAction(self.actionLoad_File)
         self.menuFile.addAction(self.actionLoad_Directory)
         self.menuEdit.addAction(self.actionWindow0Delete)
@@ -80,6 +82,7 @@ class Ui_MainWindow(object):
         self.menuView.addAction(self.action4_Windows_Grid)
         self.menuOptions.addAction(self.actionPerformance)
         self.menuOptions.addAction(self.actionMovie_composer)
+        self.menuOptions.addAction(self.actionBackground)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
@@ -111,6 +114,7 @@ class Ui_MainWindow(object):
         self.actionAnimation.setText(_translate("MainWindow", "Player"))
         self.actionText_select.setText(_translate("MainWindow", "Text select"))
         self.actionDeleteAllWindows.setText(_translate("MainWindow", "Delete all Windows"))
+        self.actionBackground.setText(_translate("MainWindow", "Background"))
 
 
 if __name__ == "__main__":

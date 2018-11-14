@@ -38,7 +38,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.position = [0, 0, -50]  # xyz initial
         self.drawing_function = None
         self.function_select = 'fast'
-        self.background = [0.5, 0.5, 0.5]
+        self.background = [0.0, 0.0, 0.0]
         self.record = False
         self.steps = 1
 

@@ -27,7 +27,6 @@ def getFileHeader(filename):
                     file_header[g[2:x]] = float(file_header[g[2:x]])
                 except:
                     pass
-    f.close()
     return file_header
 
 
@@ -39,9 +38,13 @@ def normalized(array, axis=-1, order=2):
     return array / np.expand_dims(l2, axis)
 
 def parseODTColumn(line):
+    """
+    This extracts a single column from a odt file
+    OOMMF formatting support
+    """
     cols = []
     line = line.replace('# Columns: ', '')
-    while line != "":
+    while line != '':
         if line[0] == '{':
             patch = line[1:line.index('}')]
             if patch != '':
@@ -54,6 +57,9 @@ def parseODTColumn(line):
                     cols.append(patch)
                 line = line[line.index(' ')+1:]
             except ValueError:
+                if line != "" and line != '\n':
+                    # last trailing line
+                    cols.append(patch)
                 line = ""
                 break
     return cols
