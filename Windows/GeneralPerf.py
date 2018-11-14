@@ -42,13 +42,12 @@ class GeneralPerf:
         rg = re.compile(match_string)
         m = rg.search(entry)
         if m is not None:
-            x = int(m.group(1))
-            y = int(m.group(2))
-            z = int(m.group(3))
+            x = float(m.group(1))
+            y = float(m.group(2))
+            z = float(m.group(3))
             norm = np.sqrt(x**2 + y**2 + z**2)  
-            xval = x/norm if x != 0 else 0
-            yval = y/norm if y != 0 else 0
-            zval = z/norm if z != 0 else 0
+            if norm == 0.0:
+                return False
             return [xval, yval, zval]
         else:
             return False
