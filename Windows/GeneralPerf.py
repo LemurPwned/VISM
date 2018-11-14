@@ -1,7 +1,6 @@
-import re 
+import re
 import numpy as np
 from util_tools.PopUp import PopUpWrapper
-
 
 
 class GeneralPerf:
@@ -19,8 +18,8 @@ class GeneralPerf:
 
     def subsamplingChange(self):
         self.subsampling = self.horizontalSlider.value()
-        self.label.setText("Subsampling: {}".format(self.subsampling))    
-    
+        self.label.setText("Subsampling: {}".format(self.subsampling))
+
     def sizeChange(self):
         val = self.horizontalSlider_3.value()
         self.label_4.setText("Size: {}".format(val))
@@ -45,10 +44,10 @@ class GeneralPerf:
             x = float(m.group(1))
             y = float(m.group(2))
             z = float(m.group(3))
-            norm = np.sqrt(x**2 + y**2 + z**2)  
+            norm = np.sqrt(x**2 + y**2 + z**2)
             if norm == 0.0:
                 return False
-            return [xval, yval, zval]
+            return [x/norm, y/norm, z/norm]
         else:
             return False
 
@@ -96,7 +95,7 @@ class GeneralPerf:
             self.color_selection = 'Standard'
             self.label_5.setText('D')
             self.label_6.setText('C+')
-            self.label_7.setText('C-')  
+            self.label_7.setText('C-')
         else:
             self.color_selection = 'RGB policy'
             self.label_5.setText('R')

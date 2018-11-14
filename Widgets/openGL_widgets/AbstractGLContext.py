@@ -26,7 +26,7 @@ import pygame
 class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     PYGAME_INCLUDED = False
     ANY_GL_WIDGET_IN_VIEW = 0
-
+    BACKGROUND = [0.0, 0.0, 0.0]
     def __init__(self, parent=None):
         super(AbstractGLContext, self).__init__(parent)
         AbstractGLContext.ANY_GL_WIDGET_IN_VIEW += 1
@@ -38,7 +38,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.position = [0, 0, -50]  # xyz initial
         self.drawing_function = None
         self.function_select = 'fast'
-        self.background = [0.0, 0.0, 0.0]
+        # self.background = [0.0, 0.0, 0.0]
         self.record = False
         self.steps = 1
 
@@ -138,7 +138,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         """
         Initializes openGL context and scenery
         """
-        gl.glClearColor(*self.background, 0)
+        gl.glClearColor(*AbstractGLContext.BACKGROUND, 0)
         
         gl.glEnable(gl.GL_DEPTH_TEST)
         gl.glEnable(gl.GL_POLYGON_SMOOTH)

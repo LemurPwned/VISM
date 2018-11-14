@@ -42,7 +42,7 @@ class ChooseWidget(QtWidgets.QWidget):
                     self.close()
                     return
         else:
-            raise FileNotFoundError("widget_pane.json was not found in {}".format(self.__WIDGET_LOC__))
+            raise FileNotFound("widget_pane.json was not found in {}".format(self.__WIDGET_LOC__))
             if self.list.currentItem().text() == "3D cubes":
                 self.handler([self.number, "3D_CUBIC"])
             elif self.list.currentItem().text() == "2D plot":

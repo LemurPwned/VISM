@@ -18,6 +18,8 @@ from PyQt5 import QtWidgets, QtCore
 from Windows.Templates.MainWindowTemplate import Ui_MainWindow
 from Windows.ChooseWidget import ChooseWidget
 from Windows.PlayerWindow import PlayerWindow
+from Windows.BackgroundSettings import BackgroundSettings
+from Windows.Progress import ProgressBar
 
 from processing.multiprocessing_parse import MultiprocessingParse
 from multiprocessing import TimeoutError
@@ -36,7 +38,6 @@ from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanva
 from pattern_types.Patterns import MainContextDecorators
 
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
-from Windows.Progress import ProgressBar
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
@@ -48,7 +49,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.setupUi(self)
         # we cannot add menu actions from QT Designer level
         self.playerAction = self.menubar.addAction("Player")
-        self.setWindowTitle("ESE - Early Spins Environment")
+        self.setWindowTitle("Visualisation for Spin Magnetics")
         app = QtCore.QCoreApplication.instance()
         screen_resolution = app.desktop().screenGeometry()
         self.scr_width, self.scr_height = screen_resolution.width(), screen_resolution.height()
@@ -93,6 +94,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         # OPTIONS SUBMENU
         self.actionPerformance.triggered.connect(self.setScreenshotFolder)
         self.actionMovie_composer.triggered.connect(self.composeMovie)
+        self.actionBackground.triggered.connect(self.setBackground)
 
         # GRID BUTTONS
         # lambda required to pass parameter - which button was pressed
@@ -124,6 +126,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self.panes[i].groupBox.setMaximumHeight(self.height() / 2 - 10)
             else:
                 self.panes[i].groupBox.setMaximumHeight(self.height() - 10)
+
+    def setBackground(self):
+        self.bg_set = BackgroundSettings(parent=self)
+        self.bg_set.setEventHandler(self.getBackground)
+        self.bg_set.show()
+
+    def getBackground(self, back):
+        if back is not None: AbstractGLContext.BACKGROUND = back
 
     def composeMovie(self):
         self.setScreenshotFolder()
@@ -255,8 +265,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def loadDirectory(self, directory):
         rawVectorData, header, plot_data, stages, trigger_list = \
                             MultiprocessingParse.readFolder(directory)
-
-        print(f"STAGES {stages}")
         self.doh.passListObject(('color_vectors', 'file_header',
                                  'iterations'),
                                 rawVectorData, header, stages)
