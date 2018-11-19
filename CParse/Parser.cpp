@@ -140,7 +140,10 @@ struct Parser
                 else
                     break;
             }
-
+            if (buffer_size <= 0)
+            {
+                throw "Invalid buffer size";
+            }
             char IEEE_BUF[buffer_size];
 
             miffile.read(IEEE_BUF, buffer_size);
@@ -165,6 +168,86 @@ struct Parser
         }
         return vectors;
     }
+
+    std::vector<std::vector<double>> parseMifFile2(std::string path)
+    {
+        std::vector<std::vector<double>> vectors;
+        std::string line;
+        int buffer_size = 0;
+        int how_many_lines;
+        std::ifstream miffile(path, std::ios::out | std::ios_base::binary);
+
+        std::string reg_string("# xnodes:");
+        if (miffile.is_open())
+        {
+            while (std::getline(miffile, line))
+            {
+                if (line.at(0) == '#')
+                {
+                    if (line == "# Begin: Data Binary 8")
+                    {
+                        buffer_size = 8;
+                        break;
+                    }
+                    else if (line == "# Begin: Data Binary 4")
+                    {
+                        buffer_size = 4;
+                        break;
+                    }
+                    if (check && line.substr(0, reg_string.length()) == reg_string)
+                    {
+
+                        if (reg_string.at(2) == 'x')
+                        {
+                            xnodes = std::stoi(line.substr(reg_string.length(), line.length()));
+                            reg_string.at(2) = 'y';
+                        }
+                        else if (reg_string.at(2) == 'y')
+                        {
+                            ynodes = std::stoi(line.substr(reg_string.length(), line.length()));
+                            reg_string.at(2) = 'z';
+                        }
+                        else
+                        {
+                            znodes = std::stoi(line.substr(reg_string.length(), line.length()));
+                            check = false;
+                        }
+                    }
+                }
+                else
+                    break;
+            }
+            if (buffer_size <= 0)
+            {
+                throw "Invalid buffer size";
+            }
+
+            char IEEE_BUF[buffer_size];
+
+            miffile.read(IEEE_BUF, buffer_size);
+
+            double *IEEE_val = (double *)IEEE_BUF;
+            if (IEEE_val[0] != 123456789012345.0)
+            {
+                throw "IEEE value not consistent";
+            }
+
+            int lines = znodes * xnodes * ynodes;
+            char buffer[buffer_size * lines * 3];
+            miffile.read(buffer, buffer_size * lines * 3);
+            double *vals = (double *)buffer;
+            for (int i = 0; i < lines * 3; i += 3)
+            {
+                std::vector<double> tmp = {vals[i + 0], vals[i + 1], vals[i + 2]};
+                vectors.push_back(tmp);
+                // vectors.insert(vector.end(),
+                //                {vals[i + 0], vals[i + 1], vals[i + 2]});
+            }
+
+            miffile.close();
+        }
+        return vectors;
+    }
 };
 
 BOOST_PYTHON_MODULE(Parser)
@@ -181,11 +264,16 @@ BOOST_PYTHON_MODULE(Parser)
     class_<std::vector<VectorObj>>("MifObj")
         .def(vector_indexing_suite<std::vector<VectorObj>>());
 
+    class_<std::vector<double>>("DblObj")
+        .def(vector_indexing_suite<std::vector<double>>());
+    class_<std::vector<std::vector<double>>>("VecDblObj")
+        .def(vector_indexing_suite<std::vector<std::vector<double>>>());
+
     class_<Parser>("Parser")
         .def(init<>())
         .def(init<Parser>())
         .def("parseMif", &Parser::parseMifFile)
-        // .add_property("fileList", &Parser::getVectors)
+        .def("getMif", &Parser::parseMifFile2)
         .add_property("xnodes", &Parser::getXnodes, &Parser::setX)
         .add_property("ynodes", &Parser::getYnodes, &Parser::setY)
         .add_property("znodes", &Parser::getZnodes, &Parser::setZ);

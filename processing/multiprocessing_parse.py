@@ -1,10 +1,12 @@
 import numpy as np
 import os
 import glob
+import re
+
+from CParse.Parser import Parser
 from multiprocessing import Pool
 from cython_modules.cython_parse import *
 from binaryornot.check import is_binary
-import re
 
 
 def asynchronous_pool_order(func, args, object_list, timeout=20):
@@ -229,19 +231,17 @@ class MultiprocessingParse:
                                    in a directory
         :return numpy array of vectors form .omf files
         """
-        output = asynchronous_pool_order(binary_format_reader, (),
-                                         files_in_directory,
-                                         timeout=20)
-        output = np.array(output)
-        headers = output[:, 0]
-        rawVectorData = output[:, 1]
+        p = Parser()
+        rawVectorData = []
+        for filename in files_in_directory:
+            rawVectorData.append(p.parseMif(filename))
         # test this solution, turn dtype object to float64
-        rawVectorData = np.array([x for x in rawVectorData], dtype=np.float32)
 
-        if rawVectorData is None or headers is None:
-            raise TypeError("\nNo vectors created")
+        # if rawVectorData is None or headers is None:
+        #     raise TypeError("\nNo vectors created")
 
-        assert rawVectorData.dtype == np.float32
+        # assert rawVectorData.dtype == np.float32
+        headers = {'xnodes': p.xnodes, 'ynodex': p.ynodes, 'znodes': p.znodes}
         return headers, rawVectorData
 
     @staticmethod
