@@ -217,9 +217,9 @@ class MultiprocessingParse:
                 raise ValueError("no .omf  or .ovf file has been found")
             header = getFileHeader(file_for_header[0])
         else:
-            headers, rawVectorData = MultiprocessingParse.readBinary(
+            header, rawVectorData = MultiprocessingParse.readBinary(
                 files_in_directory)
-            header = headers[0]
+            # header = headers[0]
             if not header:
                 raise ValueError("no .omf or .ovf file has been found")
         return rawVectorData, header, plot_data, stages, trigger_list
@@ -234,14 +234,16 @@ class MultiprocessingParse:
         p = Parser()
         rawVectorData = []
         for filename in files_in_directory:
-            rawVectorData.append(p.parseMif(filename))
+            rawVectorData.append(p.getMifAsNdarray(
+                filename).astype(np.float32))
         # test this solution, turn dtype object to float64
 
         # if rawVectorData is None or headers is None:
         #     raise TypeError("\nNo vectors created")
 
         # assert rawVectorData.dtype == np.float32
-        headers = {'xnodes': p.xnodes, 'ynodex': p.ynodes, 'znodes': p.znodes}
+        headers = {'xnodes': p.xnodes, 'ynodes': p.ynodes, 'znodes': p.znodes,
+                   'xbase': 1e-9, 'ybase': 1e-9, 'zbase': 1e-9}
         return headers, rawVectorData
 
     @staticmethod

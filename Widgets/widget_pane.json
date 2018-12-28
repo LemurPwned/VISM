@@ -1,6 +1,6 @@
 {
     "CubicGLContext": {
-                      "alias": "3D CUBIC",
+                      "alias": "3D_CUBIC",
                       "object": "CubicGLContext",
                       "object_type": "3d_object",
                       "settings": ["PerfOptions", "file_header",
@@ -17,7 +17,7 @@
                                    ["Text", "popup_text_selector"]]
                       },
     "ArrowGLContext": {
-                      "alias": "3D ARROW",
+                      "alias": "3D_ARROW",
                       "object": "ArrowGLContext",
                       "object_type": "3d_object",
                       "settings": ["ArrowPerfOptions", "file_header", 
