@@ -9,11 +9,15 @@
 #include <filesystem>
 #include <python3.7m/Python.h>
 #include <boost/python.hpp>
+#include <boost/python/numpy.hpp>
 
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/python/module.hpp>
 #include <boost/python/def.hpp>
 #include <boost/python/implicit.hpp>
+
+namespace p = boost::python;
+namespace np = boost::python::numpy;
 
 struct VectorObj
 {
@@ -91,12 +95,13 @@ struct Parser
         {
             if (i.is_regular_file() && i.path().extension() == ".omf")
             {
-                fileList.push_back(parseMifFile(i.path()));
+                fileList.push_back(getMifAsVectorObj(i.path()));
                 std::cout << i << std::endl;
             }
         }
     }
-    std::vector<VectorObj> parseMifFile(std::string path)
+
+    std::vector<VectorObj> getMifAsVectorObj(std::string path)
     {
         std::vector<VectorObj> vectors;
         std::string line;
@@ -169,7 +174,7 @@ struct Parser
         return vectors;
     }
 
-    std::vector<std::vector<double>> parseMifFile2(std::string path)
+    std::vector<std::vector<double>> getMifAsDblObj(std::string path)
     {
         std::vector<std::vector<double>> vectors;
         std::string line;
@@ -248,10 +253,103 @@ struct Parser
         }
         return vectors;
     }
+
+    boost::python::numpy::ndarray getMifAsNdarray(std::string path)
+    {
+        std::string line;
+        int buffer_size = 0;
+        int how_many_lines;
+        std::ifstream miffile(path, std::ios::out | std::ios_base::binary);
+
+        std::string reg_string("# xnodes:");
+        if (miffile.is_open())
+        {
+            while (std::getline(miffile, line))
+            {
+                if (line.at(0) == '#')
+                {
+                    if (line == "# Begin: Data Binary 8")
+                    {
+                        buffer_size = 8;
+                        break;
+                    }
+                    else if (line == "# Begin: Data Binary 4")
+                    {
+                        buffer_size = 4;
+                        break;
+                    }
+                    if (check && line.substr(0, reg_string.length()) == reg_string)
+                    {
+
+                        if (reg_string.at(2) == 'x')
+                        {
+                            xnodes = std::stoi(line.substr(reg_string.length(), line.length()));
+                            reg_string.at(2) = 'y';
+                        }
+                        else if (reg_string.at(2) == 'y')
+                        {
+                            ynodes = std::stoi(line.substr(reg_string.length(), line.length()));
+                            reg_string.at(2) = 'z';
+                        }
+                        else
+                        {
+                            znodes = std::stoi(line.substr(reg_string.length(), line.length()));
+                            check = false;
+                        }
+                    }
+                }
+                else
+                    break;
+            }
+            if (buffer_size <= 0)
+            {
+                throw "Invalid buffer size";
+            }
+
+            char IEEE_BUF[buffer_size];
+
+            miffile.read(IEEE_BUF, buffer_size);
+
+            double *IEEE_val = (double *)IEEE_BUF;
+            if (IEEE_val[0] != 123456789012345.0)
+            {
+                throw "IEEE value not consistent";
+            }
+
+            int lines = znodes * xnodes * ynodes;
+            char buffer[buffer_size * lines * 3];
+            miffile.read(buffer, buffer_size * lines * 3);
+            double *vals = (double *)buffer;
+            double *fut_ndarray = (double *)(malloc(sizeof(double) * lines * 3));
+            double mag;
+            for (int i = 0; i < lines * 3; i += 3)
+            {
+                mag = sqrt(pow(vals[i + 0], 2) + pow(vals[i + 1], 2) + pow(vals[i + 2], 2));
+                if (mag == 0.0)
+                    mag = 1.0;
+                fut_ndarray[i + 0] = vals[i + 0] / mag;
+                fut_ndarray[i + 1] = vals[i + 1] / mag;
+                fut_ndarray[i + 2] = vals[i + 2] / mag;
+            }
+
+            boost::python::numpy::dtype dt1 = boost::python::numpy::dtype::get_builtin<double>();
+            boost::python::tuple shape = boost::python::make_tuple(lines, 3);
+            boost::python::tuple stride = boost::python::make_tuple(3 * sizeof(double), sizeof(double));
+            boost::python::numpy::ndarray vectorData = boost::python::numpy::from_data(fut_ndarray,
+                                                                                       dt1,
+                                                                                       shape,
+                                                                                       stride,
+                                                                                       boost::python::object()); // this entry is object owner
+            miffile.close();
+            return vectorData;
+        }
+    }
 };
 
 BOOST_PYTHON_MODULE(Parser)
 {
+    boost::python::numpy::initialize();
+
     using namespace boost::python;
 
     class_<VectorObj>("VectorObj", init<double, double, double>())
@@ -266,14 +364,17 @@ BOOST_PYTHON_MODULE(Parser)
 
     class_<std::vector<double>>("DblObj")
         .def(vector_indexing_suite<std::vector<double>>());
+
     class_<std::vector<std::vector<double>>>("VecDblObj")
         .def(vector_indexing_suite<std::vector<std::vector<double>>>());
 
     class_<Parser>("Parser")
         .def(init<>())
         .def(init<Parser>())
-        .def("parseMif", &Parser::parseMifFile)
-        .def("getMif", &Parser::parseMifFile2)
+        .def("getMifAsVectorObj", &Parser::getMifAsVectorObj)
+        .def("getMifAsDblObj", &Parser::getMifAsDblObj)
+        .def("getMifAsNdarray", &Parser::getMifAsNdarray)
+
         .add_property("xnodes", &Parser::getXnodes, &Parser::setX)
         .add_property("ynodes", &Parser::getYnodes, &Parser::setY)
         .add_property("znodes", &Parser::getZnodes, &Parser::setZ);
