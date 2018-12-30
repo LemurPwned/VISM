@@ -71,22 +71,37 @@ struct VectorObj
 struct Parser
 {
     std::vector<std::vector<VectorObj>> fileList;
-    bool check = true;
+    bool checkBase = true;
+    bool checkNodes = true;
     int xnodes, ynodes, znodes;
+    double xbase, ybase, zbase;
+    std::string def_ext;
 
     Parser()
     {
         xnodes = 0;
         ynodes = 0;
         znodes = 0;
+
+        xbase = 0.0;
+        ybase = 0.0;
+        zbase = 0.0;
+
+        def_ext = ".omf";
     };
 
-    void setX(int val) { this->xnodes = val; }
-    void setY(int val) { this->ynodes = val; }
-    void setZ(int val) { this->znodes = val; }
+    void setXnodes(int val) { this->xnodes = val; }
+    void setYnodes(int val) { this->ynodes = val; }
+    void setZnodes(int val) { this->znodes = val; }
+    void setXbase(int val) { this->xbase = val; }
+    void setYbase(int val) { this->ybase = val; }
+    void setZbase(int val) { this->zbase = val; }
     int getXnodes() { return xnodes; }
     int getYnodes() { return ynodes; }
     int getZnodes() { return znodes; }
+    double getXbase() { return xbase; }
+    double getYbase() { return ybase; }
+    double getZbase() { return zbase; }
 
     std::vector<std::vector<VectorObj>> getVectors()
     {
@@ -105,7 +120,7 @@ struct Parser
             fs::directory_iterator end_iter;
             for (fs::directory_iterator dir_it(dirpath); dir_it != end_iter; dir_it++)
             {
-                if (fs::is_regular_file(dir_it->status()) && dir_it->path().extension() == ".omf")
+                if (fs::is_regular_file(dir_it->status()) && dir_it->path().extension() == this->def_ext)
                 {
                     std::cout << dir_it->path().string() << std::endl;
                 }
@@ -123,7 +138,9 @@ struct Parser
         std::string line;
         int buffer_size = 0;
 
-        std::string reg_string("# xnodes:");
+        std::string node_reg("# xnodes:");
+        std::string base_reg("# xbase:");
+
         if (miffile.is_open())
         {
             while (std::getline(miffile, line))
@@ -140,23 +157,42 @@ struct Parser
                         buffer_size = 4;
                     }
 
-                    if (check && line.substr(0, reg_string.length()) == reg_string)
+                    if (checkNodes && line.substr(0, node_reg.length()) == node_reg)
                     {
 
-                        if (reg_string.at(2) == 'x')
+                        if (node_reg.at(2) == 'x')
                         {
-                            xnodes = std::stoi(line.substr(reg_string.length(), line.length()));
-                            reg_string.at(2) = 'y';
+                            xnodes = std::stoi(line.substr(node_reg.length(), line.length()));
+                            node_reg.at(2) = 'y';
                         }
-                        else if (reg_string.at(2) == 'y')
+                        else if (node_reg.at(2) == 'y')
                         {
-                            ynodes = std::stoi(line.substr(reg_string.length(), line.length()));
-                            reg_string.at(2) = 'z';
+                            ynodes = std::stoi(line.substr(node_reg.length(), line.length()));
+                            node_reg.at(2) = 'z';
                         }
                         else
                         {
-                            znodes = std::stoi(line.substr(reg_string.length(), line.length()));
-                            check = false;
+                            znodes = std::stoi(line.substr(node_reg.length(), line.length()));
+                            checkNodes = false;
+                        }
+                    }
+                    if (checkBase && line.substr(0, base_reg.length()) == base_reg)
+                    {
+
+                        if (base_reg.at(2) == 'x')
+                        {
+                            xbase = std::stod(line.substr(base_reg.length(), line.length()));
+                            base_reg.at(2) = 'y';
+                        }
+                        else if (base_reg.at(2) == 'y')
+                        {
+                            ybase = std::stod(line.substr(base_reg.length(), line.length()));
+                            base_reg.at(2) = 'z';
+                        }
+                        else
+                        {
+                            zbase = std::stod(line.substr(base_reg.length(), line.length()));
+                            checkBase = false;
                         }
                     }
                 }
@@ -311,7 +347,11 @@ BOOST_PYTHON_MODULE(Parser)
         .def("getMifAsNdarray", &Parser::getMifAsNdarray)
         .def("getFileList", &Parser::listFiles)
 
-        .add_property("xnodes", &Parser::getXnodes, &Parser::setX)
-        .add_property("ynodes", &Parser::getYnodes, &Parser::setY)
-        .add_property("znodes", &Parser::getZnodes, &Parser::setZ);
+        .add_property("xnodes", &Parser::getXnodes, &Parser::setXnodes)
+        .add_property("ynodes", &Parser::getYnodes, &Parser::setYnodes)
+        .add_property("znodes", &Parser::getZnodes, &Parser::setZnodes)
+
+        .add_property("xbase", &Parser::getXbase, &Parser::setXbase)
+        .add_property("ybase", &Parser::getYbase, &Parser::setYbase)
+        .add_property("zbase", &Parser::getZbase, &Parser::setZbase);
 }
