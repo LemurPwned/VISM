@@ -119,7 +119,6 @@ class MultiprocessingParse:
         # tbh I am not sure but it helps fix issue
         if voted_extension is None:
             raise ValueError("Invalid Directory")
-        print("SUPPORTED EXTENSION DETECTED {}".format(voted_extension))
         files_in_directory = [os.path.join(directory, filename)
                               for filename in files_in_directory
                               if filename.endswith(voted_extension[0])]
@@ -219,13 +218,40 @@ class MultiprocessingParse:
         else:
             header, rawVectorData = MultiprocessingParse.readBinary(
                 files_in_directory)
-            # header = headers[0]
             if not header:
                 raise ValueError("no .omf or .ovf file has been found")
         return rawVectorData, header, plot_data, stages, trigger_list
 
     @staticmethod
     def readBinary(files_in_directory):
+        """
+        :param files_in_directory: is a list of binary filenames
+                                in a directory
+        :return numpy array of vectors form .omf files
+        """
+        try:
+                # if boost has been compiled try it
+            return MultiprocessingParse.readBinaryWithC(files_in_directory)
+        except Exception as e:
+            print(f"FAILED to use boost compiled libs because of {e}")
+            output = asynchronous_pool_order(binary_format_reader, (),
+                                             files_in_directory,
+                                             timeout=20)
+            output = np.array(output)
+            headers = output[:, 0][0]
+            rawVectorData = output[:, 1]
+            # test this solution, turn dtype object to float64
+            rawVectorData = np.array(
+                [x for x in rawVectorData], dtype=np.float32)
+
+            if rawVectorData is None or headers is None:
+                raise TypeError("\nNo vectors created")
+
+            assert rawVectorData.dtype == np.float32
+            return headers, rawVectorData
+
+    @staticmethod
+    def readBinaryWithC(files_in_directory):
         """
         :param files_in_directory: is a list of binary filenames
                                    in a directory
@@ -236,14 +262,9 @@ class MultiprocessingParse:
         for filename in files_in_directory:
             rawVectorData.append(p.getMifAsNdarray(
                 filename).astype(np.float32))
-        # test this solution, turn dtype object to float64
 
-        # if rawVectorData is None or headers is None:
-        #     raise TypeError("\nNo vectors created")
-
-        # assert rawVectorData.dtype == np.float32
         headers = {'xnodes': p.xnodes, 'ynodes': p.ynodes, 'znodes': p.znodes,
-                   'xbase': 1e-9, 'ybase': 1e-9, 'zbase': 1e-9}
+                   'xbase': p.xbase, 'ybase': p.ybase, 'zbase': p.zbase}
         return headers, rawVectorData
 
     @staticmethod
