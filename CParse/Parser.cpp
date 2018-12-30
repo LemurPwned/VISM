@@ -16,6 +16,11 @@
 #include <boost/python/def.hpp>
 #include <boost/python/implicit.hpp>
 
+#include "boost/filesystem.hpp"
+#include "boost/filesystem/operations.hpp"
+#include "boost/filesystem/path.hpp"
+
+namespace fs = boost::filesystem;
 namespace p = boost::python;
 namespace np = boost::python::numpy;
 
@@ -88,26 +93,35 @@ struct Parser
         return fileList;
     }
 
-    void listFiles(std::string dirpath)
+    int listFiles(std::string dirpath)
     {
-
-        for (auto &i : std::filesystem::directory_iterator(dirpath))
+        if (!fs::exists(dirpath))
         {
-            if (i.is_regular_file() && i.path().extension() == ".omf")
+            std::cout << "\nNot found: " << dirpath << std::endl;
+            return 1;
+        }
+        if (fs::is_directory(dirpath))
+        {
+            fs::directory_iterator end_iter;
+            for (fs::directory_iterator dir_it(dirpath); dir_it != end_iter; dir_it++)
             {
-                fileList.push_back(getMifAsVectorObj(i.path()));
-                std::cout << i << std::endl;
+                if (fs::is_regular_file(dir_it->status()) && dir_it->path().extension() == ".omf")
+                {
+                    std::cout << dir_it->path().string() << std::endl;
+                }
             }
         }
+        else
+        {
+            std::cout << "\nNot a directory: " << dirpath << std::endl;
+        }
+        return 0;
     }
 
-    std::vector<VectorObj> getMifAsVectorObj(std::string path)
+    int getMifHeader(std::ifstream &miffile)
     {
-        std::vector<VectorObj> vectors;
         std::string line;
         int buffer_size = 0;
-        int how_many_lines;
-        std::ifstream miffile(path, std::ios::out | std::ios_base::binary);
 
         std::string reg_string("# xnodes:");
         if (miffile.is_open())
@@ -120,6 +134,10 @@ struct Parser
                     {
                         buffer_size = 8;
                         break;
+                    }
+                    else if (line == "# Begin: Data Binary 4")
+                    {
+                        buffer_size = 4;
                     }
 
                     if (check && line.substr(0, reg_string.length()) == reg_string)
@@ -158,196 +176,113 @@ struct Parser
             {
                 throw "IEEE value not consistent";
             }
-
-            int lines = znodes * xnodes * ynodes;
-            char buffer[buffer_size * lines * 3];
-            miffile.read(buffer, buffer_size * lines * 3);
-            double *vals = (double *)buffer;
-
-            for (int i = 0; i < lines; i += 3)
-            {
-                vectors.push_back(VectorObj(vals[i + 0], vals[i + 1], vals[i + 2]));
-            }
-
-            miffile.close();
+            return buffer_size;
         }
+        else
+        {
+            throw std::runtime_error("Invalid mif file");
+        }
+        return 0;
+    }
+
+    std::vector<VectorObj> getMifAsVectorObj(std::string path)
+    {
+        std::vector<VectorObj> vectors;
+        std::ifstream miffile;
+        miffile.open(path, std::ios::out | std::ios_base::binary);
+
+        int buffer_size = getMifHeader(miffile);
+        if (buffer_size == 0)
+        {
+            miffile.close();
+            throw std::runtime_error("Invalid mif file");
+        }
+        int lines = znodes * xnodes * ynodes;
+        char buffer[buffer_size * lines * 3];
+        miffile.read(buffer, buffer_size * lines * 3);
+        double *vals = (double *)buffer;
+
+        for (int i = 0; i < lines; i += 3)
+        {
+            vectors.push_back(VectorObj(vals[i + 0], vals[i + 1], vals[i + 2]));
+        }
+
+        miffile.close();
         return vectors;
     }
 
     std::vector<std::vector<double>> getMifAsDblObj(std::string path)
     {
         std::vector<std::vector<double>> vectors;
-        std::string line;
-        int buffer_size = 0;
-        int how_many_lines;
-        std::ifstream miffile(path, std::ios::out | std::ios_base::binary);
 
-        std::string reg_string("# xnodes:");
-        if (miffile.is_open())
+        std::ifstream miffile;
+        miffile.open(path, std::ios::out | std::ios_base::binary);
+        int buffer_size = getMifHeader(miffile);
+        if (buffer_size == 0)
         {
-            while (std::getline(miffile, line))
-            {
-                if (line.at(0) == '#')
-                {
-                    if (line == "# Begin: Data Binary 8")
-                    {
-                        buffer_size = 8;
-                        break;
-                    }
-                    else if (line == "# Begin: Data Binary 4")
-                    {
-                        buffer_size = 4;
-                        break;
-                    }
-                    if (check && line.substr(0, reg_string.length()) == reg_string)
-                    {
-
-                        if (reg_string.at(2) == 'x')
-                        {
-                            xnodes = std::stoi(line.substr(reg_string.length(), line.length()));
-                            reg_string.at(2) = 'y';
-                        }
-                        else if (reg_string.at(2) == 'y')
-                        {
-                            ynodes = std::stoi(line.substr(reg_string.length(), line.length()));
-                            reg_string.at(2) = 'z';
-                        }
-                        else
-                        {
-                            znodes = std::stoi(line.substr(reg_string.length(), line.length()));
-                            check = false;
-                        }
-                    }
-                }
-                else
-                    break;
-            }
-            if (buffer_size <= 0)
-            {
-                throw "Invalid buffer size";
-            }
-
-            char IEEE_BUF[buffer_size];
-
-            miffile.read(IEEE_BUF, buffer_size);
-
-            double *IEEE_val = (double *)IEEE_BUF;
-            if (IEEE_val[0] != 123456789012345.0)
-            {
-                throw "IEEE value not consistent";
-            }
-
-            int lines = znodes * xnodes * ynodes;
-            char buffer[buffer_size * lines * 3];
-            miffile.read(buffer, buffer_size * lines * 3);
-            double *vals = (double *)buffer;
-            for (int i = 0; i < lines * 3; i += 3)
-            {
-                std::vector<double> tmp = {vals[i + 0], vals[i + 1], vals[i + 2]};
-                vectors.push_back(tmp);
-                // vectors.insert(vector.end(),
-                //                {vals[i + 0], vals[i + 1], vals[i + 2]});
-            }
-
             miffile.close();
+            throw std::runtime_error("Invalid mif file");
         }
+        int lines = znodes * xnodes * ynodes;
+        char buffer[buffer_size * lines * 3];
+        miffile.read(buffer, buffer_size * lines * 3);
+        double *vals = (double *)buffer;
+        for (int i = 0; i < lines * 3; i += 3)
+        {
+            std::vector<double> tmp = {vals[i + 0], vals[i + 1], vals[i + 2]};
+            vectors.push_back(tmp);
+        }
+
+        miffile.close();
         return vectors;
     }
 
-    boost::python::numpy::ndarray getMifAsNdarray(std::string path)
+    np::ndarray getMifAsNdarray(std::string path)
     {
-        std::string line;
-        int buffer_size = 0;
-        int how_many_lines;
-        std::ifstream miffile(path, std::ios::out | std::ios_base::binary);
 
-        std::string reg_string("# xnodes:");
-        if (miffile.is_open())
+        std::ifstream miffile;
+        miffile.open(path, std::ios::out | std::ios_base::binary);
+        int buffer_size = getMifHeader(miffile);
+        if (buffer_size == 0)
         {
-            while (std::getline(miffile, line))
-            {
-                if (line.at(0) == '#')
-                {
-                    if (line == "# Begin: Data Binary 8")
-                    {
-                        buffer_size = 8;
-                        break;
-                    }
-                    else if (line == "# Begin: Data Binary 4")
-                    {
-                        buffer_size = 4;
-                        break;
-                    }
-                    if (check && line.substr(0, reg_string.length()) == reg_string)
-                    {
-
-                        if (reg_string.at(2) == 'x')
-                        {
-                            xnodes = std::stoi(line.substr(reg_string.length(), line.length()));
-                            reg_string.at(2) = 'y';
-                        }
-                        else if (reg_string.at(2) == 'y')
-                        {
-                            ynodes = std::stoi(line.substr(reg_string.length(), line.length()));
-                            reg_string.at(2) = 'z';
-                        }
-                        else
-                        {
-                            znodes = std::stoi(line.substr(reg_string.length(), line.length()));
-                            check = false;
-                        }
-                    }
-                }
-                else
-                    break;
-            }
-            if (buffer_size <= 0)
-            {
-                throw "Invalid buffer size";
-            }
-
-            char IEEE_BUF[buffer_size];
-
-            miffile.read(IEEE_BUF, buffer_size);
-
-            double *IEEE_val = (double *)IEEE_BUF;
-            if (IEEE_val[0] != 123456789012345.0)
-            {
-                throw "IEEE value not consistent";
-            }
-
-            int lines = znodes * xnodes * ynodes;
-            char buffer[buffer_size * lines * 3];
-            miffile.read(buffer, buffer_size * lines * 3);
-            double *vals = (double *)buffer;
-            double *fut_ndarray = (double *)(malloc(sizeof(double) * lines * 3));
-            double mag;
-            for (int i = 0; i < lines * 3; i += 3)
-            {
-                mag = sqrt(pow(vals[i + 0], 2) + pow(vals[i + 1], 2) + pow(vals[i + 2], 2));
-                if (mag == 0.0)
-                    mag = 1.0;
-                fut_ndarray[i + 0] = vals[i + 0] / mag;
-                fut_ndarray[i + 1] = vals[i + 1] / mag;
-                fut_ndarray[i + 2] = vals[i + 2] / mag;
-            }
-
-            boost::python::numpy::dtype dt1 = boost::python::numpy::dtype::get_builtin<double>();
-            boost::python::tuple shape = boost::python::make_tuple(lines, 3);
-            boost::python::tuple stride = boost::python::make_tuple(3 * sizeof(double), sizeof(double));
-            boost::python::numpy::ndarray vectorData = boost::python::numpy::from_data(fut_ndarray,
-                                                                                       dt1,
-                                                                                       shape,
-                                                                                       stride,
-                                                                                       boost::python::object()); // this entry is object owner
             miffile.close();
-            return vectorData;
+            throw std::runtime_error("Invalid mif file");
         }
+
+        int lines = znodes * xnodes * ynodes;
+        char buffer[buffer_size * lines * 3];
+        miffile.read(buffer, buffer_size * lines * 3);
+        double *vals = (double *)buffer;
+        double *fut_ndarray = (double *)(malloc(sizeof(double) * lines * 3));
+        double mag;
+        for (int i = 0; i < lines * 3; i += 3)
+        {
+            mag = sqrt(pow(vals[i + 0], 2) + pow(vals[i + 1], 2) + pow(vals[i + 2], 2));
+            if (mag == 0.0)
+                mag = 1.0;
+            fut_ndarray[i + 0] = vals[i + 0] / mag;
+            fut_ndarray[i + 1] = vals[i + 1] / mag;
+            fut_ndarray[i + 2] = vals[i + 2] / mag;
+        }
+
+        // use explicit namespace here to make sure it does not mix the functions
+        boost::python::numpy::dtype dt1 = boost::python::numpy::dtype::get_builtin<double>();
+        boost::python::tuple shape = boost::python::make_tuple(lines, 3);
+        boost::python::tuple stride = boost::python::make_tuple(3 * sizeof(double), sizeof(double));
+        boost::python::numpy::ndarray vectorData = boost::python::numpy::from_data(fut_ndarray,
+                                                                                   dt1,
+                                                                                   shape,
+                                                                                   stride,
+                                                                                   boost::python::object());
+        // last entry is object owner
+        miffile.close();
+        return vectorData;
     }
 };
 
 BOOST_PYTHON_MODULE(Parser)
 {
+    // avoids the SIGSEV on dtype in numpy initialization
     boost::python::numpy::initialize();
 
     using namespace boost::python;
@@ -374,6 +309,7 @@ BOOST_PYTHON_MODULE(Parser)
         .def("getMifAsVectorObj", &Parser::getMifAsVectorObj)
         .def("getMifAsDblObj", &Parser::getMifAsDblObj)
         .def("getMifAsNdarray", &Parser::getMifAsNdarray)
+        .def("getFileList", &Parser::listFiles)
 
         .add_property("xnodes", &Parser::getXnodes, &Parser::setX)
         .add_property("ynodes", &Parser::getYnodes, &Parser::setY)
