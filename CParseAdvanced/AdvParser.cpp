@@ -150,6 +150,14 @@ struct AdvParser
         vec[2] = mat[2][0] * c[0] + mat[2][1] * c[1] + mat[2][2] * c[2];
     }
 
+    void matrix_vector_cpy(double mat[3][3], double c[3], double vec[3])
+    {
+        // only 3 x 1, not inplace
+        vec[0] = mat[0][0] * c[0] + mat[0][1] * c[1] + mat[0][2] * c[2];
+        vec[1] = mat[1][0] * c[0] + mat[1][1] * c[1] + mat[1][2] * c[2];
+        vec[2] = mat[2][0] * c[0] + mat[2][1] * c[1] + mat[2][2] * c[2];
+    }
+
     void generateVectors(double *vbo,
                          int *offset,
                          double position[3],
@@ -170,38 +178,41 @@ struct AdvParser
             {ct, -st * cp, st * sp},
             {st, cp * ct, -sp * ct},
             {0, sp, cp}};
-        double origin_base[3], tmp_operator[12];
+        double origin_base[3], tmp_operator[12], cpy[3];
         double cyllinder_co_rot[3] = {radius, radius, 0};
         double cone_co_rot[3] = {2 * radius, 2 * radius, 0};
         std::memcpy(origin_base, position, sizeof(double) * 3);
+
         for (int i = 0; i < resolution - 1; i++)
         {
             // bottom triangle - cyllinder
-            matrix_vector_mul(rotation_matrix, cyllinder_co_rot);
-            tmp_operator[0] = origin_base[0] + cyllinder_co_rot[0];
-            tmp_operator[1] = origin_base[1] + cyllinder_co_rot[1];
-            tmp_operator[2] = origin_base[2] + cyllinder_co_rot[2];
+            matrix_vector_cpy(rotation_matrix, cyllinder_co_rot, cpy);
+            tmp_operator[0] = origin_base[0] + cpy[0];
+            tmp_operator[1] = origin_base[1] + cpy[1];
+            tmp_operator[2] = origin_base[2] + cpy[2];
 
             // bottom triangle - cone
-            cone_co_rot[2] += height;
-            matrix_vector_mul(rotation_matrix, cone_co_rot);
-            tmp_operator[3] = origin_base[0] + cone_co_rot[0];
-            tmp_operator[4] = origin_base[1] + cone_co_rot[1];
-            tmp_operator[5] = origin_base[2] + cone_co_rot[2];
+            matrix_vector_cpy(rotation_matrix, cone_co_rot, cpy);
+            cpy[2] += height;
+            tmp_operator[3] = origin_base[0] + cpy[0];
+            tmp_operator[4] = origin_base[1] + cpy[1];
+            tmp_operator[5] = origin_base[2] + cpy[2];
 
             // top triangle - cyllinder
-            cyllinder_co_rot[2] += height;
-            matrix_vector_mul(rotation_matrix, cyllinder_co_rot);
-            tmp_operator[6] = origin_base[0] + cyllinder_co_rot[0];
-            tmp_operator[7] = origin_base[1] + cyllinder_co_rot[1];
-            tmp_operator[8] = origin_base[2] + cyllinder_co_rot[2];
+            matrix_vector_cpy(rotation_matrix, cyllinder_co_rot, cpy);
+            cpy[2] += height;
+            tmp_operator[6] = origin_base[0] + cpy[0];
+            tmp_operator[7] = origin_base[1] + cpy[1];
+            tmp_operator[8] = origin_base[2] + cpy[2];
 
             // top triangle - cone
             matrix_vector_mul(rotation_matrix, height_operator);
             tmp_operator[9] = origin_base[0] + height_operator[0];
             tmp_operator[10] = origin_base[1] + height_operator[1];
             tmp_operator[11] = origin_base[2] + height_operator[2];
-
+            height_operator[0] = 0;
+            height_operator[1] = 0;
+            height_operator[2] = 1.5 * height;
             matrix_vector_mul(t_rotation, cyllinder_co_rot);
             matrix_vector_mul(t_rotation, cone_co_rot);
 
@@ -241,8 +252,8 @@ struct AdvParser
         tmp_operator[9] = origin_base[0] + height_operator[0];
         tmp_operator[10] = origin_base[1] + height_operator[1];
         tmp_operator[11] = origin_base[2] + height_operator[2];
-        *offset += 12;
         std::memcpy(vbo + *offset, tmp_operator, 12 * sizeof(double));
+        *offset += 12;
     }
 
     void generateCubes(double *sh, double position[3], double dimensions[3], int current_pos)
@@ -281,6 +292,29 @@ struct AdvParser
         std::memcpy(sh + current_pos, arr, sizeof(double) * 72);
     }
 
+    np::ndarray generateIndices(int N, int index_required)
+    {
+        uint32_t start_index = 0;
+        uint32_t *indices = (uint32_t *)malloc(sizeof(uint32_t) * (3 * (index_required - 2) * N));
+        for (uint32_t n = 0; n < N; n++)
+        {
+            start_index = n * index_required * 3;
+            for (uint32_t i = 0; i < (index_required - 2) * 3; i += 3)
+            {
+                indices[n * index_required + i + 0] = start_index + i - 3;
+                indices[n * index_required + i + 1] = start_index + i - 2;
+                indices[n * index_required + i + 2] = start_index + i - 1;
+            }
+        }
+        np::dtype dt = np::dtype::get_builtin<uint32_t>();
+        p::tuple shape = p::make_tuple(3 * (index_required - 2) * N);
+        p::tuple stride = p::make_tuple(sizeof(uint32_t));
+        return np::from_data(indices,
+                             dt,
+                             shape,
+                             stride,
+                             p::object());
+    }
     np::ndarray getCubeOutline(int xn, int yn, int zn,
                                double xb, double yb, double zb,
                                int per_vertex)
@@ -410,11 +444,12 @@ struct AdvParser
     {
         double *sh = (double *)(malloc(sizeof(double) * xnodes * ynodes * znodes * 3));
         int current_pos = 0;
-        for (int z = 0; z < zn; z++)
+        int sampling = 1;
+        for (int z = 0; z < zn; z += sampling)
         {
-            for (int y = 0; y < yn; y++)
+            for (int y = 0; y < yn; y += sampling)
             {
-                for (int x = 0; x < xn; x++)
+                for (int x = 0; x < xn; x += sampling)
                 {
                     sh[current_pos + 0] = xb * (x % xn) - xn * xb / 2;
                     sh[current_pos + 1] = yb * (y % yn) - yn * yb / 2;
@@ -479,7 +514,8 @@ struct AdvParser
         double mag, dot;
         double *array_to_cpy = (double *)(malloc(sizeof(double) * 3));
         int offset = 0;
-        for (int i = 0; i < lines * 3; i += 3)
+        int sampling = 1;
+        for (int i = 0; i < lines * 3; i += 3 * sampling)
         {
             mag = sqrt(pow(vals[i + 0], 2) + pow(vals[i + 1], 2) + pow(vals[i + 2], 2));
             if (mag == 0.0)
@@ -537,7 +573,8 @@ struct AdvParser
             {s, c, 0},
             {0, 0, 1}};
 
-        for (int i = 0; i < xnodes * ynodes * znodes * 3; i += 3)
+        int sampling = 1;
+        for (int i = 0; i < xnodes * ynodes * znodes * 3; i += 3 * sampling)
         {
             pos[0] = p ::extract<double>(shape_outline[i + 0]);
             pos[1] = p ::extract<double>(shape_outline[i + 1]);
@@ -550,8 +587,8 @@ struct AdvParser
                             pos,
                             vec,
                             t_rotation,
-                            1.0,
-                            1.0,
+                            0.5,
+                            0.5,
                             resolution);
         }
         np::dtype dt = np::dtype::get_builtin<double>();
@@ -580,6 +617,7 @@ BOOST_PYTHON_MODULE(AdvParser)
         .def("getHeader", &AdvParser::getHeader)
         .def("getShapeAsNdarray", &AdvParser::getShapeAsNdarray)
         .def("getArrows", &AdvParser::getArrows)
+        .def("generateIndices", &AdvParser::generateIndices)
 
         .add_property("xnodes", &AdvParser::getXnodes, &AdvParser::setXnodes)
         .add_property("ynodes", &AdvParser::getYnodes, &AdvParser::setYnodes)
