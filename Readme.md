@@ -1,4 +1,4 @@
-### Spintronics Visual
+### VISM Visualistaion for Spin Magnetics
 Software for agile visualisation of magnetisation dynamics.
 
 
