@@ -522,47 +522,48 @@ struct AdvParser
         double *array_to_cpy = (double *)(malloc(sizeof(double) * 3));
         int offset = 0;
         int i;
-        // for (int z = 0; z < znodes; z += sampling)
-        // {
-        //     for (int y = 0; y < ynodes; y += sampling)
-        //     {
-        //         for (int x = 0; x < xnodes; x += sampling)
-        //         {
         int index = 0;
-        for (int i = 0; i < xnodes * ynodes * znodes * 3; i += 3 * sampling)
+
+        for (int z = 0; z < znodes; z += 1)
         {
-            // i = 3 * (x + xnodes * y + xnodes * ynodes * z);
-            mag = sqrt(pow(vals[index + 0], 2) + pow(vals[index + 1], 2) + pow(vals[index + 2], 2));
-            if (mag == 0.0)
-                mag = 1.0;
-            dot = (vals[index + 0] / mag) * color_vector[0] +
-                  (vals[index + 1] / mag) * color_vector[1] +
-                  (vals[index + 2] / mag) * color_vector[2];
+            for (int y = 0; y < ynodes; y += sampling)
+            {
+                for (int x = 0; x < xnodes; x += sampling)
+                {
+                    // for (int i = 0; i < xnodes * ynodes * znodes * 3; i += 3 * sampling)
+                    // {
+                    index = 3 * (x + xnodes * y + xnodes * ynodes * z);
+                    mag = sqrt(pow(vals[index + 0], 2) + pow(vals[index + 1], 2) + pow(vals[index + 2], 2));
+                    if (mag == 0.0)
+                        mag = 1.0;
+                    dot = (vals[index + 0] / mag) * color_vector[0] +
+                          (vals[index + 1] / mag) * color_vector[1] +
+                          (vals[index + 2] / mag) * color_vector[2];
 
-            if (dot > 0)
-            {
-                array_to_cpy[0] = positive_color[0] * dot + (1.0 - dot);
-                array_to_cpy[1] = positive_color[1] * dot + (1.0 - dot);
-                array_to_cpy[2] = positive_color[2] * dot + (1.0 - dot);
-            }
-            else
-            {
-                dot *= -1;
+                    if (dot > 0)
+                    {
+                        array_to_cpy[0] = positive_color[0] * dot + (1.0 - dot);
+                        array_to_cpy[1] = positive_color[1] * dot + (1.0 - dot);
+                        array_to_cpy[2] = positive_color[2] * dot + (1.0 - dot);
+                    }
+                    else
+                    {
+                        dot *= -1;
 
-                array_to_cpy[0] = negative_color[0] * dot + (1.0 - dot);
-                array_to_cpy[1] = negative_color[1] * dot + (1.0 - dot);
-                array_to_cpy[2] = negative_color[2] * dot + (1.0 - dot);
+                        array_to_cpy[0] = negative_color[0] * dot + (1.0 - dot);
+                        array_to_cpy[1] = negative_color[1] * dot + (1.0 - dot);
+                        array_to_cpy[2] = negative_color[2] * dot + (1.0 - dot);
+                    }
+                    for (int inf = 0; inf < inflate; inf++)
+                    {
+                        std::memcpy(fut_ndarray + offset, array_to_cpy, sizeof(double) * 3);
+                        offset += 3;
+                    }
+                    // index += 3;
+                }
             }
-            for (int inf = 0; inf < inflate; inf++)
-            {
-                std::memcpy(fut_ndarray + offset, array_to_cpy, sizeof(double) * 3);
-                offset += 3;
-            }
-            index += 3;
-            // }
-            // }
-            // }
         }
+        // }
 
         np::dtype dt = np::dtype::get_builtin<double>();
         p::tuple shape = p::make_tuple(lines * 3 * inflate);
@@ -577,7 +578,9 @@ struct AdvParser
     np::ndarray getArrows(np::ndarray shape_outline,
                           np::ndarray vectors,
                           int resolution,
-                          int sampling)
+                          int sampling,
+                          double height,
+                          double radius)
     {
         int inflate = 4 * resolution;
 
@@ -593,37 +596,37 @@ struct AdvParser
             {s, c, 0},
             {0, 0, 1}};
 
-        // int i;
-        // for (int z = 0; z < znodes; z += sampling)
-        // {
-        //     for (int y = 0; y < ynodes; y += sampling)
-        //     {
-        //         for (int x = 0; x < xnodes; x += sampling)
-        //         {
-        //             i = 3 * (x + xnodes * y + xnodes * ynodes * z);
-
-        //         }
-        //     }
-        // }
         int index = 0;
-        for (int i = 0; i < xnodes * ynodes * znodes * 3; i += 3 * sampling)
+        for (int z = 0; z < znodes; z += 1)
         {
-            pos[0] = p ::extract<double>(shape_outline[index + 0]);
-            pos[1] = p ::extract<double>(shape_outline[index + 1]);
-            pos[2] = p ::extract<double>(shape_outline[index + 2]);
-            vec[0] = p ::extract<double>(vectors[index + 0]);
-            vec[1] = p ::extract<double>(vectors[index + 1]);
-            vec[2] = p ::extract<double>(vectors[index + 2]);
-            generateVectors(fut_ndarray,
-                            &offset,
-                            pos,
-                            vec,
-                            t_rotation,
-                            1.0,
-                            0.25,
-                            resolution);
-            index += 3;
+            for (int y = 0; y < ynodes; y += sampling)
+            {
+                for (int x = 0; x < xnodes; x += sampling)
+                {
+                    index = 3 * (x + xnodes * y + xnodes * ynodes * z);
+                    pos[0] = p ::extract<double>(shape_outline[index + 0]);
+                    pos[1] = p ::extract<double>(shape_outline[index + 1]);
+                    pos[2] = p ::extract<double>(shape_outline[index + 2]);
+                    vec[0] = p ::extract<double>(vectors[index + 0]);
+                    vec[1] = p ::extract<double>(vectors[index + 1]);
+                    vec[2] = p ::extract<double>(vectors[index + 2]);
+                    generateVectors(fut_ndarray,
+                                    &offset,
+                                    pos,
+                                    vec,
+                                    t_rotation,
+                                    height,
+                                    radius,
+                                    resolution);
+                    // index += 3;
+                }
+            }
         }
+        // int index = 0;
+        // for (int i = 0; i < xnodes * ynodes * znodes * 3; i += 3 * sampling)
+        // {
+
+        // }
         np::dtype dt = np::dtype::get_builtin<double>();
         p::tuple shape = p::make_tuple(xnodes * ynodes * znodes * 3 * inflate);
         p::tuple stride = p::make_tuple(sizeof(double));

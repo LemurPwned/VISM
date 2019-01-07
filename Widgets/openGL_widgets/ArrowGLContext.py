@@ -77,7 +77,7 @@ class ArrowGLContext(AbstractGLContext, QWidget):
 
     def generate_index(self):
         """
-        this constructs the index list for vbos in order 
+        this constructs the index list for vbos in order
         to reduce memory needed to generate all vertices
         If one vertex repeats in a structure, instead of copying
         it, the number is assigend that is then later copied.
