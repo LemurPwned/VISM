@@ -130,7 +130,7 @@ struct AdvParser
             double *IEEE_val = (double *)IEEE_BUF;
             if (IEEE_val[0] != 123456789012345.0)
             {
-                throw "IEEE value not consistent";
+                throw std::runtime_error("IEEE value not consistent");
             }
             return buffer_size;
         }
@@ -158,6 +158,13 @@ struct AdvParser
         vec[2] = mat[2][0] * c[0] + mat[2][1] * c[1] + mat[2][2] * c[2];
     }
 
+    void a_cross_b(double a[3], double b[3], double c[3])
+    {
+        c[0] = a[1] * b[2] - a[2] * b[1];
+        c[1] = a[2] * b[0] - a[0] * b[2];
+        c[2] = a[0] * b[1] - a[1] * b[0];
+    }
+
     void generateVectors(double *vbo,
                          int *offset,
                          double position[3],
@@ -168,7 +175,6 @@ struct AdvParser
                          int resolution)
     {
         double height_operator[3] = {0, 0, height * 1.5};
-
         double mag = sqrt(pow(vector[0], 2) +
                           pow(vector[1], 2) +
                           pow(vector[2], 2));
@@ -182,84 +188,150 @@ struct AdvParser
             {ct, -st * cp, st * sp},
             {st, cp * ct, -sp * ct},
             {0, sp, cp}};
-        double origin_base[3], tmp_operator[12], cpy[3];
+        double origin_base[3], cpy[3];
         double cyllinder_co_rot[3] = {radius, radius, 0};
         double cone_co_rot[3] = {2 * radius, 2 * radius, 0};
         std::memcpy(origin_base, position, sizeof(double) * 3);
-
+        double n[3], u[3], v[3];
         for (int i = 0; i < (resolution - 1); i++)
         {
             // bottom triangle - cyllinder
             matrix_vector_cpy(rotation_matrix, cyllinder_co_rot, cpy);
-            tmp_operator[0] = origin_base[0] + cpy[0];
-            tmp_operator[1] = origin_base[1] + cpy[1];
-            tmp_operator[2] = origin_base[2] + cpy[2];
+            vbo[*offset + 0] = origin_base[0] + cpy[0];
+            vbo[*offset + 1] = origin_base[1] + cpy[1];
+            vbo[*offset + 2] = origin_base[2] + cpy[2];
 
             // bottom triangle - cone
             cone_co_rot[2] += height;
             matrix_vector_cpy(rotation_matrix, cone_co_rot, cpy);
-            tmp_operator[3] = origin_base[0] + cpy[0];
-            tmp_operator[4] = origin_base[1] + cpy[1];
-            tmp_operator[5] = origin_base[2] + cpy[2];
+            vbo[*offset + 3] = origin_base[0] + cpy[0];
+            vbo[*offset + 4] = origin_base[1] + cpy[1];
+            vbo[*offset + 5] = origin_base[2] + cpy[2];
 
             // top triangle - cyllinder
             cyllinder_co_rot[2] += height;
             matrix_vector_cpy(rotation_matrix, cyllinder_co_rot, cpy);
-            tmp_operator[6] = origin_base[0] + cpy[0];
-            tmp_operator[7] = origin_base[1] + cpy[1];
-            tmp_operator[8] = origin_base[2] + cpy[2];
+            vbo[*offset + 12] = origin_base[0] + cpy[0];
+            vbo[*offset + 13] = origin_base[1] + cpy[1];
+            vbo[*offset + 14] = origin_base[2] + cpy[2];
 
             // top triangle - cone
             matrix_vector_mul(rotation_matrix, height_operator);
-            tmp_operator[9] = origin_base[0] + height_operator[0];
-            tmp_operator[10] = origin_base[1] + height_operator[1];
-            tmp_operator[11] = origin_base[2] + height_operator[2];
+            vbo[*offset + 15] = origin_base[0] + height_operator[0];
+            vbo[*offset + 16] = origin_base[1] + height_operator[1];
+            vbo[*offset + 17] = origin_base[2] + height_operator[2];
             height_operator[0] = 0;
             height_operator[1] = 0;
             height_operator[2] = 1.5 * height;
             cyllinder_co_rot[2] -= height;
             cone_co_rot[2] -= height;
+
             matrix_vector_mul(t_rotation, cyllinder_co_rot);
             matrix_vector_mul(t_rotation, cone_co_rot);
 
-            std::memcpy(vbo + *offset, tmp_operator, 12 * sizeof(double));
-            *offset += 12;
-        }
-        // reset roational vectors to its defaults
+            if (i > 0)
+            {
+                // firstly compute the later indices for vertex
+                // because we will use them to compute the normals
 
+                // normals to the cyllinder triangle
+                u[0] = vbo[*offset + 0] - vbo[*offset - 24 + 12];
+                u[1] = vbo[*offset + 1] - vbo[*offset - 24 + 13];
+                u[2] = vbo[*offset + 2] - vbo[*offset - 24 + 14];
+
+                v[0] = vbo[*offset + 12] - vbo[*offset - 24 + 12];
+                v[1] = vbo[*offset + 13] - vbo[*offset - 24 + 13];
+                v[2] = vbo[*offset + 14] - vbo[*offset - 24 + 14];
+
+                // cross product
+                a_cross_b(u, v, n);
+                vbo[*offset - 24 + 6] = n[0];
+                vbo[*offset - 24 + 7] = n[1];
+                vbo[*offset - 24 + 8] = n[2];
+
+                // normals to the cone triangle
+                u[0] = vbo[*offset + 3] - vbo[*offset - 24 + 15];
+                u[1] = vbo[*offset + 4] - vbo[*offset - 24 + 16];
+                u[2] = vbo[*offset + 5] - vbo[*offset - 24 + 17];
+
+                v[0] = vbo[*offset + 15] - vbo[*offset - 24 + 15];
+                v[1] = vbo[*offset + 16] - vbo[*offset - 24 + 16];
+                v[2] = vbo[*offset + 17] - vbo[*offset - 24 + 17];
+
+                // cross product
+                a_cross_b(u, v, n);
+                vbo[*offset - 24 + 9] = n[0];
+                vbo[*offset - 24 + 10] = n[1];
+                vbo[*offset - 24 + 11] = n[2];
+            }
+            // std::memcpy(vbo + *offset, tmp_operator, 24 * sizeof(double));
+            *offset += 24;
+        }
+        // reset rotational vectors to their defaults
         cyllinder_co_rot[0] = radius;
         cyllinder_co_rot[1] = radius;
         cyllinder_co_rot[2] = 0;
         matrix_vector_mul(rotation_matrix, cyllinder_co_rot);
-        tmp_operator[0] = origin_base[0] + cyllinder_co_rot[0];
-        tmp_operator[1] = origin_base[1] + cyllinder_co_rot[1];
-        tmp_operator[2] = origin_base[2] + cyllinder_co_rot[2];
+        vbo[*offset + 0] = origin_base[0] + cyllinder_co_rot[0];
+        vbo[*offset + 1] = origin_base[1] + cyllinder_co_rot[1];
+        vbo[*offset + 2] = origin_base[2] + cyllinder_co_rot[2];
 
         cone_co_rot[0] = 2 * radius;
         cone_co_rot[1] = 2 * radius;
         cone_co_rot[2] = height;
         matrix_vector_mul(rotation_matrix, cone_co_rot);
-        tmp_operator[3] = origin_base[0] + cone_co_rot[0];
-        tmp_operator[4] = origin_base[1] + cone_co_rot[1];
-        tmp_operator[5] = origin_base[2] + cone_co_rot[2];
+        vbo[*offset + 3] = origin_base[0] + cone_co_rot[0];
+        vbo[*offset + 4] = origin_base[1] + cone_co_rot[1];
+        vbo[*offset + 5] = origin_base[2] + cone_co_rot[2];
 
         cyllinder_co_rot[0] = radius;
         cyllinder_co_rot[1] = radius;
         cyllinder_co_rot[2] = height;
         matrix_vector_mul(rotation_matrix, cyllinder_co_rot);
-        tmp_operator[6] = origin_base[0] + cyllinder_co_rot[0];
-        tmp_operator[7] = origin_base[1] + cyllinder_co_rot[1];
-        tmp_operator[8] = origin_base[2] + cyllinder_co_rot[2];
+        vbo[*offset + 12] = origin_base[0] + cyllinder_co_rot[0];
+        vbo[*offset + 13] = origin_base[1] + cyllinder_co_rot[1];
+        vbo[*offset + 14] = origin_base[2] + cyllinder_co_rot[2];
 
         height_operator[0] = 0;
         height_operator[1] = 0;
         height_operator[2] = 1.5 * height;
         matrix_vector_mul(rotation_matrix, height_operator);
-        tmp_operator[9] = origin_base[0] + height_operator[0];
-        tmp_operator[10] = origin_base[1] + height_operator[1];
-        tmp_operator[11] = origin_base[2] + height_operator[2];
-        std::memcpy(vbo + *offset, tmp_operator, 12 * sizeof(double));
-        *offset += 12;
+        vbo[*offset + 15] = origin_base[0] + height_operator[0];
+        vbo[*offset + 16] = origin_base[1] + height_operator[1];
+        vbo[*offset + 17] = origin_base[2] + height_operator[2];
+
+        // normals to the cyllinder triangle
+        u[0] = vbo[*offset + 0] - vbo[*offset - 24 + 12];
+        u[1] = vbo[*offset + 1] - vbo[*offset - 24 + 13];
+        u[2] = vbo[*offset + 2] - vbo[*offset - 24 + 14];
+
+        v[0] = vbo[*offset + 12] - vbo[*offset - 24 + 12];
+        v[1] = vbo[*offset + 13] - vbo[*offset - 24 + 13];
+        v[2] = vbo[*offset + 14] - vbo[*offset - 24 + 14];
+
+        // cross product
+        a_cross_b(u, v, n);
+        vbo[*offset - 24 + 6] = n[0];
+        vbo[*offset - 24 + 7] = n[1];
+        vbo[*offset - 24 + 8] = n[2];
+
+        // normals to the cone triangle
+        u[0] = vbo[*offset + 3] - vbo[*offset - 24 + 15];
+        u[1] = vbo[*offset + 4] - vbo[*offset - 24 + 16];
+        u[2] = vbo[*offset + 5] - vbo[*offset - 24 + 17];
+
+        v[0] = vbo[*offset + 15] - vbo[*offset - 24 + 15];
+        v[1] = vbo[*offset + 16] - vbo[*offset - 24 + 16];
+        v[2] = vbo[*offset + 17] - vbo[*offset - 24 + 17];
+
+        // cross product
+        a_cross_b(u, v, n);
+        vbo[*offset - 24 + 9] = n[0];
+        vbo[*offset - 24 + 10] = n[1];
+        vbo[*offset - 24 + 11] = n[2];
+
+        // std::memcpy(vbo + *offset, tmp_operator, 18 * sizeof(double));
+        *offset += 24;
     }
 
     void generateCubes(double *sh, double position[3], double dimensions[3], int current_pos)
@@ -530,8 +602,6 @@ struct AdvParser
             {
                 for (int x = 0; x < xnodes; x += sampling)
                 {
-                    // for (int i = 0; i < xnodes * ynodes * znodes * 3; i += 3 * sampling)
-                    // {
                     index = 3 * (x + xnodes * y + xnodes * ynodes * z);
                     mag = sqrt(pow(vals[index + 0], 2) + pow(vals[index + 1], 2) + pow(vals[index + 2], 2));
                     if (mag == 0.0)
@@ -559,11 +629,9 @@ struct AdvParser
                         std::memcpy(fut_ndarray + offset, array_to_cpy, sizeof(double) * 3);
                         offset += 3;
                     }
-                    // index += 3;
                 }
             }
         }
-        // }
 
         np::dtype dt = np::dtype::get_builtin<double>();
         p::tuple shape = p::make_tuple(lines * 3 * inflate);
@@ -582,7 +650,7 @@ struct AdvParser
                           double height,
                           double radius)
     {
-        int inflate = 4 * resolution;
+        int inflate = 6 * resolution;
 
         double *fut_ndarray = (double *)(malloc(sizeof(double) * znodes * xnodes * ynodes * 3 * inflate));
         double pos[3], vec[3];
@@ -618,15 +686,9 @@ struct AdvParser
                                     height,
                                     radius,
                                     resolution);
-                    // index += 3;
                 }
             }
         }
-        // int index = 0;
-        // for (int i = 0; i < xnodes * ynodes * znodes * 3; i += 3 * sampling)
-        // {
-
-        // }
         np::dtype dt = np::dtype::get_builtin<double>();
         p::tuple shape = p::make_tuple(xnodes * ynodes * znodes * 3 * inflate);
         p::tuple stride = p::make_tuple(sizeof(double));
