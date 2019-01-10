@@ -1,61 +1,62 @@
 import numpy as np
 import ctypes
 import os
+import sys
+import glfw
 
 from CParseAdvanced.AdvParser import AdvParser
-# from cython_modules.cython_parse import getLayerOutline, genCubes
 
-
-from PyQt5.QtCore import pyqtSignal, QPoint, QSize, Qt
-from PyQt5.QtGui import QColor
+from state_machine.virtual_state import VirtualStateMachine
+from state_machine.shaders.shaders import VERTEX_SHADER, FRAGMENT_SHADER
+from PyQt5.QtCore import QPoint, Qt
 from PyQt5.QtWidgets import (QApplication, QOpenGLWidget, QWidget)
 
 import OpenGL.GL as gl
 import OpenGL.GLU as glu
+from OpenGL.arrays import vbo
+from OpenGL.GL.shaders import compileProgram, compileShader
 
 
-class VirtualStateMachine:
-    OBJ_HANDLER = None
-
-    def __init__(self, *args, **kwargs):
-        self.color_scheme = None
-        self.object_type = None
-
-
-class StateMachine(QOpenGLWidget, QWidget):
+class StateMachine(QOpenGLWidget, VirtualStateMachine):
     def __init__(self, directory):
         super(StateMachine, self).__init__()
-        self.resolution = 16
+
+        self.ambient = 0.3
+        self.resolution = 8
+        self.height = 2
+        self.radius = 0.25
+        self.frame_iterator = 0
         self.parser = AdvParser()
-        self.frame_file_list = list(map(lambda x: os.path.join(directory, x), 
-        sorted(filter(lambda x: x.endswith('.omf'), os.listdir(directory)))))
+        self.frame_file_list = list(map(lambda x: os.path.join(directory, x),
+                                        sorted(filter(lambda x: x.endswith('.omf'), os.listdir(directory)))))
         self.parser.getHeader(self.frame_file_list[0])
         self.header = {'xnodes': self.parser.xnodes,
-                           'ynodes': self.parser.ynodes,
-                           'znodes': self.parser.znodes,
-                           'xbase': self.parser.xbase,
-                           'ybase': self.parser.ybase,
-                           'zbase': self.parser.zbase}
+                       'ynodes': self.parser.ynodes,
+                       'znodes': self.parser.znodes,
+                       'xbase': self.parser.xbase,
+                       'ybase': self.parser.ybase,
+                       'zbase': self.parser.zbase}
         print(self.header)
         self.outline = self.parser.getShapeAsNdarray(self.header['xnodes'],
-                                                   self.header['ynodes'],
-                                                   self.header['znodes'],
-                                                   self.header['xbase']*1e9,
-                                                   self.header['ybase']*1e9,
-                                                   self.header['zbase']*5e9,
-                                                   1)
+                                                     self.header['ynodes'],
+                                                     self.header['znodes'],
+                                                     self.header['xbase']*1e9,
+                                                     self.header['ybase']*1e9,
+                                                     self.header['zbase']*5e9,
+                                                     1)
         self.sampling = 2
-        self.header['xnodes'] /= self.sampling
-        self.header['ynodes'] /= self.sampling
+        self.xnodes = self.header['xnodes']
+        self.ynodes = self.header['ynodes']
+        self.znodes = self.header['znodes']
+        self.xnodes /= self.sampling
+        self.ynodes /= self.sampling
         # self.header['znodes'] /= self.sampling
-        N = int(self.header['xnodes'] * self.header['ynodes'] *self.header['znodes'])
-        self.indices = self.parser.generateIndices(N, int(self.resolution*2)).astype(np.uint32)
-        # self.indices = self.generate_index(N, self.resolution*2)
+        N = int(self.xnodes * self.ynodes * self.znodes)
+        self.indices = self.parser.generateIndices(
+            N, int(self.resolution*2)).astype(np.uint32)
 
         print(len(self.indices), self.outline.shape)
 
-        self.buffer_len = self.header['xnodes'] * \
-                self.header['ynodes']*self.header['znodes']*4*self.resolution*3
         self.color_vector = [1.0, 1.0, 0.0]
         self.positive_color = [0.0, 1.0, 0.0]
         self.negative_color = [1.0, 0.0, 0.0]
@@ -80,7 +81,7 @@ class StateMachine(QOpenGLWidget, QWidget):
         self.registered_left_mouse_pos = None
 
         self.length = len(self.frame_file_list)
-        self.__FLOAT_BYTE_SIZE__ = 8
+        self.__TRUE_FLOAT_BYTE_SIZE__ = 4
 
     def generate_index(self, N, index_required):
         """
@@ -100,73 +101,28 @@ class StateMachine(QOpenGLWidget, QWidget):
         indices = np.array(indices, dtype='uint32')
         return indices
 
+    def refresh(self):
+        self.display_current_frame(self.frame_iterator)
+
     def display_current_frame(self, frame_num):
         # CUBES
         self.current_frame = self.parser.getMifAsNdarrayWithColor(
             self.frame_file_list[frame_num],
-            # self.vertex_no,
             self.resolution*2,
             self.color_vector,
             self.positive_color,
-            self.negative_color, 
+            self.negative_color,
             self.sampling)
-        self.shape = self.parser.getArrows(self.outline, 
-                                            self.current_frame,
-                                            self.resolution,
-                                            self.sampling,
-                                            2.0,
-                                            0.25)
+        self.shape = self.parser.getArrows(self.outline,
+                                           self.current_frame,
+                                           self.resolution,
+                                           self.sampling,
+                                           self.height,
+                                           self.radius)
 
-        print(f"Reading {frame_num}, {self.current_frame.shape}, {self.shape.shape}, {self.indices.shape}")
-
-        if self.header is None:
-            self.header = {'xnodes': self.parser.xnodes,
-                           'ynodes': self.parser.ynodes,
-                           'znodes': self.parser.znodes,
-                           'xbase': self.parser.xbase,
-                           'ybase': self.parser.ybase,
-                           'zbase': self.parser.zbase,
-                           'per_vertex': self.indices_no}
-
-            print(self.header)
-            # self.shape = self.parser.getShapeOutline(self.parser.xnodes,
-            #                                          self.parser.ynodes,
-            #                                          self.parser.znodes,
-            #                                          self.parser.xbase*1e9,
-            #                                          self.parser.ybase*1e9,
-            #                                          self.parser.zbase*1e9,
-            #                                          self.indices_no)
-
-
-            self.buffer_len = self.header['xnodes'] * \
-                self.header['ynodes']*self.header['znodes']*self.vertex_no*3
-            print(self.shape.shape)
-            print(self.shape)
+        print(
+            f"Reading {frame_num}, {self.current_frame.shape}, {self.shape.shape}, {self.indices.shape}")
         self.update()
-
-    def loop(self):
-        self.frame_iterator = 0
-        # while True:
-        #     self.frame_iterator += 1
-        #     if (self.frame_iterator >= length):
-        #         # reset
-        #         self.frame_iterator = 0
-        self.display_current_frame(self.frame_iterator)
-
-    def create_vbo2(self):
-        buffers = gl.glGenBuffers(2)
-        # vertices buffer
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[0])
-        gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                        self.shape.astype(np.float32),
-                        gl.GL_STATIC_DRAW)
-        # color buffer
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
-        gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                        self.current_frame.astype(np.float32),
-                        gl.GL_DYNAMIC_DRAW)
-        return buffers
-
 
     def create_vbo(self):
         buffers = gl.glGenBuffers(3)
@@ -206,73 +162,72 @@ class StateMachine(QOpenGLWidget, QWidget):
             gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0,
                                self.current_frame.shape[0],
                                self.current_frame.astype(np.float32))
-        self.draw_vbo()
+        self.vbo_attrib()
 
+    def vbo_attrib(self):
+        """
+        PATTERN:
+        V1 V2 N1 N2 V1 V2 N1 N2 ...
+        V1 - cyllinder
+        V2 - cone
+        N1 - cyllinder normal
+        N2 - cone normal
+        """
+        stride = self.__TRUE_FLOAT_BYTE_SIZE__*4*3
+        position = gl.glGetAttribLocation(self.shader, 'position')
+        color = gl.glGetAttribLocation(self.shader, 'color')
+        normal = gl.glGetAttribLocation(self.shader, 'normal')
+        if position == -1 or color == -1 or normal == -1:
+            raise ValueError("Attribute was not found")
+            quit()
 
-    def cube_Draw(self):
-        if self.shape is None:
-            print("NONE SHPAE")
-            return
-        if self.buffers is None:
-            self.buffers = self.create_vbo()
-        else:
-            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
-            # later move to set_i function so that reference changes
-            # does not cause buffer rebinding
-            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0,
-                               self.buffer_len,
-                               self.current_frame.astype(np.float32))
-        self.draw_vbo()
-
-    def draw_vbo2(self):
-        gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
-        gl.glEnableClientState(gl.GL_COLOR_ARRAY)
-
-        # bind vertex buffer
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
-        gl.glVertexPointer(3, gl.GL_FLOAT, 0, ctypes.c_void_p(0))
-
-        # bind color buffer
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
-        gl.glColorPointer(3, gl.GL_FLOAT, 0, ctypes.c_void_p(0))
-
-        gl.glDrawArrays(gl.GL_QUADS, 0, int(self.total_vertices))
-
-        gl.glDisableClientState(gl.GL_COLOR_ARRAY)
-        gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
-
-    def draw_vbo(self):
-        gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
-        gl.glEnableClientState(gl.GL_COLOR_ARRAY)
-        gl.glColorMaterial(gl.GL_FRONT_AND_BACK, gl.GL_DIFFUSE)
-        gl.glEnable(gl.GL_COLOR_MATERIAL)
-        # bind color buffer
-        gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.buffers[2])
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
-        gl.glColorPointer(3, gl.GL_FLOAT, 0, None)
-
-        # bind vertex buffer - cylinder
-        # stride is one  vertex
+        gl.glVertexAttribPointer(color, 3,
+                                 gl.GL_FLOAT,
+                                 gl.GL_FALSE,
+                                 0,
+                                 None)
+        gl.glEnableVertexAttribArray(color)
+        # cyllinder part drawing
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.buffers[2])
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
-        gl.glVertexPointer(3, gl.GL_FLOAT, 3*self.__FLOAT_BYTE_SIZE__, None)
+        gl.glVertexAttribPointer(position, 3,
+                                 gl.GL_FLOAT,
+                                 gl.GL_FALSE,
+                                 stride,
+                                 None)
+        gl.glEnableVertexAttribArray(position)
+        gl.glVertexAttribPointer(normal, 3,
+                                 gl.GL_FLOAT,
+                                 gl.GL_FALSE,
+                                 stride,
+                                 ctypes.c_void_p(2*3*self.__TRUE_FLOAT_BYTE_SIZE__))
+        gl.glEnableVertexAttribArray(normal)
         gl.glDrawElements(gl.GL_TRIANGLES,
                           len(self.indices),
                           gl.GL_UNSIGNED_INT,
                           None)
-
+        # now draw cones
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.buffers[2])
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
-        gl.glVertexPointer(3, gl.GL_FLOAT,
-                           3*self.__FLOAT_BYTE_SIZE__, ctypes.c_void_p(4*3))
-
+        gl.glVertexAttribPointer(position, 3,
+                                 gl.GL_FLOAT,
+                                 gl.GL_FALSE,
+                                 stride,
+                                 ctypes.c_void_p(3*self.__TRUE_FLOAT_BYTE_SIZE__))
+        gl.glEnableVertexAttribArray(position)
+        gl.glVertexAttribPointer(normal, 3,
+                                 gl.GL_FLOAT,
+                                 gl.GL_FALSE,
+                                 stride,
+                                 ctypes.c_void_p(3*3*self.__TRUE_FLOAT_BYTE_SIZE__))
+        gl.glEnableVertexAttribArray(normal)
         gl.glDrawElements(gl.GL_TRIANGLES,
                           len(self.indices),
                           gl.GL_UNSIGNED_INT,
                           None)
-
-        gl.glDisableClientState(gl.GL_COLOR_ARRAY)
-        gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
+        gl.glDisableVertexAttribArray(position)
+        gl.glDisableVertexAttribArray(color)
+        gl.glDisableVertexAttribArray(normal)
 
     def zoomOut(self):
         self.position[2] -= 16 / 8
@@ -350,12 +305,38 @@ class StateMachine(QOpenGLWidget, QWidget):
         """
         Initializes openGL context and scenery
         """
+        self.shader = compileProgram(
+            compileShader(VERTEX_SHADER, gl.GL_VERTEX_SHADER),
+            compileShader(FRAGMENT_SHADER, gl.GL_FRAGMENT_SHADER)
+        )
+        gl.glUseProgram(self.shader)
+
+        n = gl.glGetUniformLocation(self.shader, 'lightPos')
+        if n == -1:
+            print("Not found lightPos attribute in shaders")
+            quit()
+        gl.glUniform3f(n, 20, 30, 30)
+
+        n = gl.glGetUniformLocation(self.shader, 'lightColor')
+        if n == -1:
+            print("Not found lightColor attribute in shaders")
+            quit()
+        gl.glUniform3f(n, 1.0, 1.0, 1.0)
+
+        n = gl.glGetUniformLocation(self.shader, 'ambientStrength')
+        if n == -1:
+            print("Not found ambientStrength attribute in shaders")
+            quit()
+        gl.glUniform1fv(n, 1, self.ambient)
+
+        print("COMPILED SHADERS SUCCESSFULLY")
         gl.glClearColor(*[0.0, 0.0, 0.0], 0)
 
         gl.glEnable(gl.GL_DEPTH_TEST)
         gl.glEnable(gl.GL_POLYGON_SMOOTH)
+
         self.initial_transformation()
-        self.loop()
+        self.display_current_frame(self.frame_iterator)
 
     def resizeGL(self, w, h):
         """
@@ -377,6 +358,11 @@ class StateMachine(QOpenGLWidget, QWidget):
         Clears the buffer and redraws the scene
         """
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+        n = gl.glGetUniformLocation(self.shader, 'ambientStrength')
+        if n == -1:
+            print("Not found ambientStrength attribute in shaders")
+            quit()
+        gl.glUniform1fv(n, 1, self.ambient)
         # Push Matrix onto stack
         gl.glPushMatrix()
         gl.glTranslatef(*self.position)
@@ -402,11 +388,11 @@ class StateMachine(QOpenGLWidget, QWidget):
             self.initial_transformation()
             self.update()
 
-        elif key == Qt.Key_I:
-            self.zoomIn()
+        # elif key == Qt.Key_I:
+        #     self.zoomIn()
 
-        elif key == Qt.Key_O:
-            self.zoomOut()
+        # elif key == Qt.Key_O:
+        #     self.zoomOut()
 
         elif key == Qt.Key_N:
             self.frame_iterator += 1
