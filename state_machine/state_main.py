@@ -7,7 +7,7 @@ import glfw
 from CParseAdvanced.AdvParser import AdvParser
 
 from state_machine.virtual_state import VirtualStateMachine
-from state_machine.shaders.shaders import VERTEX_SHADER, FRAGMENT_SHADER
+from state_machine.shaders.shaders import *
 from PyQt5.QtCore import QPoint, Qt
 from PyQt5.QtWidgets import (QApplication, QOpenGLWidget, QWidget)
 
@@ -21,14 +21,14 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
     def __init__(self, directory):
         super(StateMachine, self).__init__()
 
-        self.ambient = 0.3
-        self.resolution = 8
+        self.ambient = 0.7
+        self.resolution = 16
         self.height = 2
         self.radius = 0.25
         self.frame_iterator = 0
         self.parser = AdvParser()
         self.frame_file_list = list(map(lambda x: os.path.join(directory, x),
-                                        sorted(filter(lambda x: x.endswith('.omf'), os.listdir(directory)))))
+                                        sorted(filter(lambda x: x.endswith('.ovf') or x.endswith('.omf'), os.listdir(directory)))))
         self.parser.getHeader(self.frame_file_list[0])
         self.header = {'xnodes': self.parser.xnodes,
                        'ynodes': self.parser.ynodes,
@@ -42,9 +42,9 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
                                                      self.header['znodes'],
                                                      self.header['xbase']*1e9,
                                                      self.header['ybase']*1e9,
-                                                     self.header['zbase']*5e9,
+                                                     self.header['zbase']*10e9,
                                                      1)
-        self.sampling = 2
+        self.sampling = 1
         self.xnodes = self.header['xnodes']
         self.ynodes = self.header['ynodes']
         self.znodes = self.header['znodes']
@@ -61,9 +61,6 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         self.positive_color = [0.0, 1.0, 0.0]
         self.negative_color = [1.0, 0.0, 0.0]
 
-        self.indices_no = 72
-        self.vertex_no = int(self.indices_no/3)
-        self.total_vertices = 104*104*32*24
         self.buffers = None
 
         self.steps = 1
@@ -83,24 +80,6 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         self.length = len(self.frame_file_list)
         self.__TRUE_FLOAT_BYTE_SIZE__ = 4
 
-    def generate_index(self, N, index_required):
-        """
-        this constructs the index list for vbos in order 
-        to reduce memory needed to generate all vertices
-        If one vertex repeats in a structure, instead of copying
-        it, the number is assigend that is then later copied.
-        The GPU can then take this index and fetch the correct vertex
-        Note: index must be uint32
-        """
-        indices = []
-        for n in range(N):
-            start_index = n*index_required+3
-            for i in range(int(index_required)-2):
-                l = [start_index+i-3, start_index+i-2, start_index+i-1]
-                indices.extend(l)
-        indices = np.array(indices, dtype='uint32')
-        return indices
-
     def refresh(self):
         self.display_current_frame(self.frame_iterator)
 
@@ -113,13 +92,13 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
             self.positive_color,
             self.negative_color,
             self.sampling)
+
         self.shape = self.parser.getArrows(self.outline,
                                            self.current_frame,
                                            self.resolution,
                                            self.sampling,
                                            self.height,
                                            self.radius)
-
         print(
             f"Reading {frame_num}, {self.current_frame.shape}, {self.shape.shape}, {self.indices.shape}")
         self.update()
@@ -179,11 +158,12 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         normal = gl.glGetAttribLocation(self.shader, 'normal')
         if position == -1 or color == -1 or normal == -1:
             raise ValueError("Attribute was not found")
-            quit()
 
+        # gl.glColorMaterial(gl.GL_FRONT_AND_BACK, gl.GL_DIFFUSE)
+        # gl.glEnable(gl.GL_COLOR_MATERIAL)
         gl.glVertexAttribPointer(color, 3,
                                  gl.GL_FLOAT,
-                                 gl.GL_FALSE,
+                                 gl.GL_TRUE,
                                  0,
                                  None)
         gl.glEnableVertexAttribArray(color)
@@ -219,7 +199,8 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
                                  gl.GL_FLOAT,
                                  gl.GL_FALSE,
                                  stride,
-                                 ctypes.c_void_p(3*3*self.__TRUE_FLOAT_BYTE_SIZE__))
+                                 ctypes.c_void_p(
+                                     3*3*self.__TRUE_FLOAT_BYTE_SIZE__))
         gl.glEnableVertexAttribArray(normal)
         gl.glDrawElements(gl.GL_TRIANGLES,
                           len(self.indices),
@@ -314,19 +295,16 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         n = gl.glGetUniformLocation(self.shader, 'lightPos')
         if n == -1:
             print("Not found lightPos attribute in shaders")
-            quit()
-        gl.glUniform3f(n, 20, 30, 30)
+        gl.glUniform3f(n, 0.0, 0.0, 0.0)
 
         n = gl.glGetUniformLocation(self.shader, 'lightColor')
         if n == -1:
             print("Not found lightColor attribute in shaders")
-            quit()
-        gl.glUniform3f(n, 1.0, 1.0, 1.0)
+        gl.glUniform3f(n, 0.5, 0.5, 1.0)
 
         n = gl.glGetUniformLocation(self.shader, 'ambientStrength')
         if n == -1:
             print("Not found ambientStrength attribute in shaders")
-            quit()
         gl.glUniform1fv(n, 1, self.ambient)
 
         print("COMPILED SHADERS SUCCESSFULLY")
@@ -360,8 +338,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         n = gl.glGetUniformLocation(self.shader, 'ambientStrength')
         if n == -1:
-            print("Not found ambientStrength attribute in shaders")
-            quit()
+            raise ValueError("Not found ambientStrength attribute in shaders")
         gl.glUniform1fv(n, 1, self.ambient)
         # Push Matrix onto stack
         gl.glPushMatrix()
@@ -387,12 +364,6 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         if key == Qt.Key_R:
             self.initial_transformation()
             self.update()
-
-        # elif key == Qt.Key_I:
-        #     self.zoomIn()
-
-        # elif key == Qt.Key_O:
-        #     self.zoomOut()
 
         elif key == Qt.Key_N:
             self.frame_iterator += 1

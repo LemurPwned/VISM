@@ -16,15 +16,16 @@ class Window(QWidget):
         super(Window, self).__init__()
 
         directory = 'examples/0200nm'
-        # directory = 'test_folder'
+        # directory = 'examples/mumax_regions'
+        # directory = '/home/lemurpwned/Downloads/spinwaves.out-20190106T074440Z-001/spinwaves.out'
         self.glWidget = StateMachine(directory)
-        self.subwindow = StateMenuController(state_object=self.glWidget)
+        # self.subwindow = StateMenuController(state_object=self.glWidget)
 
         mainLayout = QHBoxLayout()
         mainLayout.addWidget(self.glWidget)
         self.setLayout(mainLayout)
         self.setWindowTitle("State Machine GL")
-        self.subwindow.show()
+        # self.subwindow.show()
 
 
 if __name__ == "__main__":

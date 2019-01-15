@@ -12,11 +12,11 @@ class StateMenuController(QWidget, Ui_Dialog):
         self.setupUi(self)
         widow_flag = QtCore.Qt.WindowFlags() | QtCore.Qt.WindowStaysOnTopHint
         self.state_controller = state_object
-        self.resolution = self.spinBox.value()
-        self.sampling = self.spinBox_2.value()
 
         self.spinBox.valueChanged.connect(self.resolution_trigger)
         self.spinBox_2.valueChanged.connect(self.sampling_trigger)
+
+        self.spinBox.setValue(16.0)
 
         self.doubleSpinBox.valueChanged.connect(self.ambient_trigger)
         self.doubleSpinBox_2.valueChanged.connect(self.height_trigger)

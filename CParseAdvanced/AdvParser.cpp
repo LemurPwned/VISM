@@ -15,6 +15,8 @@
 #include <boost/python/def.hpp>
 #include <boost/python/implicit.hpp>
 #include <boost/python/extract.hpp>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
 namespace p = boost::python;
 namespace np = boost::python::numpy;
@@ -26,7 +28,6 @@ struct AdvParser
     bool shapeCreated = true;
     int xnodes, ynodes, znodes;
     double xbase, ybase, zbase;
-    std::string def_ext;
     AdvParser()
     {
         xnodes = 0;
@@ -36,8 +37,6 @@ struct AdvParser
         xbase = 0.0;
         ybase = 0.0;
         zbase = 0.0;
-
-        def_ext = ".omf";
     };
 
     void setXnodes(int val) { this->xnodes = val; }
@@ -60,7 +59,6 @@ struct AdvParser
 
         std::string node_reg("# xnodes:");
         std::string base_reg("# xbase:");
-
         if (miffile.is_open())
         {
             while (std::getline(miffile, line))
@@ -75,6 +73,7 @@ struct AdvParser
                     else if (line == "# Begin: Data Binary 4")
                     {
                         buffer_size = 4;
+                        break;
                     }
 
                     if (checkNodes && line.substr(0, node_reg.length()) == node_reg)
@@ -121,17 +120,40 @@ struct AdvParser
             }
             if (buffer_size <= 0)
             {
-                throw "Invalid buffer size";
+                throw std::runtime_error("Invalid buffer size");
             }
-            char IEEE_BUF[buffer_size];
+            char IEEE_BUF[buffer_size + 1];
 
             miffile.read(IEEE_BUF, buffer_size);
-
-            double *IEEE_val = (double *)IEEE_BUF;
-            if (IEEE_val[0] != 123456789012345.0)
+            if (buffer_size == 4)
             {
-                throw std::runtime_error("IEEE value not consistent");
+                float IEEE_val;
+                float IEEE_VALIDATION = 1234567.0;
+
+                std::memcpy(&IEEE_val, IEEE_BUF, sizeof(float));
+                if (IEEE_val != IEEE_VALIDATION)
+                {
+                    printf("%f\n", IEEE_val);
+                    throw std::runtime_error("IEEE value not consistent");
+                }
             }
+            else if (buffer_size == 8)
+            {
+                double IEEE_val;
+                double IEEE_VALIDATION = 123456789012345.0;
+                std::memcpy(&IEEE_val, IEEE_BUF, sizeof(double));
+
+                if (IEEE_val != IEEE_VALIDATION)
+                {
+                    printf("%f\n", IEEE_val);
+                    throw std::runtime_error("IEEE value not consistent");
+                }
+            }
+            else
+            {
+                throw std::runtime_error("Unspecified or invalid buffer size for binary input data");
+            }
+
             return buffer_size;
         }
         else
@@ -286,7 +308,7 @@ struct AdvParser
 
         cyllinder_co_rot[0] = radius;
         cyllinder_co_rot[1] = radius;
-        cyllinder_co_rot[2] = height;
+        cyllinder_co_rot[2] += height;
         matrix_vector_mul(rotation_matrix, cyllinder_co_rot);
         vbo[*offset + 12] = origin_base[0] + cyllinder_co_rot[0];
         vbo[*offset + 13] = origin_base[1] + cyllinder_co_rot[1];
@@ -428,94 +450,7 @@ struct AdvParser
     {
         std::ifstream miffile;
         miffile.open(filepath, std::ios::out | std::ios_base::binary);
-        std::string line;
-        int buffer_size = 0;
-
-        std::string node_reg("# xnodes:");
-        std::string base_reg("# xbase:");
-
-        if (miffile.is_open())
-        {
-            while (std::getline(miffile, line))
-            {
-                if (line.at(0) == '#')
-                {
-                    if (line == "# Begin: Data Binary 8")
-                    {
-                        buffer_size = 8;
-                        break;
-                    }
-                    else if (line == "# Begin: Data Binary 4")
-                    {
-                        buffer_size = 4;
-                        break;
-                    }
-
-                    if (checkNodes && line.substr(0, node_reg.length()) == node_reg)
-                    {
-
-                        if (node_reg.at(2) == 'x')
-                        {
-                            xnodes = std::stoi(line.substr(node_reg.length(), line.length()));
-                            node_reg.at(2) = 'y';
-                        }
-                        else if (node_reg.at(2) == 'y')
-                        {
-                            ynodes = std::stoi(line.substr(node_reg.length(), line.length()));
-                            node_reg.at(2) = 'z';
-                        }
-                        else
-                        {
-                            znodes = std::stoi(line.substr(node_reg.length(), line.length()));
-                            checkNodes = false;
-                        }
-                    }
-                    if (checkBase && line.substr(0, base_reg.length()) == base_reg)
-                    {
-
-                        if (base_reg.at(2) == 'x')
-                        {
-                            xbase = std::stod(line.substr(base_reg.length(), line.length()));
-                            base_reg.at(2) = 'y';
-                        }
-                        else if (base_reg.at(2) == 'y')
-                        {
-                            ybase = std::stod(line.substr(base_reg.length(), line.length()));
-                            base_reg.at(2) = 'z';
-                        }
-                        else
-                        {
-                            zbase = std::stod(line.substr(base_reg.length(), line.length()));
-                            checkBase = false;
-                        }
-                    }
-                }
-                else
-                    break;
-            }
-            if (buffer_size <= 0)
-            {
-                throw "Invalid buffer size";
-            }
-            char IEEE_BUF[buffer_size];
-
-            miffile.read(IEEE_BUF, buffer_size);
-
-            double *IEEE_val = (double *)IEEE_BUF;
-            if (IEEE_val[0] != 123456789012345.0)
-            {
-                throw "IEEE value not consistent";
-            }
-        }
-        else
-        {
-            throw std::runtime_error("Invalid mif file");
-        }
-        if (buffer_size == 0)
-        {
-            miffile.close();
-            throw std::runtime_error("Invalid mif file");
-        }
+        getMifHeader(miffile);
         miffile.close();
     }
 
@@ -588,7 +523,20 @@ struct AdvParser
         miffile.read(buffer, buffer_size * lines * 3);
         miffile.close();
 
-        double *vals = (double *)buffer;
+        double vals[lines * 3];
+        if (buffer_size == 4)
+        {
+            float fvals[lines * 3];
+            std::memcpy(fvals, buffer, lines * 3 * sizeof(float));
+            for (int i = 0; i < lines * 3; i++)
+            {
+                vals[i] = fvals[i];
+            }
+        }
+        else if (buffer_size == 8)
+        {
+            std::memcpy(vals, buffer, lines * 3 * sizeof(double));
+        }
         double *fut_ndarray = (double *)(malloc(sizeof(double) * znodes * xnodes * ynodes * 3 * inflate));
         double mag, dot;
         double *array_to_cpy = (double *)(malloc(sizeof(double) * 3));
@@ -603,7 +551,9 @@ struct AdvParser
                 for (int x = 0; x < xnodes; x += sampling)
                 {
                     index = 3 * (x + xnodes * y + xnodes * ynodes * z);
-                    mag = sqrt(pow(vals[index + 0], 2) + pow(vals[index + 1], 2) + pow(vals[index + 2], 2));
+                    mag = sqrt(pow(vals[index + 0], 2) +
+                               pow(vals[index + 1], 2) +
+                               pow(vals[index + 2], 2));
                     if (mag == 0.0)
                         mag = 1.0;
                     dot = (vals[index + 0] / mag) * color_vector[0] +
@@ -624,6 +574,144 @@ struct AdvParser
                         array_to_cpy[1] = negative_color[1] * dot + (1.0 - dot);
                         array_to_cpy[2] = negative_color[2] * dot + (1.0 - dot);
                     }
+                    for (int inf = 0; inf < inflate; inf++)
+                    {
+                        std::memcpy(fut_ndarray + offset, array_to_cpy, sizeof(double) * 3);
+                        offset += 3;
+                    }
+                }
+            }
+        }
+
+        np::dtype dt = np::dtype::get_builtin<double>();
+        p::tuple shape = p::make_tuple(lines * 3 * inflate);
+        p::tuple stride = p::make_tuple(sizeof(double));
+        return np::from_data(fut_ndarray,
+                             dt,
+                             shape,
+                             stride,
+                             p::object());
+    }
+
+    np::ndarray getColorAsNdarray(np::ndarray vector_list,
+                                  p::list color_vector_l,
+                                  p::list positive_color_l,
+                                  p::list negative_color_l)
+    {
+        double color_vector[3] = {
+            p ::extract<double>(color_vector_l[0]),
+            p ::extract<double>(color_vector_l[1]),
+            p ::extract<double>(color_vector_l[2])};
+        double positive_color[3] = {
+            p ::extract<double>(positive_color_l[0]),
+            p ::extract<double>(positive_color_l[1]),
+            p ::extract<double>(positive_color_l[2])};
+
+        double negative_color[3] = {
+            p ::extract<double>(negative_color_l[0]),
+            p ::extract<double>(negative_color_l[1]),
+            p ::extract<double>(negative_color_l[2])};
+
+        int shape = vector_list.shape(0);
+        double *fut_ndarray = (double *)(malloc(sizeof(double) * shape));
+        double dot;
+        double *array_to_cpy = (double *)(malloc(sizeof(double) * 3));
+        int offset = 0;
+
+        for (int i = 0; i < shape; i += 3)
+        {
+            dot = p ::extract<double>(vector_list[i + 0]) * color_vector[0] +
+                  p ::extract<double>(vector_list[i + 1]) * color_vector[1] +
+                  p ::extract<double>(vector_list[i + 2]) * color_vector[2];
+
+            if (dot > 0)
+            {
+                array_to_cpy[0] = positive_color[0] * dot + (1.0 - dot);
+                array_to_cpy[1] = positive_color[1] * dot + (1.0 - dot);
+                array_to_cpy[2] = positive_color[2] * dot + (1.0 - dot);
+            }
+            else
+            {
+                dot *= -1;
+
+                array_to_cpy[0] = negative_color[0] * dot + (1.0 - dot);
+                array_to_cpy[1] = negative_color[1] * dot + (1.0 - dot);
+                array_to_cpy[2] = negative_color[2] * dot + (1.0 - dot);
+            }
+
+            std::memcpy(fut_ndarray + i, array_to_cpy, sizeof(double) * 3);
+        }
+
+        np::dtype dt = np::dtype::get_builtin<double>();
+        p::tuple sh = p::make_tuple(shape);
+        p::tuple stride = p::make_tuple(sizeof(double));
+        return np::from_data(fut_ndarray,
+                             dt,
+                             sh,
+                             stride,
+                             p::object());
+    }
+
+    np::ndarray
+    getMifAsNdarray(std::string path,
+                    int inflate,
+                    int sampling)
+    {
+        if (inflate < 0)
+        {
+            throw std::invalid_argument("Infalte cannot be 0 or less than 0");
+        }
+
+        std::ifstream miffile;
+        miffile.open(path, std::ios::out | std::ios_base::binary);
+        int buffer_size = getMifHeader(miffile);
+        if (buffer_size == 0)
+        {
+            miffile.close();
+            throw std::runtime_error("Invalid mif file");
+        }
+
+        int lines = znodes * xnodes * ynodes;
+        char buffer[buffer_size * lines * 3];
+        miffile.read(buffer, buffer_size * lines * 3);
+        miffile.close();
+
+        double vals[lines * 3];
+        if (buffer_size == 4)
+        {
+            float fvals[lines * 3];
+            std::memcpy(fvals, buffer, lines * 3 * sizeof(float));
+            for (int i = 0; i < lines * 3; i++)
+            {
+                vals[i] = fvals[i];
+            }
+        }
+        else if (buffer_size == 8)
+        {
+            std::memcpy(vals, buffer, lines * 3 * sizeof(double));
+        }
+        double *fut_ndarray = (double *)(malloc(sizeof(double) * znodes * xnodes * ynodes * 3 * inflate));
+        double mag;
+        double *array_to_cpy = (double *)(malloc(sizeof(double) * 3));
+        int offset = 0;
+        int index = 0;
+
+        for (int z = 0; z < znodes; z += 1)
+        {
+            for (int y = 0; y < ynodes; y += sampling)
+            {
+                for (int x = 0; x < xnodes; x += sampling)
+                {
+                    index = 3 * (x + xnodes * y + xnodes * ynodes * z);
+                    mag = sqrt(pow(vals[index + 0], 2) +
+                               pow(vals[index + 1], 2) +
+                               pow(vals[index + 2], 2));
+                    if (mag == 0.0)
+                        mag = 1.0;
+                    array_to_cpy[0] = vals[index + 0] / mag;
+                    array_to_cpy[1] = vals[index + 1] / mag;
+                    array_to_cpy[2] = vals[index + 2] / mag;
+
                     for (int inf = 0; inf < inflate; inf++)
                     {
                         std::memcpy(fut_ndarray + offset, array_to_cpy, sizeof(double) * 3);
@@ -712,6 +800,9 @@ BOOST_PYTHON_MODULE(AdvParser)
         .def(init<AdvParser>())
 
         .def("getMifAsNdarrayWithColor", &AdvParser::getMifAsNdarrayWithColor)
+        .def("getMifAsNdarray", &AdvParser::getMifAsNdarray)
+        .def("getColorAsNdarray", &AdvParser::getColorAsNdarray)
+
         .def("getHeader", &AdvParser::getHeader)
         .def("getShapeAsNdarray", &AdvParser::getShapeAsNdarray)
         .def("getArrows", &AdvParser::getArrows)

@@ -49,19 +49,20 @@ VERTEX_SHADER2 = """
 #version 130 
 in vec3 position;
 in vec3 color;
+
 out vec4 newColor;
 void main()
 {
-    gl_Position = gl_ModelViewProjectionMatrix * vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    newColor = color;
+    gl_Position = gl_ModelViewProjectionMatrix * vec4(position, 1.0f);
+    newColor = vec4(color, 1.0f);
 }
 """
 FRAGMENT_SHADER2 = """
 #version 130 
-in vec3 newColor;
+in vec4 newColor;
 out vec4 outColor;
 void main()
 {
-    outColor = vec4(newColor, 1.0f);
+    outColor = newColor;
 }
 """
