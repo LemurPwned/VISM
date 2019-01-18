@@ -21,7 +21,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
     def __init__(self, directory):
         super(StateMachine, self).__init__()
 
-        self.ambient = 0.7
+        self.ambient = 1
         self.resolution = 16
         self.height = 2
         self.radius = 0.25
@@ -36,14 +36,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
                        'xbase': self.parser.xbase,
                        'ybase': self.parser.ybase,
                        'zbase': self.parser.zbase}
-        print(self.header)
-        self.outline = self.parser.getShapeAsNdarray(self.header['xnodes'],
-                                                     self.header['ynodes'],
-                                                     self.header['znodes'],
-                                                     self.header['xbase']*1e9,
-                                                     self.header['ybase']*1e9,
-                                                     self.header['zbase']*10e9,
-                                                     1)
+
         self.sampling = 1
         self.xnodes = self.header['xnodes']
         self.ynodes = self.header['ynodes']
@@ -55,10 +48,10 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         self.indices = self.parser.generateIndices(
             N, int(self.resolution*2)).astype(np.uint32)
 
-        print(len(self.indices), self.outline.shape)
+        print(len(self.indices))
 
-        self.color_vector = [1.0, 1.0, 0.0]
-        self.positive_color = [0.0, 1.0, 0.0]
+        self.color_vector = [1.0, 0.0, 0.0]
+        self.positive_color = [0.0, 0.0, 1.0]
         self.negative_color = [1.0, 0.0, 0.0]
 
         self.buffers = None
@@ -85,22 +78,20 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
 
     def display_current_frame(self, frame_num):
         # CUBES
-        self.current_frame = self.parser.getMifAsNdarrayWithColor(
+
+        self.shape = self.parser.getMifVBO(
             self.frame_file_list[frame_num],
-            self.resolution*2,
+            self.resolution,
             self.color_vector,
             self.positive_color,
             self.negative_color,
-            self.sampling)
+            self.sampling,
+            self.height,
+            self.radius
+        )
 
-        self.shape = self.parser.getArrows(self.outline,
-                                           self.current_frame,
-                                           self.resolution,
-                                           self.sampling,
-                                           self.height,
-                                           self.radius)
         print(
-            f"Reading {frame_num}, {self.current_frame.shape}, {self.shape.shape}, {self.indices.shape}")
+            f"Reading {frame_num}, C: {self.shape.shape},I: {self.indices.shape}")
         self.update()
 
     def create_vbo(self):
@@ -111,10 +102,10 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
                         self.shape.astype(np.float32),
                         gl.GL_DYNAMIC_DRAW)
         # color buffer
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
-        gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                        self.current_frame.astype(np.float32),
-                        gl.GL_DYNAMIC_DRAW)
+        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
+        # gl.glBufferData(gl.GL_ARRAY_BUFFER,
+        #                 self.current_frame.astype(np.float32),
+        #                 gl.GL_DYNAMIC_DRAW)
 
         # # index buffer
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, buffers[2])
@@ -135,12 +126,12 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
             except ValueError as e:
                 print(e)  # watch out for setting array element with a sequence erorr
 
-            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
-            # later move to set_i function so that reference changes
-            # does not cause buffer rebinding
-            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0,
-                               self.current_frame.shape[0],
-                               self.current_frame.astype(np.float32))
+            # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
+            # # later move to set_i function so that reference changes
+            # # does not cause buffer rebinding
+            # gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0,
+            #                    self.current_frame.shape[0],
+            #                    self.current_frame.astype(np.float32))
         self.vbo_attrib()
 
     def vbo_attrib(self):
@@ -152,7 +143,10 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         N1 - cyllinder normal
         N2 - cone normal
         """
-        stride = self.__TRUE_FLOAT_BYTE_SIZE__*4*3
+        stride = self.__TRUE_FLOAT_BYTE_SIZE__*3*4
+        color_stride = self.__TRUE_FLOAT_BYTE_SIZE__*3*3
+        vertex_stride = self.__TRUE_FLOAT_BYTE_SIZE__*6*3
+        normal_stride = self.__TRUE_FLOAT_BYTE_SIZE__*4*3
         position = gl.glGetAttribLocation(self.shader, 'position')
         color = gl.glGetAttribLocation(self.shader, 'color')
         normal = gl.glGetAttribLocation(self.shader, 'normal')
@@ -161,46 +155,55 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
 
         # gl.glColorMaterial(gl.GL_FRONT_AND_BACK, gl.GL_DIFFUSE)
         # gl.glEnable(gl.GL_COLOR_MATERIAL)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
+        gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.buffers[2])
+
         gl.glVertexAttribPointer(color, 3,
                                  gl.GL_FLOAT,
-                                 gl.GL_TRUE,
-                                 0,
+                                 gl.GL_FALSE,
+                                 6*3*self.__TRUE_FLOAT_BYTE_SIZE__,
                                  None)
         gl.glEnableVertexAttribArray(color)
         # cyllinder part drawing
-        gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.buffers[2])
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
+        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
         gl.glVertexAttribPointer(position, 3,
                                  gl.GL_FLOAT,
                                  gl.GL_FALSE,
-                                 stride,
-                                 None)
+                                 vertex_stride,
+                                 ctypes.c_void_p(3*self.__TRUE_FLOAT_BYTE_SIZE__))
         gl.glEnableVertexAttribArray(position)
         gl.glVertexAttribPointer(normal, 3,
                                  gl.GL_FLOAT,
                                  gl.GL_FALSE,
-                                 stride,
-                                 ctypes.c_void_p(2*3*self.__TRUE_FLOAT_BYTE_SIZE__))
+                                 normal_stride,
+                                 ctypes.c_void_p(3*4*self.__TRUE_FLOAT_BYTE_SIZE__))
         gl.glEnableVertexAttribArray(normal)
         gl.glDrawElements(gl.GL_TRIANGLES,
                           len(self.indices),
                           gl.GL_UNSIGNED_INT,
                           None)
         # now draw cones
-        gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.buffers[2])
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
+        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
+        # gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.buffers[2])
+        gl.glVertexAttribPointer(color, 3,
+                                 gl.GL_FLOAT,
+                                 gl.GL_FALSE,
+                                 6*3*self.__TRUE_FLOAT_BYTE_SIZE__,
+                                 ctypes.c_void_p(3*3*self.__TRUE_FLOAT_BYTE_SIZE__))
+        gl.glEnableVertexAttribArray(color)
+        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
         gl.glVertexAttribPointer(position, 3,
                                  gl.GL_FLOAT,
                                  gl.GL_FALSE,
-                                 stride,
-                                 ctypes.c_void_p(3*self.__TRUE_FLOAT_BYTE_SIZE__))
+                                 vertex_stride,
+                                 ctypes.c_void_p(2*3*self.__TRUE_FLOAT_BYTE_SIZE__))
         gl.glEnableVertexAttribArray(position)
         gl.glVertexAttribPointer(normal, 3,
                                  gl.GL_FLOAT,
                                  gl.GL_FALSE,
-                                 stride,
+                                 normal_stride,
                                  ctypes.c_void_p(
-                                     3*3*self.__TRUE_FLOAT_BYTE_SIZE__))
+                                     3*5*self.__TRUE_FLOAT_BYTE_SIZE__))
         gl.glEnableVertexAttribArray(normal)
         gl.glDrawElements(gl.GL_TRIANGLES,
                           len(self.indices),

@@ -186,6 +186,357 @@ struct AdvParser
         c[1] = a[2] * b[0] - a[0] * b[2];
         c[2] = a[0] * b[1] - a[1] * b[0];
     }
+    void generateVectors2(double *vbo,
+                          int *offset,
+                          int *normal_offset,
+                          double position[3],
+                          double vector[3], // from omf
+                          double t_rotation[3][3],
+                          double height,
+                          double radius,
+                          int resolution)
+    {
+        double height_operator[3] = {0, 0, height * 1.5};
+        double mag = sqrt(pow(vector[0], 2) +
+                          pow(vector[1], 2) +
+                          pow(vector[2], 2));
+        double phi = acos(vector[2] / mag);         // z rot
+        double theta = atan2(vector[1], vector[0]); // y rot
+        double ct = cos(theta);
+        double st = sin(theta);
+        double cp = cos(phi);
+        double sp = sin(phi);
+        double rotation_matrix[3][3] = {
+            {ct, -st * cp, st * sp},
+            {st, cp * ct, -sp * ct},
+            {0, sp, cp}};
+        double origin_base[3], cpy[3];
+        double cyllinder_co_rot[3] = {radius, radius, 0};
+        double cone_co_rot[3] = {2 * radius, 2 * radius, 0};
+        std::memcpy(origin_base, position, sizeof(double) * 3);
+        double n[3], u[3], v[3];
+
+        for (int i = 0; i < (resolution - 1); i++)
+        {
+            // bottom triangle - cyllinder
+            matrix_vector_cpy(rotation_matrix, cyllinder_co_rot, cpy);
+            vbo[*offset] = 1;
+            vbo[*offset + 0] = origin_base[0] + cpy[0];
+            vbo[*offset + 1] = origin_base[1] + cpy[1];
+            vbo[*offset + 2] = origin_base[2] + cpy[2];
+
+            // bottom triangle - cone
+            cone_co_rot[2] += height;
+            matrix_vector_cpy(rotation_matrix, cone_co_rot, cpy);
+            vbo[*offset + 3] = origin_base[0] + cpy[0];
+            vbo[*offset + 4] = origin_base[1] + cpy[1];
+            vbo[*offset + 5] = origin_base[2] + cpy[2];
+
+            // top triangle - cyllinder
+            cyllinder_co_rot[2] += height;
+            matrix_vector_cpy(rotation_matrix, cyllinder_co_rot, cpy);
+            vbo[*offset + 12] = origin_base[0] + cpy[0];
+            vbo[*offset + 13] = origin_base[1] + cpy[1];
+            vbo[*offset + 14] = origin_base[2] + cpy[2];
+
+            // top triangle - cone
+            matrix_vector_mul(rotation_matrix, height_operator);
+            vbo[*offset + 15] = origin_base[0] + height_operator[0];
+            vbo[*offset + 16] = origin_base[1] + height_operator[1];
+            vbo[*offset + 17] = origin_base[2] + height_operator[2];
+            height_operator[0] = 0;
+            height_operator[1] = 0;
+            height_operator[2] = 1.5 * height;
+            cyllinder_co_rot[2] -= height;
+            cone_co_rot[2] -= height;
+
+            matrix_vector_mul(t_rotation, cyllinder_co_rot);
+            matrix_vector_mul(t_rotation, cone_co_rot);
+
+            if (i > 0)
+            {
+                // firstly compute the later indices for vertex
+                // because we will use them to compute the normals
+
+                // normals to the cyllinder triangle
+                u[0] = vbo[*offset + 0] - vbo[*offset - 24 + 12];
+                u[1] = vbo[*offset + 1] - vbo[*offset - 24 + 13];
+                u[2] = vbo[*offset + 2] - vbo[*offset - 24 + 14];
+
+                v[0] = vbo[*offset + 12] - vbo[*offset - 24 + 12];
+                v[1] = vbo[*offset + 13] - vbo[*offset - 24 + 13];
+                v[2] = vbo[*offset + 14] - vbo[*offset - 24 + 14];
+
+                // cross product
+                a_cross_b(u, v, n);
+                vbo[*normal_offset + 0] = n[0];
+                vbo[*normal_offset + 1] = n[1];
+                vbo[*normal_offset + 2] = n[2];
+
+                // normals to the cone triangle
+                u[0] = vbo[*offset + 3] - vbo[*offset - 24 + 15];
+                u[1] = vbo[*offset + 4] - vbo[*offset - 24 + 16];
+                u[2] = vbo[*offset + 5] - vbo[*offset - 24 + 17];
+
+                v[0] = vbo[*offset + 15] - vbo[*offset - 24 + 15];
+                v[1] = vbo[*offset + 16] - vbo[*offset - 24 + 16];
+                v[2] = vbo[*offset + 17] - vbo[*offset - 24 + 17];
+
+                // cross product
+                a_cross_b(u, v, n);
+                vbo[*normal_offset + 3] = n[0];
+                vbo[*normal_offset + 4] = n[1];
+                vbo[*normal_offset + 5] = n[2];
+                *normal_offset += 12;
+            }
+            *offset += 24;
+        }
+        // reset rotational vectors to their defaults
+        cyllinder_co_rot[0] = radius;
+        cyllinder_co_rot[1] = radius;
+        cyllinder_co_rot[2] = 0;
+        matrix_vector_mul(rotation_matrix, cyllinder_co_rot);
+        vbo[*offset + 0] = origin_base[0] + cyllinder_co_rot[0];
+        vbo[*offset + 1] = origin_base[1] + cyllinder_co_rot[1];
+        vbo[*offset + 2] = origin_base[2] + cyllinder_co_rot[2];
+
+        cone_co_rot[0] = 2 * radius;
+        cone_co_rot[1] = 2 * radius;
+        cone_co_rot[2] = height;
+        matrix_vector_mul(rotation_matrix, cone_co_rot);
+        vbo[*offset + 3] = origin_base[0] + cone_co_rot[0];
+        vbo[*offset + 4] = origin_base[1] + cone_co_rot[1];
+        vbo[*offset + 5] = origin_base[2] + cone_co_rot[2];
+
+        cyllinder_co_rot[0] = radius;
+        cyllinder_co_rot[1] = radius;
+        cyllinder_co_rot[2] += height;
+        matrix_vector_mul(rotation_matrix, cyllinder_co_rot);
+        vbo[*offset + 12] = origin_base[0] + cyllinder_co_rot[0];
+        vbo[*offset + 13] = origin_base[1] + cyllinder_co_rot[1];
+        vbo[*offset + 14] = origin_base[2] + cyllinder_co_rot[2];
+
+        height_operator[0] = 0;
+        height_operator[1] = 0;
+        height_operator[2] = 1.5 * height;
+        matrix_vector_mul(rotation_matrix, height_operator);
+        vbo[*offset + 15] = origin_base[0] + height_operator[0];
+        vbo[*offset + 16] = origin_base[1] + height_operator[1];
+        vbo[*offset + 17] = origin_base[2] + height_operator[2];
+
+        // normals to the cyllinder triangle
+        u[0] = vbo[*offset + 0] - vbo[*offset - 24 + 12];
+        u[1] = vbo[*offset + 1] - vbo[*offset - 24 + 13];
+        u[2] = vbo[*offset + 2] - vbo[*offset - 24 + 14];
+
+        v[0] = vbo[*offset + 12] - vbo[*offset - 24 + 12];
+        v[1] = vbo[*offset + 13] - vbo[*offset - 24 + 13];
+        v[2] = vbo[*offset + 14] - vbo[*offset - 24 + 14];
+
+        // cross product
+        a_cross_b(u, v, n);
+        vbo[*normal_offset + 0] = n[0];
+        vbo[*normal_offset + 1] = n[1];
+        vbo[*normal_offset + 2] = n[2];
+
+        // normals to the cone triangle
+        u[0] = vbo[*offset + 3] - vbo[*offset - 24 + 15];
+        u[1] = vbo[*offset + 4] - vbo[*offset - 24 + 16];
+        u[2] = vbo[*offset + 5] - vbo[*offset - 24 + 17];
+
+        v[0] = vbo[*offset + 15] - vbo[*offset - 24 + 15];
+        v[1] = vbo[*offset + 16] - vbo[*offset - 24 + 16];
+        v[2] = vbo[*offset + 17] - vbo[*offset - 24 + 17];
+
+        // cross product
+        a_cross_b(u, v, n);
+        vbo[*normal_offset + 3] = n[0];
+        vbo[*normal_offset + 4] = n[1];
+        vbo[*normal_offset + 5] = n[2];
+        *offset += 24;
+        *normal_offset += 12;
+    }
+
+    void generateVBO(double *vbo,
+                     int *offset,
+                     int *normal_offset,
+                     double position[3],
+                     double vector[3], // from omf
+                     double color[3],  // from omf
+                     double t_rotation[3][3],
+                     double height,
+                     double radius,
+                     int resolution)
+    {
+        double height_operator[3] = {0, 0, height * 1.5};
+        double mag = sqrt(pow(vector[0], 2) +
+                          pow(vector[1], 2) +
+                          pow(vector[2], 2));
+        double phi = acos(vector[2] / mag);         // z rot
+        double theta = atan2(vector[1], vector[0]); // y rot
+        double ct = cos(theta);
+        double st = sin(theta);
+        double cp = cos(phi);
+        double sp = sin(phi);
+        double rotation_matrix[3][3] = {
+            {ct, -st * cp, st * sp},
+            {st, cp * ct, -sp * ct},
+            {0, sp, cp}};
+        double origin_base[3], cpy[3];
+        double cyllinder_co_rot[3] = {radius, radius, 0};
+        double cone_co_rot[3] = {2 * radius, 2 * radius, 0};
+        std::memcpy(origin_base, position, sizeof(double) * 3);
+        double n[3], u[3], v[3];
+        int prev_off = 36;
+        for (int i = 0; i < (resolution - 1); i++)
+        {
+            // colors first
+            std::memcpy(vbo + *offset, color, sizeof(double) * 3);
+            std::memcpy(vbo + *offset + 9, color, sizeof(double) * 3);
+            std::memcpy(vbo + *offset + 18, color, sizeof(double) * 3);
+            std::memcpy(vbo + *offset + 27, color, sizeof(double) * 3);
+            // bottom triangle - cyllinder
+            matrix_vector_cpy(rotation_matrix, cyllinder_co_rot, cpy);
+            vbo[*offset + 3] = origin_base[0] + cpy[0];
+            vbo[*offset + 4] = origin_base[1] + cpy[1];
+            vbo[*offset + 5] = origin_base[2] + cpy[2];
+
+            // bottom triangle - cone
+            cone_co_rot[2] += height;
+            matrix_vector_cpy(rotation_matrix, cone_co_rot, cpy);
+            vbo[*offset + 6] = origin_base[0] + cpy[0];
+            vbo[*offset + 7] = origin_base[1] + cpy[1];
+            vbo[*offset + 8] = origin_base[2] + cpy[2];
+
+            // top triangle - cyllinder
+            cyllinder_co_rot[2] += height;
+            matrix_vector_cpy(rotation_matrix, cyllinder_co_rot, cpy);
+            vbo[*offset + 21] = origin_base[0] + cpy[0];
+            vbo[*offset + 22] = origin_base[1] + cpy[1];
+            vbo[*offset + 23] = origin_base[2] + cpy[2];
+
+            // top triangle - cone
+            matrix_vector_mul(rotation_matrix, height_operator);
+            vbo[*offset + 24] = origin_base[0] + height_operator[0];
+            vbo[*offset + 25] = origin_base[1] + height_operator[1];
+            vbo[*offset + 26] = origin_base[2] + height_operator[2];
+            height_operator[0] = 0;
+            height_operator[1] = 0;
+            height_operator[2] = 1.5 * height;
+            cyllinder_co_rot[2] -= height;
+            cone_co_rot[2] -= height;
+
+            matrix_vector_mul(t_rotation, cyllinder_co_rot);
+            matrix_vector_mul(t_rotation, cone_co_rot);
+
+            if (i > 0)
+            {
+                // firstly compute the later indices for vertex
+                // because we will use them to compute the normals
+
+                // normals to the cyllinder triangle
+                u[0] = vbo[*offset + 3] - vbo[*offset - prev_off + 21];
+                u[1] = vbo[*offset + 4] - vbo[*offset - prev_off + 22];
+                u[2] = vbo[*offset + 5] - vbo[*offset - prev_off + 23];
+
+                v[0] = vbo[*offset + 21] - vbo[*offset - prev_off + 21];
+                v[1] = vbo[*offset + 22] - vbo[*offset - prev_off + 22];
+                v[2] = vbo[*offset + 23] - vbo[*offset - prev_off + 23];
+
+                // cross product
+                a_cross_b(u, v, n);
+                vbo[*normal_offset + 0] = n[0];
+                vbo[*normal_offset + 1] = n[1];
+                vbo[*normal_offset + 2] = n[2];
+
+                // normals to the cone triangle
+                u[0] = vbo[*offset + 6] - vbo[*offset - prev_off + 24];
+                u[1] = vbo[*offset + 7] - vbo[*offset - prev_off + 25];
+                u[2] = vbo[*offset + 8] - vbo[*offset - prev_off + 26];
+
+                v[0] = vbo[*offset + 24] - vbo[*offset - prev_off + 24];
+                v[1] = vbo[*offset + 25] - vbo[*offset - prev_off + 25];
+                v[2] = vbo[*offset + 26] - vbo[*offset - prev_off + 26];
+
+                // cross product
+                a_cross_b(u, v, n);
+                vbo[*normal_offset + 3] = n[0];
+                vbo[*normal_offset + 4] = n[1];
+                vbo[*normal_offset + 5] = n[2];
+                *normal_offset += 18;
+            }
+            *offset += prev_off;
+        }
+        // colors first
+        std::memcpy(vbo + *offset, color, sizeof(double) * 3);
+        std::memcpy(vbo + *offset + 9, color, sizeof(double) * 3);
+        std::memcpy(vbo + *offset + 18, color, sizeof(double) * 3);
+        std::memcpy(vbo + *offset + 27, color, sizeof(double) * 3);
+        // reset rotational vectors to their defaults
+        cyllinder_co_rot[0] = radius;
+        cyllinder_co_rot[1] = radius;
+        cyllinder_co_rot[2] = 0;
+        matrix_vector_mul(rotation_matrix, cyllinder_co_rot);
+        vbo[*offset + 3] = origin_base[0] + cyllinder_co_rot[0];
+        vbo[*offset + 4] = origin_base[1] + cyllinder_co_rot[1];
+        vbo[*offset + 5] = origin_base[2] + cyllinder_co_rot[2];
+
+        cone_co_rot[0] = 2 * radius;
+        cone_co_rot[1] = 2 * radius;
+        cone_co_rot[2] = height;
+        matrix_vector_mul(rotation_matrix, cone_co_rot);
+        vbo[*offset + 6] = origin_base[0] + cone_co_rot[0];
+        vbo[*offset + 7] = origin_base[1] + cone_co_rot[1];
+        vbo[*offset + 8] = origin_base[2] + cone_co_rot[2];
+
+        cyllinder_co_rot[0] = radius;
+        cyllinder_co_rot[1] = radius;
+        cyllinder_co_rot[2] += height;
+        matrix_vector_mul(rotation_matrix, cyllinder_co_rot);
+        vbo[*offset + 21] = origin_base[0] + cyllinder_co_rot[0];
+        vbo[*offset + 22] = origin_base[1] + cyllinder_co_rot[1];
+        vbo[*offset + 23] = origin_base[2] + cyllinder_co_rot[2];
+
+        height_operator[0] = 0;
+        height_operator[1] = 0;
+        height_operator[2] = 1.5 * height;
+        matrix_vector_mul(rotation_matrix, height_operator);
+        vbo[*offset + 24] = origin_base[0] + height_operator[0];
+        vbo[*offset + 25] = origin_base[1] + height_operator[1];
+        vbo[*offset + 26] = origin_base[2] + height_operator[2];
+
+        // normals to the cyllinder triangle
+        u[0] = vbo[*offset + 3] - vbo[*offset - prev_off + 21];
+        u[1] = vbo[*offset + 4] - vbo[*offset - prev_off + 22];
+        u[2] = vbo[*offset + 5] - vbo[*offset - prev_off + 23];
+
+        v[0] = vbo[*offset + 21] - vbo[*offset - prev_off + 21];
+        v[1] = vbo[*offset + 22] - vbo[*offset - prev_off + 22];
+        v[2] = vbo[*offset + 23] - vbo[*offset - prev_off + 23];
+
+        // cross product
+        a_cross_b(u, v, n);
+        vbo[*normal_offset + 0] = n[0];
+        vbo[*normal_offset + 1] = n[1];
+        vbo[*normal_offset + 2] = n[2];
+
+        // normals to the cone triangle
+        u[0] = vbo[*offset + 6] - vbo[*offset - prev_off + 24];
+        u[1] = vbo[*offset + 7] - vbo[*offset - prev_off + 25];
+        u[2] = vbo[*offset + 8] - vbo[*offset - prev_off + 26];
+
+        v[0] = vbo[*offset + 24] - vbo[*offset - prev_off + 24];
+        v[1] = vbo[*offset + 25] - vbo[*offset - prev_off + 25];
+        v[2] = vbo[*offset + 26] - vbo[*offset - prev_off + 26];
+
+        // cross product
+        a_cross_b(u, v, n);
+        vbo[*normal_offset + 3] = n[0];
+        vbo[*normal_offset + 4] = n[1];
+        vbo[*normal_offset + 5] = n[2];
+        *normal_offset += 18;
+        *offset += prev_off;
+    }
 
     void generateVectors(double *vbo,
                          int *offset,
@@ -286,7 +637,6 @@ struct AdvParser
                 vbo[*offset - 24 + 10] = n[1];
                 vbo[*offset - 24 + 11] = n[2];
             }
-            // std::memcpy(vbo + *offset, tmp_operator, 24 * sizeof(double));
             *offset += 24;
         }
         // reset rotational vectors to their defaults
@@ -351,8 +701,6 @@ struct AdvParser
         vbo[*offset - 24 + 9] = n[0];
         vbo[*offset - 24 + 10] = n[1];
         vbo[*offset - 24 + 11] = n[2];
-
-        // std::memcpy(vbo + *offset, tmp_operator, 18 * sizeof(double));
         *offset += 24;
     }
 
@@ -454,27 +802,25 @@ struct AdvParser
         miffile.close();
     }
 
-    np::ndarray getShapeAsNdarray(int xn, int yn, int zn, double xb, double yb, double zb, int sampling)
+    np::ndarray getShapeAsNdarray(double xb, double yb, double zb)
     {
         double *sh = (double *)(malloc(sizeof(double) * xnodes * ynodes * znodes * 3));
         int current_pos = 0;
-        for (int z = 0; z < zn; z += sampling)
+        for (int z = 0; z < znodes; z++)
         {
-            for (int y = 0; y < yn; y += sampling)
+            for (int y = 0; y < ynodes; y++)
             {
-                for (int x = 0; x < xn; x += sampling)
+                for (int x = 0; x < xnodes; x++)
                 {
-                    sh[current_pos + 0] = xb * (x % xn) - xn * xb / 2;
-                    sh[current_pos + 1] = yb * (y % yn) - yn * yb / 2;
-                    sh[current_pos + 2] = zb * (z % zn) - zn * zb / 2;
+                    sh[current_pos + 0] = xb * (x % xnodes) - xnodes * xb / 2;
+                    sh[current_pos + 1] = yb * (y % ynodes) - ynodes * yb / 2;
+                    sh[current_pos + 2] = zb * (z % znodes) - znodes * zb / 2;
                     current_pos += 3;
                 }
             }
         }
         np::dtype dt = np::dtype::get_builtin<double>();
-        p::tuple shape = p::make_tuple(xn *
-                                       yn *
-                                       zn * 3);
+        p::tuple shape = p::make_tuple(current_pos);
         p::tuple stride = p::make_tuple(sizeof(double));
         return np::from_data(sh,
                              dt,
@@ -506,7 +852,7 @@ struct AdvParser
 
         if (inflate < 0)
         {
-            throw std::invalid_argument("Infalte cannot be 0 or less than 0");
+            throw std::invalid_argument("Inflate cannot be 0 or less than 0");
         }
 
         std::ifstream miffile;
@@ -515,7 +861,7 @@ struct AdvParser
         if (buffer_size == 0)
         {
             miffile.close();
-            throw std::runtime_error("Invalid mif file");
+            throw std::runtime_error("Invalid mif/ovf file");
         }
 
         int lines = znodes * xnodes * ynodes;
@@ -574,6 +920,14 @@ struct AdvParser
                         array_to_cpy[1] = negative_color[1] * dot + (1.0 - dot);
                         array_to_cpy[2] = negative_color[2] * dot + (1.0 - dot);
                     }
+                    // if (array_to_cpy[0] == 0 &&
+                    //     array_to_cpy[1] == 0 &&
+                    //     array_to_cpy[2] == 0)
+                    // {
+                    //     array_to_cpy[0] = -1;
+                    //     array_to_cpy[1] = -1;
+                    //     array_to_cpy[2] = -1;
+                    // }
                     for (int inf = 0; inf < inflate; inf++)
                     {
                         std::memcpy(fut_ndarray + offset, array_to_cpy, sizeof(double) * 3);
@@ -584,7 +938,7 @@ struct AdvParser
         }
 
         np::dtype dt = np::dtype::get_builtin<double>();
-        p::tuple shape = p::make_tuple(lines * 3 * inflate);
+        p::tuple shape = p::make_tuple(offset);
         p::tuple stride = p::make_tuple(sizeof(double));
         return np::from_data(fut_ndarray,
                              dt,
@@ -593,10 +947,14 @@ struct AdvParser
                              p::object());
     }
 
-    np::ndarray getColorAsNdarray(np::ndarray vector_list,
-                                  p::list color_vector_l,
-                                  p::list positive_color_l,
-                                  p::list negative_color_l)
+    np::ndarray getMifVBO(std::string path,
+                          int resolution,
+                          p::list color_vector_l,
+                          p::list positive_color_l,
+                          p::list negative_color_l,
+                          int sampling,
+                          double height,
+                          double radius)
     {
         double color_vector[3] = {
             p ::extract<double>(color_vector_l[0]),
@@ -612,63 +970,13 @@ struct AdvParser
             p ::extract<double>(negative_color_l[1]),
             p ::extract<double>(negative_color_l[2])};
 
-        int shape = vector_list.shape(0);
-        double *fut_ndarray = (double *)(malloc(sizeof(double) * shape));
-        double dot;
-        double *array_to_cpy = (double *)(malloc(sizeof(double) * 3));
-        int offset = 0;
-
-        for (int i = 0; i < shape; i += 3)
-        {
-            dot = p ::extract<double>(vector_list[i + 0]) * color_vector[0] +
-                  p ::extract<double>(vector_list[i + 1]) * color_vector[1] +
-                  p ::extract<double>(vector_list[i + 2]) * color_vector[2];
-
-            if (dot > 0)
-            {
-                array_to_cpy[0] = positive_color[0] * dot + (1.0 - dot);
-                array_to_cpy[1] = positive_color[1] * dot + (1.0 - dot);
-                array_to_cpy[2] = positive_color[2] * dot + (1.0 - dot);
-            }
-            else
-            {
-                dot *= -1;
-
-                array_to_cpy[0] = negative_color[0] * dot + (1.0 - dot);
-                array_to_cpy[1] = negative_color[1] * dot + (1.0 - dot);
-                array_to_cpy[2] = negative_color[2] * dot + (1.0 - dot);
-            }
-
-            std::memcpy(fut_ndarray + i, array_to_cpy, sizeof(double) * 3);
-        }
-
-        np::dtype dt = np::dtype::get_builtin<double>();
-        p::tuple sh = p::make_tuple(shape);
-        p::tuple stride = p::make_tuple(sizeof(double));
-        return np::from_data(fut_ndarray,
-                             dt,
-                             sh,
-                             stride,
-                             p::object());
-    }
-
-    np::ndarray
-    getMifAsNdarray(std::string path,
-                    int inflate,
-                    int sampling)
-    {
-        if (inflate < 0)
-        {
-            throw std::invalid_argument("Infalte cannot be 0 or less than 0");
-        }
-
         std::ifstream miffile;
         miffile.open(path, std::ios::out | std::ios_base::binary);
         int buffer_size = getMifHeader(miffile);
         if (buffer_size == 0)
         {
             miffile.close();
-            throw std::runtime_error("Invalid mif file");
+            throw std::runtime_error("Invalid mif/ovf file");
         }
 
         int lines = znodes * xnodes * ynodes;
@@ -690,12 +998,23 @@ struct AdvParser
         {
             std::memcpy(vals, buffer, lines * 3 * sizeof(double));
         }
-        double *fut_ndarray = (double *)(malloc(sizeof(double) * znodes * xnodes * ynodes * 3 * inflate));
-        double mag;
+        int size = xnodes * ynodes * znodes * resolution * 12 * 3;
+        double *fut_ndarray = (double *)(malloc(sizeof(double) * size));
+        double mag, dot;
         double *array_to_cpy = (double *)(malloc(sizeof(double) * 3));
-        int offset = 0;
-        int index = 0;
 
+        double pos[3], vec[3], col[3];
+
+        int offset, index = 0;
+        int normal_offset = 12;
+
+        double theta = 2 * M_PI / resolution;
+        double c = cos(theta);
+        double s = sin(theta);
+        double t_rotation[3][3] = {
+            {c, -s, 0},
+            {s, c, 0},
+            {0, 0, 1}};
         for (int z = 0; z < znodes; z += 1)
         {
             for (int y = 0; y < ynodes; y += sampling)
@@ -707,22 +1026,49 @@ struct AdvParser
                                pow(vals[index + 1], 2) +
                                pow(vals[index + 2], 2));
                     if (mag == 0.0)
-                        mag = 1.0;
-                    array_to_cpy[0] = vals[index + 0] / mag;
-                    array_to_cpy[1] = vals[index + 1] / mag;
-                    array_to_cpy[2] = vals[index + 2] / mag;
+                        continue;
+                    //     mag = 1.0;
 
-                    for (int inf = 0; inf < inflate; inf++)
+                    pos[0] = 1e9 * xbase * (x % xnodes) - xnodes * 1e9 * xbase / 2;
+                    pos[1] = 1e9 * ybase * (y % ynodes) - ynodes * 1e9 * ybase / 2;
+                    pos[2] = 5e9 * zbase * (z % znodes) - znodes * 5e9 * zbase / 2;
+                    vec[0] = vals[index + 0] / mag;
+                    vec[1] = vals[index + 1] / mag;
+                    vec[2] = vals[index + 2] / mag;
+                    dot = vec[0] * color_vector[0] +
+                          vec[1] * color_vector[1] +
+                          vec[2] * color_vector[2];
+
+                    if (dot > 0)
                     {
-                        std::memcpy(fut_ndarray + offset, array_to_cpy, sizeof(double) * 3);
-                        offset += 3;
+                        col[0] = positive_color[0] * dot + (1.0 - dot);
+                        col[1] = positive_color[1] * dot + (1.0 - dot);
+                        col[2] = positive_color[2] * dot + (1.0 - dot);
                     }
+                    else
+                    {
+                        dot *= -1;
+                        col[0] = negative_color[0] * dot + (1.0 - dot);
+                        col[1] = negative_color[1] * dot + (1.0 - dot);
+                        col[2] = negative_color[2] * dot + (1.0 - dot);
+                    }
+                    generateVBO(
+                        fut_ndarray,
+                        &offset,
+                        &normal_offset,
+                        pos,
+                        vec,
+                        col,
+                        t_rotation,
+                        height,
+                        radius,
+                        resolution);
                 }
             }
         }
 
         np::dtype dt = np::dtype::get_builtin<double>();
-        p::tuple shape = p::make_tuple(lines * 3 * inflate);
+        p::tuple shape = p::make_tuple(offset);
         p::tuple stride = p::make_tuple(sizeof(double));
         return np::from_data(fut_ndarray,
                              dt,
@@ -731,8 +1077,7 @@ struct AdvParser
                              p::object());
     }
 
-    np::ndarray getArrows(np::ndarray shape_outline,
-                          np::ndarray vectors,
+    np::ndarray getArrows(np::ndarray vectors,
                           int resolution,
                           int sampling,
                           double height,
@@ -742,7 +1087,9 @@ struct AdvParser
 
         double *fut_ndarray = (double *)(malloc(sizeof(double) * znodes * xnodes * ynodes * 3 * inflate));
         double pos[3], vec[3];
-        int offset = 0;
+
+        int loc_offset = 0;
+        int normal_offset = 6;
 
         double theta = 2 * M_PI / resolution;
         double c = cos(theta);
@@ -753,32 +1100,38 @@ struct AdvParser
             {0, 0, 1}};
 
         int index = 0;
+        int final_size = 0;
+        int color_offset = 32;
         for (int z = 0; z < znodes; z += 1)
         {
             for (int y = 0; y < ynodes; y += sampling)
             {
                 for (int x = 0; x < xnodes; x += sampling)
                 {
-                    index = 3 * (x + xnodes * y + xnodes * ynodes * z);
-                    pos[0] = p ::extract<double>(shape_outline[index + 0]);
-                    pos[1] = p ::extract<double>(shape_outline[index + 1]);
-                    pos[2] = p ::extract<double>(shape_outline[index + 2]);
+                    // index = 3 * (x + xnodes * y + xnodes * ynodes * z);
+                    pos[0] = 1e9 * xbase * (x % xnodes) - xnodes * 1e9 * xbase / 2;
+                    pos[1] = 1e9 * ybase * (y % ynodes) - ynodes * 1e9 * ybase / 2;
+                    pos[2] = 5e9 * zbase * (z % znodes) - znodes * 5e9 * zbase / 2;
+
                     vec[0] = p ::extract<double>(vectors[index + 0]);
                     vec[1] = p ::extract<double>(vectors[index + 1]);
                     vec[2] = p ::extract<double>(vectors[index + 2]);
-                    generateVectors(fut_ndarray,
-                                    &offset,
-                                    pos,
-                                    vec,
-                                    t_rotation,
-                                    height,
-                                    radius,
-                                    resolution);
+                    generateVectors2(fut_ndarray,
+                                     &loc_offset,
+                                     &normal_offset,
+                                     pos,
+                                     vec,
+                                     t_rotation,
+                                     height,
+                                     radius,
+                                     resolution);
+                    index += 3 * 32;
+                    final_size += inflate * 3;
                 }
             }
         }
         np::dtype dt = np::dtype::get_builtin<double>();
-        p::tuple shape = p::make_tuple(xnodes * ynodes * znodes * 3 * inflate);
+        p::tuple shape = p::make_tuple(final_size);
         p::tuple stride = p::make_tuple(sizeof(double));
         return np::from_data(fut_ndarray,
                              dt,
@@ -800,8 +1153,7 @@ BOOST_PYTHON_MODULE(AdvParser)
         .def(init<AdvParser>())
 
         .def("getMifAsNdarrayWithColor", &AdvParser::getMifAsNdarrayWithColor)
-        .def("getMifAsNdarray", &AdvParser::getMifAsNdarray)
-        .def("getColorAsNdarray", &AdvParser::getColorAsNdarray)
+        .def("getMifVBO", &AdvParser::getMifVBO)
 
         .def("getHeader", &AdvParser::getHeader)
         .def("getShapeAsNdarray", &AdvParser::getShapeAsNdarray)
