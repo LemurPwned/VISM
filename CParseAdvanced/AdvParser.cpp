@@ -434,6 +434,36 @@ struct AdvParser
                 // firstly compute the later indices for vertex
                 // because we will use them to compute the normals
 
+                u[0] = vbo[*offset + 3] - vbo[*offset - prev_off + 3];
+                u[1] = vbo[*offset + 4] - vbo[*offset - prev_off + 4];
+                u[2] = vbo[*offset + 5] - vbo[*offset - prev_off + 5];
+
+                v[0] = vbo[*offset - prev_off + 21] + vbo[*offset - prev_off + 3];
+                v[1] = vbo[*offset - prev_off + 22] + vbo[*offset - prev_off + 4];
+                v[2] = vbo[*offset - prev_off + 23] + vbo[*offset - prev_off + 5];
+
+                // cross product
+                a_cross_b(u, v, n);
+                vbo[*normal_offset + 0] = n[0];
+                vbo[*normal_offset + 1] = n[1];
+                vbo[*normal_offset + 2] = n[2];
+
+                // normals to the cone triangle
+                u[0] = vbo[*offset + 6] - vbo[*offset - prev_off + 6];
+                u[1] = vbo[*offset + 7] - vbo[*offset - prev_off + 7];
+                u[2] = vbo[*offset + 8] - vbo[*offset - prev_off + 8];
+
+                v[0] = vbo[*offset - prev_off + 24] - vbo[*offset - prev_off + 6];
+                v[1] = vbo[*offset - prev_off + 25] - vbo[*offset - prev_off + 7];
+                v[2] = vbo[*offset - prev_off + 26] - vbo[*offset - prev_off + 8];
+
+                // cross product
+                a_cross_b(u, v, n);
+                vbo[*normal_offset + 3] = n[0];
+                vbo[*normal_offset + 4] = n[1];
+                vbo[*normal_offset + 5] = n[2];
+                *normal_offset += 18;
+
                 // normals to the cyllinder triangle
                 u[0] = vbo[*offset + 3] - vbo[*offset - prev_off + 21];
                 u[1] = vbo[*offset + 4] - vbo[*offset - prev_off + 22];
@@ -504,6 +534,37 @@ struct AdvParser
         vbo[*offset + 24] = origin_base[0] + height_operator[0];
         vbo[*offset + 25] = origin_base[1] + height_operator[1];
         vbo[*offset + 26] = origin_base[2] + height_operator[2];
+
+        // normals to the cyllinder triangle
+        u[0] = vbo[*offset + 3] - vbo[*offset - prev_off + 3];
+        u[1] = vbo[*offset + 4] - vbo[*offset - prev_off + 4];
+        u[2] = vbo[*offset + 5] - vbo[*offset - prev_off + 5];
+
+        v[0] = vbo[*offset - prev_off + 21] + vbo[*offset - prev_off + 3];
+        v[1] = vbo[*offset - prev_off + 22] + vbo[*offset - prev_off + 4];
+        v[2] = vbo[*offset - prev_off + 23] + vbo[*offset - prev_off + 5];
+
+        // cross product
+        a_cross_b(u, v, n);
+        vbo[*normal_offset + 0] = n[0];
+        vbo[*normal_offset + 1] = n[1];
+        vbo[*normal_offset + 2] = n[2];
+
+        // normals to the cone triangle
+        u[0] = vbo[*offset + 6] - vbo[*offset - prev_off + 6];
+        u[1] = vbo[*offset + 7] - vbo[*offset - prev_off + 7];
+        u[2] = vbo[*offset + 8] - vbo[*offset - prev_off + 8];
+
+        v[0] = vbo[*offset - prev_off + 24] - vbo[*offset - prev_off + 6];
+        v[1] = vbo[*offset - prev_off + 25] - vbo[*offset - prev_off + 7];
+        v[2] = vbo[*offset - prev_off + 26] - vbo[*offset - prev_off + 8];
+
+        // cross product
+        a_cross_b(u, v, n);
+        vbo[*normal_offset + 3] = n[0];
+        vbo[*normal_offset + 4] = n[1];
+        vbo[*normal_offset + 5] = n[2];
+        *normal_offset += 18;
 
         // normals to the cyllinder triangle
         u[0] = vbo[*offset + 3] - vbo[*offset - prev_off + 21];
@@ -887,7 +948,6 @@ struct AdvParser
         double mag, dot;
         double *array_to_cpy = (double *)(malloc(sizeof(double) * 3));
         int offset = 0;
-        int i;
         int index = 0;
 
         for (int z = 0; z < znodes; z += 1)
@@ -920,14 +980,14 @@ struct AdvParser
                         array_to_cpy[1] = negative_color[1] * dot + (1.0 - dot);
                         array_to_cpy[2] = negative_color[2] * dot + (1.0 - dot);
                     }
-                    // if (array_to_cpy[0] == 0 &&
-                    //     array_to_cpy[1] == 0 &&
-                    //     array_to_cpy[2] == 0)
-                    // {
-                    //     array_to_cpy[0] = -1;
-                    //     array_to_cpy[1] = -1;
-                    //     array_to_cpy[2] = -1;
-                    // }
+                    if (array_to_cpy[0] == 0 &&
+                        array_to_cpy[1] == 0 &&
+                        array_to_cpy[2] == 0)
+                    {
+                        array_to_cpy[0] = -1;
+                        array_to_cpy[1] = -1;
+                        array_to_cpy[2] = -1;
+                    }
                     for (int inf = 0; inf < inflate; inf++)
                     {
                         std::memcpy(fut_ndarray + offset, array_to_cpy, sizeof(double) * 3);
@@ -998,14 +1058,15 @@ struct AdvParser
         {
             std::memcpy(vals, buffer, lines * 3 * sizeof(double));
         }
-        int size = xnodes * ynodes * znodes * resolution * 12 * 3;
+        int size = xnodes * ynodes * znodes * resolution * 10 * 3;
         double *fut_ndarray = (double *)(malloc(sizeof(double) * size));
         double mag, dot;
         double *array_to_cpy = (double *)(malloc(sizeof(double) * 3));
 
         double pos[3], vec[3], col[3];
 
-        int offset, index = 0;
+        int offset = 0;
+        int index = 0;
         int normal_offset = 12;
 
         double theta = 2 * M_PI / resolution;
@@ -1066,7 +1127,7 @@ struct AdvParser
                 }
             }
         }
-
+        printf("OBTAINED SIZE: %d\n", offset);
         np::dtype dt = np::dtype::get_builtin<double>();
         p::tuple shape = p::make_tuple(offset);
         p::tuple stride = p::make_tuple(sizeof(double));
@@ -1101,7 +1162,6 @@ struct AdvParser
 
         int index = 0;
         int final_size = 0;
-        int color_offset = 32;
         for (int z = 0; z < znodes; z += 1)
         {
             for (int y = 0; y < ynodes; y += sampling)

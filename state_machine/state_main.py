@@ -37,7 +37,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
                        'ybase': self.parser.ybase,
                        'zbase': self.parser.zbase}
 
-        self.sampling = 1
+        self.sampling = 3
         self.xnodes = self.header['xnodes']
         self.ynodes = self.header['ynodes']
         self.znodes = self.header['znodes']
@@ -115,11 +115,15 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         return buffers
 
     def update_context(self):
+        # self.buffers = self.create_vbo()
         if self.buffers is None:
             self.buffers = self.create_vbo()
         else:
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
             try:
+                        # gl.glBufferData(gl.GL_ARRAY_BUFFER,
+                        # self.shape.astype(np.float32),
+                        # gl.GL_DYNAMIC_DRAW)
                 gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0,
                                    self.shape.shape[0],
                                    self.shape.astype(np.float32))
@@ -137,7 +141,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
     def vbo_attrib(self):
         """
         PATTERN:
-        V1 V2 N1 N2 V1 V2 N1 N2 ...
+        C V1 V2 C N1 N2 C V1 V2 C N1 N2 C ...
         V1 - cyllinder
         V2 - cone
         N1 - cyllinder normal
@@ -146,7 +150,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         stride = self.__TRUE_FLOAT_BYTE_SIZE__*3*4
         color_stride = self.__TRUE_FLOAT_BYTE_SIZE__*3*3
         vertex_stride = self.__TRUE_FLOAT_BYTE_SIZE__*6*3
-        normal_stride = self.__TRUE_FLOAT_BYTE_SIZE__*4*3
+        normal_stride = self.__TRUE_FLOAT_BYTE_SIZE__*3*6
         position = gl.glGetAttribLocation(self.shader, 'position')
         color = gl.glGetAttribLocation(self.shader, 'color')
         normal = gl.glGetAttribLocation(self.shader, 'normal')
@@ -155,8 +159,6 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
 
         # gl.glColorMaterial(gl.GL_FRONT_AND_BACK, gl.GL_DIFFUSE)
         # gl.glEnable(gl.GL_COLOR_MATERIAL)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
-        gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.buffers[2])
 
         gl.glVertexAttribPointer(color, 3,
                                  gl.GL_FLOAT,
@@ -165,45 +167,35 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
                                  None)
         gl.glEnableVertexAttribArray(color)
         # cyllinder part drawing
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
         gl.glVertexAttribPointer(position, 3,
                                  gl.GL_FLOAT,
                                  gl.GL_FALSE,
                                  vertex_stride,
                                  ctypes.c_void_p(3*self.__TRUE_FLOAT_BYTE_SIZE__))
-        gl.glEnableVertexAttribArray(position)
         gl.glVertexAttribPointer(normal, 3,
                                  gl.GL_FLOAT,
                                  gl.GL_FALSE,
                                  normal_stride,
                                  ctypes.c_void_p(3*4*self.__TRUE_FLOAT_BYTE_SIZE__))
         gl.glEnableVertexAttribArray(normal)
+        gl.glEnableVertexAttribArray(position)
         gl.glDrawElements(gl.GL_TRIANGLES,
                           len(self.indices),
                           gl.GL_UNSIGNED_INT,
                           None)
         # now draw cones
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
-        # gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.buffers[2])
-        gl.glVertexAttribPointer(color, 3,
-                                 gl.GL_FLOAT,
-                                 gl.GL_FALSE,
-                                 6*3*self.__TRUE_FLOAT_BYTE_SIZE__,
-                                 ctypes.c_void_p(3*3*self.__TRUE_FLOAT_BYTE_SIZE__))
-        gl.glEnableVertexAttribArray(color)
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
         gl.glVertexAttribPointer(position, 3,
                                  gl.GL_FLOAT,
                                  gl.GL_FALSE,
                                  vertex_stride,
                                  ctypes.c_void_p(2*3*self.__TRUE_FLOAT_BYTE_SIZE__))
-        gl.glEnableVertexAttribArray(position)
         gl.glVertexAttribPointer(normal, 3,
                                  gl.GL_FLOAT,
                                  gl.GL_FALSE,
                                  normal_stride,
                                  ctypes.c_void_p(
                                      3*5*self.__TRUE_FLOAT_BYTE_SIZE__))
+        gl.glEnableVertexAttribArray(position)
         gl.glEnableVertexAttribArray(normal)
         gl.glDrawElements(gl.GL_TRIANGLES,
                           len(self.indices),

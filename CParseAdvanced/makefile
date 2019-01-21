@@ -8,7 +8,7 @@ BOOST_LIB = /usr/lib
 BOOST_PY = -lboost_python3 -lboost_numpy3
 # compile mesh classes
 TARGET = AdvParser
-CVER = -std=c++17
+CVER = -std=c++17 -Wall
 
 $(TARGET).so: $(TARGET).o
 	g++ $(CVER) -shared -Wl,--export-dynamic $(TARGET).o -L$(BOOST_LIB) $(BOOST_PY) $(BOOST_FS) -L/usr/lib/python$(PYTHON_VERSION)/config -lpython$(PYTHON_VERSION) -o $(TARGET).so
