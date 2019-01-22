@@ -20,15 +20,20 @@ from OpenGL.GL.shaders import compileProgram, compileShader
 class StateMachine(QOpenGLWidget, VirtualStateMachine):
     def __init__(self, directory):
         super(StateMachine, self).__init__()
+        self.frame_file_list = list(map(lambda x: os.path.join(directory, x),
+                                        sorted(filter(lambda x:
+                                                      x.endswith('.ovf') or x.endswith(
+                                                          '.omf'),
+                                                      os.listdir(directory)))))
 
+        self.sampling = 1
         self.ambient = 0.4
         self.resolution = 16
         self.height = 2
         self.radius = 0.25
         self.frame_iterator = 0
         self.parser = AdvParser()
-        self.frame_file_list = list(map(lambda x: os.path.join(directory, x),
-                                        sorted(filter(lambda x: x.endswith('.ovf') or x.endswith('.omf'), os.listdir(directory)))))
+
         self.parser.getHeader(self.frame_file_list[0])
         self.header = {'xnodes': self.parser.xnodes,
                        'ynodes': self.parser.ynodes,
@@ -37,19 +42,12 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
                        'ybase': self.parser.ybase,
                        'zbase': self.parser.zbase}
 
-        self.sampling = 1
+        self.start_layer = 0
+        self.stop_layer = self.parser.znodes
+
         self.xnodes = self.header['xnodes']
         self.ynodes = self.header['ynodes']
         self.znodes = self.header['znodes']
-        self.xnodes /= self.sampling
-        self.ynodes /= self.sampling
-        # self.header['znodes'] /= self.sampling
-        N = int(self.xnodes * self.ynodes * self.znodes)
-        self.indices = self.parser.generateIndices(
-            N, int(self.resolution*2)).astype(np.uint32)
-
-        print(len(self.indices))
-
         self.color_vector = [1.0, 0.0, 0.0]
         self.positive_color = [0.0, 0.0, 1.0]
         self.negative_color = [1.0, 0.0, 0.0]
@@ -61,11 +59,11 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         self.rotation = [0, 0, 0]  # xyz degrees in xyz axis
         self.position = [0, 0, -50]  # xyz initial
         self.geom = (1200, 800)
-        """ 
+        """
         left mouse must be separately registered
-        because right clicks and left clicks with 
+        because right clicks and left clicks with
         large distance between current and last position
-        can lead to rapid rotations 
+        can lead to rapid rotations
         """
         self.registered_left_mouse = False
         self.registered_left_mouse_pos = None
@@ -77,6 +75,15 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         self.display_current_frame(self.frame_iterator)
 
     def display_current_frame(self, frame_num):
+
+        self.xnodes = self.header['xnodes']
+        self.ynodes = self.header['ynodes']
+        self.xnodes /= self.sampling
+        self.ynodes /= self.sampling
+        # recalculate index values
+        N = int(self.xnodes * self.ynodes * self.znodes)
+        self.indices = self.parser.generateIndices(
+            N, int(self.resolution*2)).astype(np.uint32)
         self.shape = self.parser.getMifVBO(
             self.frame_file_list[frame_num],
             self.resolution,
@@ -85,7 +92,9 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
             self.negative_color,
             self.sampling,
             self.height,
-            self.radius
+            self.radius,
+            int(self.start_layer),
+            int(self.stop_layer)
         )
 
         print(
@@ -154,7 +163,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
                                  gl.GL_FLOAT,
                                  gl.GL_FALSE,
                                  normal_stride,
-                                 ctypes.c_void_p(3*6*self.__TRUE_FLOAT_BYTE_SIZE__))
+                                 ctypes.c_void_p(3*5*self.__TRUE_FLOAT_BYTE_SIZE__))
         gl.glEnableVertexAttribArray(normal)
         gl.glEnableVertexAttribArray(position)
         gl.glDrawElements(gl.GL_TRIANGLES,
@@ -172,7 +181,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
                                  gl.GL_FALSE,
                                  normal_stride,
                                  ctypes.c_void_p(
-                                     3*5*self.__TRUE_FLOAT_BYTE_SIZE__))
+                                     3*6*self.__TRUE_FLOAT_BYTE_SIZE__))
         gl.glEnableVertexAttribArray(position)
         gl.glEnableVertexAttribArray(normal)
         gl.glDrawElements(gl.GL_TRIANGLES,

@@ -678,8 +678,18 @@ struct AdvParser
                           p::list negative_color_l,
                           int sampling,
                           double height,
-                          double radius)
+                          double radius,
+                          int start_layer,
+                          int stop_layer)
     {
+        if (start_layer < 0 || start_layer > stop_layer)
+        {
+            throw std::invalid_argument("Start layer cannot be less than stop layer");
+        }
+        if (stop_layer > znodes)
+        {
+            throw std::invalid_argument("Stop layer to large");
+        }
         double color_vector[3] = {
             p ::extract<double>(color_vector_l[0]),
             p ::extract<double>(color_vector_l[1]),
@@ -746,7 +756,7 @@ struct AdvParser
         double xb = 1e9 * xbase;
         double yb = 1e9 * ybase;
         double zb = 5e9 * zbase;
-        for (int z = 0; z < znodes; z += 1)
+        for (int z = start_layer; z < stop_layer; z += 1)
         {
             for (int y = 0; y < ynodes; y += sampling)
             {

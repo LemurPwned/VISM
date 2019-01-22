@@ -14,43 +14,40 @@ class VirtualStateMachine(QObject):
     @pyqtSlot(int)
     def resolution_change(self, new_resolution_value):
         self.resolution = new_resolution_value
-        # reset and compile to the new value
-        self.xnodes = self.header['xnodes']
-        self.ynodes = self.header['ynodes']
-        self.xnodes /= self.sampling
-        self.ynodes /= self.sampling
-        # recalculate index values
-        N = int(self.xnodes * self.ynodes * self.znodes)
-        self.indices = self.parser.generateIndices(
-            N, int(self.resolution*2)).astype(np.uint32)
+        self.buffers = None
         self.refresh()
 
     @pyqtSlot(int)
     def sampling_change(self, new_sampling_change):
         self.sampling = new_sampling_change
-        # reset and compile to the new value
-        self.xnodes = self.header['xnodes']
-        self.ynodes = self.header['ynodes']
-        self.xnodes /= self.sampling
-        self.ynodes /= self.sampling
-        # recalculate index values
-        N = int(self.xnodes * self.ynodes * self.znodes)
-        self.indices = self.parser.generateIndices(
-            N, int(self.resolution*2)).astype(np.uint32)
+        self.buffers = None
         self.refresh()
 
     @pyqtSlot(float)
     def ambient_change(self, new_ambient):
         self.ambient = float("%.2f" % new_ambient)
-        print(self.ambient)
         self.update()
 
     @pyqtSlot(float)
     def height_change(self, new_height):
         self.height = new_height
+        self.buffers = None
         self.refresh()
 
     @pyqtSlot(float)
     def radius_change(self, new_radius):
         self.radius = new_radius
+        self.buffers = None
+        self.refresh()
+
+    @pyqtSlot(int)
+    def start_layer_change(self, new_layer):
+        self.start_layer = new_layer
+        self.buffers = None
+        self.refresh()
+
+    @pyqtSlot(int)
+    def stop_layer_change(self, new_layer):
+        self.stop_layer = new_layer
+        self.buffers = None
         self.refresh()
