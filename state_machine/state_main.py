@@ -21,7 +21,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
     def __init__(self, directory):
         super(StateMachine, self).__init__()
 
-        self.ambient = 1
+        self.ambient = 0.4
         self.resolution = 16
         self.height = 2
         self.radius = 0.25
@@ -37,7 +37,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
                        'ybase': self.parser.ybase,
                        'zbase': self.parser.zbase}
 
-        self.sampling = 3
+        self.sampling = 1
         self.xnodes = self.header['xnodes']
         self.ynodes = self.header['ynodes']
         self.znodes = self.header['znodes']
@@ -77,8 +77,6 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         self.display_current_frame(self.frame_iterator)
 
     def display_current_frame(self, frame_num):
-        # CUBES
-
         self.shape = self.parser.getMifVBO(
             self.frame_file_list[frame_num],
             self.resolution,
@@ -101,13 +99,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
                         self.shape.astype(np.float32),
                         gl.GL_DYNAMIC_DRAW)
-        # color buffer
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
-        # gl.glBufferData(gl.GL_ARRAY_BUFFER,
-        #                 self.current_frame.astype(np.float32),
-        #                 gl.GL_DYNAMIC_DRAW)
-
-        # # index buffer
+        # index buffer
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, buffers[2])
         gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER,
                         self.indices,
@@ -115,27 +107,16 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         return buffers
 
     def update_context(self):
-        # self.buffers = self.create_vbo()
         if self.buffers is None:
             self.buffers = self.create_vbo()
         else:
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
             try:
-                        # gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                        # self.shape.astype(np.float32),
-                        # gl.GL_DYNAMIC_DRAW)
                 gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0,
                                    self.shape.shape[0],
                                    self.shape.astype(np.float32))
             except ValueError as e:
                 print(e)  # watch out for setting array element with a sequence erorr
-
-            # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[1])
-            # # later move to set_i function so that reference changes
-            # # does not cause buffer rebinding
-            # gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0,
-            #                    self.current_frame.shape[0],
-            #                    self.current_frame.astype(np.float32))
         self.vbo_attrib()
 
     def vbo_attrib(self):
@@ -157,9 +138,6 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         if position == -1 or color == -1 or normal == -1:
             raise ValueError("Attribute was not found")
 
-        # gl.glColorMaterial(gl.GL_FRONT_AND_BACK, gl.GL_DIFFUSE)
-        # gl.glEnable(gl.GL_COLOR_MATERIAL)
-
         gl.glVertexAttribPointer(color, 3,
                                  gl.GL_FLOAT,
                                  gl.GL_FALSE,
@@ -176,7 +154,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
                                  gl.GL_FLOAT,
                                  gl.GL_FALSE,
                                  normal_stride,
-                                 ctypes.c_void_p(3*4*self.__TRUE_FLOAT_BYTE_SIZE__))
+                                 ctypes.c_void_p(3*6*self.__TRUE_FLOAT_BYTE_SIZE__))
         gl.glEnableVertexAttribArray(normal)
         gl.glEnableVertexAttribArray(position)
         gl.glDrawElements(gl.GL_TRIANGLES,
@@ -295,7 +273,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         n = gl.glGetUniformLocation(self.shader, 'lightColor')
         if n == -1:
             print("Not found lightColor attribute in shaders")
-        gl.glUniform3f(n, 0.5, 0.5, 1.0)
+        gl.glUniform3f(n, 1.0, 1.0, 1.0)
 
         n = gl.glGetUniformLocation(self.shader, 'ambientStrength')
         if n == -1:
@@ -303,7 +281,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
         gl.glUniform1fv(n, 1, self.ambient)
 
         print("COMPILED SHADERS SUCCESSFULLY")
-        gl.glClearColor(*[0.0, 0.0, 0.0], 0)
+        gl.glClearColor(*[0.5, 0.5, 0.5], 0)
 
         gl.glEnable(gl.GL_DEPTH_TEST)
         gl.glEnable(gl.GL_POLYGON_SMOOTH)
