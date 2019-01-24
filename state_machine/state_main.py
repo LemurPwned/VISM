@@ -165,7 +165,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
                                  gl.GL_FLOAT,
                                  gl.GL_FALSE,
                                  normal_stride,
-                                 ctypes.c_void_p(3*5*self.__TRUE_FLOAT_BYTE_SIZE__))
+                                 ctypes.c_void_p(3*4*self.__TRUE_FLOAT_BYTE_SIZE__))
         gl.glEnableVertexAttribArray(normal)
         gl.glEnableVertexAttribArray(position)
         gl.glDrawElements(gl.GL_TRIANGLES,
@@ -183,7 +183,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
                                  gl.GL_FALSE,
                                  normal_stride,
                                  ctypes.c_void_p(
-                                     3*6*self.__TRUE_FLOAT_BYTE_SIZE__))
+                                     3*5*self.__TRUE_FLOAT_BYTE_SIZE__))
         gl.glEnableVertexAttribArray(position)
         gl.glEnableVertexAttribArray(normal)
         gl.glDrawElements(gl.GL_TRIANGLES,

@@ -734,11 +734,15 @@ struct AdvParser
         }
         int size = xnodes * ynodes * znodes * resolution * 10 * 3;
         double *fut_ndarray = (double *)(malloc(sizeof(double) * size));
-        double mag, dot;
         double *array_to_cpy = (double *)(malloc(sizeof(double) * 3));
 
-        double pos[3], vec[3], col[3];
+        if (fut_ndarray == NULL)
+        {
+            throw std::runtime_error("Failed to allocate memory for a large array");
+        }
 
+        double pos[3], vec[3], col[3];
+        double mag, dot;
         int offset = 0;
         int index = 0;
         int normal_offset = 12;
