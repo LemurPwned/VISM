@@ -80,8 +80,8 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
 
         self.xnodes = self.header['xnodes']
         self.ynodes = self.header['ynodes']
-        # self.xnodes /= self.sampling
-        # self.ynodes /= self.sampling
+        self.xnodes /= self.sampling
+        self.ynodes /= self.sampling
         # recalculate index values
         N = int(self.xnodes * self.ynodes * self.znodes)
         self.indices = self.parser.generateIndices(
