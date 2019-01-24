@@ -718,7 +718,8 @@ struct AdvParser
         miffile.read(buffer, buffer_size * lines * 3);
         miffile.close();
 
-        double vals[lines * 3];
+        double *vals;
+        vals = (double *)malloc(sizeof(double) * lines * 3);
         if (buffer_size == 4)
         {
             float fvals[lines * 3];
@@ -730,7 +731,9 @@ struct AdvParser
         }
         else if (buffer_size == 8)
         {
-            std::memcpy(vals, buffer, lines * 3 * sizeof(double));
+            // research why this casting with memcpy causes SIGSEV
+            // std::memcpy(vals, buffer, lines * 3 * sizeof(double));
+            vals = (double *)(buffer);
         }
         int size = xnodes * ynodes * znodes * resolution * 10 * 3;
         double *fut_ndarray = (double *)(malloc(sizeof(double) * size));
@@ -740,7 +743,6 @@ struct AdvParser
         {
             throw std::runtime_error("Failed to allocate memory for a large array");
         }
-
         double pos[3], vec[3], col[3];
         double mag, dot;
         int offset = 0;

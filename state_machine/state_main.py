@@ -71,7 +71,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
 
         self.length = len(self.frame_file_list)
         self.__TRUE_FLOAT_BYTE_SIZE__ = 4
-        # self.subwindow = StateMenuController(state_object=self)
+        self.subwindow = StateMenuController(state_object=self)
 
     def refresh(self):
         self.display_current_frame(self.frame_iterator)
