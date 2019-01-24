@@ -5,6 +5,7 @@ import sys
 import glfw
 
 from CParseAdvanced.AdvParser import AdvParser
+from Windows.StateMenu import StateMenuController
 
 from state_machine.virtual_state import VirtualStateMachine
 from state_machine.shaders.shaders import *
@@ -26,7 +27,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
                                                           '.omf'),
                                                       os.listdir(directory)))))
 
-        self.sampling = 1
+        self.sampling = 4
         self.ambient = 0.4
         self.resolution = 16
         self.height = 2
@@ -41,7 +42,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
                        'xbase': self.parser.xbase,
                        'ybase': self.parser.ybase,
                        'zbase': self.parser.zbase}
-
+        print(self.header)
         self.start_layer = 0
         self.stop_layer = self.parser.znodes
 
@@ -70,6 +71,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
 
         self.length = len(self.frame_file_list)
         self.__TRUE_FLOAT_BYTE_SIZE__ = 4
+        # self.subwindow = StateMenuController(state_object=self)
 
     def refresh(self):
         self.display_current_frame(self.frame_iterator)
@@ -78,8 +80,8 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
 
         self.xnodes = self.header['xnodes']
         self.ynodes = self.header['ynodes']
-        self.xnodes /= self.sampling
-        self.ynodes /= self.sampling
+        # self.xnodes /= self.sampling
+        # self.ynodes /= self.sampling
         # recalculate index values
         N = int(self.xnodes * self.ynodes * self.znodes)
         self.indices = self.parser.generateIndices(
@@ -122,7 +124,7 @@ class StateMachine(QOpenGLWidget, VirtualStateMachine):
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffers[0])
             try:
                 gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0,
-                                   self.shape.shape[0],
+                                   self.shape.shape[0]*4,
                                    self.shape.astype(np.float32))
             except ValueError as e:
                 print(e)  # watch out for setting array element with a sequence erorr

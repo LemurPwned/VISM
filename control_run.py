@@ -15,11 +15,11 @@ class Window(QWidget):
     def __init__(self):
         super(Window, self).__init__()
 
+        directory = 'examples/0520nm'
         directory = 'examples/0200nm'
         # directory = 'examples/mumax_regions'
-        # directory = '/home/lemurpwned/Downloads/spinwaves.out-20190106T074440Z-001/spinwaves.out'
+        # directory = 'examples/6000uA.out'
         self.glWidget = StateMachine(directory)
-        self.subwindow = StateMenuController(state_object=self.glWidget)
 
         mainLayout = QHBoxLayout()
         mainLayout.addWidget(self.glWidget)
