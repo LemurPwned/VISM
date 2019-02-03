@@ -5,6 +5,7 @@ import json
 from pattern_types.Patterns import Singleton, DataObjectHolderProxy
 from pattern_types.widget_counter import WidgetCounter
 
+
 class DataObjectHolder(metaclass=Singleton):
     def __init__(self):
         self.contains_lookup = []
@@ -24,6 +25,7 @@ class DataObjectHolder(metaclass=Singleton):
     @DataObjectHolderProxy.is_removable
     def removeDataObject(self, alias):
         setattr(self, alias, None)
+
 
 class SettingsInterface:
     def __init__(self):
@@ -47,12 +49,15 @@ class SettingsInterface:
                 module_path = os.path.join('Widgets', 'openGL_widgets')
             elif object_type == '2d_object':
                 module_path = os.path.join('Widgets', 'plot_widgets')
+            elif object_type == 'stateful':
+                module_path = "state_machine"
             else:
                 raise ValueError("Invalid object type {}".format(object_type))
 
             # if paths do not exist, raise error
             if not os.path.isdir(module_path):
-                raise ValueError("Module path: {} does not exist".format(module_path))
+                raise ValueError(
+                    "Module path: {} does not exist".format(module_path))
 
             module = None
             # if there is a build, prefer .pyc files
@@ -60,16 +65,16 @@ class SettingsInterface:
             # otherwise
             if debug:
                 module = imp.load_source(obj_str, os.path.join(module_path,
-                                                        obj_str + '.py'))
+                                                               obj_str + '.py'))
             else:
                 if os.path.isdir(os.path.join(module_path, '__pycache__')):
                     module_path = os.path.join(module_path, '__pycache__')
                     module = imp.load_compiled(obj_str, self.search_obj_file(module_path,
-                                                obj_str, '.pyc'))
+                                                                             obj_str, '.pyc'))
                 else:
                     # if not, then fetch .py file
                     module = imp.load_source(obj_str, os.path.join(module_path,
-                                                        obj_str + '.py'))
+                                                                   obj_str + '.py'))
 
             if module is None:
                 raise ValueError("Module not found: module is None")
@@ -80,7 +85,6 @@ class SettingsInterface:
                 print("There is no {} class in {} module".format(obj_str, module))
         except AttributeError as ae:
             print("Trying to access or invoke unexisting class {}".format(ae))
-
 
     def search_obj_file(self, path, filename, ext):
         """
@@ -105,31 +109,32 @@ class SettingsInterface:
         """
         if type(doh) != DataObjectHolder:
             print(type(doh))
-            raise ValueError("Passed invalid data object, cannot request parameter")
+            raise ValueError(
+                "Passed invalid data object, cannot request parameter")
         try:
             # pack in toolbar options
             doh.setDataObject(self.widget_pane_handler[object_alias]['toolbar'],
-                                'toolbar',)
+                              'toolbar',)
             # get the necessary parameters for object construction
             # specified in field 'required'
             passing_dict = \
-                        self.get_and_verify_class_parameters(\
-                            self.widget_pane_handler[object_alias]['required'],
-                            doh)
+                self.get_and_verify_class_parameters(
+                    self.widget_pane_handler[object_alias]['required'],
+                    doh)
             if 'optional' in self.widget_pane_handler[object_alias]:
-                optional_dict = self.get_and_verify_class_parameters(\
-                                self.widget_pane_handler[object_alias]['optional'],
-                                doh)
+                optional_dict = self.get_and_verify_class_parameters(
+                    self.widget_pane_handler[object_alias]['optional'],
+                    doh)
                 passing_dict = {**optional_dict, **passing_dict}
             # construct object and pass dict as parameter
             if self.widget_pane_handler[object_alias]['object_type'] == '3d_object':
                 WidgetCounter.OPENGL_WIDGET += 1
             elif self.widget_pane_handler[object_alias]['object_type'] == '2d_object':
                 WidgetCounter.MATPLOTLIB_WIDGET += 1
-            return self.evaluate_string_as_class_object(\
-                        self.widget_pane_handler[object_alias]['object'],
-                        self.widget_pane_handler[object_alias]['object_type'])(data_dict=passing_dict,
-                                                                               parent=parent)
+            return self.evaluate_string_as_class_object(
+                self.widget_pane_handler[object_alias]['object'],
+                self.widget_pane_handler[object_alias]['object_type'])(data_dict=passing_dict,
+                                                                       parent=parent)
         except KeyError:
             raise ValueError("Invalid key {}".format(object_alias))
 

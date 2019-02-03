@@ -332,17 +332,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self.playerWindow.closeMe()
 
         """Spawns Window for choosing widget for this pane"""
-        if not self._LOADED_FLAG_:
-            # spawn directory picker again
-            self.loadDirectoryWrapper()
-        else:
-            self.new = ChooseWidget(number, \
-                                    blockStructures = self._BLOCK_STRUCTURES_, \
-                                    blockIterables = self._BLOCK_ITERABLES_,
-                                    blockPlotIterables = self._BLOCK_PLOT_ITERABLES_,
-                                    parent = self)
-            self.new.setHandler(self.choosingWidgetReceiver)
-
+        # if not self._LOADED_FLAG_:
+        #     # spawn directory picker again
+        #     self.loadDirectoryWrapper()
+        # else:
+        self.new = ChooseWidget(number, \
+                                blockStructures = self._BLOCK_STRUCTURES_, \
+                                blockIterables = self._BLOCK_ITERABLES_,
+                                blockPlotIterables = self._BLOCK_PLOT_ITERABLES_,
+                                parent = self)
+        self.new.setHandler(self.choosingWidgetReceiver)
+    
+    @MainContextDecorators.prompt_directory_selection_if_not_stateful
     def choosingWidgetReceiver(self, value):
         """Data receiver for choosingWidget action"""
         self.panes[value[0]].clearBox()
@@ -354,9 +355,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.window = self.sp.\
             get_settings_window_constructor_from_file(self.doh, parent=self)
         # all widgets get generalReceiver handler
-        self.window.setEventHandler(self.generalReceiver)
-
         self.current_pane, self.current_widget_alias = value
+        if self.window is not None:
+            self.window.setEventHandler(self.generalReceiver)
+        else:
+            self.generalReceiver(options="None")
+
         self.refreshScreen()
 
     def generalReceiver(self, options):

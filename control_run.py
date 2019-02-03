@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QOpenGLWidget, QSlider,
 
 
 import sys
-from state_machine.state_main import StateMachine
+from state_machine.StateMachine import StateMachine
 from Windows.StateMenu import StateMenuController
 
 

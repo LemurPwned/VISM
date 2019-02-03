@@ -273,6 +273,18 @@ struct Parser
         return vectors;
     }
 
+    void getArrowVectors(double *vbo, 
+                                double pos[3],
+                                double col[3],
+                                int resolution,
+                                int height,
+                                int radius,
+                                int offset){
+        for (int i = 0; i < resolution -1; i++){
+            vbo[*offset + i + 0] = math.sin(
+        }
+    }
+
     np::ndarray getMifAsNdarray(std::string path)
     {
 
