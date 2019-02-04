@@ -28,7 +28,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     ANY_GL_WIDGET_IN_VIEW = 0
     BACKGROUND = [0.0, 0.0, 0.0]
     def __init__(self, parent=None):
-        super(AbstractGLContext, self).__init__(parent)
+        super(AbstractGLContext, self).__init__()
         AbstractGLContext.ANY_GL_WIDGET_IN_VIEW += 1
         self.subdir = "GL" + str(AnimatedWidget.WIDGET_ID)
         AnimatedWidget.WIDGET_ID += 1
@@ -64,8 +64,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
 
     def shareData(self, **kwargs):
         super().shareData(**kwargs)
-        self.handleOptionalData()
-        self.receivedOptions()
+        if hasattr(self, 'options'):
+            self.handleOptionalData()
+            self.receivedOptions()
         self.i = self.current_state
 
     def prerendering_calculation(self, empty=False):

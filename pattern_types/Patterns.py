@@ -94,7 +94,6 @@ class MainContextDecorators:
     def prompt_directory_selection_if_not_stateful(choose_widget_function):
         def _widget_selector(self, value):
             if not self._LOADED_FLAG_:
-                print(value[-1])
                 if value[-1] != 'StateMachine':
                     self.loadDirectoryWrapper()
                 else:
@@ -106,9 +105,10 @@ class MainContextDecorators:
                     #                  QtWidgets.QMessageBox.No, self.refreshScreen,
                     #                  self.loadDirectoryWrapper, parent=self)
                     #     return 0
-                    directory = './examples/0200nm'
+                    directory = 'examples/0200nm'
                     self.doh.setDataObject(directory, 'directory')
                     self._LOADED_FLAG_ = True
+                    self._BLOCK_ITERABLES_ = False  # unlock player
                     choose_widget_function(self, value)
             else:
                 choose_widget_function(self, value)

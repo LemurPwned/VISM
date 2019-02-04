@@ -121,7 +121,7 @@
     "alias": "StateMachine",
     "object": "StateMachine",
     "object_type": "stateful",
-    "required": ["directory"],
+    "required": ["directory", "current_state"],
     "optional": ["iterations", "trigger"],
     "iterable_type": "structure",
     "toolbar": [

@@ -1,11 +1,11 @@
 from util_tools.buildVerifier import BuildVerifier
 # verify build
 # execute makefile
-if BuildVerifier.OS_GLOB_SYS == "Windows":
-    pass
-else:
-    bv = BuildVerifier()
-    bv.cython_builds()
+# if BuildVerifier.OS_GLOB_SYS == "Windows":
+#     pass
+# else:
+#     bv = BuildVerifier()
+#     bv.cython_builds()
 
 import sys
 import threading
@@ -359,7 +359,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         if self.window is not None:
             self.window.setEventHandler(self.generalReceiver)
         else:
+            # no need to have extra settings window for stateful
             self.generalReceiver(options="None")
+            # don't call with None since it deletes the pane
 
         self.refreshScreen()
 
@@ -384,7 +386,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         try:
             self.panes[self.current_pane].addWidget(\
-                self.sp.build_chain(self.current_widget_alias, self.doh, self))
+                self.sp.build_chain(self.current_widget_alias, self.doh, parent=self))
         except (MemoryError, TimeoutError):
             x = PopUpWrapper("Insufficient resource", msg="You ran out of memory for this calculation" 
                     + "or timeout appeared. "+"It is suggested to increase subsampling or decrease resolution",
