@@ -150,12 +150,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                     yesMes=None, parent=self)
 
     @MainContextDecorators.window_resize_fix
+    @MainContextDecorators.loading_protector
     def promptDirectory(self):
         fileDialog = QtWidgets.QFileDialog()
         directory = str(
             fileDialog.getExistingDirectory(
                 self,
-                "Select Directory",
+                "Select a directory",
                 options = QtWidgets.QFileDialog.ShowDirsOnly))
         fileDialog.close()
         return directory
@@ -164,11 +165,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def promptFile(self):
         fileDialog = QtWidgets.QFileDialog()
         fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
-        fileLoaded = str(fileDialog.getOpenFileName(self, "Select File")[0])
+        fileLoaded = str(fileDialog.getOpenFileName(self, "Select a file")[0])
         return fileLoaded
 
     def setScreenshotFolder(self):
-        selected_dir = self.promptDirectory()
+        selected_dir = self.promptDirectory.__wrapped__()
         if selected_dir is not None:
             self.screenshot_dir = selected_dir
             x = PopUpWrapper(
@@ -220,26 +221,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.reset_variables()
         self.enablePanes()
         
-    def loadDirectoryWrapper(self):
+    def loadDirectoryWrapper(self, name=None):
         """Loads whole directory based on Parse class as simple as BHP"""
         if self._LOADED_FLAG_:
             self.deleteLoadedFiles()
-
         self._LOADED_FLAG_ = False
-        directory = self.promptDirectory()
-        if directory is None or directory == "" or directory=="  ":
-            msg = "Invalid directory: {}. Do you wish to abort?".format(directory)
-            PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
-                            QtWidgets.QMessageBox.No, self.refreshScreen,
-                            self.loadDirectoryWrapper, parent=self)
+        directory = self.promptDirectory(name)
+        if directory is None:
+            self.refreshScreen()
             return 0
         else:
             try:
+                self.disablePanes()
                 self.p = ThreadingWrapper(completeAction=None,
                                           exceptionAction=self.raise_thread_exception, 
                                           parent=self)
                 self.p.collapse_threads(self.loadDirectory, directory)
-                self.disablePanes()
 
             except ValueError as e:
                 msg = "Invalid directory: {}. \
@@ -253,13 +250,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                                 parent=self)
                 to_return = None
             except Exception as e:
-                print(e)
                 to_return = None
             else:
+                self.enablePanes() # just in case 
                 self._BLOCK_ITERABLES_ = False
                 self._LOADED_FLAG_ = True
                 self._BLOCK_STRUCTURES_ = False
-                to_return = 1
+                to_return = directory
             return to_return
 
     def loadDirectory(self, directory):
@@ -280,11 +277,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def enablePanes(self):
         for i in range(WidgetHandler.visibleCounter):
-            self.panes[i].setDisabled(False)
+            try:
+                self.panes[i].setDisabled(False)
+            except RuntimeError:
+                pass # isVisible has not changed quickly enough
 
     def disablePanes(self):
         for i in range(WidgetHandler.visibleCounter):
-            self.panes[i].setDisabled(True)
+            try:
+                self.panes[i].setDisabled(True)
+            except RuntimeError:
+                pass
 
     def deleteLoadedFiles(self):
         # clearing all widgets it's not a problem even if it does not exist
@@ -332,10 +335,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self.playerWindow.closeMe()
 
         """Spawns Window for choosing widget for this pane"""
-        # if not self._LOADED_FLAG_:
-        #     # spawn directory picker again
-        #     self.loadDirectoryWrapper()
-        # else:
+
         self.new = ChooseWidget(number, \
                                 blockStructures = self._BLOCK_STRUCTURES_, \
                                 blockIterables = self._BLOCK_ITERABLES_,

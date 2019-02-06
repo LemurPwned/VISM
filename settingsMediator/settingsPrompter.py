@@ -33,7 +33,7 @@ class SettingsPrompter(SettingsInterface):
         if self.widget_pane_handler is None:
             self.widget_pane_handler = json.load(open(self.__WIDGET_LOC__))
         # required parameters follow after class name
-        if 'settings' in self.widget_pane_handler[self.settingsType]:
+        if 'settings' in self.widget_pane_handler[self.settingsType].keys():
             settings_args_str = self.widget_pane_handler[self.settingsType]['settings'][1:]
             settings_args_param = []
             for setting_parameter in settings_args_str:

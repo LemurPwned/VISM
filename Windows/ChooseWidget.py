@@ -38,6 +38,8 @@ class ChooseWidget(QtWidgets.QWidget):
     def returnChoice(self):
         if self.json_file_handler is not None:
             for widget_key in self.json_file_handler.keys():
+                if widget_key == "__all__":
+                    continue
                 if self.list.currentItem().text() == \
                         self.json_file_handler[widget_key]['alias']:
                     self.handler([self.number, widget_key])
@@ -64,6 +66,8 @@ class ChooseWidget(QtWidgets.QWidget):
     def loadWidgetsFromFile(self):
         self.json_file_handler = json.load(open(self.__WIDGET_LOC__))
         for widget_key in self.json_file_handler.keys():
+            if widget_key == "__all__":
+                continue
             if not self._BLOCK_ITERABLES_ and not self._BLOCK_STRUCTURES_ \
                     and not self._BLOCK_PLOT_ITERABLES_:
                 self.list.addItem(self.json_file_handler[widget_key]['alias'])

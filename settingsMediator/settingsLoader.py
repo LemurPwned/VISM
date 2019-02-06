@@ -32,6 +32,9 @@ class SettingsInterface:
         self.__WIDGET_LOC__ = "Widgets/widget_pane.json"
         self.widget_pane_handler = json.load(open(self.__WIDGET_LOC__))
 
+    def evaluate_needed_file_extensions(self, alias):
+        return self.widget_pane_handler[alias]['extensions']
+
     def evaluate_string_as_class_object(self, obj_str, object_type,
                                         debug=True):
         """

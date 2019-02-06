@@ -1,10 +1,13 @@
 import inspect
+import os
+import glob
 from util_tools.buildVerifier import BuildVerifier
 from pattern_types.widget_counter import WidgetCounter
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import Qt
 
 from util_tools.PopUp import PopUpWrapper
+from functools import wraps
 
 
 class Singleton(type):
@@ -91,25 +94,61 @@ class AbstractGLContextDecorators:
 
 
 class MainContextDecorators:
+    def loading_protector(loading_function):
+        @wraps(loading_function)
+        def _loading_protector(self, name=None):
+            # check the name in the file
+            loaded_obj = None
+            try:
+                if name is None:
+                    raise AttributeError(
+                        f"{name} is not a valid name for object loader")
+                else:
+                    name = "__all__"
+                allowed_exts = self.sp.evaluate_needed_file_extensions(name)
+                loaded_obj = loading_function(self)
+                if os.path.isdir(loaded_obj):
+                    for ext in allowed_exts:
+                        l = glob.glob(os.path.join(loaded_obj, '*'+ext))
+                        if l != []:
+                            break
+                    else:
+                        raise ValueError(
+                            f"Incorrectly loaded object {loaded_obj}")
+                else:
+                    # a file
+                    ext = '.'+loaded_obj.split('.')[-1]
+                    if not ext in allowed_exts:
+                        raise ValueError(
+                            f"Incorrectly loaded object {loaded_obj}")
+                if loaded_obj is None or loaded_obj == "" or loaded_obj == " ":
+                    raise ValueError(f"Incorrectly loaded object {loaded_obj}")
+            except ValueError as e:
+                buttonReply = QtWidgets.QMessageBox.question(self, "Invalid directory",
+                                                             str(e),
+                                                             QtWidgets.QMessageBox.Yes |
+                                                             QtWidgets.QMessageBox.No,
+                                                             QtWidgets.QMessageBox.Yes)
+                if buttonReply == QtWidgets.QMessageBox.Yes:
+                    fname = getattr(self, loading_function.__name__)
+                    return fname(name=name)
+                else:
+                    return None
+            return loaded_obj
+        return _loading_protector
+
     def prompt_directory_selection_if_not_stateful(choose_widget_function):
         def _widget_selector(self, value):
             if not self._LOADED_FLAG_:
                 if value[-1] != 'StateMachine':
-                    self.loadDirectoryWrapper()
+                    self.loadDirectoryWrapper(value[-1])
                 else:
-                    # directory = self.promptDirectory()
-                    # if directory is None or directory == "" or directory == "  ":
-                    #     msg = "Invalid directory: {}. Do you wish to abort?".format(
-                    #         directory)
-                    #     PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
-                    #                  QtWidgets.QMessageBox.No, self.refreshScreen,
-                    #                  self.loadDirectoryWrapper, parent=self)
-                    #     return 0
+                    directory = self.promptDirectory(value[-1])
                     directory = 'examples/0200nm'
                     self.doh.setDataObject(directory, 'directory')
                     self._LOADED_FLAG_ = True
                     self._BLOCK_ITERABLES_ = False  # unlock player
-                    choose_widget_function(self, value)
+                choose_widget_function(self, value)
             else:
                 choose_widget_function(self, value)
         return _widget_selector

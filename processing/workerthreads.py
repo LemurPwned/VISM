@@ -7,8 +7,9 @@ from PyQt5.QtWidgets import QLabel, QSizePolicy
 
 from util_tools.PopUp import PopUpWrapper
 
-import time 
+import time
 import signal
+
 
 class ThreadingWrapper:
     def __init__(self, completeAction=None, exceptionAction=None, parent=None):
@@ -36,12 +37,14 @@ class ThreadingWrapper:
 
         self.movie_screen.setGeometry(left, top, width, height)
         self.movie_screen.setAlignment(Qt.AlignCenter)
-        self.movie_screen.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.movie_screen.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.movie_screen.setAttribute(Qt.WA_TranslucentBackground, True)
-        self.movie_screen.setStyleSheet("QLabel::item { border: 0px solid black };");
+        self.movie_screen.setStyleSheet(
+            "QLabel::item { border: 0px solid black };")
 
         self.movie_screen.setMovie(self.movie)
-    
+
     def collapse_threads(self, func, *args, **kwargs):
         """
         this function runs the proper QThreadPool
@@ -56,14 +59,15 @@ class ThreadingWrapper:
         self.movie_screen.show()
         self.movie.start()
 
+        self.threadPool.waitForDone()
 
     def thread_exception(self, exceptionE):
         if self.exceptionAction:
             self.exceptionAction()
-        x = PopUpWrapper("Error", 
-                            msg="Error {}\n{}".format(exceptionE[0], 
-                                                        exceptionE[1]), 
-                            more="Error window")
+        x = PopUpWrapper("Error",
+                         msg="Error {}\n{}".format(exceptionE[0],
+                                                   exceptionE[1]),
+                         more="Error window")
         self.movie.stop()
         self.movie_screen.close()
 
@@ -73,6 +77,7 @@ class ThreadingWrapper:
         self.movie.stop()
         self.movie_screen.close()
 
+
 class ExceptionWorker(QObject):
     finished = pyqtSignal()
     exception = pyqtSignal(tuple)
@@ -80,7 +85,7 @@ class ExceptionWorker(QObject):
 
 class ThreadWorker(QObject):
     finished = pyqtSignal()
-    exception = pyqtSignal(tuple)   
+    exception = pyqtSignal(tuple)
 
     def __init__(self, parent, func, *args, **kwargs):
         super(ThreadWorker, self).__init__()
@@ -94,13 +99,14 @@ class ThreadWorker(QObject):
             result = self.func(*self.args, **self.kwargs)
         except:
             traceback.print_exc()
-            exctype, value  = sys.exc_info()[:2]
-            self.exception.emit((exctype, value, 
-                                    traceback.format_exc()))
+            exctype, value = sys.exc_info()[:2]
+            self.exception.emit((exctype, value,
+                                 traceback.format_exc()))
             result = None
         finally:
             self.finished.emit()
             return result
+
 
 class Worker(QRunnable):
     def __init__(self, func, *args, **kwargs):
@@ -116,9 +122,9 @@ class Worker(QRunnable):
             result = self.func(*self.args, **self.kwargs)
         except:
             traceback.print_exc()
-            exctype, value  = sys.exc_info()[:2]
-            self.signals.exception.emit((exctype, value, 
-                                    traceback.format_exc()))
+            exctype, value = sys.exc_info()[:2]
+            self.signals.exception.emit((exctype, value,
+                                         traceback.format_exc()))
             result = None
         finally:
             self.signals.finished.emit()

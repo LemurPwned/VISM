@@ -1,8 +1,12 @@
 {
+  "__all__": {
+    "extensions": [".ovf", ".omf", ".odt", ".txt"]
+  },
   "CubicGLContext": {
     "alias": "3D_CUBIC",
     "object": "CubicGLContext",
     "object_type": "3d_object",
+    "extensions": [".ovf", ".omf"],
     "settings": ["PerfOptions", "file_header", "object_alias"],
     "required": [
       "current_state",
@@ -26,6 +30,7 @@
     "alias": "3D_ARROW",
     "object": "ArrowGLContext",
     "object_type": "3d_object",
+    "extensions": [".ovf", ".omf"],
     "settings": ["ArrowPerfOptions", "file_header", "object_alias"],
     "required": [
       "current_state",
@@ -49,6 +54,7 @@
     "alias": "3D VECTOR",
     "object": "VectorGLContext",
     "object_type": "3d_object",
+    "extensions": [".ovf", ".omf"],
     "settings": ["PerfOptions", "file_header"],
     "required": [
       "current_state",
@@ -72,6 +78,7 @@
     "alias": "2D Matplotlib",
     "object": "Canvas",
     "object_type": "2d_object",
+    "extensions": [".txt", ".odt"],
     "settings": ["PlotSettings", "plot_data"],
     "required": [
       "iterations",
@@ -88,6 +95,7 @@
     "alias": "2D PyQT",
     "object": "Canvas2Dupgraded",
     "object_type": "2d_object",
+    "extensions": [".txt", ".odt"],
     "settings": ["PlotSettings", "plot_data"],
     "required": [
       "iterations",
@@ -105,6 +113,7 @@
     "alias": "2D Layer",
     "object": "CanvasLayer",
     "object_type": "2d_object",
+    "extensions": [".txt", ".odt"],
     "settings": ["SimplePerfOptions", "file_header"],
     "required": [
       "current_state",
@@ -121,6 +130,7 @@
     "alias": "StateMachine",
     "object": "StateMachine",
     "object_type": "stateful",
+    "extensions": [".ovf", ".omf"],
     "required": ["directory", "current_state"],
     "optional": ["iterations", "trigger"],
     "iterable_type": "structure",
