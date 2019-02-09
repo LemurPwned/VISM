@@ -19,37 +19,10 @@
      <x>40</x>
      <y>40</y>
      <width>181</width>
-     <height>271</height>
+     <height>288</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="1">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>Resolution</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="2">
-     <widget class="QSpinBox" name="spinBox">
-      <property name="minimum">
-       <number>8</number>
-      </property>
-      <property name="maximum">
-       <number>32</number>
-      </property>
-      <property name="singleStep">
-       <number>2</number>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QLabel" name="label_2">
-      <property name="text">
-       <string>Sampling</string>
-      </property>
-     </widget>
-    </item>
     <item row="1" column="2">
      <widget class="QSpinBox" name="spinBox_2">
       <property name="minimum">
@@ -90,6 +63,30 @@
      <widget class="QLabel" name="label_4">
       <property name="text">
        <string>Height</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QLabel" name="label_6">
+      <property name="text">
+       <string>Start Lay</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="2">
+     <widget class="QSpinBox" name="spinBox_4">
+      <property name="minimum">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <number>8</number>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QLabel" name="label_7">
+      <property name="text">
+       <string>Stop Lay</string>
       </property>
      </widget>
     </item>
@@ -145,28 +142,52 @@
       </property>
      </widget>
     </item>
-    <item row="5" column="1">
-     <widget class="QLabel" name="label_6">
+    <item row="0" column="1">
+     <widget class="QLabel" name="label">
       <property name="text">
-       <string>Start Lay</string>
+       <string>Resolution</string>
       </property>
      </widget>
     </item>
-    <item row="6" column="2">
-     <widget class="QSpinBox" name="spinBox_4">
+    <item row="0" column="2">
+     <widget class="QSpinBox" name="spinBox">
       <property name="minimum">
-       <number>1</number>
-      </property>
-      <property name="maximum">
        <number>8</number>
       </property>
+      <property name="maximum">
+       <number>32</number>
+      </property>
+      <property name="singleStep">
+       <number>2</number>
+      </property>
      </widget>
     </item>
-    <item row="6" column="1">
-     <widget class="QLabel" name="label_7">
+    <item row="1" column="1">
+     <widget class="QLabel" name="label_2">
       <property name="text">
-       <string>Stop Lay</string>
+       <string>Sampling</string>
       </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QLabel" name="label_8">
+      <property name="text">
+       <string>Cell type</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="2">
+     <widget class="QComboBox" name="comboBox">
+      <item>
+       <property name="text">
+        <string>cube</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>arrow</string>
+       </property>
+      </item>
      </widget>
     </item>
    </layout>

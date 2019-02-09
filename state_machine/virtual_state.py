@@ -9,6 +9,7 @@ class VirtualStateMachine(QObject):
             # nullify the buffers (single instance so it's ok)
             self.buffers = None
             func_clr(self, new_val)
+            self.refresh()
         return buffer_flush
 
     def __init__(self):
@@ -21,14 +22,12 @@ class VirtualStateMachine(QObject):
     def resolution_change(self, new_resolution_value):
         self.resolution = new_resolution_value
         self.buffers = None
-        self.refresh()
 
     @pyqtSlot(int)
     @handle_buffer_flush
     def sampling_change(self, new_sampling_change):
         self.sampling = new_sampling_change
         self.sampling_changed = True
-        self.refresh()
 
     @pyqtSlot(float)
     def ambient_change(self, new_ambient):
@@ -39,24 +38,26 @@ class VirtualStateMachine(QObject):
     @handle_buffer_flush
     def height_change(self, new_height):
         self.height = new_height
-        self.refresh()
 
     @pyqtSlot(float)
     @handle_buffer_flush
     def radius_change(self, new_radius):
         self.radius = new_radius
-        self.refresh()
 
     @pyqtSlot(int)
     @handle_buffer_flush
     def start_layer_change(self, new_layer):
         self.sampling_changed = True
         self.start_layer = new_layer
-        self.refresh()
 
     @pyqtSlot(int)
     @handle_buffer_flush
     def stop_layer_change(self, new_layer):
         self.sampling_changed = True
         self.stop_layer = new_layer
-        self.refresh()
+
+    @pyqtSlot(str)
+    @handle_buffer_flush
+    def function_change(self, ftype):
+        self.draw_function = ftype
+        self.update_context = self.cube_update_context if ftype == 'cube' else self.arrow_update_context

@@ -33,7 +33,11 @@ class StateMenuController(QWidget, Ui_Dialog):
         self.doubleSpinBox_2.valueChanged.connect(self.height_trigger)
         self.doubleSpinBox_3.valueChanged.connect(self.radius_trigger)
 
+        self.comboBox.currentIndexChanged[str].connect(self.dropdown_trigger)
         self.show()
+
+    def dropdown_trigger(self, val):
+        self.state_controller.function_change(val)
 
     def start_layer_trigger(self, val):
         self.state_controller.start_layer_change(val)
