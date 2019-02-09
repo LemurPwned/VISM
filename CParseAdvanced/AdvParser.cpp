@@ -465,6 +465,90 @@ struct AdvParser
         std::memcpy(sh + current_pos, arr, sizeof(double) * 72);
     }
 
+    void generateCubes2(double *sh, double position[3], double dimensions[3], int current_pos)
+    {
+        double arr[144] = {
+            //TOP FACE
+            position[0] + dimensions[0], position[1], position[2] + dimensions[2],
+            0, 0, 0,
+            position[0], position[1], position[2] + dimensions[2],
+            0, 0, 0,
+            position[0], position[1] + dimensions[1], position[2] + dimensions[2],
+            0, 0, 0,
+            position[0] + dimensions[0], position[1] + dimensions[1], position[2] + dimensions[2],
+            0, 0, 0,
+            //BOTTOM FACE
+            position[0] + dimensions[0], position[1], position[2],
+            0, 0, 0,
+            position[0], position[1], position[2],
+            0, 0, 0,
+            position[0], position[1] + dimensions[1], position[2],
+            0, 0, 0,
+            position[0] + dimensions[0], position[1] + dimensions[1], position[2],
+            0, 0, 0,
+            //FRONT FACE
+            position[0] + dimensions[0], position[1] + dimensions[1], position[2] + dimensions[2],
+            0, 0, 0,
+            position[0], position[1] + dimensions[1], position[2] + dimensions[2],
+            0, 0, 0,
+            position[0], position[1] + dimensions[1], position[2],
+            0, 0, 0,
+            position[0] + dimensions[0], position[1] + dimensions[1], position[2],
+            0, 0, 0,
+            //BACK FACE
+            position[0] + dimensions[0], position[1], position[2] + dimensions[2],
+            0, 0, 0,
+            position[0], position[1], position[2] + dimensions[2],
+            0, 0, 0,
+            position[0], position[1], position[2],
+            0, 0, 0,
+            position[0] + dimensions[0], position[1], position[2],
+            0, 0, 0,
+            //RIGHT FACE
+            position[0] + dimensions[0], position[1], position[2] + dimensions[2],
+            0, 0, 0,
+            position[0] + dimensions[0], position[1] + dimensions[1], position[2] + dimensions[2],
+            0, 0, 0,
+            position[0] + dimensions[0], position[1] + dimensions[1], position[2],
+            0, 0, 0,
+            position[0] + dimensions[0], position[1], position[2],
+            0, 0, 0,
+            //LEFT FACE
+            position[0], position[1] + dimensions[1], position[2] + dimensions[2],
+            0, 0, 0,
+            position[0], position[1], position[2] + dimensions[2],
+            0, 0, 0,
+            position[0], position[1], position[2],
+            0, 0, 0,
+            position[0], position[1] + dimensions[1], position[2],
+            0, 0, 0};
+
+        // normals here
+        double ux, uy, uz;
+        double vx, vy, vz;
+        int offset = 0;
+        for (int i = 0; i < 6; i++)
+        {
+            ux = arr[offset + 0] - arr[offset + 6]; // first vertex
+            uy = arr[offset + 1] - arr[offset + 7];
+            uz = arr[offset + 2] - arr[offset + 8];
+
+            vx = arr[offset + 0] - arr[offset + 12]; // second vertex
+            vy = arr[offset + 1] - arr[offset + 13];
+            vz = arr[offset + 2] - arr[offset + 14];
+
+            // cross product
+            for (int j = 0; j < 4; j++)
+            {
+                arr[offset + 3 + j * 6 + 0] = uy * vz - vy * uz;
+                arr[offset + 3 + j * 6 + 1] = ux * uz - vx - vz;
+                arr[offset + 3 + j * 6 + 2] = ux * vy - uy * vx;
+            }
+            offset += 24;
+        }
+        std::memcpy(sh + current_pos, arr, sizeof(double) * 144);
+    }
+
     np::ndarray generateIndices(int N, int index_required)
     {
         int start_index = 0;
@@ -490,21 +574,30 @@ struct AdvParser
     }
     np::ndarray getCubeOutline(int xn, int yn, int zn,
                                double xb, double yb, double zb,
-                               int per_vertex)
+                               int sampling,
+                               int start_layer, int stop_layer)
     {
+        /*
+        Cube MIF OUTLINE 
+        2 VBOs because the geometry is constant
+        1) Geometry + Normal VBO 
+        2) Color VBO  
+        */
+        int per_vertex = 144;
+        // per_vertex = 72;
         double *sh = (double *)(malloc(sizeof(double) * xn * yn * zn * per_vertex));
         double dimensions[3] = {xb, yb, zb};
         int current_pos = 0;
-        for (int z = 0; z < zn; z++)
+        for (int z = start_layer; z < stop_layer; z += 1)
         {
-            for (int y = 0; y < yn; y++)
+            for (int y = 0; y < ynodes; y += sampling)
             {
-                for (int x = 0; x < xn; x++)
+                for (int x = 0; x < xnodes; x += sampling)
                 {
                     double position[3] = {xb * (x % xn) - xn * xb / 2,
                                           yb * (y % yn) - yn * yb / 2,
                                           zb * (z % zn) - zn * zb / 2};
-                    generateCubes(sh, position, dimensions, current_pos);
+                    generateCubes2(sh, position, dimensions, current_pos);
                     current_pos += per_vertex;
                 }
             }
@@ -555,11 +648,12 @@ struct AdvParser
     }
 
     np::ndarray getMifAsNdarrayWithColor(std::string path,
-                                         int inflate,
                                          p::list color_vector_l,
                                          p::list positive_color_l,
                                          p::list negative_color_l,
-                                         int sampling)
+                                         int sampling,
+                                         int start_layer,
+                                         int stop_layer)
     {
         double color_vector[3] = {
             p ::extract<double>(color_vector_l[0]),
@@ -575,11 +669,6 @@ struct AdvParser
             p ::extract<double>(negative_color_l[1]),
             p ::extract<double>(negative_color_l[2])};
 
-        if (inflate < 0)
-        {
-            throw std::invalid_argument("Inflate cannot be 0 or less than 0");
-        }
-
         std::ifstream miffile;
         miffile.open(path, std::ios::out | std::ios_base::binary);
         int buffer_size = getMifHeader(miffile);
@@ -594,7 +683,9 @@ struct AdvParser
         miffile.read(buffer, buffer_size * lines * 3);
         miffile.close();
 
-        double vals[lines * 3];
+        double *vals;
+        vals = (double *)malloc(sizeof(double) * lines * 3);
+
         if (buffer_size == 4)
         {
             float fvals[lines * 3];
@@ -606,15 +697,17 @@ struct AdvParser
         }
         else if (buffer_size == 8)
         {
-            std::memcpy(vals, buffer, lines * 3 * sizeof(double));
+            vals = (double *)(buffer);
         }
+        int inflate = 24; // 24 vetrtivesd in a cube
+
         double *fut_ndarray = (double *)(malloc(sizeof(double) * znodes * xnodes * ynodes * 3 * inflate));
         double mag, dot;
         double *array_to_cpy = (double *)(malloc(sizeof(double) * 3));
         int offset = 0;
         int index = 0;
 
-        for (int z = 0; z < znodes; z += 1)
+        for (int z = start_layer; z < stop_layer; z += 1)
         {
             for (int y = 0; y < ynodes; y += sampling)
             {
@@ -626,6 +719,7 @@ struct AdvParser
                                pow(vals[index + 2], 2));
                     if (mag == 0.0)
                         mag = 1.0;
+
                     dot = (vals[index + 0] / mag) * color_vector[0] +
                           (vals[index + 1] / mag) * color_vector[1] +
                           (vals[index + 2] / mag) * color_vector[2];
@@ -643,14 +737,6 @@ struct AdvParser
                         array_to_cpy[0] = negative_color[0] * dot + (1.0 - dot);
                         array_to_cpy[1] = negative_color[1] * dot + (1.0 - dot);
                         array_to_cpy[2] = negative_color[2] * dot + (1.0 - dot);
-                    }
-                    if (array_to_cpy[0] == 0 &&
-                        array_to_cpy[1] == 0 &&
-                        array_to_cpy[2] == 0)
-                    {
-                        array_to_cpy[0] = -1;
-                        array_to_cpy[1] = -1;
-                        array_to_cpy[2] = -1;
                     }
                     for (int inf = 0; inf < inflate; inf++)
                     {
@@ -737,7 +823,6 @@ struct AdvParser
         }
         int size = xnodes * ynodes * znodes * resolution * 10 * 3;
         double *fut_ndarray = (double *)(malloc(sizeof(double) * size));
-        double *array_to_cpy = (double *)(malloc(sizeof(double) * 3));
 
         if (fut_ndarray == NULL)
         {
@@ -836,6 +921,7 @@ BOOST_PYTHON_MODULE(AdvParser)
 
         .def("getMifAsNdarrayWithColor", &AdvParser::getMifAsNdarrayWithColor)
         .def("getMifVBO", &AdvParser::getMifVBO)
+        .def("getCubeOutline", &AdvParser::getCubeOutline)
 
         .def("getHeader", &AdvParser::getHeader)
         .def("getShapeAsNdarray", &AdvParser::getShapeAsNdarray)

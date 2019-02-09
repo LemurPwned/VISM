@@ -144,7 +144,6 @@ class MainContextDecorators:
                     self.loadDirectoryWrapper(value[-1])
                 else:
                     directory = self.promptDirectory(value[-1])
-                    directory = 'examples/0200nm'
                     self.doh.setDataObject(directory, 'directory')
                     self._LOADED_FLAG_ = True
                     self._BLOCK_ITERABLES_ = False  # unlock player

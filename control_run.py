@@ -19,7 +19,8 @@ class Window(QWidget):
         # directory = 'examples/0200nm'
         # directory = 'examples/mumax_regions'
         # directory = 'examples/6000uA.out'
-        self.glWidget = StateMachine(directory)
+        self.glWidget = StateMachine(
+            {'current_state': 0, 'directory': directory}, self)
 
         mainLayout = QHBoxLayout()
         mainLayout.addWidget(self.glWidget)

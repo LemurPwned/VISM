@@ -273,14 +273,16 @@ struct Parser
         return vectors;
     }
 
-    void getArrowVectors(double *vbo, 
-                                double pos[3],
-                                double col[3],
-                                int resolution,
-                                int height,
-                                int radius,
-                                int offset){
-        for (int i = 0; i < resolution -1; i++){
+    void getArrowVectors(double *vbo,
+                         double pos[3],
+                         double col[3],
+                         int resolution,
+                         int height,
+                         int radius,
+                         int offset)
+    {
+        for (int i = 0; i < resolution - 1; i++)
+        {
             vbo[*offset + i + 0] = math.sin(
         }
     }
@@ -312,7 +314,7 @@ struct Parser
             fut_ndarray[i + 1] = vals[i + 1] / mag;
             fut_ndarray[i + 2] = vals[i + 2] / mag;
         }
-
+        miffile.close();
         // use explicit namespace here to make sure it does not mix the functions
         boost::python::numpy::dtype dt1 = boost::python::numpy::dtype::get_builtin<double>();
         boost::python::tuple shape = boost::python::make_tuple(lines, 3);
@@ -323,7 +325,6 @@ struct Parser
                                                                                    stride,
                                                                                    boost::python::object());
         // last entry is object owner
-        miffile.close();
         return vectorData;
     }
 };
