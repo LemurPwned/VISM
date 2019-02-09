@@ -27,6 +27,7 @@ class VirtualStateMachine(QObject):
     @handle_buffer_flush
     def sampling_change(self, new_sampling_change):
         self.sampling = new_sampling_change
+        self.sampling_changed = True
         self.refresh()
 
     @pyqtSlot(float)
@@ -49,11 +50,13 @@ class VirtualStateMachine(QObject):
     @pyqtSlot(int)
     @handle_buffer_flush
     def start_layer_change(self, new_layer):
+        self.sampling_changed = True
         self.start_layer = new_layer
         self.refresh()
 
     @pyqtSlot(int)
     @handle_buffer_flush
     def stop_layer_change(self, new_layer):
+        self.sampling_changed = True
         self.stop_layer = new_layer
         self.refresh()

@@ -429,42 +429,6 @@ struct AdvParser
         *offset += prev_off;
     }
 
-    void generateCubes(double *sh, double position[3], double dimensions[3], int current_pos)
-    {
-        double arr[72] = {
-            //TOP FACE
-            position[0] + dimensions[0], position[1], position[2] + dimensions[2],
-            position[0], position[1], position[2] + dimensions[2],
-            position[0], position[1] + dimensions[1], position[2] + dimensions[2],
-            position[0] + dimensions[0], position[1] + dimensions[1], position[2] + dimensions[2],
-            //BOTTOM FACE
-            position[0] + dimensions[0], position[1], position[2],
-            position[0], position[1], position[2],
-            position[0], position[1] + dimensions[1], position[2],
-            position[0] + dimensions[0], position[1] + dimensions[1], position[2],
-            //FRONT FACE
-            position[0] + dimensions[0], position[1] + dimensions[1], position[2] + dimensions[2],
-            position[0], position[1] + dimensions[1], position[2] + dimensions[2],
-            position[0], position[1] + dimensions[1], position[2],
-            position[0] + dimensions[0], position[1] + dimensions[1], position[2],
-            //BACK FACE
-            position[0] + dimensions[0], position[1], position[2] + dimensions[2],
-            position[0], position[1], position[2] + dimensions[2],
-            position[0], position[1], position[2],
-            position[0] + dimensions[0], position[1], position[2],
-            //RIGHT FACE
-            position[0] + dimensions[0], position[1], position[2] + dimensions[2],
-            position[0] + dimensions[0], position[1] + dimensions[1], position[2] + dimensions[2],
-            position[0] + dimensions[0], position[1] + dimensions[1], position[2],
-            position[0] + dimensions[0], position[1], position[2],
-            //LEFT FACE
-            position[0], position[1] + dimensions[1], position[2] + dimensions[2],
-            position[0], position[1], position[2] + dimensions[2],
-            position[0], position[1], position[2],
-            position[0], position[1] + dimensions[1], position[2]};
-        std::memcpy(sh + current_pos, arr, sizeof(double) * 72);
-    }
-
     void generateCubes2(double *sh, double position[3], double dimensions[3], int current_pos)
     {
         double arr[144] = {
@@ -586,7 +550,7 @@ struct AdvParser
         int per_vertex = 144;
         // per_vertex = 72;
         double *sh = (double *)(malloc(sizeof(double) * xn * yn * zn * per_vertex));
-        double dimensions[3] = {xb, yb, zb};
+        double dimensions[3] = {xb * sampling, yb * sampling, zb};
         int current_pos = 0;
         for (int z = start_layer; z < stop_layer; z += 1)
         {

@@ -11,12 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(264, 518)
-        self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
-        self.buttonBox.setGeometry(QtCore.QRect(-90, 470, 341, 32))
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName("buttonBox")
+        Dialog.resize(273, 363)
         self.gridLayoutWidget = QtWidgets.QWidget(Dialog)
         self.gridLayoutWidget.setGeometry(QtCore.QRect(40, 40, 181, 271))
         self.gridLayoutWidget.setObjectName("gridLayoutWidget")
@@ -88,13 +83,8 @@ class Ui_Dialog(object):
         self.label_7 = QtWidgets.QLabel(self.gridLayoutWidget)
         self.label_7.setObjectName("label_7")
         self.gridLayout.addWidget(self.label_7, 6, 1, 1, 1)
-        self.pushButton = QtWidgets.QPushButton(Dialog)
-        self.pushButton.setGeometry(QtCore.QRect(80, 410, 98, 31))
-        self.pushButton.setObjectName("pushButton")
 
         self.retranslateUi(Dialog)
-        self.buttonBox.accepted.connect(Dialog.accept)
-        self.buttonBox.rejected.connect(Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -107,7 +97,6 @@ class Ui_Dialog(object):
         self.label_5.setText(_translate("Dialog", "Radius"))
         self.label_6.setText(_translate("Dialog", "Start Lay"))
         self.label_7.setText(_translate("Dialog", "Stop Lay"))
-        self.pushButton.setText(_translate("Dialog", "Play"))
 
 
 if __name__ == "__main__":
