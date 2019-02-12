@@ -25,6 +25,14 @@ class StateMenuController(QWidget, Ui_Dialog):
         self.spinBox_4.setMaximum(self.state_controller.znodes)
         self.spinBox_4.setValue(self.state_controller.stop_layer)
 
+        self.spinBox_5.valueChanged.connect(self.xLightPos)
+        self.spinBox_6.valueChanged.connect(self.yLightPos)
+        self.spinBox_7.valueChanged.connect(self.zLightPos)
+
+        self.spinBox_5.setMaximum(100)
+        self.spinBox_6.setMaximum(100)
+        self.spinBox_7.setMaximum(100)
+
         self.doubleSpinBox.setValue(self.state_controller.ambient)
         self.doubleSpinBox_2.setValue(self.state_controller.height)
         self.doubleSpinBox_3.setValue(self.state_controller.radius)
@@ -35,6 +43,15 @@ class StateMenuController(QWidget, Ui_Dialog):
 
         self.comboBox.currentIndexChanged[str].connect(self.dropdown_trigger)
         self.show()
+
+    def xLightPos(self, val):
+        self.state_controller.set_xLight(val)
+
+    def yLightPos(self, val):
+        self.state_controller.set_yLight(val)
+
+    def zLightPos(self, val):
+        self.state_controller.set_zLight(val)
 
     def dropdown_trigger(self, val):
         self.state_controller.function_change(val)

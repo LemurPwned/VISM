@@ -268,9 +268,9 @@ struct AdvParser
                 u[1] = vbo[*offset + 4] - vbo[*offset - prev_off + 4];
                 u[2] = vbo[*offset + 5] - vbo[*offset - prev_off + 5];
 
-                v[0] = vbo[*offset - prev_off + 21] + vbo[*offset - prev_off + 3];
-                v[1] = vbo[*offset - prev_off + 22] + vbo[*offset - prev_off + 4];
-                v[2] = vbo[*offset - prev_off + 23] + vbo[*offset - prev_off + 5];
+                v[0] = vbo[*offset - prev_off + 21] - vbo[*offset - prev_off + 3];
+                v[1] = vbo[*offset - prev_off + 22] - vbo[*offset - prev_off + 4];
+                v[2] = vbo[*offset - prev_off + 23] - vbo[*offset - prev_off + 5];
 
                 // cross product
                 a_cross_b(u, v, n);
@@ -278,6 +278,9 @@ struct AdvParser
                 vbo[*normal_offset + 1] = n[1];
                 vbo[*normal_offset + 2] = n[2];
 
+                vbo[*normal_offset + 18] = n[0];
+                vbo[*normal_offset + 19] = n[1];
+                vbo[*normal_offset + 20] = n[2];
                 // normals to the cone triangle
                 u[0] = vbo[*offset + 6] - vbo[*offset - prev_off + 6];
                 u[1] = vbo[*offset + 7] - vbo[*offset - prev_off + 7];
@@ -292,37 +295,11 @@ struct AdvParser
                 vbo[*normal_offset + 3] = n[0];
                 vbo[*normal_offset + 4] = n[1];
                 vbo[*normal_offset + 5] = n[2];
+
+                vbo[*normal_offset + 21] = n[0];
+                vbo[*normal_offset + 22] = n[1];
+                vbo[*normal_offset + 23] = n[2];
                 *normal_offset += 18;
-
-                // normals to the cyllinder triangle
-                u[0] = vbo[*offset + 3] - vbo[*offset - prev_off + 21];
-                u[1] = vbo[*offset + 4] - vbo[*offset - prev_off + 22];
-                u[2] = vbo[*offset + 5] - vbo[*offset - prev_off + 23];
-
-                v[0] = vbo[*offset + 21] - vbo[*offset - prev_off + 21];
-                v[1] = vbo[*offset + 22] - vbo[*offset - prev_off + 22];
-                v[2] = vbo[*offset + 23] - vbo[*offset - prev_off + 23];
-
-                // cross product
-                a_cross_b(u, v, n);
-                vbo[*normal_offset + 0] = n[0];
-                vbo[*normal_offset + 1] = n[1];
-                vbo[*normal_offset + 2] = n[2];
-
-                // normals to the cone triangle
-                u[0] = vbo[*offset + 6] - vbo[*offset - prev_off + 24];
-                u[1] = vbo[*offset + 7] - vbo[*offset - prev_off + 25];
-                u[2] = vbo[*offset + 8] - vbo[*offset - prev_off + 26];
-
-                v[0] = vbo[*offset + 24] - vbo[*offset - prev_off + 24];
-                v[1] = vbo[*offset + 25] - vbo[*offset - prev_off + 25];
-                v[2] = vbo[*offset + 26] - vbo[*offset - prev_off + 26];
-
-                // cross product
-                a_cross_b(u, v, n);
-                vbo[*normal_offset + 3] = n[0];
-                vbo[*normal_offset + 4] = n[1];
-                vbo[*normal_offset + 5] = n[2];
                 *normal_offset += 18;
             }
             *offset += prev_off;
@@ -370,15 +347,19 @@ struct AdvParser
         u[1] = vbo[*offset + 4] - vbo[*offset - prev_off + 4];
         u[2] = vbo[*offset + 5] - vbo[*offset - prev_off + 5];
 
-        v[0] = vbo[*offset - prev_off + 21] + vbo[*offset - prev_off + 3];
-        v[1] = vbo[*offset - prev_off + 22] + vbo[*offset - prev_off + 4];
-        v[2] = vbo[*offset - prev_off + 23] + vbo[*offset - prev_off + 5];
+        v[0] = vbo[*offset - prev_off + 21] - vbo[*offset - prev_off + 3];
+        v[1] = vbo[*offset - prev_off + 22] - vbo[*offset - prev_off + 4];
+        v[2] = vbo[*offset - prev_off + 23] - vbo[*offset - prev_off + 5];
 
         // cross product
         a_cross_b(u, v, n);
         vbo[*normal_offset + 0] = n[0];
         vbo[*normal_offset + 1] = n[1];
         vbo[*normal_offset + 2] = n[2];
+
+        vbo[*normal_offset + 18] = n[0];
+        vbo[*normal_offset + 19] = n[1];
+        vbo[*normal_offset + 20] = n[2];
 
         // normals to the cone triangle
         u[0] = vbo[*offset + 6] - vbo[*offset - prev_off + 6];
@@ -391,37 +372,28 @@ struct AdvParser
 
         // cross product
         a_cross_b(u, v, n);
+
+        vbo[*normal_offset + 3] = n[0];
+        vbo[*normal_offset + 4] = n[1];
+        vbo[*normal_offset + 5] = n[2];
+
+        vbo[*normal_offset + 21] = n[0];
+        vbo[*normal_offset + 22] = n[1];
+        vbo[*normal_offset + 23] = n[2];
+        *normal_offset += 18;
+        *normal_offset += 18;
+
+        // LAST NORMALS MUST CATCH UP and are the same as previous
+        vbo[*normal_offset + 0] = n[0];
+        vbo[*normal_offset + 1] = n[1];
+        vbo[*normal_offset + 2] = n[2];
         vbo[*normal_offset + 3] = n[0];
         vbo[*normal_offset + 4] = n[1];
         vbo[*normal_offset + 5] = n[2];
         *normal_offset += 18;
-
-        // normals to the cyllinder triangle
-        u[0] = vbo[*offset + 3] - vbo[*offset - prev_off + 21];
-        u[1] = vbo[*offset + 4] - vbo[*offset - prev_off + 22];
-        u[2] = vbo[*offset + 5] - vbo[*offset - prev_off + 23];
-
-        v[0] = vbo[*offset + 21] - vbo[*offset - prev_off + 21];
-        v[1] = vbo[*offset + 22] - vbo[*offset - prev_off + 22];
-        v[2] = vbo[*offset + 23] - vbo[*offset - prev_off + 23];
-
-        // cross product
-        a_cross_b(u, v, n);
         vbo[*normal_offset + 0] = n[0];
         vbo[*normal_offset + 1] = n[1];
         vbo[*normal_offset + 2] = n[2];
-
-        // normals to the cone triangle
-        u[0] = vbo[*offset + 6] - vbo[*offset - prev_off + 24];
-        u[1] = vbo[*offset + 7] - vbo[*offset - prev_off + 25];
-        u[2] = vbo[*offset + 8] - vbo[*offset - prev_off + 26];
-
-        v[0] = vbo[*offset + 24] - vbo[*offset - prev_off + 24];
-        v[1] = vbo[*offset + 25] - vbo[*offset - prev_off + 25];
-        v[2] = vbo[*offset + 26] - vbo[*offset - prev_off + 26];
-
-        // cross product
-        a_cross_b(u, v, n);
         vbo[*normal_offset + 3] = n[0];
         vbo[*normal_offset + 4] = n[1];
         vbo[*normal_offset + 5] = n[2];
@@ -805,11 +777,12 @@ struct AdvParser
             {c, -s, 0},
             {s, c, 0},
             {0, 0, 1}};
-        double xoffset = xnodes * 1e9 * xbase / 2;
-        double yoffset = xoffset;
+        double scaler = 0.5e9;
+        double xoffset = xnodes * scaler * xbase / 2;
+        double yoffset = ynodes * scaler * ybase / 2;
         double zoffset = znodes * 5e9 * zbase / 2;
-        double xb = 1e9 * xbase;
-        double yb = 1e9 * ybase;
+        double xb = scaler * xbase;
+        double yb = scaler * ybase;
         double zb = 5e9 * zbase;
         for (int z = start_layer; z < stop_layer; z += 1)
         {

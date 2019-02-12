@@ -61,3 +61,18 @@ class VirtualStateMachine(QObject):
     def function_change(self, ftype):
         self.draw_function = ftype
         self.update_context = self.cube_update_context if ftype == 'cube' else self.arrow_update_context
+
+    @pyqtSlot(int)
+    def set_xLight(self, val):
+        self.xLight = val
+        self.update()
+
+    @pyqtSlot(int)
+    def set_yLight(self, val):
+        self.yLight = val
+        self.update()
+
+    @pyqtSlot(int)
+    def set_zLight(self, val):
+        self.zLight = val
+        self.update()
