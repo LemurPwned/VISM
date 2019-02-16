@@ -234,6 +234,16 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         if key == Qt.Key_S:
             self.screenshot_manager()
 
+        if key == Qt.Key_N:
+            self.i += 1
+            self.i %= self.iterations 
+            self.refresh()
+
+        if key == Qt.Key_P:
+            self.i -= 1
+            self.i %= self.iterations 
+            self.refresh()
+            
         if key == Qt.Key_B:
             self.fps_counter(initialize=True)
             self.FRAME_BENCHMARK_FLAG = \

@@ -76,3 +76,18 @@ class VirtualStateMachine(QObject):
     def set_zLight(self, val):
         self.zLight = val
         self.update()
+
+    @pyqtSlot(int)
+    @handle_buffer_flush
+    def set_xBase(self, val):
+        self.xbase_scaler = val
+
+    @pyqtSlot(int)
+    @handle_buffer_flush
+    def set_yBase(self, val):
+        self.ybase_scaler = val
+
+    @pyqtSlot(int)
+    @handle_buffer_flush
+    def set_zBase(self, val):
+        self.zbase_scaler = val

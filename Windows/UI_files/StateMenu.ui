@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>270</width>
-    <height>475</height>
+    <width>262</width>
+    <height>574</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,10 +19,24 @@
      <x>40</x>
      <y>40</y>
      <width>181</width>
-     <height>399</height>
+     <height>510</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
+    <item row="13" column="1">
+     <widget class="QLabel" name="label_14">
+      <property name="text">
+       <string>z base (nm)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="12" column="1">
+     <widget class="QLabel" name="label_13">
+      <property name="text">
+       <string>y base (nm)</string>
+      </property>
+     </widget>
+    </item>
     <item row="1" column="2">
      <widget class="QSpinBox" name="spinBox_2">
       <property name="minimum">
@@ -142,13 +156,6 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="1">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>Resolution</string>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="2">
      <widget class="QSpinBox" name="spinBox">
       <property name="minimum">
@@ -233,6 +240,50 @@
     </item>
     <item row="10" column="2">
      <widget class="QSpinBox" name="spinBox_7">
+      <property name="minimum">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <number>8</number>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="1">
+     <widget class="QLabel" name="label_12">
+      <property name="text">
+       <string>x base (nm)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Resolution</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="2">
+     <widget class="QSpinBox" name="spinBox_8">
+      <property name="minimum">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <number>8</number>
+      </property>
+     </widget>
+    </item>
+    <item row="12" column="2">
+     <widget class="QSpinBox" name="spinBox_9">
+      <property name="minimum">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <number>8</number>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="2">
+     <widget class="QSpinBox" name="spinBox_10">
       <property name="minimum">
        <number>1</number>
       </property>

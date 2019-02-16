@@ -29,9 +29,22 @@ class StateMenuController(QWidget, Ui_Dialog):
         self.spinBox_6.valueChanged.connect(self.yLightPos)
         self.spinBox_7.valueChanged.connect(self.zLightPos)
 
-        self.spinBox_5.setMaximum(100)
-        self.spinBox_6.setMaximum(100)
-        self.spinBox_7.setMaximum(100)
+        self.spinBox_8.valueChanged.connect(self.xBase)
+        self.spinBox_9.valueChanged.connect(self.yBase)
+        self.spinBox_10.valueChanged.connect(self.zBase)
+        self.spinBox_10.setValue(self.state_controller.zbase_scaler)
+
+        for spin_box in [self.spinBox_5,
+                         self.spinBox_6,
+                         self.spinBox_7]:
+            spin_box.setMaximum(100)
+            spin_box.setMinimum(-100)
+
+        for spin_box in [self.spinBox_8,
+                         self.spinBox_9,
+                         self.spinBox_10]:
+            spin_box.setMaximum(10)
+            spin_box.setMinimum(1)
 
         self.doubleSpinBox.setValue(self.state_controller.ambient)
         self.doubleSpinBox_2.setValue(self.state_controller.height)
@@ -42,7 +55,17 @@ class StateMenuController(QWidget, Ui_Dialog):
         self.doubleSpinBox_3.valueChanged.connect(self.radius_trigger)
 
         self.comboBox.currentIndexChanged[str].connect(self.dropdown_trigger)
+        self.comboBox.setCurrentIndex(1)
         self.show()
+
+    def xBase(self, val):
+        self.state_controller.set_xBase(val)
+
+    def yBase(self, val):
+        self.state_controller.set_yBase(val)
+
+    def zBase(self, val):
+        self.state_controller.set_zBase(val)
 
     def xLightPos(self, val):
         self.state_controller.set_xLight(val)

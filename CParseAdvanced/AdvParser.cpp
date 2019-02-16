@@ -372,7 +372,6 @@ struct AdvParser
 
         // cross product
         a_cross_b(u, v, n);
-
         vbo[*normal_offset + 3] = n[0];
         vbo[*normal_offset + 4] = n[1];
         vbo[*normal_offset + 5] = n[2];
@@ -702,7 +701,10 @@ struct AdvParser
                           double height,
                           double radius,
                           int start_layer,
-                          int stop_layer)
+                          int stop_layer,
+                          int xscaler,
+                          int yscaler,
+                          int zscaler)
     {
         if (start_layer < 0 || start_layer > stop_layer)
         {
@@ -777,13 +779,14 @@ struct AdvParser
             {c, -s, 0},
             {s, c, 0},
             {0, 0, 1}};
-        double scaler = 0.5e9;
-        double xoffset = xnodes * scaler * xbase / 2;
-        double yoffset = ynodes * scaler * ybase / 2;
-        double zoffset = znodes * 5e9 * zbase / 2;
-        double xb = scaler * xbase;
-        double yb = scaler * ybase;
-        double zb = 5e9 * zbase;
+
+        double xb = xscaler * 1e9 * xbase;
+        double yb = yscaler * 1e9 * ybase;
+        double zb = zscaler * 1e9 * zbase;
+
+        double xoffset = xnodes * xb / 2;
+        double yoffset = ynodes * yb / 2;
+        double zoffset = znodes * zb / 2;
         for (int z = start_layer; z < stop_layer; z += 1)
         {
             for (int y = 0; y < ynodes; y += sampling)

@@ -4,14 +4,10 @@ import time as tm
 import ctypes
 
 from PyQt5.QtWidgets import QWidget
-
 from cython_modules.cython_parse import getLayerOutline, genCubes
-
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 from pattern_types.Patterns import AbstractGLContextDecorators
-
 from processing.ColorPolicy import ColorPolicy
-
 
 
 class CubicGLContext(AbstractGLContext, QWidget):
@@ -25,7 +21,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
 
         self.prerendering_calculation()
         self.drawing_function = self.vbo_cubic_draw
-        
+
     def prerendering_calculation(self):
         super().prerendering_calculation()
         if self.function_select == 'fast':
@@ -34,8 +30,10 @@ class CubicGLContext(AbstractGLContext, QWidget):
             dims = (self.file_header['xbase']*1e9*self.subsampling,
                     self.file_header['ybase']*1e9*self.subsampling,
                     self.file_header['zbase']*1e9)
-            self.vectors_list, self.vertices = genCubes(self.vectors_list, dims)
-            self.color_vectors = ColorPolicy.apply_vbo_format(self.color_vectors)
+            self.vectors_list, self.vertices = genCubes(
+                self.vectors_list, dims)
+            self.color_vectors = ColorPolicy.apply_vbo_format(
+                self.color_vectors)
             # TODO: temporary fix, dont know why x4, should not be multiplied
             # at all!
             self.buffer_len = len(self.color_vectors[0])*4
@@ -48,13 +46,13 @@ class CubicGLContext(AbstractGLContext, QWidget):
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[0])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
                         np.array(self.vectors_list,
-                        dtype='float32').flatten(),
+                                 dtype='float32').flatten(),
                         gl.GL_STATIC_DRAW)
         # color buffer
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffers[1])
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
                         np.array(self.color_vectors[self.i],
-                        dtype='float32').flatten(),
+                                 dtype='float32').flatten(),
                         gl.GL_DYNAMIC_DRAW)
         return buffers
 
@@ -67,7 +65,7 @@ class CubicGLContext(AbstractGLContext, QWidget):
             # does not cause buffer rebinding
             gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.buffer_len,
                                np.array(self.color_vectors[self.i],
-                               dtype='float32').flatten())
+                                        dtype='float32').flatten())
         self.draw_vbo()
 
     @AbstractGLContextDecorators.recording_decorator
@@ -87,7 +85,8 @@ class CubicGLContext(AbstractGLContext, QWidget):
         gl.glDisableClientState(gl.GL_COLOR_ARRAY)
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
-def compute_normals_cubes(vertex_values):  
+
+def compute_normals_cubes(vertex_values):
     """
     each cube has 8 faces. there is cube_number*8 faces in total
     each face is composed of 4 vertices
@@ -96,8 +95,9 @@ def compute_normals_cubes(vertex_values):
     v_length = int(len(vertex_values)/3)-9
     max_range = int(len(vertex_values)/3)
     normals_vbo = np.ndarray(shape=(max_range, 3), dtype=np.float32)
-    faces_number = int(len(vertex_values)/3/4) # div by 3 to get a vertex number, div by 4 to get face number
-    normal = np.array([0,0,0], dtype=np.float32)
+    # div by 3 to get a vertex number, div by 4 to get face number
+    faces_number = int(len(vertex_values)/3/4)
+    normal = np.array([0, 0, 0], dtype=np.float32)
     i = 0
     while(i < v_length-9):
         """
@@ -106,9 +106,9 @@ def compute_normals_cubes(vertex_values):
         cross product which is (B - A) x (C - A) resulting in a normal
         """
         normal += (1/8)*np.cross(vertex_values[i+3:i+6] - vertex_values[i:i+3],
-                                           vertex_values[i+6:i+9] - vertex_values[i:i+3])
-        if i%faces_number==0 and i >0:
+                                 vertex_values[i+6:i+9] - vertex_values[i:i+3])
+        if i % faces_number == 0 and i > 0:
             normals_vbo[i, :] = normal
-            normal = np.array([0,0,0])
+            normal = np.array([0, 0, 0])
         i += 9
     return normals_vbo.flatten()
