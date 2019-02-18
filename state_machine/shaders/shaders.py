@@ -32,7 +32,12 @@ in vec3 fragPos;
 out vec4 outColor;
 
 void main()
-{
+{    
+    if (newColor.x == 0.0 && 
+        newColor.y == 0.0 &&
+        newColor.z == 0.0){
+        discard;
+    }
     vec3 norm = normalize(fragNormal);
     vec3 lightDir = normalize(lightPos - fragPos);
     float diff = max(dot(norm, lightDir), 0.0);
@@ -41,7 +46,7 @@ void main()
     vec3 ambient = ambientStrength * lightColor;
     
     vec3 result = (ambient + diffuse)*newColor;
-    outColor = vec4(result, 1.0f);
+    outColor = vec4(result, 1.0f);    
 }
 """
 
