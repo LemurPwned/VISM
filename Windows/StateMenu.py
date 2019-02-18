@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QGroupBox, \
     QVBoxLayout, QRadioButton, QLabel, QSlider, QPushButton, QMessageBox
 from PyQt5.QtCore import pyqtSignal
 from PyQt5 import QtCore
+from Windows.GeneralPerf import validate_entry_no_norm
 
 
 class StateMenuController(QWidget, Ui_Dialog):
@@ -10,7 +11,8 @@ class StateMenuController(QWidget, Ui_Dialog):
         super(StateMenuController, self).__init__()
         self.setupUi(self)
         self.setWindowTitle("State Machine Control Menu")
-        self.setWindowFlags(QtCore.Qt.WindowFlags() | QtCore.Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(QtCore.Qt.WindowFlags() |
+                            QtCore.Qt.WindowStaysOnTopHint)
         self.state_controller = state_object
 
         self.spinBox.valueChanged.connect(self.resolution_trigger)
@@ -57,7 +59,38 @@ class StateMenuController(QWidget, Ui_Dialog):
 
         self.comboBox.currentIndexChanged[str].connect(self.dropdown_trigger)
         self.comboBox.setCurrentIndex(1)
+
+        self.lineEdit.textChanged.connect(self.positive_color_trigger)
+        self.lineEdit.setText(str(self.state_controller.positive_color))
+        self.lineEdit_2.textChanged.connect(self.negative_color_trigger)
+        self.lineEdit_2.setText(str(self.state_controller.negative_color))
+        self.lineEdit_3.textChanged.connect(self.color_direction_trigger)
+        self.lineEdit_3.setText(str(self.state_controller.color_vector))
         self.show()
+
+    def positive_color_trigger(self, val):
+        nval = validate_entry_no_norm(val)
+        if nval:
+            self.state_controller.set_positive_color(nval)
+        else:
+            # reset
+            self.lineEdit.setText(str(self.state_controller.positive_color))
+
+    def negative_color_trigger(self, val):
+        nval = validate_entry_no_norm(val)
+        if nval:
+            self.state_controller.set_negative_color(nval)
+        else:
+            # reset
+            self.lineEdit_2.setText(str(self.state_controller.negative_color))
+
+    def color_direction_trigger(self, val):
+        nval = validate_entry_no_norm(val)
+        if nval:
+            self.state_controller.set_color_vector(nval)
+        else:
+            # reset
+            self.lineEdit_3.setText(str(self.state_controller.color_vector))
 
     def xBase(self, val):
         self.state_controller.set_xBase(val)

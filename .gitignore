@@ -1,3 +1,4 @@
+./control_run.py
 #ignore data
 .vscode
 data/

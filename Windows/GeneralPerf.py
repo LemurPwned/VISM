@@ -3,6 +3,35 @@ import numpy as np
 from util_tools.PopUp import PopUpWrapper
 
 
+def validate_entry(entry):
+    match_string = '^\[(-?[0-9]+\.?[0-9]*),\s?(-?[0-9]+\.?[0-9]*),\s?(-?[0-9]+\.?[0-9]*)]'
+    rg = re.compile(match_string)
+    m = rg.search(entry)
+    if m is not None:
+        x = float(m.group(1))
+        y = float(m.group(2))
+        z = float(m.group(3))
+        norm = np.sqrt(x**2 + y**2 + z**2)
+        if norm == 0.0:
+            return False
+        return [x/norm, y/norm, z/norm]
+    else:
+        return False
+
+
+def validate_entry_no_norm(entry):
+    match_string = '^\[(-?[0-9]+\.?[0-9]*),\s?(-?[0-9]+\.?[0-9]*),\s?(-?[0-9]+\.?[0-9]*)]'
+    rg = re.compile(match_string)
+    m = rg.search(entry)
+    if m is not None:
+        x = float(m.group(1))
+        y = float(m.group(2))
+        z = float(m.group(3))
+        return [x, y, z]
+    else:
+        return False
+
+
 class GeneralPerf:
     def general_initialization(self):
         self.toDelete = False
@@ -37,19 +66,7 @@ class GeneralPerf:
         return result_group
 
     def isVectorEntryValid(self, entry):
-        match_string = '^\[(-?[0-1]),\s?(-?[0-1]),\s?(-?[0-1])\]'
-        rg = re.compile(match_string)
-        m = rg.search(entry)
-        if m is not None:
-            x = float(m.group(1))
-            y = float(m.group(2))
-            z = float(m.group(3))
-            norm = np.sqrt(x**2 + y**2 + z**2)
-            if norm == 0.0:
-                return False
-            return [x/norm, y/norm, z/norm]
-        else:
-            return False
+        return validate_entry(entry)
 
     def setEventHandler(self, handler):
         self.eventHandler = handler

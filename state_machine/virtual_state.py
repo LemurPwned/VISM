@@ -91,3 +91,15 @@ class VirtualStateMachine(QObject):
     @handle_buffer_flush
     def set_zBase(self, val):
         self.zbase_scaler = val
+
+    @handle_buffer_flush
+    def set_color_vector(self, val):
+        self.color_vector = val
+
+    @handle_buffer_flush
+    def set_negative_color(self, val):
+        self.negative_color = val
+
+    @handle_buffer_flush
+    def set_positive_color(self, val):
+        self.positive_color = val

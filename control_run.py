@@ -15,8 +15,8 @@ class Window(QWidget):
     def __init__(self):
         super(Window, self).__init__()
 
-        directory = 'examples/0520nm'
-        # directory = 'examples/0200nm'
+        # directory = 'examples/0520nm'
+        directory = 'examples/0200nm'
         # directory = 'examples/mumax_regions'
         # directory = 'examples/6000uA.out'
         self.glWidget = StateMachine(
