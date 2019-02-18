@@ -652,27 +652,34 @@ struct AdvParser
                     mag = sqrt(pow(vals[index + 0], 2) +
                                pow(vals[index + 1], 2) +
                                pow(vals[index + 2], 2));
-                    if (mag == 0.0)
-                        mag = 1.0;
-
-                    dot = (vals[index + 0] / mag) * color_vector[0] +
-                          (vals[index + 1] / mag) * color_vector[1] +
-                          (vals[index + 2] / mag) * color_vector[2];
-
-                    if (dot > 0)
+                    if (mag != 0.0)
                     {
-                        array_to_cpy[0] = positive_color[0] * dot + (1.0 - dot);
-                        array_to_cpy[1] = positive_color[1] * dot + (1.0 - dot);
-                        array_to_cpy[2] = positive_color[2] * dot + (1.0 - dot);
+                        dot = (vals[index + 0] / mag) * color_vector[0] +
+                              (vals[index + 1] / mag) * color_vector[1] +
+                              (vals[index + 2] / mag) * color_vector[2];
+
+                        if (dot > 0)
+                        {
+                            array_to_cpy[0] = positive_color[0] * dot + (1.0 - dot);
+                            array_to_cpy[1] = positive_color[1] * dot + (1.0 - dot);
+                            array_to_cpy[2] = positive_color[2] * dot + (1.0 - dot);
+                        }
+                        else
+                        {
+                            dot *= -1;
+
+                            array_to_cpy[0] = negative_color[0] * dot + (1.0 - dot);
+                            array_to_cpy[1] = negative_color[1] * dot + (1.0 - dot);
+                            array_to_cpy[2] = negative_color[2] * dot + (1.0 - dot);
+                        }
                     }
                     else
                     {
-                        dot *= -1;
-
-                        array_to_cpy[0] = negative_color[0] * dot + (1.0 - dot);
-                        array_to_cpy[1] = negative_color[1] * dot + (1.0 - dot);
-                        array_to_cpy[2] = negative_color[2] * dot + (1.0 - dot);
+                        array_to_cpy[0] = 0.0;
+                        array_to_cpy[1] = 0.0;
+                        array_to_cpy[2] = 0.0;
                     }
+
                     for (int inf = 0; inf < inflate; inf++)
                     {
                         std::memcpy(fut_ndarray + offset, array_to_cpy, sizeof(double) * 3);
@@ -708,11 +715,11 @@ struct AdvParser
     {
         if (start_layer < 0 || start_layer > stop_layer)
         {
-            throw std::invalid_argument("Start layer cannot be less than stop layer");
+            throw std::invalid_argument("Start layer cannot be smaller than stop layer");
         }
         if (stop_layer > znodes)
         {
-            throw std::invalid_argument("Stop layer to large");
+            throw std::invalid_argument("Stop layer too large");
         }
         double color_vector[3] = {
             p ::extract<double>(color_vector_l[0]),
@@ -780,9 +787,9 @@ struct AdvParser
             {s, c, 0},
             {0, 0, 1}};
 
-        double xb = xscaler * 1e9 * xbase;
-        double yb = yscaler * 1e9 * ybase;
-        double zb = zscaler * 1e9 * zbase;
+        double xb = xscaler * 1e9 * xbase / sampling;
+        double yb = yscaler * 1e9 * ybase / sampling;
+        double zb = zscaler * 1e9 * zbase / sampling;
 
         double xoffset = xnodes * xb / 2;
         double yoffset = ynodes * yb / 2;
