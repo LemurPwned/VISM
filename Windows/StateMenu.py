@@ -8,13 +8,14 @@ from PyQt5 import QtCore
 class StateMenuController(QWidget, Ui_Dialog):
     def __init__(self, state_object):
         super(StateMenuController, self).__init__()
-        self.setWindowTitle("State Machine Control Menu")
         self.setupUi(self)
-        widow_flag = QtCore.Qt.WindowFlags() | QtCore.Qt.WindowStaysOnTopHint
+        self.setWindowTitle("State Machine Control Menu")
+        self.setWindowFlags(QtCore.Qt.WindowFlags() | QtCore.Qt.WindowStaysOnTopHint)
         self.state_controller = state_object
 
         self.spinBox.valueChanged.connect(self.resolution_trigger)
         self.spinBox_2.valueChanged.connect(self.sampling_trigger)
+        self.spinBox_2.setMaximum(12)
         self.spinBox_3.valueChanged.connect(self.start_layer_trigger)
         self.spinBox_4.valueChanged.connect(self.stop_layer_trigger)
 
