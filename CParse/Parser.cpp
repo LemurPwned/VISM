@@ -283,7 +283,7 @@ struct Parser
     {
         for (int i = 0; i < resolution - 1; i++)
         {
-            vbo[*offset + i + 0] = math.sin(
+            // vbo[*offset + i + 0] = math.sin(
         }
     }
 

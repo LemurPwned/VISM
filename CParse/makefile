@@ -5,7 +5,7 @@ PYTHON_INCLUDE = /usr/include/python3.7m
 BOOST_INC = /usr/include
 BOOST_LIB = /usr/lib
 # this fucker
-BOOST_PY = -lboost_python3 -lboost_numpy3
+BOOST_PY = -lboost_python37 -lboost_numpy37
 BOOST_FS =  -lboost_system -lboost_filesystem
 # compile mesh classes
 TARGET = Parser
