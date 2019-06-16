@@ -1,6 +1,11 @@
 from PyQt5 import QtWidgets
 import json
 
+import logging
+logging.getLogger("matplotlib").setLevel(logging.WARNING)
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 
 class ChooseWidget(QtWidgets.QWidget):
     """docstring for ChooseWidget."""
@@ -68,18 +73,24 @@ class ChooseWidget(QtWidgets.QWidget):
         for widget_key in self.json_file_handler.keys():
             if widget_key == "__all__":
                 continue
-            if not self._BLOCK_ITERABLES_ and not self._BLOCK_STRUCTURES_ \
-                    and not self._BLOCK_PLOT_ITERABLES_:
-                self.list.addItem(self.json_file_handler[widget_key]['alias'])
+            itm = self.json_file_handler[widget_key]['alias']
+            if (not self._BLOCK_ITERABLES_) and (not self._BLOCK_STRUCTURES_) \
+                    and (not self._BLOCK_PLOT_ITERABLES_):
+                logger.debug(f"All blocks disabled: adding item {itm}")
+                self.list.addItem(itm)
             else:
                 if self._BLOCK_PLOT_ITERABLES_ and \
                         self.json_file_handler[widget_key]['iterable_type'] == 'structure':
+                    logger.debug(
+                        f"Iterables blocked, adding structure item {itm}")
                     self.list.addItem(
-                        self.json_file_handler[widget_key]['alias'])
+                        itm)
                 elif self._BLOCK_STRUCTURES_ and \
                         self.json_file_handler[widget_key]['iterable_type'] == 'plot':
+                    logger.debug(
+                        f"Structures blocked, adding plot item {itm}")
                     self.list.addItem(
-                        self.json_file_handler[widget_key]['alias'])
+                        itm)
 
     def loadAvailWidgets(self):
         self.layout = QtWidgets.QGridLayout(self)

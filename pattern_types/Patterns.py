@@ -8,6 +8,11 @@ from PyQt5.QtCore import Qt
 
 from util_tools.PopUp import PopUpWrapper
 from functools import wraps
+from processing.workerthreads import ThreadingWrapper
+
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("__main__")
 
 
 class Singleton(type):
@@ -139,16 +144,43 @@ class MainContextDecorators:
 
     def prompt_directory_selection_if_not_stateful(choose_widget_function):
         def _widget_selector(self, value):
+            logger.debug(f"\tWidget selection decorator: {value}")
             if not self._LOADED_FLAG_:
                 if value[-1] != 'StateMachine':
+                    logger.debug(
+                        f"\tWidget not stateful! Prompting normal loading procedure")
                     self.loadDirectoryWrapper(value[-1])
                 else:
+                    logger.debug(
+                        f"\tWidget is stateful! Prompting stateful loading procedure")
                     directory = self.promptDirectory(value[-1])
                     self.doh.setDataObject(directory, 'directory')
                     self._LOADED_FLAG_ = True
                     self._BLOCK_ITERABLES_ = False  # unlock player
                 choose_widget_function(self, value)
             else:
+                logger.debug(f"\tLoaded flag is set, but not prompt?")
+                logger.debug("\tDecided to load additional data!")
+                try:
+                    # doh should have directory
+                    directory = self.doh.retrieveDataObject('directory')
+                    logger.debug(
+                        f"Multithreaded directory loading: {directory}")
+                    self.disablePanes()
+                    self.p = ThreadingWrapper(completeAction=None,
+                                              exceptionAction=self.raise_thread_exception,
+                                              parent=self)
+                    self.p.collapse_threads(self.loadDirectory, directory)
+                except Exception as e:
+                    logger.debug(f"Error {e}")
+                else:
+                    logger.debug(
+                        f"Failsafe widget unlock after reading {directory}")
+                    self.enablePanes()  # just in case
+                    self._BLOCK_ITERABLES_ = False
+                    self._LOADED_FLAG_ = True
+                    self._BLOCK_STRUCTURES_ = False
+                    to_return = directory
                 choose_widget_function(self, value)
         return _widget_selector
 

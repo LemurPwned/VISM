@@ -4,6 +4,7 @@ import pyqtgraph as pg
 from Widgets.AnimatedWidget import AnimatedWidget
 from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
 
+
 class Canvas2Dupgraded(AbstractCanvas):
     def __init__(self, data_dict=None, parent=None):
         super().__init__(self)
@@ -19,9 +20,6 @@ class Canvas2Dupgraded(AbstractCanvas):
         pg.setConfigOption('foreground', 'k')
         self.plotWidget = PlotWidget(self)
         self.construct_triggered_plot()
-
-
-
         self.graph_data = self.plot_data[self.title].tolist()
         self.internal_iterations = len(self.graph_data)
         self.createPlotCanvas()
@@ -48,14 +46,14 @@ class Canvas2Dupgraded(AbstractCanvas):
         self.plotWidget.enableAutoRange('xy', True)
         if self.synchronizedPlot == False and not self.one_onePlot:
             self.plotData = self.plotWidget.plot(self.null_data, self.graph_data,
-                                    pen=pg.mkPen(color=self.options['color'][0],
-                                    width=self.options['marker_size']),
-                                    name="data1", clear=True)
+                                                 pen=pg.mkPen(color=self.options['color'][0],
+                                                              width=self.options['marker_size']),
+                                                 name="data1", clear=True)
         else:
             self.plotData = self.plotWidget.plot(self.graph_data[:self._i],
-                                    pen=pg.mkPen(color=self.options['color'][0],
-                                    width=self.options['marker_size']),
-                                    name="data1", clear=True)
+                                                 pen=pg.mkPen(color=self.options['color'][0],
+                                                              width=self.options['marker_size']),
+                                                 name="data1", clear=True)
 
     def on_resize_geometry_reset(self, geom):
         """
@@ -76,6 +74,7 @@ class Canvas2Dupgraded(AbstractCanvas):
         else:
             self._i = value
         self._i %= self.internal_iterations
-        self.plotData.setData(self.null_data[:self._i], self.graph_data[:self._i])
+        self.plotData.setData(
+            self.null_data[:self._i], self.graph_data[:self._i])
         pg.QtGui.QApplication.processEvents()
         self.plotWidget.setGeometry(0, 0, self.geom[0]-60, self.geom[1]-60)

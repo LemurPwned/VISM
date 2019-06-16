@@ -3,6 +3,7 @@ from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
 from pattern_types.Patterns import AbstractGLContextDecorators
 from matplotlib.figure import Figure
 
+
 class Canvas(AbstractCanvas):
     def __init__(self, data_dict, parent=None):
         super().__init__(self)
@@ -31,7 +32,6 @@ class Canvas(AbstractCanvas):
         self.synchronizedPlot = self.options['synchronizedPlot']
         self.one_onePlot = self.options['one_one']
 
-        self.fig.suptitle(self.title)
         self.plot_axis = self.fig.add_subplot(111)
         self.null_data = self.plot_data[self.xcol].tolist()
         """
@@ -46,26 +46,27 @@ class Canvas(AbstractCanvas):
         """
         if self.synchronizedPlot == False and not self.one_onePlot:
             self.plot_axis.plot(self.null_data, self.graph_data,
-                                        color=self.options['color'],
-                                        linestyle=self.options['line_style'],
-                                        marker=self.options['marker'],
-                                        markerfacecolor=self.options['marker_color'],
-                                        markersize=self.options['marker_size'])
+                                color=self.options['color'],
+                                linestyle=self.options['line_style'],
+                                marker=self.options['marker'],
+                                markerfacecolor=self.options['marker_color'],
+                                markersize=self.options['marker_size'])
         else:
             self.plot_axis.hpl = self.plot_axis.plot(self.null_data,
-                                            self.graph_data[0:self.i] + \
-                                            self.null_data[self.i:],
-                                            color=self.options['color'],
-                                            linestyle=self.options['line_style'],
-                                            marker=self.options['marker'],
-                                            markerfacecolor=self.options['marker_color'],
-                                            markersize=self.options['marker_size'])[0]
-        self.plot_axis.axis([np.min(self.null_data), np.max(self.null_data), 
-                             np.min(self.graph_data),np.max(self.graph_data)])
+                                                     self.graph_data[0:self.i] +
+                                                     self.null_data[self.i:],
+                                                     color=self.options['color'],
+                                                     linestyle=self.options['line_style'],
+                                                     marker=self.options['marker'],
+                                                     markerfacecolor=self.options['marker_color'],
+                                                     markersize=self.options['marker_size'])[0]
+        self.plot_axis.axis([np.min(self.null_data), np.max(self.null_data),
+                             np.min(self.graph_data), np.max(self.graph_data)])
         self.plot_axis.set_autoscale_on(False)
         self.plot_axis.set_xlabel(self.xcol)
-        self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
-
+        self.plot_axis.set_ylabel(self.title)
+        self.plot_axis.set_title(
+            '{}/{}'.format(self.i, self.internal_iterations))
 
     @AbstractGLContextDecorators.recording_decorator
     def replot(self):
@@ -76,12 +77,13 @@ class Canvas(AbstractCanvas):
             return
         self.i %= self.internal_iterations
         self.plot_axis.hpl.set_xdata(np.pad(self.null_data[:self.i],
-                                    (0, self.internal_iterations - self.i),
-                                    mode='constant', constant_values=(np.nan,)))     
+                                            (0, self.internal_iterations - self.i),
+                                            mode='constant', constant_values=(np.nan,)))
         self.plot_axis.hpl.set_ydata(np.pad(self.graph_data[:self.i],
-                                        (0, self.internal_iterations - self.i),
-                                    mode='constant', constant_values=(np.nan,)))
-        self.plot_axis.set_title('{}/{}'.format(self.i, self.internal_iterations))
+                                            (0, self.internal_iterations - self.i),
+                                            mode='constant', constant_values=(np.nan,)))
+        self.plot_axis.set_title(
+            '{}/{}'.format(self.i, self.internal_iterations))
 
     def set_i(self, value, trigger=False, record=False, reset=False):
         if trigger and self.triggered:

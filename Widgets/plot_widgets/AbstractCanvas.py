@@ -1,7 +1,8 @@
 from Widgets.AnimatedWidget import AnimatedWidget
 from matplotlib.figure import Figure
 from matplotlib.backend_bases import key_press_handler
-from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas)
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas)
 from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.Qt import Qt
 
@@ -10,7 +11,7 @@ import os
 
 
 class AbstractCanvas(AnimatedWidget, FigureCanvas):
-    def __init__(self, parent=None, width=8, height=5, dpi=100):
+    def __init__(self, parent=None, width=8, height=5, dpi=86):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.canvas = FigureCanvas(self.fig)
 
@@ -63,14 +64,14 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
         try:
             if os.path.basename(self.screenshot_dir) != self.subdir:
                 self.screenshot_dir = os.path.join(self.screenshot_dir,
-                                                                self.subdir)
+                                                   self.subdir)
             self.fig.savefig(os.path.join(self.screenshot_dir,
-                                        str(self.i).zfill(4) + ".png"))
+                                          str(self.i).zfill(4) + ".png"))
         except FileNotFoundError:
             # if basic dir not found, create it and save there
             os.makedirs(self.screenshot_dir)
             self.fig.savefig(os.path.join(self.screenshot_dir,
-                                        str(self.i).zfill(4) + ".png"))
+                                          str(self.i).zfill(4) + ".png"))
 
     def on_key_press(self, event):
         key_press_handler(event, self.canvas, self.mpl_nav_toolbar)
@@ -88,4 +89,3 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
             self.loop_guard()
             self.refresh()
             self.replot()
-

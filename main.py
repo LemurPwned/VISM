@@ -40,6 +40,14 @@ from pattern_types.Patterns import MainContextDecorators
 from Widgets.openGL_widgets.AbstractGLContext import AbstractGLContext
 
 
+import logging
+
+
+logging.getLogger("OpenGL.GL.shaders").setLevel(logging.WARNING)
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+print(__name__)
+
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -80,11 +88,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         # ANIMATION MENU
         self.playerAction.triggered.connect(self.showAnimationSettings)
         # EDIT SUBMENU
-        self.actionWindow0Delete.triggered.connect(lambda: self.deleteWidget(0))
-        self.actionWindow1Delete.triggered.connect(lambda: self.deleteWidget(1))
-        self.actionWindow2Delete.triggered.connect(lambda: self.deleteWidget(2))
-        self.actionWindow3Delete.triggered.connect(lambda: self.deleteWidget(3))
-        self.actionDeleteAllWindows.triggered.connect(lambda: self.deleteAllWidgets())
+        self.actionWindow0Delete.triggered.connect(
+            lambda: self.deleteWidget(0))
+        self.actionWindow1Delete.triggered.connect(
+            lambda: self.deleteWidget(1))
+        self.actionWindow2Delete.triggered.connect(
+            lambda: self.deleteWidget(2))
+        self.actionWindow3Delete.triggered.connect(
+            lambda: self.deleteWidget(3))
+        self.actionDeleteAllWindows.triggered.connect(
+            lambda: self.deleteAllWidgets())
 
         # VIEW SUBMENU
         self.action1_Window_Grid.triggered.connect(self.make1WindowGrid)
@@ -98,10 +111,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
         # GRID BUTTONS
         # lambda required to pass parameter - which button was pressed
-        self.panes[0].button.clicked.connect(lambda: self.showChooseWidgetSettings(0))
-        self.panes[1].button.clicked.connect(lambda: self.showChooseWidgetSettings(1))
-        self.panes[2].button.clicked.connect(lambda: self.showChooseWidgetSettings(2))
-        self.panes[3].button.clicked.connect(lambda: self.showChooseWidgetSettings(3))
+        self.panes[0].button.clicked.connect(
+            lambda: self.showChooseWidgetSettings(0))
+        self.panes[1].button.clicked.connect(
+            lambda: self.showChooseWidgetSettings(1))
+        self.panes[2].button.clicked.connect(
+            lambda: self.showChooseWidgetSettings(2))
+        self.panes[3].button.clicked.connect(
+            lambda: self.showChooseWidgetSettings(3))
 
     def reset_variables(self):
         self._LOADED_FLAG_ = False
@@ -119,7 +136,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     def resizeEvent(self, event):
         """What happens when window is resized"""
-        self.gridLayoutWidget.setGeometry(0, 0, self.width(), self.height() - 25)
+        self.gridLayoutWidget.setGeometry(
+            0, 0, self.width(), self.height() - 25)
         for i in range(4):
             self.panes[i].groupBox.setMinimumWidth(self.width() / 2 - 20)
             if WidgetHandler.visibleCounter > 2:
@@ -145,7 +163,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 x = PopUpWrapper(
                     title='Movie Composer',
                     msg='Pick directory where screenshots are located.' +
-                        'Proper files not found in current screenshot directory: {}'.format(self.screenshot_dir),
+                        'Proper files not found in current screenshot directory: {}'.format(
+                            self.screenshot_dir),
                     more='',
                     yesMes=None, parent=self)
 
@@ -157,7 +176,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             fileDialog.getExistingDirectory(
                 self,
                 "Select a directory",
-                options = QtWidgets.QFileDialog.ShowDirsOnly))
+                options=QtWidgets.QFileDialog.ShowDirsOnly))
         fileDialog.close()
         return directory
 
@@ -174,23 +193,28 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.screenshot_dir = selected_dir
             x = PopUpWrapper(
                 title='Screenshot directory changed',
-                msg='Current screenshot directory: {}'.format(self.screenshot_dir),
-                more='Changed',
+                msg='Current screenshot directory: {}'.format(
+                    self.screenshot_dir),
+            more='Changed',
                 yesMes=None, parent=self)
         else:
             x = PopUpWrapper(
                 title='Screenshot directory has not changed',
-                msg='Current screenshot directory: {}'.format(self.screenshot_dir),
+                msg='Current screenshot directory: {}'.format(
+                    self.screenshot_dir),
                 more='Not changed',
                 yesMes=None, parent=self)
 
     def loadFile(self):
+        logger.debug("loading file has begun")
         if self._LOADED_FLAG_:
             self.deleteLoadedFiles()
+            logger.debug("Previous data has been deleted")
         self._LOADED_FLAG_ = False
 
         fileLoaded = self.promptFile()
 
+        logger.debug(f"Loaded file: {fileLoaded}")
         if fileLoaded is None or fileLoaded == "" or fileLoaded=="  ":
             msg = "Invalid directory: {}. Do you wish to abort?".format(fileLoaded)
             PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
@@ -227,17 +251,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.deleteLoadedFiles()
         self._LOADED_FLAG_ = False
         directory = self.promptDirectory(name)
+        logger.debug(f"directory: {directory}")
         if directory is None:
             self.refreshScreen()
             return 0
         else:
             try:
+                logger.debug(f"Multithreaded directory loading: {directory}")
                 self.disablePanes()
                 self.p = ThreadingWrapper(completeAction=None,
                                           exceptionAction=self.raise_thread_exception, 
                                           parent=self)
                 self.p.collapse_threads(self.loadDirectory, directory)
-
+                # set the loaded directory
+                self.doh.setDataObject(directory, 'directory')
             except ValueError as e:
                 msg = "Invalid directory: {}. \
                     Error Message {}\nDo you wish to reselect?".format(directory,
@@ -252,6 +279,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             except Exception as e:
                 to_return = None
             else:
+                logger.debug(f"Failsafe widget unlock after reading {directory}")
                 self.enablePanes() # just in case 
                 self._BLOCK_ITERABLES_ = False
                 self._LOADED_FLAG_ = True
@@ -269,8 +297,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.doh.setDataObject(plot_data, 'plot_data')
             # successfully loaded plot_data into DOH
             self._BLOCK_PLOT_ITERABLES_ = False
+            logger.debug(f"Plot iterables disabled")   
         else:
             self._BLOCK_PLOT_ITERABLES_ = True
+            logger.debug(f"Plot iterables enabled")   
         if trigger_list is not None:
             self.doh.setDataObject(trigger_list, 'trigger')
         self.enablePanes()
@@ -335,7 +365,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 self.playerWindow.closeMe()
 
         """Spawns Window for choosing widget for this pane"""
-
+        options = {
+            "blockStructures": self._BLOCK_STRUCTURES_, 
+            "blockIterables": self._BLOCK_ITERABLES_,
+            "blockPlotIterables": self._BLOCK_PLOT_ITERABLES_
+        }
+        logger.debug(f"Choosing widet {number}, passing {options}")
         self.new = ChooseWidget(number, \
                                 blockStructures = self._BLOCK_STRUCTURES_, \
                                 blockIterables = self._BLOCK_ITERABLES_,
@@ -352,6 +387,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         self.sp.swap_settings_type(value[1])
         self.doh.setDataObject(value[1], 'object_alias')
         # deduce object type based on passed string
+        logger.debug(f"Widget Receiver: object creation: {value[1]}")
         self.window = self.sp.\
             get_settings_window_constructor_from_file(self.doh, parent=self)
         # all widgets get generalReceiver handler
@@ -371,6 +407,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         on to the DataObjectHolder object that sends it to the right final object
         """
         if options is None:
+            logging.debug("None options passed to general receiver..." +
+            " Deleting current pane widget. Rollback...")
             # delete widget
             self.deleteWidget(self.current_pane, null_delete=True)
             self.refreshScreen()
@@ -388,8 +426,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
             self.panes[self.current_pane].addWidget(\
                 self.sp.build_chain(self.current_widget_alias, self.doh, parent=self))
         except (MemoryError, TimeoutError):
-            x = PopUpWrapper("Insufficient resource", msg="You ran out of memory for this calculation" 
-                    + "or timeout appeared. "+"It is suggested to increase subsampling or decrease resolution",
+            x = PopUpWrapper("Insufficient resource", 
+                msg="You ran out of memory for this calculation" 
+                    + "or timeout appeared. "+
+                    "It is suggested to increase subsampling or decrease resolution",
                     more="You can do that in settings menu")
             self.deleteWidget(self.current_pane, null_delete=True)
             self.refreshScreen()
