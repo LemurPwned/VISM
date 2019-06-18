@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtCore
 import time as tm
-import sys #temp
+import sys  # temp
+
 
 class PlayerWindow(QtCore.QObject):
 
@@ -26,7 +27,8 @@ class PlayerWindow(QtCore.QObject):
                 self.gui.button_start.setText("Pause")
 
             self.gui.slider_speed.setValue(self.worker.getSpeed())
-            self.gui.speedLabel.setText("Animation Speed: " + str(self.worker.getSpeed()/10))
+            self.gui.speedLabel.setText(
+                "Animation Speed: " + str(self.worker.getSpeed()/10))
 
         self._connectSignals()
         self.gui.show()
@@ -71,8 +73,10 @@ class PlayerWindow(QtCore.QObject):
         self.gui.button_start.clicked.connect(self.PlayPauseClicked)
         self.gui.button_start.clicked.connect(self.worker.startWork)
         self.gui.button_stop.clicked.connect(self.forceWorkerReset)
-        self.gui.button_nextFrame.clicked.connect(lambda: self.worker.moveFrame(1))
-        self.gui.button_prevFrame.clicked.connect(lambda: self.worker.moveFrame(-1))
+        self.gui.button_nextFrame.clicked.connect(
+            lambda: self.worker.moveFrame(1))
+        self.gui.button_prevFrame.clicked.connect(
+            lambda: self.worker.moveFrame(-1))
         self.gui.slider_speed.valueChanged.connect(self.speedChange)
 
         self.gui.button_record.clicked.connect(self.startRecording)
@@ -97,7 +101,7 @@ class PlayerWindow(QtCore.QObject):
             self.worker_thread.wait()
 
     def speedChange(self):
-        self.gui.speedLabel.setText("Animation Speed: " + \
+        self.gui.speedLabel.setText("Animation Speed: " +
                                     str(self.gui.slider_speed.value()/10))
         self.worker.setSpeed(self.gui.slider_speed.value())
 
@@ -114,9 +118,11 @@ class PlayerWindow(QtCore.QObject):
         else:
             self.gui.button_record.setText("Pause R")
             PlayerWindow.RECORD = True
-#SINGLETON
+# SINGLETON
 
-#reset while playing weird stuff
+# reset while playing weird stuff
+
+
 class WorkerObject:
     class __WorkerObject(QtCore.QObject):
 
@@ -130,7 +136,7 @@ class WorkerObject:
             self._TRIGGER_ = False
             self.trig_len = 0
             self.play = self.standard_play
-            self.reset=False
+            self.reset = False
 
         def passTriggerList(self, trigger):
             self.trigger = trigger
@@ -152,7 +158,7 @@ class WorkerObject:
 
         def resetIterator(self):
             self._iterator = 0
-            self.reset=True
+            self.reset = True
 
         def startWork(self):
             self.play()
@@ -162,7 +168,7 @@ class WorkerObject:
                 if self.running:
                     self._iterator += 1
                     for i in self.widgetIterators:
-                        i(self._iterator)
+                        i(self._iterator, record=PlayerWindow.RECORD)
                 if not self.running:
                     break
                 tm.sleep(1/self._speed)
@@ -175,7 +181,7 @@ class WorkerObject:
                         self._iterator += 1
                         self._iterator %= self.trig_len
                         for i in self.widgetIterators:
-                            i(self._iterator, trigger=True, 
+                            i(self._iterator, trigger=True,
                               record=PlayerWindow.RECORD,
                               reset=self.reset)
                         self.reset = False
@@ -187,13 +193,14 @@ class WorkerObject:
             if self._TRIGGER_:
                 self._iterator %= self.trig_len
                 for i in self.widgetIterators:
-                    i(self._iterator, trigger=True)
+                    i(self._iterator, trigger=True, record=PlayerWindow.RECORD)
             else:
                 for i in self.widgetIterators:
-                    i(self._iterator)
+                    i(self._iterator, record=PlayerWindow.RECORD)
 
     numbers = 0  # fast_fix
     instance = None
+
     def __init__(self, parent=None):
         if not WorkerObject.instance:
             WorkerObject.instance = WorkerObject.__WorkerObject(parent)
@@ -210,6 +217,7 @@ class WorkerObject:
     def getNumbers():
         return WorkerObject.numbers
 
+
 class Window(QtWidgets.QWidget):
 
     def __init__(self):
@@ -221,7 +229,7 @@ class Window(QtWidgets.QWidget):
         self.button_nextFrame = QtWidgets.QPushButton('>', self)
         self.button_prevFrame = QtWidgets.QPushButton('<', self)
         self.slider_speed = QtWidgets.QSlider(QtCore.Qt.Horizontal, self)
-        self.speedLabel = QtWidgets.QLabel("Animtaion Speed: 1", self)
+        self.speedLabel = QtWidgets.QLabel("Animation Speed: 1", self)
 
         self.button_record = QtWidgets.QPushButton('Record', self)
 
@@ -241,10 +249,10 @@ class Window(QtWidgets.QWidget):
 
         self.mainLayout = QtWidgets.QGridLayout(self)
         layout = QtWidgets.QGridLayout()
-        layout.addWidget(self.button_prevFrame,0,0)
-        layout.addWidget(self.button_start,0,1)
-        layout.addWidget(self.button_stop,0,2)
-        layout.addWidget(self.button_nextFrame,0,3)
+        layout.addWidget(self.button_prevFrame, 0, 0)
+        layout.addWidget(self.button_start, 0, 1)
+        layout.addWidget(self.button_stop, 0, 2)
+        layout.addWidget(self.button_nextFrame, 0, 3)
 
         layout2 = QtWidgets.QVBoxLayout()
         layoutin2_1 = QtWidgets.QHBoxLayout()
@@ -256,7 +264,7 @@ class Window(QtWidgets.QWidget):
 
         layout2.addLayout(layoutin2_1)
         layout2.addLayout(layoutin2_2)
-        self.mainLayout.addLayout(layout, 0,0)
-        self.mainLayout.addLayout(layout2, 1,0)
+        self.mainLayout.addLayout(layout, 0, 0)
+        self.mainLayout.addLayout(layout2, 1, 0)
 
         self.setFixedSize(400, 150)

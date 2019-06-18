@@ -160,8 +160,12 @@ def process_header(headers):
   for header_ in headers:
       if ':' in header_:
           components = header_.split(':')
+          if components[1].endswith('b'):
+              comp = components[1][:-1]
+          else:
+              comp = components[1]
           try:
-              final_header[components[0]] = float(components[1])
+              final_header[components[0]] = float(comp)
           except:
               final_header[components[0]] = components[1]
   return final_header

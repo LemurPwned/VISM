@@ -6,12 +6,13 @@ import numpy as np
 import os
 import glob
 
+
 class Movie:
     def __init__(self, directory, fformat='.png', cleanup=True):
         self.directory = directory
         self.filename = ""
         self.format = fformat
-        self.framerate = 24
+        self.framerate = 5
         self.cleanup = cleanup
 
     def create_video(self):
@@ -43,5 +44,5 @@ class Movie:
 
 
 if __name__ == "__main__":
-    mv = Movie('./Screenshots')
+    mv = Movie('../Screenshots/GL_STM')
     mv.create_video()

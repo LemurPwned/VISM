@@ -22,6 +22,8 @@ from Windows.Select import Select
 
 import time
 import pygame
+import threading
+from queue import Queue 
 
 class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
     PYGAME_INCLUDED = False
@@ -52,6 +54,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.TEXT = None
         self.RECORD_REGION_SELECTION = False
         self.SELECTED_POS = None
+        self.q = None
         
         """ 
         left mouse must be separately registered
@@ -205,6 +208,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         self.i = value      
         self.i %= self.iterations
         self.record = record
+
 
     def keyPressEvent(self, event):
         """
@@ -377,17 +381,23 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         color = gl.glReadPixels(0, 0,
                                width, height,
                                gl.GL_RGB, gl.GL_UNSIGNED_BYTE)
-        image = Image.frombytes(mode='RGB', size=(width, height),
-                                                    data=color)
-        image = image.transpose(Image.FLIP_TOP_BOTTOM)
-        try:
-            if os.path.basename(self.screenshot_dir) != self.subdir:
-                self.screenshot_dir = os.path.join(self.screenshot_dir,
-                                                                self.subdir)
-            image.save(os.path.join(self.screenshot_dir,
-                                        str(self.i).zfill(4) + ".png"))
-        except FileNotFoundError:
-            # if basic dir not found, create it and save there
-            os.makedirs(self.screenshot_dir)
-            image.save(os.path.join(self.screenshot_dir,
-                                        str(self.i).zfill(4) + ".png"))
+        save_dir = os.path.join(self.screenshot_dir, self.subdir)
+        save_name = os.path.join(save_dir,
+                                        str(self.i).zfill(4) + ".png")
+        if self.q:
+            self.q.put((save_name, color, width, height))
+
+    def worker(self):
+        while True:
+            savename, color, width, height = self.q.get()
+            image = Image.frombytes(mode='RGB', size=(width, height),
+                                                        data=color)
+            image = image.transpose(Image.FLIP_TOP_BOTTOM)
+            try:
+                image.save(savename)
+            except FileNotFoundError:
+                # if basic dir not found, create it and save there
+                os.makedirs(os.path.dirname(savename), exist_ok=True)
+                image.save(savename)
+
+            self.q.task_done()

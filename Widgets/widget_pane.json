@@ -131,7 +131,7 @@
     "object": "StateMachine",
     "object_type": "stateful",
     "extensions": [".ovf", ".omf"],
-    "required": ["directory", "current_state"],
+    "required": ["directory", "current_state", "screenshot_dir", "geom"],
     "optional": ["iterations", "trigger"],
     "iterable_type": "structure",
     "toolbar": [

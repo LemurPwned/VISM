@@ -9,8 +9,11 @@ from PyQt5.QtCore import Qt
 from util_tools.PopUp import PopUpWrapper
 from functools import wraps
 from processing.workerthreads import ThreadingWrapper
+from threading import Thread
+from queue import Queue
 
 import logging
+import time
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("__main__")
 
@@ -85,7 +88,20 @@ class AbstractGLContextDecorators:
         def _rec(*args):
             drawing_function(*args)
             if args[0].record:
+                if args[0].q is None:
+                    logger.debug("Initiating thread queue for recording!")
+                    args[0].q = Queue()
+                    for i in range(2):
+                        t = Thread(target=args[0].worker)
+                        t.daemon = True
+                        t.start()
+                time.sleep(1)
                 args[0].screenshot_manager()
+
+            if not args[0].record and (args[0].q is not None):
+                logger.debug("Killing a queue for recording!")
+                args[0].q.join()
+                args[0].q = None
         return _rec
 
     def systemDisable(func):

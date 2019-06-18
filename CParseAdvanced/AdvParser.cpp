@@ -21,6 +21,15 @@
 namespace p = boost::python;
 namespace np = boost::python::numpy;
 
+inline void destroyManagerCObject(PyObject *obj)
+{
+    double *b = reinterpret_cast<double *>(PyCapsule_GetPointer(obj, NULL));
+    if (b)
+    {
+        delete[] b;
+    }
+}
+
 struct AdvParser
 {
     bool checkBase = true;
@@ -501,11 +510,14 @@ struct AdvParser
         np::dtype dt = np::dtype::get_builtin<int>();
         p::tuple shape = p::make_tuple(3 * (index_required - 2) * N);
         p::tuple stride = p::make_tuple(sizeof(int));
+        p::handle<> h(::PyCapsule_New((void *)indices,
+                                      NULL,
+                                      (PyCapsule_Destructor)&destroyManagerCObject));
         return np::from_data(indices,
                              dt,
                              shape,
                              stride,
-                             p::object());
+                             p::object(h));
     }
     np::ndarray getCubeOutline(int xn, int yn, int zn,
                                double xb, double yb, double zb,
@@ -541,11 +553,14 @@ struct AdvParser
         np::dtype dt = np::dtype::get_builtin<double>();
         p::tuple shape = p::make_tuple(xn * yn * zn * per_vertex);
         p::tuple stride = p::make_tuple(sizeof(double));
+        p::handle<> h(::PyCapsule_New((void *)sh,
+                                      NULL,
+                                      (PyCapsule_Destructor)&destroyManagerCObject));
         return np::from_data(sh,
                              dt,
                              shape,
                              stride,
-                             p::object());
+                             p::object(h));
     }
     void getHeader(std::string filepath)
     {
@@ -575,11 +590,14 @@ struct AdvParser
         np::dtype dt = np::dtype::get_builtin<double>();
         p::tuple shape = p::make_tuple(current_pos);
         p::tuple stride = p::make_tuple(sizeof(double));
+        p::handle<> h(::PyCapsule_New((void *)sh,
+                                      NULL,
+                                      (PyCapsule_Destructor)&destroyManagerCObject));
         return np::from_data(sh,
                              dt,
                              shape,
                              stride,
-                             p::object());
+                             p::object(h));
     }
 
     np::ndarray getMifAsNdarrayWithColor(std::string path,
@@ -749,8 +767,9 @@ struct AdvParser
         miffile.read(buffer, buffer_size * lines * 3);
         miffile.close();
 
-        double *vals;
+        double *vals, *vals_cpy;
         vals = (double *)malloc(sizeof(double) * lines * 3);
+        vals_cpy = vals;
         if (buffer_size == 4)
         {
             float fvals[lines * 3];
@@ -768,7 +787,7 @@ struct AdvParser
         }
         int size = xnodes * ynodes * znodes * resolution * 10 * 3;
         double *fut_ndarray = (double *)(malloc(sizeof(double) * size));
-
+        // double fut_ndarray[size];
         if (fut_ndarray == NULL)
         {
             throw std::runtime_error("Failed to allocate memory for a large array");
@@ -844,14 +863,18 @@ struct AdvParser
                 }
             }
         }
+        free(vals_cpy);
         np::dtype dt = np::dtype::get_builtin<double>();
         p::tuple shape = p::make_tuple(offset);
         p::tuple stride = p::make_tuple(sizeof(double));
+        p::handle<> h(::PyCapsule_New((void *)fut_ndarray,
+                                      NULL,
+                                      (PyCapsule_Destructor)&destroyManagerCObject));
         return np::from_data(fut_ndarray,
                              dt,
                              shape,
                              stride,
-                             p::object());
+                             p::object(h));
     }
 };
 

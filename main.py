@@ -188,7 +188,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
         return fileLoaded
 
     def setScreenshotFolder(self):
-        selected_dir = self.promptDirectory.__wrapped__()
+        fileDialog = QtWidgets.QFileDialog()
+        selected_dir = str(
+            fileDialog.getExistingDirectory(
+                self,
+                "Select a directory",
+                options=QtWidgets.QFileDialog.ShowDirsOnly))
+        fileDialog.close()
         if selected_dir is not None:
             self.screenshot_dir = selected_dir
             x = PopUpWrapper(
