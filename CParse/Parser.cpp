@@ -108,6 +108,49 @@ struct Parser
         return fileList;
     }
 
+    np::ndarray getOmfToList(std::string path)
+    {
+        // is a text file
+        std::ifstream miffile;
+        miffile.open(path, std::ios::out);
+        int buffer_size = getMifHeader(miffile);
+
+        int num_vectors = xnodes * ynodes * znodes;
+        double *fut_ndarray = (double *)(malloc(sizeof(double) * num_vectors * 3));
+        int i = 0;
+        if (miffile.is_open())
+        {
+            std::string line;
+            while (std::getline(miffile, line))
+            {
+                std::istringstream iss(line);
+                if (line[0] == '#')
+                    continue;
+                else
+                {
+                    double x, y, z;
+                    if (!(iss >> x >> y >> z))
+                        break;
+                    fut_ndarray[i + 0] = x;
+                    fut_ndarray[i + 1] = y;
+                    fut_ndarray[i + 2] = z;
+                    i += 3;
+                }
+            }
+        }
+        miffile.close();
+        boost::python::numpy::dtype dt1 = boost::python::numpy::dtype::get_builtin<double>();
+        boost::python::tuple shape = boost::python::make_tuple(num_vectors, 3);
+        boost::python::tuple stride = boost::python::make_tuple(3 * sizeof(double), sizeof(double));
+        boost::python::numpy::ndarray vectorData = boost::python::numpy::from_data(fut_ndarray,
+                                                                                   dt1,
+                                                                                   shape,
+                                                                                   stride,
+                                                                                   boost::python::object());
+        // last entry is object owner
+        return vectorData;
+    }
+
     int listFiles(std::string dirpath)
     {
         if (!fs::exists(dirpath))
@@ -141,6 +184,8 @@ struct Parser
         std::string node_reg("# xnodes:");
         std::string base_reg("# xbase:");
 
+        // we have to change strategy here
+        std::string data_text("# Begin: Data Text");
         if (miffile.is_open())
         {
             while (std::getline(miffile, line))
@@ -155,6 +200,12 @@ struct Parser
                     else if (line == "# Begin: Data Binary 4")
                     {
                         buffer_size = 4;
+                        break;
+                    }
+                    else if (data_text.compare(line.substr(0, data_text.length())) == 0)
+                    {
+                        buffer_size = 1;
+                        break;
                     }
 
                     if (checkNodes && line.substr(0, node_reg.length()) == node_reg)
@@ -201,17 +252,44 @@ struct Parser
             }
             if (buffer_size <= 0)
             {
-                throw "Invalid buffer size";
+                throw std::runtime_error("Invalid buffer size");
             }
-            char IEEE_BUF[buffer_size];
+            char IEEE_BUF[buffer_size + 1];
 
             miffile.read(IEEE_BUF, buffer_size);
-
-            double *IEEE_val = (double *)IEEE_BUF;
-            if (IEEE_val[0] != 123456789012345.0)
+            if (buffer_size == 4)
             {
-                throw "IEEE value not consistent";
+                float IEEE_val;
+                float IEEE_VALIDATION = 1234567.0;
+
+                std::memcpy(&IEEE_val, IEEE_BUF, sizeof(float));
+                if (IEEE_val != IEEE_VALIDATION)
+                {
+                    printf("%f\n", IEEE_val);
+                    throw std::runtime_error("IEEE value not consistent");
+                }
             }
+            else if (buffer_size == 8)
+            {
+                double IEEE_val;
+                double IEEE_VALIDATION = 123456789012345.0;
+                std::memcpy(&IEEE_val, IEEE_BUF, sizeof(double));
+
+                if (IEEE_val != IEEE_VALIDATION)
+                {
+                    printf("%f\n", IEEE_val);
+                    throw std::runtime_error("IEEE value not consistent");
+                }
+            }
+            else if (buffer_size == 1)
+            {
+                // actaully I don't know what I should do here
+            }
+            else
+            {
+                throw std::runtime_error("Unspecified or invalid buffer size for binary input data");
+            }
+
             return buffer_size;
         }
         else
@@ -359,6 +437,8 @@ BOOST_PYTHON_MODULE(Parser)
         .def("getMifAsDblObj", &Parser::getMifAsDblObj)
         .def("getMifAsNdarray", &Parser::getMifAsNdarray)
         .def("getFileList", &Parser::listFiles)
+        .def("getOmfToList", &Parser::getOmfToList)
+        .def("getMifHeader", &Parser::getMifHeader)
 
         .add_property("xnodes", &Parser::getXnodes, &Parser::setXnodes)
         .add_property("ynodes", &Parser::getYnodes, &Parser::setYnodes)

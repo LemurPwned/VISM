@@ -1,13 +1,15 @@
-import numpy as np
-from cython_modules.cython_parse import getLayerOutline, subsample  
-from cython_modules.color_policy import multi_iteration_dot_product, \
-                                        hyper_contrast_calculation, \
-                                        multi_iteration_cross_color, \
-                                        multi_iteration_normalize
-from multiprocessing import Pool
-from processing.multiprocessing_parse import asynchronous_pool_order
-import scipy.signal
 from copy import deepcopy
+from multiprocessing import Pool
+
+import numpy as np
+import scipy.signal
+
+from cython_modules.color_policy import (hyper_contrast_calculation,
+                                         multi_iteration_cross_color,
+                                         multi_iteration_dot_product,
+                                         multi_iteration_normalize)
+from cython_modules.cython_parse import getLayerOutline, subsample
+from processing.multiprocessing_parse import asynchronous_pool_order
 
 
 class ColorPolicy:      

@@ -8,12 +8,14 @@ import numpy as np
 from pattern_types.Patterns import MainContextDecorators
 
 class PlotSettings(QWidget, Ui_PlotSettings):
-    def __init__(self, plotOptions=[None], gridSize=1, parent=None):
+    def __init__(self, plotOptions=[None], gridSize=1, parent=None, 
+                eventHandler=None):
         self.saved_parent = parent
         super(PlotSettings, self).__init__()
         self.setupUi(self)
         self.toDelete = False
         self.GroupCounter = 0
+        self.eventHandler = eventHandler
         if len(plotOptions) == 0:
             self.showMessage("There is no data to show. Load data with File > Load Directory")
         elif gridSize<1:

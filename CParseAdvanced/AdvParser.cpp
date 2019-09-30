@@ -61,6 +61,49 @@ struct AdvParser
     double getYbase() { return ybase; }
     double getZbase() { return zbase; }
 
+    np::ndarray getOmfToList(std::string path)
+    {
+        // is a text file
+        std::ifstream miffile;
+        miffile.open(path, std::ios::out);
+        int buffer_size = getMifHeader(miffile);
+
+        int num_vectors = xnodes * ynodes * znodes;
+        double *fut_ndarray = (double *)(malloc(sizeof(double) * num_vectors * 3));
+        int i = 0;
+        if (miffile.is_open())
+        {
+            std::string line;
+            while (std::getline(miffile, line))
+            {
+                std::istringstream iss(line);
+                if (line[0] == '#')
+                    continue;
+                else
+                {
+                    double x, y, z;
+                    if (!(iss >> x >> y >> z))
+                        break;
+                    fut_ndarray[i + 0] = x;
+                    fut_ndarray[i + 1] = y;
+                    fut_ndarray[i + 2] = z;
+                    i += 3;
+                }
+            }
+        }
+        miffile.close();
+        boost::python::numpy::dtype dt1 = boost::python::numpy::dtype::get_builtin<double>();
+        boost::python::tuple shape = boost::python::make_tuple(num_vectors, 3);
+        boost::python::tuple stride = boost::python::make_tuple(3 * sizeof(double), sizeof(double));
+        boost::python::numpy::ndarray vectorData = boost::python::numpy::from_data(fut_ndarray,
+                                                                                   dt1,
+                                                                                   shape,
+                                                                                   stride,
+                                                                                   boost::python::object());
+        // last entry is object owner
+        return vectorData;
+    }
+
     int getMifHeader(std::ifstream &miffile)
     {
         std::string line;
@@ -68,6 +111,9 @@ struct AdvParser
 
         std::string node_reg("# xnodes:");
         std::string base_reg("# xbase:");
+
+        // we have to change strategy here
+        std::string data_text("# Begin: Data Text");
         if (miffile.is_open())
         {
             while (std::getline(miffile, line))
@@ -82,6 +128,11 @@ struct AdvParser
                     else if (line == "# Begin: Data Binary 4")
                     {
                         buffer_size = 4;
+                        break;
+                    }
+                    else if (data_text.compare(line.substr(0, data_text.length())) == 0)
+                    {
+                        buffer_size = 1;
                         break;
                     }
 
@@ -157,6 +208,11 @@ struct AdvParser
                     printf("%f\n", IEEE_val);
                     throw std::runtime_error("IEEE value not consistent");
                 }
+            }
+            else if (buffer_size == 1)
+            {
+                // this is a text file
+                // actaully I don't know what I should do here
             }
             else
             {
@@ -606,7 +662,8 @@ struct AdvParser
                                          p::list negative_color_l,
                                          int sampling,
                                          int start_layer,
-                                         int stop_layer)
+                                         int stop_layer,
+                                         int binary)
     {
         double color_vector[3] = {
             p ::extract<double>(color_vector_l[0]),
@@ -623,7 +680,16 @@ struct AdvParser
             p ::extract<double>(negative_color_l[2])};
 
         std::ifstream miffile;
-        miffile.open(path, std::ios::out | std::ios_base::binary);
+        std::ios::openmode openmod;
+        if (binary)
+        {
+            openmod = std::ios::out | std::ios_base::binary;
+        }
+        else
+        {
+            openmod = std::ios::out;
+        }
+        miffile.open(path, openmod);
         int buffer_size = getMifHeader(miffile);
         if (buffer_size == 0)
         {
@@ -632,15 +698,14 @@ struct AdvParser
         }
 
         int lines = znodes * xnodes * ynodes;
-        char buffer[buffer_size * lines * 3];
-        miffile.read(buffer, buffer_size * lines * 3);
-        miffile.close();
 
         double *vals;
         vals = (double *)malloc(sizeof(double) * lines * 3);
 
         if (buffer_size == 4)
         {
+            char buffer[buffer_size * lines * 3];
+            miffile.read(buffer, buffer_size * lines * 3);
             float fvals[lines * 3];
             std::memcpy(fvals, buffer, lines * 3 * sizeof(float));
             for (int i = 0; i < lines * 3; i++)
@@ -650,8 +715,36 @@ struct AdvParser
         }
         else if (buffer_size == 8)
         {
+            char buffer[buffer_size * lines * 3];
+            miffile.read(buffer, buffer_size * lines * 3);
             vals = (double *)(buffer);
         }
+        else if (buffer_size == 1)
+        {
+            int i = 0;
+            if (miffile.is_open())
+            {
+                std::string line;
+                while (std::getline(miffile, line))
+                {
+                    std::istringstream iss(line);
+                    if (line[0] == '#')
+                        continue;
+                    else
+                    {
+                        double x, y, z;
+                        if (!(iss >> x >> y >> z))
+                            break;
+                        vals[i + 0] = x;
+                        vals[i + 1] = y;
+                        vals[i + 2] = z;
+                        i += 3;
+                    }
+                }
+            }
+        }
+        miffile.close();
+
         int inflate = 24; // 24 vetrtivesd in a cube
 
         double *fut_ndarray = (double *)(malloc(sizeof(double) * znodes * xnodes * ynodes * 3 * inflate));
@@ -710,11 +803,14 @@ struct AdvParser
         np::dtype dt = np::dtype::get_builtin<double>();
         p::tuple shape = p::make_tuple(offset);
         p::tuple stride = p::make_tuple(sizeof(double));
+        p::handle<> h(::PyCapsule_New((void *)fut_ndarray,
+                                      NULL,
+                                      (PyCapsule_Destructor)&destroyManagerCObject));
         return np::from_data(fut_ndarray,
                              dt,
                              shape,
                              stride,
-                             p::object());
+                             p::object(h));
     }
 
     np::ndarray getMifVBO(std::string path,
@@ -729,7 +825,8 @@ struct AdvParser
                           int stop_layer,
                           int xscaler,
                           int yscaler,
-                          int zscaler)
+                          int zscaler,
+                          int binary)
     {
         if (start_layer < 0 || start_layer > stop_layer)
         {
@@ -754,7 +851,16 @@ struct AdvParser
             p ::extract<double>(negative_color_l[2])};
 
         std::ifstream miffile;
-        miffile.open(path, std::ios::out | std::ios_base::binary);
+        std::ios::openmode openmod;
+        if (binary)
+        {
+            openmod = std::ios::out | std::ios_base::binary;
+        }
+        else
+        {
+            openmod = std::ios::out;
+        }
+        miffile.open(path, openmod);
         int buffer_size = getMifHeader(miffile);
         if (buffer_size == 0)
         {
@@ -763,15 +869,12 @@ struct AdvParser
         }
 
         int lines = znodes * xnodes * ynodes;
-        char buffer[buffer_size * lines * 3];
-        miffile.read(buffer, buffer_size * lines * 3);
-        miffile.close();
-
-        double *vals, *vals_cpy;
+        double *vals;
         vals = (double *)malloc(sizeof(double) * lines * 3);
-        vals_cpy = vals;
         if (buffer_size == 4)
         {
+            char buffer[buffer_size * lines * 3];
+            miffile.read(buffer, buffer_size * lines * 3);
             float fvals[lines * 3];
             std::memcpy(fvals, buffer, lines * 3 * sizeof(float));
             for (int i = 0; i < lines * 3; i++)
@@ -781,10 +884,38 @@ struct AdvParser
         }
         else if (buffer_size == 8)
         {
+            char buffer[buffer_size * lines * 3];
+            miffile.read(buffer, buffer_size * lines * 3);
             // research why this casting with memcpy causes SIGSEV
             // std::memcpy(vals, buffer, lines * 3 * sizeof(double));
             vals = (double *)(buffer);
         }
+        else if (buffer_size == 1)
+        {
+            int i = 0;
+            if (miffile.is_open())
+            {
+                std::string line;
+                while (std::getline(miffile, line))
+                {
+                    std::istringstream iss(line);
+                    if (line[0] == '#')
+                        continue;
+                    else
+                    {
+                        double x, y, z;
+                        if (!(iss >> x >> y >> z))
+                            break;
+                        vals[i + 0] = x;
+                        vals[i + 1] = y;
+                        vals[i + 2] = z;
+                        i += 3;
+                    }
+                }
+            }
+        }
+        miffile.close();
+
         int size = xnodes * ynodes * znodes * resolution * 10 * 3;
         double *fut_ndarray = (double *)(malloc(sizeof(double) * size));
         // double fut_ndarray[size];
@@ -863,7 +994,6 @@ struct AdvParser
                 }
             }
         }
-        free(vals_cpy);
         np::dtype dt = np::dtype::get_builtin<double>();
         p::tuple shape = p::make_tuple(offset);
         p::tuple stride = p::make_tuple(sizeof(double));
@@ -875,6 +1005,50 @@ struct AdvParser
                              shape,
                              stride,
                              p::object(h));
+    }
+
+    np::ndarray getMifAsNdarray(std::string path)
+    {
+
+        std::ifstream miffile;
+        miffile.open(path, std::ios::out | std::ios_base::binary);
+        int buffer_size = getMifHeader(miffile);
+        if (buffer_size == 0)
+        {
+            miffile.close();
+            throw std::runtime_error("Invalid mif file");
+        }
+
+        int lines = znodes * xnodes * ynodes;
+        char buffer[buffer_size * lines * 3];
+        miffile.read(buffer, buffer_size * lines * 3);
+        double *vals = (double *)buffer;
+        double *fut_ndarray = (double *)(malloc(sizeof(double) * lines * 3));
+        double mag;
+        for (int i = 0; i < lines * 3; i += 3)
+        {
+            mag = sqrt(pow(vals[i + 0], 2) + pow(vals[i + 1], 2) + pow(vals[i + 2], 2));
+            if (mag == 0.0)
+                mag = 1.0;
+            fut_ndarray[i + 0] = vals[i + 0] / mag;
+            fut_ndarray[i + 1] = vals[i + 1] / mag;
+            fut_ndarray[i + 2] = vals[i + 2] / mag;
+        }
+        miffile.close();
+        // use explicit namespace here to make sure it does not mix the functions
+        np::dtype dt1 = np::dtype::get_builtin<double>();
+        p::tuple shape = p::make_tuple(lines, 3);
+        p::tuple stride = p::make_tuple(3 * sizeof(double), sizeof(double));
+        p::handle<> h(::PyCapsule_New((void *)fut_ndarray,
+                                      NULL,
+                                      (PyCapsule_Destructor)&destroyManagerCObject));
+        np::ndarray vectorData = np::from_data(fut_ndarray,
+                                               dt1,
+                                               shape,
+                                               stride,
+                                               p::object(h));
+        // last entry is object owner
+        return vectorData;
     }
 };
 
@@ -892,6 +1066,8 @@ BOOST_PYTHON_MODULE(AdvParser)
         .def("getMifAsNdarrayWithColor", &AdvParser::getMifAsNdarrayWithColor)
         .def("getMifVBO", &AdvParser::getMifVBO)
         .def("getCubeOutline", &AdvParser::getCubeOutline)
+        .def("getOmfToList", &AdvParser::getOmfToList)
+        .def("getMifAsNdarray", &AdvParser::getMifAsNdarray)
 
         .def("getHeader", &AdvParser::getHeader)
         .def("getShapeAsNdarray", &AdvParser::getShapeAsNdarray)

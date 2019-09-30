@@ -2,11 +2,82 @@ import numpy as np
 import os
 import glob
 import re
+import pandas as pd
 
-from CParse.Parser import Parser
+from CParseAdvanced.AdvParser import AdvParser
 from multiprocessing import Pool
-from cython_modules.cython_parse import *
 from binaryornot.check import is_binary
+
+
+def parseODTColumn(line):
+    """
+    This extracts a single column from a odt file
+    OOMMF formatting support
+    """
+    cols = []
+    line = line.replace('# Columns: ', '')
+    while line != '':
+        if line[0] == '{':
+            patch = line[1:line.index('}')]
+            if patch != '':
+                cols.append(patch)
+            line = line[line.index('}')+1:]
+        else:
+            try:
+                patch = line[:line.index(' ')]
+                if patch != '':
+                    cols.append(patch)
+                line = line[line.index(' ')+1:]
+            except ValueError:
+                if line != "" and line != '\n':
+                    # last trailing line
+                    cols.append(patch)
+                line = ""
+                break
+    return cols
+
+
+def getPlotData(filename):
+    """
+    Reads .odt of .txt file
+    @param: filename is .odt file path
+    @return: dataFrame and stages number
+    """
+    if filename.endswith('.txt'):
+        df = pd.read_table(filename)
+        return df, len(df)
+    elif filename.endswith('.odt'):
+        header_lines = 4
+        header = []
+        i = 0
+        with open(filename, 'r') as f:
+            while i < header_lines:
+                lines = f.readline()
+                header.append(lines)
+                i += 1
+            units = f.readline()
+            lines = f.readlines()
+        f.close()
+        cols = header[-1]
+        cols = parseODTColumn(cols)
+        dataset = []
+        lines = [x.strip() for x in lines]
+        lines = [x.split(' ') for x in lines]
+        for line in lines:
+            temp_line = []
+            for el in line:
+                try:
+                    new_el = float(el)
+                    temp_line.append(new_el)
+                except:
+                    pass
+            dataset.append(temp_line)
+        dataset = dataset[:-1]
+        df = pd.DataFrame.from_records(dataset, columns=cols)
+        stages = len(lines) - 1
+        return df, stages
+    else:
+        raise ValueError("Unsupported extension {}".format(filename))
 
 
 def asynchronous_pool_order(func, args, object_list, timeout=20):
@@ -145,8 +216,8 @@ class MultiprocessingParse:
                                                                          path])
                 header = headers[0]
             elif not is_binary(path):
-                rawVectorData = MultiprocessingParse.readText([path])
-                header = getFileHeader(path)
+                headers, rawVectorData = MultiprocessingParse.readText([path])
+                header = headers[0]
             else:
                 raise RuntimeError("multiprocessing_parse.py readFile:" +
                                    " Can't detect encoding!")
@@ -209,12 +280,10 @@ class MultiprocessingParse:
             plot_data = None
 
         if not is_binary(test_file):
-            rawVectorData = MultiprocessingParse.readText(files_in_directory)
-            file_for_header = glob.glob(os.path.join(directory, '*' + ext[0]))
-            # virtually any will do
-            if not file_for_header:
-                raise ValueError("no .omf  or .ovf file has been found")
-            header = getFileHeader(file_for_header[0])
+            header, rawVectorData = MultiprocessingParse.readText(
+                files_in_directory)
+            if not header:
+                raise ValueError("no .omf or .ovf file has been found")
         else:
             header, rawVectorData = MultiprocessingParse.readBinary(
                 files_in_directory)
@@ -229,26 +298,7 @@ class MultiprocessingParse:
                                 in a directory
         :return numpy array of vectors form .omf files
         """
-        try:
-                # if boost has been compiled try it
-            return MultiprocessingParse.readBinaryWithC(files_in_directory)
-        except Exception as e:
-            print(f"FAILED to use boost compiled libs because of {e}")
-            output = asynchronous_pool_order(binary_format_reader, (),
-                                             files_in_directory,
-                                             timeout=20)
-            output = np.array(output)
-            headers = output[:, 0][0]
-            rawVectorData = output[:, 1]
-            # test this solution, turn dtype object to float64
-            rawVectorData = np.array(
-                [x for x in rawVectorData], dtype=np.float32)
-
-            if rawVectorData is None or headers is None:
-                raise TypeError("\nNo vectors created")
-
-            assert rawVectorData.dtype == np.float32
-            return headers, rawVectorData
+        return MultiprocessingParse.readBinaryWithC(files_in_directory)
 
     @staticmethod
     def readBinaryWithC(files_in_directory):
@@ -257,7 +307,7 @@ class MultiprocessingParse:
                                    in a directory
         :return numpy array of vectors form .omf files
         """
-        p = Parser()
+        p = AdvParser()
         rawVectorData = []
         for filename in files_in_directory:
             rawVectorData.append(p.getMifAsNdarray(
@@ -274,12 +324,15 @@ class MultiprocessingParse:
         :return numpy array of vectors form .omf files
         """
         # use multiprocessing
+        p = AdvParser()
         rawVectorData = []
-        rawVectorData = asynchronous_pool_order(getRawVectors, (),
+        rawVectorData = asynchronous_pool_order(p.getOmfToList, (),
                                                 files_in_directory,
                                                 timeout=20)
         if not rawVectorData:
             raise TypeError("\nNo vectors created")
         rawVectorData = np.array(rawVectorData, dtype=np.float32)
         assert rawVectorData.dtype == np.float32
-        return rawVectorData
+        headers = {'xnodes': p.xnodes, 'ynodes': p.ynodes, 'znodes': p.znodes,
+                   'xbase': p.xbase, 'ybase': p.ybase, 'zbase': p.zbase}
+        return headers, rawVectorData

@@ -2,15 +2,16 @@ import numpy as np
 import os
 
 from Windows.PlotSettings import PlotSettings
-from Widgets.plot_widgets.AbstractCanvas import AbstractCanvas
+from state_machine.AbstractCanvas import AbstractCanvas
 from pattern_types.Patterns import AbstractGLContextDecorators
 from matplotlib.figure import Figure
 from processing.multiprocessing_parse import getPlotData
+from PyQt5.QtWidgets import (QApplication, QOpenGLWidget, QWidget)
 
 
-class Canvas(AbstractCanvas):
+class Canvas(AbstractCanvas, QWidget):
     def __init__(self, data_dict, parent=None):
-        # super().__init__(self)
+        super().__init__(self)
         self.shareData(**data_dict)
         self.i = self.current_state
         self.triggered = True
@@ -26,7 +27,7 @@ class Canvas(AbstractCanvas):
         self.plot_data, stages = getPlotData(plot_filename)
         print("STARTING OFF WITH PLT")
         self.settings = PlotSettings(
-            self.plot_data, eventHandler=self.createPlotCanvas).show()
+            self.plot_data, eventHandler=self.createPlotCanvas)
 
     def construct_triggered_plot(self):
         if self.trigger is not None and self.options['one_one']:
@@ -40,7 +41,7 @@ class Canvas(AbstractCanvas):
             self.options['line_style'] = 'None'
 
     def createPlotCanvas(self, options):
-        print(options)
+        self.options = options
         self.title = self.options['column']
         self.xcol = self.options['xcolumn']
         self.construct_triggered_plot()

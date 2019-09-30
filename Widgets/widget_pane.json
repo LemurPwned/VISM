@@ -2,85 +2,13 @@
   "__all__": {
     "extensions": [".ovf", ".omf", ".odt", ".txt"]
   },
-  "CubicGLContext": {
-    "alias": "3D_CUBIC",
-    "object": "CubicGLContext",
-    "object_type": "3d_object",
-    "extensions": [".ovf", ".omf"],
-    "settings": ["PerfOptions", "file_header", "object_alias"],
-    "required": [
-      "current_state",
-      "options",
-      "file_header",
-      "color_vectors",
-      "screenshot_dir",
-      "geom"
-    ],
-    "optional": ["iterations", "trigger"],
-    "iterable_type": "structure",
-    "toolbar": [
-      ["Reset", "initial_transformation"],
-      ["Zoom in", "zoomIn"],
-      ["Zoom out", "zoomOut"],
-      ["Screenshot", "screenshot_manager"],
-      ["Text", "popup_text_selector"]
-    ]
-  },
-  "ArrowGLContext": {
-    "alias": "3D_ARROW",
-    "object": "ArrowGLContext",
-    "object_type": "3d_object",
-    "extensions": [".ovf", ".omf"],
-    "settings": ["ArrowPerfOptions", "file_header", "object_alias"],
-    "required": [
-      "current_state",
-      "options",
-      "file_header",
-      "color_vectors",
-      "screenshot_dir",
-      "geom"
-    ],
-    "optional": ["iterations", "trigger"],
-    "iterable_type": "structure",
-    "toolbar": [
-      ["Reset", "initial_transformation"],
-      ["Zoom in", "zoomIn"],
-      ["Zoom out", "zoomOut"],
-      ["Screenshot", "screenshot_manager"],
-      ["Text", "popup_text_selector"]
-    ]
-  },
-  "VectorGLContext": {
-    "alias": "3D VECTOR",
-    "object": "VectorGLContext",
-    "object_type": "3d_object",
-    "extensions": [".ovf", ".omf"],
-    "settings": ["PerfOptions", "file_header"],
-    "required": [
-      "current_state",
-      "options",
-      "file_header",
-      "color_vectors",
-      "screenshot_dir",
-      "geom"
-    ],
-    "optional": ["iterations"],
-    "iterable_type": "structure",
-    "toolbar": [
-      ["Reset", "initial_transformation"],
-      ["Zoom in", "zoomIn"],
-      ["Zoom out", "zoomOut"],
-      ["Screenshot", "screenshot_manager"],
-      ["Text", "popup_text_selector"]
-    ]
-  },
   "Canvas": {
     "alias": "2D Matplotlib",
     "object": "Canvas",
-    "object_type": "2d_object",
+    "object_type": "stateful",
     "extensions": [".txt", ".odt"],
-    "settings": ["PlotSettings", "plot_data"],
     "required": [
+      "directory",
       "iterations",
       "current_state",
       "options",
@@ -94,7 +22,7 @@
   "Canvas2Dupgraded": {
     "alias": "2D PyQT",
     "object": "Canvas2Dupgraded",
-    "object_type": "2d_object",
+    "object_type": "stateful",
     "extensions": [".txt", ".odt"],
     "settings": ["PlotSettings", "plot_data"],
     "required": [
@@ -112,7 +40,7 @@
   "CanvasLayer": {
     "alias": "2D Layer",
     "object": "CanvasLayer",
-    "object_type": "2d_object",
+    "object_type": "stateful",
     "extensions": [".txt", ".odt"],
     "settings": ["SimplePerfOptions", "file_header"],
     "required": [

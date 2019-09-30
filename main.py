@@ -82,8 +82,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
     def events(self):
         """Creates all listeners for Main Window"""
         # FILE SUBMENU
-        self.actionLoad_Directory.triggered.connect(self.loadDirectoryWrapper)
-        self.actionLoad_File.triggered.connect(self.loadFile)
+        # self.actionLoad_Directory.triggered.connect(self.loadDirectoryWrapper)
+        # self.actionLoad_File.triggered.connect(self.loadFile)
 
         # ANIMATION MENU
         self.playerAction.triggered.connect(self.showAnimationSettings)
@@ -211,105 +211,105 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
                 more='Not changed',
                 yesMes=None, parent=self)
 
-    def loadFile(self):
-        logger.debug("loading file has begun")
-        if self._LOADED_FLAG_:
-            self.deleteLoadedFiles()
-            logger.debug("Previous data has been deleted")
-        self._LOADED_FLAG_ = False
+    # def loadFile(self):
+    #     logger.debug("loading file has begun")
+    #     if self._LOADED_FLAG_:
+    #         self.deleteLoadedFiles()
+    #         logger.debug("Previous data has been deleted")
+    #     self._LOADED_FLAG_ = False
 
-        fileLoaded = self.promptFile()
+    #     fileLoaded = self.promptFile()
 
-        logger.debug(f"Loaded file: {fileLoaded}")
-        if fileLoaded is None or fileLoaded == "" or fileLoaded=="  ":
-            msg = "Invalid directory: {}. Do you wish to abort?".format(fileLoaded)
-            PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
-                            QtWidgets.QMessageBox.No, self.refreshScreen, self.loadFile)
-            return 0
+    #     logger.debug(f"Loaded file: {fileLoaded}")
+    #     if fileLoaded is None or fileLoaded == "" or fileLoaded=="  ":
+    #         msg = "Invalid directory: {}. Do you wish to abort?".format(fileLoaded)
+    #         PopUpWrapper("Invalid directory", msg, None, QtWidgets.QMessageBox.Yes,
+    #                         QtWidgets.QMessageBox.No, self.refreshScreen, self.loadFile)
+    #         return 0
 
-        if ".odt" in fileLoaded or ".txt" in fileLoaded:
-            self.doh.passListObject(('plot_data', 'iterations'),
-                                        *MultiprocessingParse.readFile(fileLoaded))
-            self._BLOCK_ITERABLES_ = False
-            self._BLOCK_PLOT_ITERABLES_ = False
+    #     if ".odt" in fileLoaded or ".txt" in fileLoaded:
+    #         self.doh.passListObject(('plot_data', 'iterations'),
+    #                                     *MultiprocessingParse.readFile(fileLoaded))
+    #         self._BLOCK_ITERABLES_ = False
+    #         self._BLOCK_PLOT_ITERABLES_ = False
 
-        elif ".omf" in fileLoaded or ".ovf" in fileLoaded:
-            self.doh.passListObject(('color_vectors', 'file_header'),
-                                        *MultiprocessingParse.readFile(fileLoaded))
-            self._BLOCK_STRUCTURES_ = False
-        else:
-            msg = "Invalid file: {}.".format(fileLoaded)
-            PopUpWrapper("Invalid file", msg, None, QtWidgets.QMessageBox.Yes,
-                            QtWidgets.QMessageBox.No, self.refreshScreen,
-                            self.loadDirectoryWrapper, parent=self)
-            self._LOADED_FLAG_ = False
-            return -1
-        self._LOADED_FLAG_ = True
-        return 1
+    #     elif ".omf" in fileLoaded or ".ovf" in fileLoaded:
+    #         self.doh.passListObject(('color_vectors', 'file_header'),
+    #                                     *MultiprocessingParse.readFile(fileLoaded))
+    #         self._BLOCK_STRUCTURES_ = False
+    #     else:
+    #         msg = "Invalid file: {}.".format(fileLoaded)
+    #         PopUpWrapper("Invalid file", msg, None, QtWidgets.QMessageBox.Yes,
+    #                         QtWidgets.QMessageBox.No, self.refreshScreen,
+    #                         self.loadDirectoryWrapper, parent=self)
+    #         self._LOADED_FLAG_ = False
+    #         return -1
+    #     self._LOADED_FLAG_ = True
+    #     return 1
 
     def raise_thread_exception(self):
         self.reset_variables()
         self.enablePanes()
         
-    def loadDirectoryWrapper(self, name=None):
-        """Loads whole directory based on Parse class as simple as BHP"""
-        if self._LOADED_FLAG_:
-            self.deleteLoadedFiles()
-        self._LOADED_FLAG_ = False
-        directory = self.promptDirectory(name)
-        logger.debug(f"directory: {directory}")
-        if directory is None:
-            self.refreshScreen()
-            return 0
-        else:
-            try:
-                logger.debug(f"Multithreaded directory loading: {directory}")
-                self.disablePanes()
-                self.p = ThreadingWrapper(completeAction=None,
-                                          exceptionAction=self.raise_thread_exception, 
-                                          parent=self)
-                self.p.collapse_threads(self.loadDirectory, directory)
-                # set the loaded directory
-                self.doh.setDataObject(directory, 'directory')
-            except ValueError as e:
-                msg = "Invalid directory: {}. \
-                    Error Message {}\nDo you wish to reselect?".format(directory,
-                                                                        str(e))
-                x = PopUpWrapper("Invalid directory", msg, None,
-                                QtWidgets.QMessageBox.Yes,
-                                QtWidgets.QMessageBox.No,
-                                self.loadDirectoryWrapper,
-                                quit,
-                                parent=self)
-                to_return = None
-            except Exception as e:
-                to_return = None
-            else:
-                logger.debug(f"Failsafe widget unlock after reading {directory}")
-                self.enablePanes() # just in case 
-                self._BLOCK_ITERABLES_ = False
-                self._LOADED_FLAG_ = True
-                self._BLOCK_STRUCTURES_ = False
-                to_return = directory
-            return to_return
+    # def loadDirectoryWrapper(self, name=None):
+    #     """Loads whole directory based on Parse class as simple as BHP"""
+    #     if self._LOADED_FLAG_:
+    #         self.deleteLoadedFiles()
+    #     self._LOADED_FLAG_ = False
+    #     directory = self.promptDirectory(name)
+    #     logger.debug(f"directory: {directory}")
+    #     if directory is None:
+    #         self.refreshScreen()
+    #         return 0
+    #     else:
+    #         try:
+    #             logger.debug(f"Multithreaded directory loading: {directory}")
+    #             self.disablePanes()
+    #             self.p = ThreadingWrapper(completeAction=None,
+    #                                       exceptionAction=self.raise_thread_exception, 
+    #                                       parent=self)
+    #             self.p.collapse_threads(self.loadDirectory, directory)
+    #             # set the loaded directory
+    #             self.doh.setDataObject(directory, 'directory')
+    #         except ValueError as e:
+    #             msg = "Invalid directory: {}. \
+    #                 Error Message {}\nDo you wish to reselect?".format(directory,
+    #                                                                     str(e))
+    #             x = PopUpWrapper("Invalid directory", msg, None,
+    #                             QtWidgets.QMessageBox.Yes,
+    #                             QtWidgets.QMessageBox.No,
+    #                             self.loadDirectoryWrapper,
+    #                             quit,
+    #                             parent=self)
+    #             to_return = None
+    #         except Exception as e:
+    #             to_return = None
+    #         else:
+    #             logger.debug(f"Failsafe widget unlock after reading {directory}")
+    #             self.enablePanes() # just in case 
+    #             self._BLOCK_ITERABLES_ = False
+    #             self._LOADED_FLAG_ = True
+    #             self._BLOCK_STRUCTURES_ = False
+    #             to_return = directory
+    #         return to_return
 
-    def loadDirectory(self, directory):
-        rawVectorData, header, plot_data, stages, trigger_list = \
-                            MultiprocessingParse.readFolder(directory)
-        self.doh.passListObject(('color_vectors', 'file_header',
-                                 'iterations'),
-                                rawVectorData, header, stages)
-        if plot_data is not None:
-            self.doh.setDataObject(plot_data, 'plot_data')
-            # successfully loaded plot_data into DOH
-            self._BLOCK_PLOT_ITERABLES_ = False
-            logger.debug(f"Plot iterables disabled")   
-        else:
-            self._BLOCK_PLOT_ITERABLES_ = True
-            logger.debug(f"Plot iterables enabled")   
-        if trigger_list is not None:
-            self.doh.setDataObject(trigger_list, 'trigger')
-        self.enablePanes()
+    # def loadDirectory(self, directory):
+    #     rawVectorData, header, plot_data, stages, trigger_list = \
+    #                         MultiprocessingParse.readFolder(directory)
+    #     self.doh.passListObject(('color_vectors', 'file_header',
+    #                              'iterations'),
+    #                             rawVectorData, header, stages)
+    #     if plot_data is not None:
+    #         self.doh.setDataObject(plot_data, 'plot_data')
+    #         # successfully loaded plot_data into DOH
+    #         self._BLOCK_PLOT_ITERABLES_ = False
+    #         logger.debug(f"Plot iterables disabled")   
+    #     else:
+    #         self._BLOCK_PLOT_ITERABLES_ = True
+    #         logger.debug(f"Plot iterables enabled")   
+    #     if trigger_list is not None:
+    #         self.doh.setDataObject(trigger_list, 'trigger')
+    #     self.enablePanes()
 
     def enablePanes(self):
         for i in range(WidgetHandler.visibleCounter):

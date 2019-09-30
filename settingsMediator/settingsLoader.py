@@ -48,8 +48,6 @@ class SettingsInterface:
             # CHANGE PATH HERE IF NECESSARY!!!
             if object_type == 'settings_object':
                 module_path = 'Windows'
-            elif object_type == '3d_object':
-                module_path = os.path.join('Widgets', 'openGL_widgets')
             elif object_type == '2d_object':
                 module_path = os.path.join('Widgets', 'plot_widgets')
             elif object_type == 'stateful':
