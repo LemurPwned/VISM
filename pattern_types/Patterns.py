@@ -91,17 +91,16 @@ class AbstractGLContextDecorators:
                 if args[0].q is None:
                     logger.debug("Initiating thread queue for recording!")
                     args[0].q = Queue()
-                    for i in range(2):
+                    for i in range(1):
                         t = Thread(target=args[0].worker)
                         t.daemon = True
                         t.start()
-                time.sleep(1)
                 args[0].screenshot_manager()
-
             if not args[0].record and (args[0].q is not None):
                 logger.debug("Killing a queue for recording!")
                 args[0].q.join()
                 args[0].q = None
+                logger.debug("DONE RECORDING!")
         return _rec
 
     def systemDisable(func):

@@ -12,7 +12,7 @@ class Movie:
         self.directory = directory
         self.filename = ""
         self.format = fformat
-        self.framerate = 5
+        self.framerate = 3
         self.cleanup = cleanup
 
     def create_video(self):
@@ -32,7 +32,7 @@ class Movie:
                 total_movie.append(img)
         total_movie = np.array(total_movie)
         skv.vwrite(os.path.join(self.directory, 'movie.mkv'), total_movie)
-        self.do_cleanup(fileList)
+        # self.do_cleanup(fileList)
 
     def do_cleanup(self, filenames):
         print("Cleaning up the files ...")

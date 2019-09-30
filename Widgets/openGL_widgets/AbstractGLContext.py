@@ -205,9 +205,9 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         #         self.i += 1
         # else:
         #     self.i = value  
+        self.record = record
         self.i = value      
         self.i %= self.iterations
-        self.record = record
 
 
     def keyPressEvent(self, event):
@@ -385,7 +385,8 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
         save_name = os.path.join(save_dir,
                                         str(self.i).zfill(4) + ".png")
         if self.q:
-            self.q.put((save_name, color, width, height))
+            if not os.path.isfile(save_name):
+                self.q.put((save_name, color, width, height))
 
     def worker(self):
         while True:
