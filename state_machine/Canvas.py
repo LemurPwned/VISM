@@ -15,8 +15,7 @@ class Canvas(AbstractCanvas, QWidget):
         self.shareData(**data_dict)
         self.i = self.current_state
         self.triggered = True
-        self.q = None
-        self.worker = None
+
         plot_filename = None
         for filename in os.listdir(self.directory):
             if filename.endswith('.txt') or filename.endswith('.odt'):
@@ -28,19 +27,6 @@ class Canvas(AbstractCanvas, QWidget):
             plot_filename)
         self.settings = PlotSettings(
             self.plot_data, eventHandler=self.createPlotCanvas)
-
-    def construct_triggered_plot(self):
-        self.trigger_len = len(self.trigger)
-        if self.trigger is not None and self.options['one_one']:
-            self.triggered = False
-            # shorter list
-            self.plot_data = self.plot_data.iloc[self.trigger]
-            """
-            this displays only datapoints that match exactly the 
-            view on the 3D animation
-            on i.e. one-one plot
-            """
-            self.options['line_style'] = 'None'
 
     def createPlotCanvas(self, options):
         self.options = options

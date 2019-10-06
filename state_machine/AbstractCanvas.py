@@ -25,6 +25,8 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
         self.subdir = "Canvas" + str(AnimatedWidget.WIDGET_ID)
         AnimatedWidget.WIDGET_ID += 1
         self.record = False
+        self.q = None
+        self.worker = None
 
     def updateCanvasSettings(self):
         FigureCanvas.updateGeometry(self)
@@ -89,3 +91,16 @@ class AbstractCanvas(AnimatedWidget, FigureCanvas):
             self.loop_guard()
             self.refresh()
             self.replot()
+
+    def construct_triggered_plot(self):
+        self.trigger_len = len(self.trigger)
+        if self.trigger is not None and self.options['one_one']:
+            self.triggered = False
+            # shorter list
+            self.plot_data = self.plot_data.iloc[self.trigger]
+            """
+            this displays only datapoints that match exactly the 
+            view on the 3D animation
+            on i.e. one-one plot
+            """
+            self.options['line_style'] = 'None'

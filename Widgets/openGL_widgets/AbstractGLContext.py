@@ -12,12 +12,8 @@ import os
 
 import numpy as np
 
-from cython_modules.color_policy import multi_iteration_normalize
-from cython_modules.cython_parse import getLayerOutline, genCubes
-from processing.ColorPolicy import ColorPolicy
 from pattern_types.Patterns import AbstractGLContextDecorators
 
-from util_tools.buildVerifier import BuildVerifier
 from Windows.Select import Select
 
 import time
@@ -71,30 +67,7 @@ class AbstractGLContext(QOpenGLWidget, AnimatedWidget):
             self.handleOptionalData()
             self.receivedOptions()
         self.i = self.current_state
-
-    def prerendering_calculation(self, empty=False):
-        """
-        Some calculations that take place before object gets rendered
-        """
-        # get vector outline
-        self.vectors_list = getLayerOutline(self.file_header)
-        self.auto_center()
-        # adjust spacing
-
-        xc = int(self.file_header['xnodes'])
-        yc = int(self.file_header['ynodes'])
-        zc = int(self.file_header['znodes'])
-        # change drawing function
-        self.color_vectors, self.vectors_list, self.colorX = \
-                    ColorPolicy.standard_procedure(self.vectors_list,
-                                                   self.color_vectors,
-                                                   self.iterations,
-                                                   self.subsampling,
-                                                   xc, yc, zc,
-                                                   self.layer,
-                                                   self.vector_set,
-                                                   color_policy_type=self.color_policy_type,
-                                                   hyperContrast=self.hyperContrast)            
+     
         
     def handleOptionalData(self):
         super().handleOptionalData()

@@ -24,8 +24,8 @@
     "object": "Canvas2Dupgraded",
     "object_type": "stateful",
     "extensions": [".txt", ".odt"],
-    "settings": ["PlotSettings", "plot_data"],
     "required": [
+      "directory",
       "iterations",
       "current_state",
       "options",
@@ -36,23 +36,6 @@
     "optional": ["trigger"],
     "iterable_type": "plot",
     "toolbar": null
-  },
-  "CanvasLayer": {
-    "alias": "2D Layer",
-    "object": "CanvasLayer",
-    "object_type": "stateful",
-    "extensions": [".txt", ".odt"],
-    "settings": ["SimplePerfOptions", "file_header"],
-    "required": [
-      "current_state",
-      "options",
-      "file_header",
-      "color_vectors",
-      "screenshot_dir"
-    ],
-    "optional": ["iterations"],
-    "iterable_type": "structure",
-    "toolbar": "NavigationToolbar"
   },
   "StateMachine": {
     "alias": "StateMachine",
