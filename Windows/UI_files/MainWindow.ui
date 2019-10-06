@@ -32,15 +32,14 @@
      <x>0</x>
      <y>0</y>
      <width>863</width>
-     <height>26</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionLoad_File"/>
-    <addaction name="actionLoad_Directory"/>
+    <addaction name="actionClear_data"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -157,6 +156,11 @@
   <action name="actionBackground">
    <property name="text">
     <string>Background</string>
+   </property>
+  </action>
+  <action name="actionClear_data">
+   <property name="text">
+    <string>Clear data</string>
    </property>
   </action>
  </widget>

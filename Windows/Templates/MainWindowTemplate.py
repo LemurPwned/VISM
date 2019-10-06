@@ -2,11 +2,12 @@
 
 # Form implementation generated from reading ui file 'Windows/UI_files/MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -22,7 +23,7 @@ class Ui_MainWindow(object):
         self.gridLayout.setObjectName("gridLayout")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 863, 26))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 863, 27))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -70,8 +71,9 @@ class Ui_MainWindow(object):
         self.actionDeleteAllWindows.setObjectName("actionDeleteAllWindows")
         self.actionBackground = QtWidgets.QAction(MainWindow)
         self.actionBackground.setObjectName("actionBackground")
-        self.menuFile.addAction(self.actionLoad_File)
-        self.menuFile.addAction(self.actionLoad_Directory)
+        self.actionClear_data = QtWidgets.QAction(MainWindow)
+        self.actionClear_data.setObjectName("actionClear_data")
+        self.menuFile.addAction(self.actionClear_data)
         self.menuEdit.addAction(self.actionWindow0Delete)
         self.menuEdit.addAction(self.actionWindow1Delete)
         self.menuEdit.addAction(self.actionWindow2Delete)
@@ -115,6 +117,9 @@ class Ui_MainWindow(object):
         self.actionText_select.setText(_translate("MainWindow", "Text select"))
         self.actionDeleteAllWindows.setText(_translate("MainWindow", "Delete all Windows"))
         self.actionBackground.setText(_translate("MainWindow", "Background"))
+        self.actionClear_data.setText(_translate("MainWindow", "Clear data"))
+
+
 
 
 if __name__ == "__main__":
@@ -125,4 +130,3 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
-

@@ -2,11 +2,12 @@
 
 # Form implementation generated from reading ui file 'Windows/UI_files/animationSettings.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_AnimationSettings(object):
     def setupUi(self, AnimationSettings):
@@ -54,6 +55,8 @@ class Ui_AnimationSettings(object):
         self.label_2.setText(_translate("AnimationSettings", "Coloring mode:"))
 
 
+
+
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
@@ -62,4 +65,3 @@ if __name__ == "__main__":
     ui.setupUi(AnimationSettings)
     AnimationSettings.show()
     sys.exit(app.exec_())
-

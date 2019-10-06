@@ -2,11 +2,12 @@
 
 # Form implementation generated from reading ui file 'Windows/UI_files/PlotSettings.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_PlotSettings(object):
     def setupUi(self, PlotSettings):
@@ -37,6 +38,8 @@ class Ui_PlotSettings(object):
         PlotSettings.setWindowTitle(_translate("PlotSettings", "Dialog"))
 
 
+
+
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
@@ -45,4 +48,3 @@ if __name__ == "__main__":
     ui.setupUi(PlotSettings)
     PlotSettings.show()
     sys.exit(app.exec_())
-

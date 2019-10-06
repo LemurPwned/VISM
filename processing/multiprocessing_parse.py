@@ -117,7 +117,6 @@ def determine_if_plot_triggered(plot_file):
     if plot_file is not None:
         plot_data, stages0 = getPlotData(plot_file)
         if stages0 != stages:
-            print(stages, stages0)
             if stages0 > stages:
                 """
                 stages0 is number of row entries in plot_file e.g. .odt

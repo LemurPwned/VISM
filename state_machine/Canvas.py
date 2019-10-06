@@ -41,7 +41,6 @@ class Canvas(AbstractCanvas, QWidget):
             on i.e. one-one plot
             """
             self.options['line_style'] = 'None'
-            print("Trigerred off!")
 
     def createPlotCanvas(self, options):
         self.options = options
@@ -88,6 +87,7 @@ class Canvas(AbstractCanvas, QWidget):
         self.plot_axis.set_ylabel(self.title)
         self.plot_axis.set_title(
             '{}/{}'.format(self.i, self.internal_iterations))
+        self.plot_axis.get_figure().canvas.draw()
 
     @AbstractGLContextDecorators.recording_decorator
     def replot(self):
