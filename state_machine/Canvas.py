@@ -5,7 +5,7 @@ from Windows.PlotSettings import PlotSettings
 from state_machine.AbstractCanvas import AbstractCanvas
 from pattern_types.Patterns import AbstractGLContextDecorators
 from matplotlib.figure import Figure
-from processing.multiprocessing_parse import getPlotData
+from processing.multiprocessing_parse import determine_if_plot_triggered
 from PyQt5.QtWidgets import (QApplication, QOpenGLWidget, QWidget)
 
 
@@ -24,21 +24,24 @@ class Canvas(AbstractCanvas, QWidget):
                 break
         if plot_filename is None:
             raise ValueError("Plot file .txt or .odt not found!")
-        self.plot_data, stages = getPlotData(plot_filename)
-        print("STARTING OFF WITH PLT")
+        self.plot_data, self.trigger = determine_if_plot_triggered(
+            plot_filename)
         self.settings = PlotSettings(
             self.plot_data, eventHandler=self.createPlotCanvas)
 
     def construct_triggered_plot(self):
+        self.trigger_len = len(self.trigger)
         if self.trigger is not None and self.options['one_one']:
             self.triggered = False
             # shorter list
             self.plot_data = self.plot_data.iloc[self.trigger]
             """
             this displays only datapoints that match exactly the 
-            view on the 3D animation i.e. one-one plot
+            view on the 3D animation
+            on i.e. one-one plot
             """
             self.options['line_style'] = 'None'
+            print("Trigerred off!")
 
     def createPlotCanvas(self, options):
         self.options = options
@@ -103,9 +106,9 @@ class Canvas(AbstractCanvas, QWidget):
         self.plot_axis.set_title(
             '{}/{}'.format(self.i, self.internal_iterations))
 
-    def set_i(self, value, trigger=False, record=False, reset=False):
+    def set_i(self, value, trigger=True, record=False, reset=False):
         if trigger and self.triggered:
-            self.i = self.trigger[value]
+            self.i = self.trigger[value % self.trigger_len]
         else:
             self.i = value
         self.i %= self.internal_iterations

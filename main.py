@@ -21,7 +21,7 @@ from Windows.PlayerWindow import PlayerWindow
 from Windows.BackgroundSettings import BackgroundSettings
 from Windows.Progress import ProgressBar
 
-from processing.multiprocessing_parse import MultiprocessingParse
+from processing.multiprocessing_parse import *
 from multiprocessing import TimeoutError
 
 from Widgets.WidgetHandler import WidgetHandler
@@ -229,13 +229,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     #     if ".odt" in fileLoaded or ".txt" in fileLoaded:
     #         self.doh.passListObject(('plot_data', 'iterations'),
-    #                                     *MultiprocessingParse.readFile(fileLoaded))
+    #                                     *readFile(fileLoaded))
     #         self._BLOCK_ITERABLES_ = False
     #         self._BLOCK_PLOT_ITERABLES_ = False
 
     #     elif ".omf" in fileLoaded or ".ovf" in fileLoaded:
     #         self.doh.passListObject(('color_vectors', 'file_header'),
-    #                                     *MultiprocessingParse.readFile(fileLoaded))
+    #                                     *readFile(fileLoaded))
     #         self._BLOCK_STRUCTURES_ = False
     #     else:
     #         msg = "Invalid file: {}.".format(fileLoaded)
@@ -295,7 +295,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow, QtWidgets.QWidget):
 
     # def loadDirectory(self, directory):
     #     rawVectorData, header, plot_data, stages, trigger_list = \
-    #                         MultiprocessingParse.readFolder(directory)
+    #                         readFolder(directory)
     #     self.doh.passListObject(('color_vectors', 'file_header',
     #                              'iterations'),
     #                             rawVectorData, header, stages)

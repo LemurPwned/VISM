@@ -162,8 +162,11 @@ class MainContextDecorators:
             logger.debug(f"\tWidget selection decorator: {value}")
             logger.debug(
                 f"\tWidget is stateful! Prompting stateful loading procedure")
-            directory = self.promptDirectory(value[-1])
-            self.doh.setDataObject(directory, 'directory')
+            try:
+                self.doh.retrieveDataObject('directory')
+            except AttributeError:
+                directory = self.promptDirectory(value[-1])
+                self.doh.setDataObject(directory, 'directory')
             self._LOADED_FLAG_ = True
             self._BLOCK_ITERABLES_ = False  # unlock player
             choose_widget_function(self, value)
